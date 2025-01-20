@@ -1,0 +1,2702 @@
+[
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 1728890,
+    "volume1Day": {
+      "value": 315536414.8840204
+    },
+    "volume1Week": {
+      "value": 62491660.65490811
+    },
+    "volume30Day": {
+      "value": 355945337.868441
+    },
+    "totalLiquidity": {
+      "value": 3408250.8582362
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 2022967,
+    "volume1Day": {
+      "value": 79496896.44645861
+    },
+    "volume1Week": {
+      "value": 563935898.597145
+    },
+    "volume30Day": {
+      "value": 3247655285.3529263
+    },
+    "totalLiquidity": {
+      "value": 6085271.57727554
+    },
+    "token0": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 17755334,
+    "volume1Day": {
+      "value": 72682287.36858521
+    },
+    "volume1Week": {
+      "value": 1153486659.7121992
+    },
+    "volume30Day": {
+      "value": 6495767710.161208
+    },
+    "totalLiquidity": {
+      "value": 53782608.2474725
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39713/large/WETH.PNG?1723731496",
+      "name": "Wrapped Ethereum",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 987682,
+    "volume1Day": {
+      "value": 65673136.542866886
+    },
+    "volume1Week": {
+      "value": 758783731.7177833
+    },
+    "volume30Day": {
+      "value": 2210050768.8231483
+    },
+    "totalLiquidity": {
+      "value": 3605185.68532294
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 8453222,
+    "volume1Day": {
+      "value": 61302245.454461716
+    },
+    "volume1Week": {
+      "value": 1225593862.1663637
+    },
+    "volume30Day": {
+      "value": 7449320350.149483
+    },
+    "totalLiquidity": {
+      "value": 141590572.787994
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 4696346,
+    "volume1Day": {
+      "value": 56766498.61630383
+    },
+    "volume1Week": {
+      "value": 773346755.6071146
+    },
+    "volume30Day": {
+      "value": 2796704351.469026
+    },
+    "totalLiquidity": {
+      "value": 53268583.7714424
+    },
+    "token0": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 1286696,
+    "volume1Day": {
+      "value": 51582346.81398399
+    },
+    "volume1Week": {
+      "value": 462289588.40196425
+    },
+    "volume30Day": {
+      "value": 1971414016.0990946
+    },
+    "totalLiquidity": {
+      "value": 73553126.1924999
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png?1696507857",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 24257,
+    "volume1Day": {
+      "value": 38116135.421697125
+    },
+    "volume1Week": {
+      "value": 265964393.9893346
+    },
+    "volume30Day": {
+      "value": 1625014281.890759
+    },
+    "totalLiquidity": {
+      "value": 41038272.2307037
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png?1696507857",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/40143/large/cbbtc.webp?1726136727",
+      "name": "Coinbase Wrapped BTC",
+      "symbol": "cbBTC"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 1471147,
+    "volume1Day": {
+      "value": 37389164.38333365
+    },
+    "volume1Week": {
+      "value": 416005850.3886295
+    },
+    "volume30Day": {
+      "value": 1527946509.4713414
+    },
+    "totalLiquidity": {
+      "value": 2777866.22615554
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/34057/large/LOGOMARK.png?1708356054",
+      "name": "Virtual Protocol",
+      "symbol": "VIRTUAL"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 9856852,
+    "volume1Day": {
+      "value": 37259729.58398383
+    },
+    "volume1Week": {
+      "value": 533305276.3937085
+    },
+    "volume30Day": {
+      "value": 2039634034.3331141
+    },
+    "totalLiquidity": {
+      "value": 17697916.6193627
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 12925962,
+    "volume1Day": {
+      "value": 36107783.894028015
+    },
+    "volume1Week": {
+      "value": 586713897.5593952
+    },
+    "volume30Day": {
+      "value": 2501269736.3492723
+    },
+    "totalLiquidity": {
+      "value": 26613567.4999997
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39713/large/WETH.PNG?1723731496",
+      "name": "Wrapped Ethereum",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 281396,
+    "volume1Day": {
+      "value": 29140738.280322693
+    },
+    "volume1Week": {
+      "value": 228272138.10433847
+    },
+    "volume30Day": {
+      "value": 1388775245.7715209
+    },
+    "totalLiquidity": {
+      "value": 152652897.288508
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png?1696507857",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 5177250,
+    "volume1Day": {
+      "value": 28818820.058619685
+    },
+    "volume1Week": {
+      "value": 367111098.4634703
+    },
+    "volume30Day": {
+      "value": 1824453952.0251117
+    },
+    "totalLiquidity": {
+      "value": 51424718.3311435
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39532/large/wbtc.png?1722810336",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39713/large/WETH.PNG?1723731496",
+      "name": "Wrapped Ethereum",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 280049,
+    "volume1Day": {
+      "value": 20332002.37918967
+    },
+    "volume1Week": {
+      "value": 180491634.0306122
+    },
+    "volume30Day": {
+      "value": 250425260.8891104
+    },
+    "totalLiquidity": {
+      "value": 17463467.3546003
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png?1696507857",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 158429,
+    "volume1Day": {
+      "value": 19575997.447070647
+    },
+    "volume1Week": {
+      "value": 226574967.23455915
+    },
+    "volume30Day": {
+      "value": 958333415.9359418
+    },
+    "totalLiquidity": {
+      "value": 60368990.6788123
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png?1696507857",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 1075450,
+    "volume1Day": {
+      "value": 14612384.160293557
+    },
+    "volume1Week": {
+      "value": 304157879.8065593
+    },
+    "volume30Day": {
+      "value": 2228463135.546723
+    },
+    "totalLiquidity": {
+      "value": 22203523.160787
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 7587456,
+    "volume1Day": {
+      "value": 13246810.039450034
+    },
+    "volume1Week": {
+      "value": 138876744.81575558
+    },
+    "volume30Day": {
+      "value": 949942954.2205324
+    },
+    "totalLiquidity": {
+      "value": 10602195.4537825
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39713/large/WETH.PNG?1723731496",
+      "name": "Wrapped Ethereum",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/16547/large/arb.jpg?1721358242",
+      "name": "Arbitrum",
+      "symbol": "ARB"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 319210,
+    "volume1Day": {
+      "value": 11306154.831398841
+    },
+    "volume1Week": {
+      "value": 59121443.6298345
+    },
+    "volume30Day": {
+      "value": 323474915.8294794
+    },
+    "totalLiquidity": {
+      "value": 9728487.7941464
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/51784/large/3.png?1731981138",
+      "name": "aixbt by Virtuals",
+      "symbol": "AIXBT"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 2229349,
+    "volume1Day": {
+      "value": 9820943.08962965
+    },
+    "volume1Week": {
+      "value": 136843053.88468605
+    },
+    "volume30Day": {
+      "value": 576699912.0910873
+    },
+    "totalLiquidity": {
+      "value": 7870332.93284182
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39532/large/wbtc.png?1722810336",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 6338777,
+    "volume1Day": {
+      "value": 8680398.413207052
+    },
+    "volume1Week": {
+      "value": 114955936.30561644
+    },
+    "volume30Day": {
+      "value": 337821600.73639995
+    },
+    "totalLiquidity": {
+      "value": 719527.243561922
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 169242,
+    "volume1Day": {
+      "value": 7898533.149562503
+    },
+    "volume1Week": {
+      "value": 112130867.059901
+    },
+    "volume30Day": {
+      "value": 893652317.9213657
+    },
+    "totalLiquidity": {
+      "value": 12506665.9494812
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/18834/large/wstETH.png?1696518295",
+      "name": "Wrapped liquid staked Ether 2.0",
+      "symbol": "wstETH"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 478804,
+    "volume1Day": {
+      "value": 7585925.722528933
+    },
+    "volume1Week": {
+      "value": 80107090.94774738
+    },
+    "volume30Day": {
+      "value": 560301201.0185794
+    },
+    "totalLiquidity": {
+      "value": 44295523.8069455
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/877/large/chainlink-new-logo.png?1696502009",
+      "name": "ChainLink Token",
+      "symbol": "LINK"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 142388,
+    "volume1Day": {
+      "value": 5857759.190382264
+    },
+    "volume1Week": {
+      "value": 47500189.63960604
+    },
+    "volume30Day": {
+      "value": 229508090.39255306
+    },
+    "totalLiquidity": {
+      "value": 12171036.6959462
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/12645/large/aave-token-round.png?1720472354",
+      "name": "Aave Token",
+      "symbol": "AAVE"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 7062,
+    "volume1Day": {
+      "value": 5443485.050217126
+    },
+    "volume1Week": {
+      "value": 100604674.44138788
+    },
+    "volume30Day": {
+      "value": 498596407.8847085
+    },
+    "totalLiquidity": {
+      "value": 28441083.034084
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/22471/large/xOesRfpN_400x400.jpg?1696521795",
+      "name": "TRON",
+      "symbol": "TRX"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 2591570,
+    "volume1Day": {
+      "value": 5332120.357622379
+    },
+    "volume1Week": {
+      "value": 86111670.68427534
+    },
+    "volume30Day": {
+      "value": 441268200.5958605
+    },
+    "totalLiquidity": {
+      "value": 5058910.96756732
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/15075/large/wrapped-avax.png?1696514734",
+      "name": "Wrapped AVAX",
+      "symbol": "WAVAX"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 10095724,
+    "volume1Day": {
+      "value": 5171128.846382
+    },
+    "volume1Week": {
+      "value": 75921151.12287761
+    },
+    "volume30Day": {
+      "value": 350985255.8866753
+    },
+    "totalLiquidity": {
+      "value": 1875467.07621324
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/16547/large/arb.jpg?1721358242",
+      "name": "Arbitrum",
+      "symbol": "ARB"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/30691/large/usdc.png?1696529560",
+      "name": "Bridged USDC",
+      "symbol": "USDC.e"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 156739,
+    "volume1Day": {
+      "value": 5020041.43698559
+    },
+    "volume1Week": {
+      "value": 130500262.47823545
+    },
+    "volume30Day": {
+      "value": 753722105.1704718
+    },
+    "totalLiquidity": {
+      "value": 8576018.47627302
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/33613/large/usde.png?1733810059",
+      "name": "USDe",
+      "symbol": "USDe"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 837143,
+    "volume1Day": {
+      "value": 4760056.5986181265
+    },
+    "volume1Week": {
+      "value": 112652438.83973897
+    },
+    "volume30Day": {
+      "value": 736800949.8459705
+    },
+    "totalLiquidity": {
+      "value": 77734727.4671436
+    },
+    "token0": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 2356883,
+    "volume1Day": {
+      "value": 4741013.636136
+    },
+    "volume1Week": {
+      "value": 53713229.101509
+    },
+    "volume30Day": {
+      "value": 300885807.24191993
+    },
+    "totalLiquidity": {
+      "value": 17746599.9349706
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/33000/large/usdc.png?1700119918",
+      "name": "Bridged USDC",
+      "symbol": "USDC.e"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 320418,
+    "volume1Day": {
+      "value": 4632310.609860728
+    },
+    "volume1Week": {
+      "value": 62324368.57024483
+    },
+    "volume30Day": {
+      "value": 226872814.09730595
+    },
+    "totalLiquidity": {
+      "value": 2765559.92727232
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/40143/large/cbbtc.webp?1726136727",
+      "name": "Coinbase Wrapped BTC",
+      "symbol": "cbBTC"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 982753,
+    "volume1Day": {
+      "value": 3782841.0112413545
+    },
+    "volume1Week": {
+      "value": 55848871.11806374
+    },
+    "volume30Day": {
+      "value": 290572736.8343986
+    },
+    "totalLiquidity": {
+      "value": 3562839.69822369
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/34057/large/LOGOMARK.png?1708356054",
+      "name": "Virtual Protocol",
+      "symbol": "VIRTUAL"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 3926677,
+    "volume1Day": {
+      "value": 3753061.7087096134
+    },
+    "volume1Week": {
+      "value": 91036351.8943441
+    },
+    "volume30Day": {
+      "value": 389644918.0977043
+    },
+    "totalLiquidity": {
+      "value": 1045340.59364104
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39713/large/WETH.PNG?1723731496",
+      "name": "Wrapped Ethereum",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 21486,
+    "volume1Day": {
+      "value": 3679702.914833968
+    },
+    "volume1Week": {
+      "value": 99283161.75838245
+    },
+    "volume30Day": {
+      "value": 514518884.3383861
+    },
+    "totalLiquidity": {
+      "value": 5500629.5163934
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/33669/large/sUSDe-Symbol-Color.png?1716307680",
+      "name": "Staked USDe",
+      "symbol": "sUSDe"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 6532678,
+    "volume1Day": {
+      "value": 3581471.6105138967
+    },
+    "volume1Week": {
+      "value": 81355748.69819428
+    },
+    "volume30Day": {
+      "value": 479628038.98721266
+    },
+    "totalLiquidity": {
+      "value": 1234570.38591935
+    },
+    "token0": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/12591/large/binance-coin-logo.png?1696512401",
+      "name": "Wrapped BNB",
+      "symbol": "WBNB"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 17174309,
+    "volume1Day": {
+      "value": 3404798.6346523454
+    },
+    "volume1Week": {
+      "value": 48698758.32613181
+    },
+    "volume30Day": {
+      "value": 251397204.85439643
+    },
+    "totalLiquidity": {
+      "value": 4303193.50801306
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39713/large/WETH.PNG?1723731496",
+      "name": "Wrapped Ethereum",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/30691/large/usdc.png?1696529560",
+      "name": "Bridged USDC",
+      "symbol": "USDC.e"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 186422,
+    "volume1Day": {
+      "value": 3385828.7611505147
+    },
+    "volume1Week": {
+      "value": 48725876.249021575
+    },
+    "volume30Day": {
+      "value": 253332623.52876386
+    },
+    "totalLiquidity": {
+      "value": 10239921.9431211
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/36530/large/ethena.png?1711701436",
+      "name": "ENA",
+      "symbol": "ENA"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 3429605,
+    "volume1Day": {
+      "value": 3369198.3042653915
+    },
+    "volume1Week": {
+      "value": 58570028.63408822
+    },
+    "volume30Day": {
+      "value": 346162344.5274861
+    },
+    "totalLiquidity": {
+      "value": 2604352.17062902
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39715/large/WETH.PNG?1723731805",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 111496,
+    "volume1Day": {
+      "value": 3368839.9034480564
+    },
+    "volume1Week": {
+      "value": 65258940.90931162
+    },
+    "volume30Day": {
+      "value": 215952116.44798708
+    },
+    "totalLiquidity": {
+      "value": 3627288.63930015
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/9956/large/Badge_Dai.png?1696509996",
+      "name": "Dai Stablecoin",
+      "symbol": "DAI"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 10000,
+    "protocolVersion": "V3",
+    "txCount": 44929,
+    "volume1Day": {
+      "value": 3031169.548358859
+    },
+    "volume1Week": {
+      "value": 31821315.88267981
+    },
+    "volume30Day": {
+      "value": 94515397.97377199
+    },
+    "totalLiquidity": {
+      "value": 7603282.26806204
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/52315/large/FAI.png?1733076295",
+      "name": "FAI",
+      "symbol": "FAI"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 3593552,
+    "volume1Day": {
+      "value": 2808850.5039428473
+    },
+    "volume1Week": {
+      "value": 35275611.80327185
+    },
+    "volume30Day": {
+      "value": 162417115.03292945
+    },
+    "totalLiquidity": {
+      "value": 214674.313373449
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/11090/large/InjXBNx9_400x400.jpg?1696511031",
+      "name": "Celo native asset",
+      "symbol": "CELO"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USDC",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 3593484,
+    "volume1Day": {
+      "value": 2808850.5039428473
+    },
+    "volume1Week": {
+      "value": 35275611.80327185
+    },
+    "volume30Day": {
+      "value": 162417115.03292945
+    },
+    "totalLiquidity": {
+      "value": -29187.932284153
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/11090/large/InjXBNx9_400x400.jpg?1696511031",
+      "name": "Celo native asset",
+      "symbol": "CELO"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USDC",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 4093102,
+    "volume1Day": {
+      "value": 2784523.8706656653
+    },
+    "volume1Week": {
+      "value": 37180599.54606843
+    },
+    "volume30Day": {
+      "value": 169853595.39235502
+    },
+    "totalLiquidity": {
+      "value": 60938.8971368038
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/11090/large/InjXBNx9_400x400.jpg?1696511031",
+      "name": "Celo native asset",
+      "symbol": "CELO"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/13161/large/icon-celo-dollar-color-1000-circle-cropped.png?1696512945",
+      "name": "Celo Dollar",
+      "symbol": "cUSD"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 4093096,
+    "volume1Day": {
+      "value": 2784523.8706656653
+    },
+    "volume1Week": {
+      "value": 37180599.54606843
+    },
+    "volume30Day": {
+      "value": 169853595.39235502
+    },
+    "totalLiquidity": {
+      "value": -3232.1533555734
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/11090/large/InjXBNx9_400x400.jpg?1696511031",
+      "name": "Celo native asset",
+      "symbol": "CELO"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/13161/large/icon-celo-dollar-color-1000-circle-cropped.png?1696512945",
+      "name": "Celo Dollar",
+      "symbol": "cUSD"
+    }
+  },
+  {
+    "feeTier": 10000,
+    "protocolVersion": "V3",
+    "txCount": 89077,
+    "volume1Day": {
+      "value": 2615826.839422391
+    },
+    "volume1Week": {
+      "value": 27434407.75570303
+    },
+    "volume30Day": {
+      "value": 144826063.52736092
+    },
+    "totalLiquidity": {
+      "value": 3598699.31972478
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/34057/large/LOGOMARK.png?1708356054",
+      "name": "Virtual Protocol",
+      "symbol": "VIRTUAL"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 331457,
+    "volume1Day": {
+      "value": 2533058.4049584116
+    },
+    "volume1Week": {
+      "value": 60953214.01696692
+    },
+    "volume30Day": {
+      "value": 346283244.174138
+    },
+    "totalLiquidity": {
+      "value": 46726921.1543863
+    },
+    "token0": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984/logo.png",
+      "name": "Uniswap",
+      "symbol": "UNI"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 5005,
+    "volume1Day": {
+      "value": 2371778.3727405383
+    },
+    "volume1Week": {
+      "value": 8843843.308895405
+    },
+    "volume30Day": {
+      "value": 30800299.508675165
+    },
+    "totalLiquidity": {
+      "value": 9587579.29580067
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png?1696507857",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/36800/large/solvBTC.png?1719810684",
+      "name": "Solv BTC",
+      "symbol": "SolvBTC"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 1462,
+    "volume1Day": {
+      "value": 2290319.2972156676
+    },
+    "volume1Week": {
+      "value": 8877211.858759554
+    },
+    "volume30Day": {
+      "value": 77795065.76832324
+    },
+    "totalLiquidity": {
+      "value": 6002047.17098808
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png?1696507857",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/1364/large/Mark_Maker.png?1696502423",
+      "name": "Maker",
+      "symbol": "MKR"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 3149239,
+    "volume1Day": {
+      "value": 2189496.7603312936
+    },
+    "volume1Week": {
+      "value": 32854326.141256794
+    },
+    "volume30Day": {
+      "value": 155131895.15174
+    },
+    "totalLiquidity": {
+      "value": 30386.860731528
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/11090/large/InjXBNx9_400x400.jpg?1696511031",
+      "name": "Celo native asset",
+      "symbol": "CELO"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/325/large/Tether.png?1696501661",
+      "name": "Tether USD",
+      "symbol": "USD₮"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 904470,
+    "volume1Day": {
+      "value": 2173390.0147079933
+    },
+    "volume1Week": {
+      "value": 50056574.799211405
+    },
+    "volume30Day": {
+      "value": 209880360.5595666
+    },
+    "totalLiquidity": {
+      "value": 30771655.5363119
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 116542,
+    "volume1Day": {
+      "value": 2078618.2594460826
+    },
+    "volume1Week": {
+      "value": 35794418.856443726
+    },
+    "volume30Day": {
+      "value": 106115128.05510384
+    },
+    "totalLiquidity": {
+      "value": 3394979.21116582
+    },
+    "token0": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/31401/large/sticker_%281%29.jpg?1702371083",
+      "name": "SPX6900",
+      "symbol": "SPX"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 1672231,
+    "volume1Day": {
+      "value": 2068240.392436811
+    },
+    "volume1Week": {
+      "value": 24057466.12330321
+    },
+    "volume30Day": {
+      "value": 149384320.00043815
+    },
+    "totalLiquidity": {
+      "value": 343884.987056925
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/35220/large/USDC.jpg?1707919050",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/12591/large/binance-coin-logo.png?1696512401",
+      "name": "Wrapped BNB",
+      "symbol": "WBNB"
+    }
+  },
+  {
+    "feeTier": 10000,
+    "protocolVersion": "V3",
+    "txCount": 88815,
+    "volume1Day": {
+      "value": 2035242.9735201732
+    },
+    "volume1Week": {
+      "value": 41812041.02966185
+    },
+    "volume30Day": {
+      "value": 158906252.0197348
+    },
+    "totalLiquidity": {
+      "value": 6974212.56466944
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/52005/large/Unit_00_-_Rei.jpg?1732592775",
+      "name": "Unit 00 - Rei",
+      "symbol": "REI"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 66658,
+    "volume1Day": {
+      "value": 2033855.3634583422
+    },
+    "volume1Week": {
+      "value": 39958276.41954081
+    },
+    "volume30Day": {
+      "value": 155966980.66775215
+    },
+    "totalLiquidity": {
+      "value": 3535040.33270553
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/20764/large/reth.png?1696520159",
+      "name": "Rocket Pool ETH",
+      "symbol": "rETH"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 2746001,
+    "volume1Day": {
+      "value": 1898713.6471348777
+    },
+    "volume1Week": {
+      "value": 26170496.810530495
+    },
+    "volume30Day": {
+      "value": 130926301.27892455
+    },
+    "totalLiquidity": {
+      "value": 1759846.12906062
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39708/large/WETH.PNG?1723730343",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 2521474,
+    "volume1Day": {
+      "value": 1826014.809609913
+    },
+    "volume1Week": {
+      "value": 22072989.338020384
+    },
+    "volume30Day": {
+      "value": 103990748.52177466
+    },
+    "totalLiquidity": {
+      "value": 169443.664126893
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/11090/large/InjXBNx9_400x400.jpg?1696511031",
+      "name": "Celo native asset",
+      "symbol": "CELO"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/16756/large/CEUR.png?1696516329",
+      "name": "Celo Euro",
+      "symbol": "cEUR"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 12796712,
+    "volume1Day": {
+      "value": 1793128.2391961187
+    },
+    "volume1Week": {
+      "value": 30319176.581428163
+    },
+    "volume30Day": {
+      "value": 211894837.3047654
+    },
+    "totalLiquidity": {
+      "value": 2957670.97367755
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/33000/large/usdc.png?1700119918",
+      "name": "Bridged USDC",
+      "symbol": "USDC.e"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39708/large/WETH.PNG?1723730343",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 371481,
+    "volume1Day": {
+      "value": 1692748.0901433714
+    },
+    "volume1Week": {
+      "value": 30410819.85465447
+    },
+    "volume30Day": {
+      "value": 168178801.16574386
+    },
+    "totalLiquidity": {
+      "value": 130363954.406307
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png?1696507857",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 11642,
+    "volume1Day": {
+      "value": 1678193.2636427335
+    },
+    "volume1Week": {
+      "value": 47934743.39259306
+    },
+    "volume30Day": {
+      "value": 167315376.3024903
+    },
+    "totalLiquidity": {
+      "value": 5339398.96199318
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/11224/large/0x18084fba666a33d37592fa2633fd49a74dd93a88.png?1696511155",
+      "name": "tBTC v2",
+      "symbol": "tBTC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png?1696507857",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 3633086,
+    "volume1Day": {
+      "value": 1649733.876673
+    },
+    "volume1Week": {
+      "value": 37264815.436166
+    },
+    "volume30Day": {
+      "value": 151266020.43588302
+    },
+    "totalLiquidity": {
+      "value": 1238690.57684302
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39530/large/wbtc.png?1722809402",
+      "name": "(PoS) Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/33000/large/usdc.png?1700119918",
+      "name": "Bridged USDC",
+      "symbol": "USDC.e"
+    }
+  },
+  {
+    "feeTier": 10000,
+    "protocolVersion": "V3",
+    "txCount": 29217,
+    "volume1Day": {
+      "value": 1606917.4402445317
+    },
+    "volume1Week": {
+      "value": 40496596.215981334
+    },
+    "volume30Day": {
+      "value": 64423732.97525703
+    },
+    "totalLiquidity": {
+      "value": 4118340.01838067
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/53445/large/KudAI.jpg?1736396110",
+      "name": "Kudai",
+      "symbol": "KUDAI"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 331696,
+    "volume1Day": {
+      "value": 1541600.2985632755
+    },
+    "volume1Week": {
+      "value": 26294545.493053783
+    },
+    "volume30Day": {
+      "value": 171528639.1320025
+    },
+    "totalLiquidity": {
+      "value": 69513621.6669517
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/9956/large/Badge_Dai.png?1696509996",
+      "name": "Dai Stablecoin",
+      "symbol": "DAI"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 360267,
+    "volume1Day": {
+      "value": 1528695.0589196482
+    },
+    "volume1Week": {
+      "value": 23278567.27006397
+    },
+    "volume30Day": {
+      "value": 115883417.66630232
+    },
+    "totalLiquidity": {
+      "value": 1576774.75042223
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/40143/large/cbbtc.webp?1726136727",
+      "name": "Coinbase Wrapped BTC",
+      "symbol": "cbBTC"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 152245,
+    "volume1Day": {
+      "value": 1519661.245758761
+    },
+    "volume1Week": {
+      "value": 15338469.655657722
+    },
+    "volume30Day": {
+      "value": 87677249.3321848
+    },
+    "totalLiquidity": {
+      "value": 5652907.06071913
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/29087/large/wtao.png?1696528051",
+      "name": "Wrapped TAO",
+      "symbol": "wTAO"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 42107,
+    "volume1Day": {
+      "value": 1485731.6887133466
+    },
+    "volume1Week": {
+      "value": 13828840.34194398
+    },
+    "volume30Day": {
+      "value": 96473274.66990234
+    },
+    "totalLiquidity": {
+      "value": 39449778.0437533
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png?1696507857",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39969/large/LBTC_Logo.png?1724959872",
+      "name": "Lombard Staked Bitcoin",
+      "symbol": "LBTC"
+    }
+  },
+  {
+    "feeTier": 10000,
+    "protocolVersion": "V3",
+    "txCount": 81373,
+    "volume1Day": {
+      "value": 1425813.0688930848
+    },
+    "volume1Week": {
+      "value": 12276387.695048165
+    },
+    "volume30Day": {
+      "value": 31315369.593446743
+    },
+    "totalLiquidity": {
+      "value": 1144689.3334293
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/51784/large/3.png?1731981138",
+      "name": "aixbt by Virtuals",
+      "symbol": "AIXBT"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 204355,
+    "volume1Day": {
+      "value": 1407541.1276851974
+    },
+    "volume1Week": {
+      "value": 21680733.035684064
+    },
+    "volume30Day": {
+      "value": 165165622.13709682
+    },
+    "totalLiquidity": {
+      "value": 12645032.3329958
+    },
+    "token0": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/22876/large/SOL_wh_small.png?1696522175",
+      "name": "Wrapped SOL (Wormhole)",
+      "symbol": "SOL"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 1220631,
+    "volume1Day": {
+      "value": 1405931.5447894908
+    },
+    "volume1Week": {
+      "value": 19071385.832559038
+    },
+    "volume30Day": {
+      "value": 67790319.54000679
+    },
+    "totalLiquidity": {
+      "value": 1177892.14945981
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/31745/large/token.png?1696530564",
+      "name": "Aerodrome",
+      "symbol": "AERO"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 3906246,
+    "volume1Day": {
+      "value": 1395459.2558119667
+    },
+    "volume1Week": {
+      "value": 15916968.644844344
+    },
+    "volume30Day": {
+      "value": 92160485.77484733
+    },
+    "totalLiquidity": {
+      "value": 4064871.74429939
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39530/large/wbtc.png?1722809402",
+      "name": "(PoS) Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39708/large/WETH.PNG?1723730343",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 518733,
+    "volume1Day": {
+      "value": 1389631.798187326
+    },
+    "volume1Week": {
+      "value": 17845798.707952593
+    },
+    "volume30Day": {
+      "value": 42682907.85760673
+    },
+    "totalLiquidity": {
+      "value": 4006738.56481828
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/53104/large/superbridge-bridged-wsteth-optimism.webp?1735228418",
+      "name": "Wrapped liquid staked Ether 2.0",
+      "symbol": "wstETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39715/large/WETH.PNG?1723731805",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 10000,
+    "protocolVersion": "V3",
+    "txCount": 65727,
+    "volume1Day": {
+      "value": 1353355.9704856686
+    },
+    "volume1Week": {
+      "value": 18927494.95480457
+    },
+    "volume30Day": {
+      "value": 41110124.51433849
+    },
+    "totalLiquidity": {
+      "value": 992039.327812018
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/38450/large/cookie_token_logo_200x200.png?1733194528",
+      "name": "Cookie",
+      "symbol": "COOKIE"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 815298,
+    "volume1Day": {
+      "value": 1344825.953988086
+    },
+    "volume1Week": {
+      "value": 15890553.531894976
+    },
+    "volume30Day": {
+      "value": 96335028.6762167
+    },
+    "totalLiquidity": {
+      "value": 1275457.28713857
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/325/large/Tether.png?1696501661",
+      "name": "Tether USD",
+      "symbol": "USD₮"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/13161/large/icon-celo-dollar-color-1000-circle-cropped.png?1696512945",
+      "name": "Celo Dollar",
+      "symbol": "cUSD"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 5983,
+    "volume1Day": {
+      "value": 1340442.4910880988
+    },
+    "volume1Week": {
+      "value": 3041854.6394395875
+    },
+    "volume30Day": {
+      "value": 29008957.436730012
+    },
+    "totalLiquidity": {
+      "value": 3506200.85132799
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png?1696507857",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/40143/large/cbbtc.webp?1726136727",
+      "name": "Coinbase Wrapped BTC",
+      "symbol": "cbBTC"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 11869036,
+    "volume1Day": {
+      "value": 1325194.5408337524
+    },
+    "volume1Week": {
+      "value": 23580843.37872235
+    },
+    "volume30Day": {
+      "value": 113459881.84443568
+    },
+    "totalLiquidity": {
+      "value": 1077096.66025433
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/14073/large/matic.png?1696513797",
+      "name": "Wrapped POL",
+      "symbol": "WPOL"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "(PoS) Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 12197189,
+    "volume1Day": {
+      "value": 1318630.468843358
+    },
+    "volume1Week": {
+      "value": 17460051.644988
+    },
+    "volume30Day": {
+      "value": 100614072.7260811
+    },
+    "totalLiquidity": {
+      "value": 706750.671323911
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39715/large/WETH.PNG?1723731805",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/31580/large/USDC-icon.png?1696530397",
+      "name": "Bridged USDC",
+      "symbol": "USDC.e"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 629214,
+    "volume1Day": {
+      "value": 1317745.4820373517
+    },
+    "volume1Week": {
+      "value": 22141809.961562436
+    },
+    "volume30Day": {
+      "value": 122098589.12279762
+    },
+    "totalLiquidity": {
+      "value": 1962066.02856946
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39707/large/WETH.PNG?1723730205",
+      "name": "Wrapped Ether",
+      "symbol": "WETH.e"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/15075/large/wrapped-avax.png?1696514734",
+      "name": "Wrapped AVAX",
+      "symbol": "WAVAX"
+    }
+  },
+  {
+    "feeTier": 10000,
+    "protocolVersion": "V3",
+    "txCount": 22574,
+    "volume1Day": {
+      "value": 1276803.662737431
+    },
+    "volume1Week": {
+      "value": 8066637.297293194
+    },
+    "volume30Day": {
+      "value": 11079473.928974787
+    },
+    "totalLiquidity": {
+      "value": 952671.804428653
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/52961/large/ICON.png?1734862960",
+      "name": "HeyAnon",
+      "symbol": "Anon"
+    }
+  },
+  {
+    "feeTier": 10000,
+    "protocolVersion": "V3",
+    "txCount": 43030,
+    "volume1Day": {
+      "value": 1219951.5416496166
+    },
+    "volume1Week": {
+      "value": 11330341.280583836
+    },
+    "volume30Day": {
+      "value": 47811431.49143545
+    },
+    "totalLiquidity": {
+      "value": 5450712.80117644
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/10349/large/logo-white-bg-dark.png?1733475849",
+      "name": "Chintai Exchange Token",
+      "symbol": "CHEX"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 3557382,
+    "volume1Day": {
+      "value": 1215397.644278972
+    },
+    "volume1Week": {
+      "value": 20142342.43336834
+    },
+    "volume30Day": {
+      "value": 106862768.48820846
+    },
+    "totalLiquidity": {
+      "value": 1564956.30300242
+    },
+    "token0": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/12591/large/binance-coin-logo.png?1696512401",
+      "name": "Wrapped BNB",
+      "symbol": "WBNB"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 18712456,
+    "volume1Day": {
+      "value": 1212011.614056598
+    },
+    "volume1Week": {
+      "value": 13584455.449322112
+    },
+    "volume30Day": {
+      "value": 81135195.95053346
+    },
+    "totalLiquidity": {
+      "value": 1712152.18629859
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/14073/large/matic.png?1696513797",
+      "name": "Wrapped POL",
+      "symbol": "WPOL"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/33000/large/usdc.png?1700119918",
+      "name": "Bridged USDC",
+      "symbol": "USDC.e"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 3394588,
+    "volume1Day": {
+      "value": 1163967.848832057
+    },
+    "volume1Week": {
+      "value": 23116396.949006215
+    },
+    "volume30Day": {
+      "value": 113760215.96808426
+    },
+    "totalLiquidity": {
+      "value": 286421.362178256
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39713/large/WETH.PNG?1723731496",
+      "name": "Wrapped Ethereum",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 8942598,
+    "volume1Day": {
+      "value": 1126348.980609097
+    },
+    "volume1Week": {
+      "value": 13599462.433295017
+    },
+    "volume30Day": {
+      "value": 52276928.47794771
+    },
+    "totalLiquidity": {
+      "value": 1118007.14181651
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/14073/large/matic.png?1696513797",
+      "name": "Wrapped POL",
+      "symbol": "WPOL"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39708/large/WETH.PNG?1723730343",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 81184,
+    "volume1Day": {
+      "value": 1046808.3105057485
+    },
+    "volume1Week": {
+      "value": 19469636.61057461
+    },
+    "volume30Day": {
+      "value": 130084777.15281527
+    },
+    "totalLiquidity": {
+      "value": 9502978.02736429
+    },
+    "token0": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/37441/large/eigen.jpg?1728023974",
+      "name": "Eigen",
+      "symbol": "EIGEN"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 8802,
+    "volume1Day": {
+      "value": 1045474.746542
+    },
+    "volume1Week": {
+      "value": 15273144.061835999
+    },
+    "volume30Day": {
+      "value": 60946573.50667999
+    },
+    "totalLiquidity": {
+      "value": 4709408.44635757
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/40008/large/USR_LOGO.png?1725222638",
+      "name": "Resolv USD",
+      "symbol": "USR"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 923759,
+    "volume1Day": {
+      "value": 1045348.614463473
+    },
+    "volume1Week": {
+      "value": 14752057.272556819
+    },
+    "volume30Day": {
+      "value": 65780209.80399491
+    },
+    "totalLiquidity": {
+      "value": 331004.191883386
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/325/large/Tether.png?1696501661",
+      "name": "Tether USD",
+      "symbol": "USD₮"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/16756/large/CEUR.png?1696516329",
+      "name": "Celo Euro",
+      "symbol": "cEUR"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 2000603,
+    "volume1Day": {
+      "value": 923236.6787680167
+    },
+    "volume1Week": {
+      "value": 10325755.390875017
+    },
+    "volume30Day": {
+      "value": 132262979.897594
+    },
+    "totalLiquidity": {
+      "value": 1057985.98879163
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/15069/large/Pendle_Logo_Normal-03.png?1696514728",
+      "name": "Pendle",
+      "symbol": "PENDLE"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39713/large/WETH.PNG?1723731496",
+      "name": "Wrapped Ethereum",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 4725687,
+    "volume1Day": {
+      "value": 914640.9650400818
+    },
+    "volume1Week": {
+      "value": 14387514.655102096
+    },
+    "volume30Day": {
+      "value": 57744227.840883106
+    },
+    "totalLiquidity": {
+      "value": 826068.934048094
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/14073/large/matic.png?1696513797",
+      "name": "Wrapped POL",
+      "symbol": "WPOL"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 408985,
+    "volume1Day": {
+      "value": 895233.612050444
+    },
+    "volume1Week": {
+      "value": 12007466.897831906
+    },
+    "volume30Day": {
+      "value": 84728134.98221387
+    },
+    "totalLiquidity": {
+      "value": 2871350.07405713
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/53102/large/arbitrum-bridged-wsteth-arbitrum.webp?1735227527",
+      "name": "Wrapped liquid staked Ether 2.0",
+      "symbol": "wstETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39713/large/WETH.PNG?1723731496",
+      "name": "Wrapped Ethereum",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 5115144,
+    "volume1Day": {
+      "value": 890070.722156374
+    },
+    "volume1Week": {
+      "value": 14384729.626289673
+    },
+    "volume30Day": {
+      "value": 110973959.67525403
+    },
+    "totalLiquidity": {
+      "value": 1235568.86448589
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39715/large/WETH.PNG?1723731805",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/25244/large/Optimism.png?1696524385",
+      "name": "Optimism",
+      "symbol": "OP"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 718341,
+    "volume1Day": {
+      "value": 882401.8932011069
+    },
+    "volume1Week": {
+      "value": 10641154.746275522
+    },
+    "volume30Day": {
+      "value": 68932897.27609858
+    },
+    "totalLiquidity": {
+      "value": 633635.098916908
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 218203,
+    "volume1Day": {
+      "value": 881921.3588509501
+    },
+    "volume1Week": {
+      "value": 10521408.618980486
+    },
+    "volume30Day": {
+      "value": 59304378.560485415
+    },
+    "totalLiquidity": {
+      "value": 2647605.79319257
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39713/large/WETH.PNG?1723731496",
+      "name": "Wrapped Ethereum",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/12645/large/aave-token-round.png?1720472354",
+      "name": "Aave Token",
+      "symbol": "AAVE"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 607270,
+    "volume1Day": {
+      "value": 865021.2832064673
+    },
+    "volume1Week": {
+      "value": 11851533.458673567
+    },
+    "volume30Day": {
+      "value": 84016199.6513395
+    },
+    "totalLiquidity": {
+      "value": 2199591.45485952
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/12124/large/Curve.png?1696511967",
+      "name": "Curve DAO Token",
+      "symbol": "CRV"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39713/large/WETH.PNG?1723731496",
+      "name": "Wrapped Ethereum",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 334860,
+    "volume1Day": {
+      "value": 848924.2387810826
+    },
+    "volume1Week": {
+      "value": 5398620.258937248
+    },
+    "volume30Day": {
+      "value": 26755194.205426004
+    },
+    "totalLiquidity": {
+      "value": 1802900.3995931
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 80925,
+    "volume1Day": {
+      "value": 842933.0825966325
+    },
+    "volume1Week": {
+      "value": 4743934.10824976
+    },
+    "volume30Day": {
+      "value": 29437496.132608697
+    },
+    "totalLiquidity": {
+      "value": 3460987.12185707
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/40143/large/cbbtc.webp?1726136727",
+      "name": "Coinbase Wrapped BTC",
+      "symbol": "cbBTC"
+    }
+  },
+  {
+    "feeTier": 10000,
+    "protocolVersion": "V3",
+    "txCount": 46434,
+    "volume1Day": {
+      "value": 834656.2255056448
+    },
+    "volume1Week": {
+      "value": 12731238.120541979
+    },
+    "volume30Day": {
+      "value": 20245417.339621164
+    },
+    "totalLiquidity": {
+      "value": 1935990.18142227
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/52626/large/bankr-static.png?1736405365",
+      "name": "BankrCoin",
+      "symbol": "BNKR"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39810/large/weth.png?1724139790",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 500,
+    "protocolVersion": "V3",
+    "txCount": 1740683,
+    "volume1Day": {
+      "value": 810849.5526274457
+    },
+    "volume1Week": {
+      "value": 10354776.971738452
+    },
+    "volume30Day": {
+      "value": 63064278.12924644
+    },
+    "totalLiquidity": {
+      "value": 2566589.00305647
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39580/large/weth.png?1723006716",
+      "name": "Ethereum Token",
+      "symbol": "ETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/12591/large/binance-coin-logo.png?1696512401",
+      "name": "Wrapped BNB",
+      "symbol": "WBNB"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 249182,
+    "volume1Day": {
+      "value": 808953.7821020818
+    },
+    "volume1Week": {
+      "value": 17167672.91952322
+    },
+    "volume30Day": {
+      "value": 68532833.58527972
+    },
+    "totalLiquidity": {
+      "value": 823819.753035206
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/34057/large/LOGOMARK.png?1708356054",
+      "name": "Virtual Protocol",
+      "symbol": "VIRTUAL"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    }
+  },
+  {
+    "feeTier": 100,
+    "protocolVersion": "V3",
+    "txCount": 3775514,
+    "volume1Day": {
+      "value": 798351.304461
+    },
+    "volume1Week": {
+      "value": 13215398.372798
+    },
+    "volume30Day": {
+      "value": 80669093.218337
+    },
+    "totalLiquidity": {
+      "value": 1411025.98655809
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/33000/large/usdc.png?1700119918",
+      "name": "Bridged USDC",
+      "symbol": "USDC.e"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
+      "name": "(PoS) Tether USD",
+      "symbol": "USDT"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 27752,
+    "volume1Day": {
+      "value": 790900.671428
+    },
+    "volume1Week": {
+      "value": 12541262.831896001
+    },
+    "volume30Day": {
+      "value": 70709442.88065301
+    },
+    "totalLiquidity": {
+      "value": 4922312.11844861
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+      "name": "USD Coin",
+      "symbol": "USDC"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/35893/large/aevo.png?1710138340",
+      "name": "Aevo",
+      "symbol": "AEVO"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 207735,
+    "volume1Day": {
+      "value": 785989.7818337097
+    },
+    "volume1Week": {
+      "value": 6309034.637456354
+    },
+    "volume30Day": {
+      "value": 48493344.46612639
+    },
+    "totalLiquidity": {
+      "value": 5958323.70969009
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/13573/large/Lido_DAO.png?1696513326",
+      "name": "Lido DAO Token",
+      "symbol": "LDO"
+    },
+    "token1": {
+      "logo": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    }
+  },
+  {
+    "feeTier": 3000,
+    "protocolVersion": "V3",
+    "txCount": 565067,
+    "volume1Day": {
+      "value": 777808.5228439353
+    },
+    "volume1Week": {
+      "value": 9208779.188505124
+    },
+    "volume30Day": {
+      "value": 63856513.75329753
+    },
+    "totalLiquidity": {
+      "value": 2306918.68491618
+    },
+    "token0": {
+      "logo": "https://coin-images.coingecko.com/coins/images/39708/large/WETH.PNG?1723730343",
+      "name": "Wrapped Ether",
+      "symbol": "WETH"
+    },
+    "token1": {
+      "logo": "https://coin-images.coingecko.com/coins/images/12645/large/aave-token-round.png?1720472354",
+      "name": "Aave (PoS)",
+      "symbol": "AAVE"
+    }
+  }
+]
