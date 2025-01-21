@@ -1,0 +1,14 @@
+
+services:
+  app:
+    build:
+      context: .
+      target: prod
+      dockerfile: Dockerfile
+    container_name: swap-client-frontend
+    ports:
+      - "2088:2088"
+    environment:
+      NODE_ENV: production
+    command: ["node", ".output/server/index.mjs"]
+    restart: unless-stopped
