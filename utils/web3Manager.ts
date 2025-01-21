@@ -20,8 +20,6 @@ class Web3Manager {
   web3: Web3 | null = null
 
   constructor() {
-    console.log(import.meta.env.VITE_BASE_DOMAIN)
-
     this.MMSDK = new MetaMaskSDK({
       dappMetadata: {
         name: 'Dex-Swap',
@@ -147,12 +145,12 @@ class Web3Manager {
         fee: form.feeTier * 1000, // bps to ppm ex: 0.3% => 300
         tickLower: -887220, // fixed
         tickUpper: 887220, // fixed
-        amount0Desired: '1000000000000000000', // fixed 1 BASE
-        amount1Desired: '10000000', // fixed 10 USDT
+        amount0Desired: new Decimal(form.amountDeposit0).mul(new Decimal(10).pow(form.token0.decimals)).toString(),
+        amount1Desired: new Decimal(form.amountDeposit1).mul(new Decimal(10).pow(form.token1.decimals)).toString(),
         amount0Min: '0',
         amount1Min: '0',
         recipient: this.userAddress,
-        deadline: Math.floor(Date.now() / 1000) + 3600
+        deadline: Math.floor(Date.now() / 1000) + 1800 // 30 minutes
       }
 
       const encodeMint = this.encodeFunctionCall(mintABI as unknown as AbiFunctionFragment, [{ ...inputMint }])
