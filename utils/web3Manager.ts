@@ -132,15 +132,17 @@ class Web3Manager {
 
   async createPool(token0: IToken, token1: IToken, form: IFormCreatePosition) {
     try {
+      const fee = new Decimal(form.feeTier).mul(10000).toNumber()
       const sqrtPriceX96 = calcSqrtPriceX96(+form.amount, +token0.decimals, +token1.decimals)
-      const inputCreateAndInitializePoolIfNecessary = [token0.address, token1.address, 3000, sqrtPriceX96.toString()]
+
+      // create and init pool if necessary
+      const inputCreateAndInitializePoolIfNecessary = [token0.address, token1.address, fee, sqrtPriceX96.toString()]
       const encodeCreateAndInitializePoolIfNecessary = this.encodeFunctionCall(
         createAndInitializePoolIfNecessaryABI as unknown as AbiFunctionFragment,
         inputCreateAndInitializePoolIfNecessary
       )
 
-      const fee = new Decimal(form.feeTier).mul(10000).toNumber()
-
+      // init mint method
       const amount0Desired = new Decimal(form.amountDeposit0).mul(new Decimal(10).pow(form.token0.decimals)).round().toString()
       const amount1Desired = new Decimal(form.amountDeposit1).mul(new Decimal(10).pow(form.token1.decimals)).round().toString()
 
@@ -149,7 +151,7 @@ class Web3Manager {
       const inputMint = {
         token0: token0.address, // BASE
         token1: token1.address, // QUOTE
-        fee, // bps to ppm ex: 0.3% => 300
+        fee,
         tickLower: -887220, // fixed
         tickUpper: 887220, // fixed
         amount0Desired,
