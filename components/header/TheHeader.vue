@@ -4,7 +4,6 @@
       <img src="/logo.png" alt="logo" class="w-12" />
       <div class="grid grid-cols-3 gap-3 sm:hidden">
         <NuxtLink active-class="!text-primary" to="/" class="mx-2 text-base leading-6 text-secondary hover:text-primary">Home</NuxtLink>
-        <NuxtLink active-class="!text-primary" to="/swap" class="mx-2 text-base leading-6 text-secondary hover:text-primary">Swap</NuxtLink>
 
         <ElPopover placement="bottom" :show-arrow="false" :width="180" trigger="hover" popper-class="popper-menu-pool" :teleported="false">
           <template #reference>
@@ -42,7 +41,6 @@
           </div>
         </template>
         <div class="flex flex-col gap-1" @click="visible = false">
-          <NuxtLink active-class="!text-primary" to="/swap" class="h-10 w-full rounded-xl pl-2 text-base leading-10 text-secondary"> Swap </NuxtLink>
           <NuxtLink active-class="!text-primary" to="/positions" class="h-10 w-full rounded-xl pl-2 text-base leading-10 text-secondary">
             View positions
           </NuxtLink>
