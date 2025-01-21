@@ -20,10 +20,12 @@ class Web3Manager {
   web3: Web3 | null = null
 
   constructor() {
+    console.log(import.meta.env.VITE_BASE_DOMAIN)
+
     this.MMSDK = new MetaMaskSDK({
       dappMetadata: {
         name: 'Dex-Swap',
-        url: 'localhost:3000'
+        url: import.meta.env.VITE_BASE_DOMAIN
       }
     })
   }
