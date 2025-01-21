@@ -1,7 +1,6 @@
 import type { IToken } from '~/types'
 
 const DEFAULT_SLIPPAGE = 5.5
-const BASE_URL_API = 'https://dev.blockscout.hdev99.io.vn/'
 const DECIMALS_NATIVE = 18
 
 const NATIVE_TOKEN: IToken = {
@@ -20,4 +19,4 @@ const WRAPPED_NATIVE_TOKEN: IToken = {
   address: '0xF76eF13fb6B775e4609C921cAA1BD9307E338276'
 }
 
-export { DEFAULT_SLIPPAGE, BASE_URL_API, DECIMALS_NATIVE, NATIVE_TOKEN, WRAPPED_NATIVE_TOKEN }
+export { DEFAULT_SLIPPAGE, DECIMALS_NATIVE, NATIVE_TOKEN, WRAPPED_NATIVE_TOKEN }

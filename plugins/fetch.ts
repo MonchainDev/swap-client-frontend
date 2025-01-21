@@ -1,11 +1,9 @@
-import { BASE_URL_API } from '~/constant'
-
 export default defineNuxtPlugin(() => {
   const accessToken = useCookie('access_token')
-  // const config = useRuntimeConfig()
+  const config = useRuntimeConfig()
 
   const fetch = $fetch.create({
-    baseURL: BASE_URL_API,
+    baseURL: config.BASE_URL_API,
     onRequest({ options }) {
       if (accessToken.value) {
         options.headers = { ...options.headers }

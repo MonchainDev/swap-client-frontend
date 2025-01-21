@@ -3,6 +3,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
   ssr: true,
+  runtimeConfig: {
+    BASE_URL_API: process.env.BASE_URL_API
+  },
   modules: [
     '@nuxt/eslint',
     '@pinia/nuxt',
