@@ -39,7 +39,7 @@
       class="flex items-center space-x-1 text-lg font-medium"
       @click="setOpenPopup('popup-review-swap')"
     >
-      <div v-if="isFetchQuote" class="loader"></div>
+      <BaseLoadingButton v-if="isFetchQuote" />
       <span>{{ msgButton }}</span>
     </BaseButton>
     <BaseButton v-else class="text-lg font-medium opacity-70" @click="connectWallet"> Connect wallet </BaseButton>
@@ -224,26 +224,6 @@
 </script>
 
 <style lang="scss" scoped>
-  .loader {
-    width: 18px;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    border: 3px solid var(--color-surface3);
-    border-right-color: var(--color-secondary);
-    animation: l2 1s infinite linear;
-  }
-  @keyframes l2 {
-    0% {
-      transform: rotate(0turn);
-    }
-    30% {
-      transform: rotate(0.7turn);
-    }
-    100% {
-      transform: rotate(1turn);
-    }
-  }
-
   .transaction-height {
   }
 </style>

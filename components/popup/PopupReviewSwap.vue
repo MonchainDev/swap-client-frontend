@@ -53,7 +53,7 @@
         </template>
       </div>
 
-      <BaseButton size="md" class="mt-6 w-full text-lg">Swap</BaseButton>
+      <BaseButton size="md" class="mt-6 w-full text-lg" @click="handleSwap">Swap</BaseButton>
     </div>
   </BasePopup>
 </template>
@@ -94,6 +94,12 @@
   const { handleImageError } = useErrorImage()
 
   const isOpen = ref(false)
+
+  const { approveToken } = useWeb3()
+  const handleSwap = async () => {
+    const rs = await approveToken(_props.token1)
+    console.log('🚀 ~ handleSwap ~ rs:', rs)
+  }
 </script>
 
 <style lang="scss"></style>

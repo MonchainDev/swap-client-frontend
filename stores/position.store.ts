@@ -10,17 +10,17 @@ export const usePositionStore = defineStore('position', () => {
       ...NATIVE_TOKEN
     },
     token1: {
-      name: '',
-      symbol: '',
+      address: '',
       decimals: 0,
       icon_url: '',
-      address: ''
+      name: '',
+      symbol: ''
     },
     typeRange: 'FULL',
     minPrice: '0',
     maxPrice: '∞',
     amount: '',
-    amountDeposit0: '',
+    amountDeposit0: '0',
     amountDeposit1: ''
   })
 

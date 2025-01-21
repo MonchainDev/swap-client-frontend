@@ -12,4 +12,12 @@ const NATIVE_TOKEN: IToken = {
   address: ''
 }
 
-export { DEFAULT_SLIPPAGE, BASE_URL_API, DECIMALS_NATIVE, NATIVE_TOKEN }
+const WRAPPED_NATIVE_TOKEN: IToken = {
+  name: 'Mon',
+  symbol: 'WMON',
+  decimals: 18,
+  icon_url: 'https://cryptologos.cc/logos/compound-comp-logo.png?v=040',
+  address: '0xF76eF13fb6B775e4609C921cAA1BD9307E338276'
+}
+
+export { DEFAULT_SLIPPAGE, BASE_URL_API, DECIMALS_NATIVE, NATIVE_TOKEN, WRAPPED_NATIVE_TOKEN }
