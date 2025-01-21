@@ -139,16 +139,23 @@ class Web3Manager {
         inputCreateAndInitializePoolIfNecessary
       )
 
+      const fee = new Decimal(form.feeTier).mul(10000).toNumber()
+
+      const amount0Desired = new Decimal(form.amountDeposit0).mul(new Decimal(10).pow(form.token0.decimals)).round().toString()
+      const amount1Desired = new Decimal(form.amountDeposit1).mul(new Decimal(10).pow(form.token1.decimals)).round().toString()
+
+      const amount0Min = new Decimal(amount0Desired).mul(0.9).round().toString() // 90% of amount0Desired
+      const amount1Min = new Decimal(amount1Desired).mul(0.9).round().toString() // 90% of amount1Desired
       const inputMint = {
         token0: token0.address, // BASE
         token1: token1.address, // QUOTE
-        fee: form.feeTier * 1000, // bps to ppm ex: 0.3% => 300
+        fee, // bps to ppm ex: 0.3% => 300
         tickLower: -887220, // fixed
         tickUpper: 887220, // fixed
-        amount0Desired: new Decimal(form.amountDeposit0).mul(new Decimal(10).pow(form.token0.decimals)).toString(),
-        amount1Desired: new Decimal(form.amountDeposit1).mul(new Decimal(10).pow(form.token1.decimals)).toString(),
-        amount0Min: '0',
-        amount1Min: '0',
+        amount0Desired,
+        amount1Desired,
+        amount0Min,
+        amount1Min,
         recipient: this.userAddress,
         deadline: Math.floor(Date.now() / 1000) + 1800 // 30 minutes
       }
