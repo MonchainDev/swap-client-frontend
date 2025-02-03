@@ -1,9 +1,13 @@
 <template>
-  <div class="w-full">
+  <div class="flex h-dvh w-full flex-col bg-white">
     <TheHeader />
-    <main v-if="!loading">
-      <slot />
-    </main>
+
+    <div v-if="!loading" class="flex flex-1 flex-col bg-[#F5F5F5]">
+      <main>
+        <slot />
+      </main>
+      <footer class="h-[200px]">aaa</footer>
+    </div>
   </div>
 </template>
 
@@ -21,12 +25,12 @@
 
   const loading = ref(true)
 
-  const { init } = useWeb3()
+  // const { init } = useWeb3()
 
   onMounted(() => {
-    init().then(() => {
-      loading.value = false
-    })
+    loading.value = false
+    // init().then(() => {
+    // })
   })
 </script>
 
