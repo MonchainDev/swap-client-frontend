@@ -2,6 +2,9 @@
 export default {
   content: [],
   theme: {
+    container:{
+      center:true,
+    },
     extend: {},
     colors:{
       primary:'var(--color-primary)',
@@ -13,6 +16,7 @@ export default {
       white:'#fff',
       pink:'var(--color-pink)',
       transparent:'transparent',
+      hyperlink: 'var(--color-hyperlink)',
     },
     screens: {
       xxl: {
