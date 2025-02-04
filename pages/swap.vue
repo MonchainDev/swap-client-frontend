@@ -8,6 +8,11 @@
 <script lang="ts" setup>
   import { useBalance, useAccount } from '@wagmi/vue'
   import BannerAds from '~/components/ads/BannerAds.vue'
+
+  useHead({
+    title: 'Buy, sell & trade Monchain and other top tokens'
+  })
+
   const { address } = useAccount()
 
   // Fetch balance when connected
