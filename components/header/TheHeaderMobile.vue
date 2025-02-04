@@ -1,5 +1,5 @@
 <template>
-  <div class="sticky bottom-0 hidden h-[76px] grid-cols-6 items-center gap-1 bg-white sm:grid">
+  <div class="sticky bottom-0 hidden h-[76px] items-center justify-around bg-white sm:flex">
     <NuxtLink to="/" active-class="active-menu" class="flex flex-col items-center justify-center">
       <BaseIcon name="menu-home" class="text-gray-8" size="22" />
       <span class="text-xs text-gray-8">Home</span>
@@ -11,11 +11,11 @@
 
     <div to="/swap" active-class="active-menu" class="flex flex-col items-center justify-center">
       <BaseIcon name="menu-cross-chain" class="text-gray-8" size="22" />
-      <span class="text-xs text-gray-8">Cross chain</span>
+      <span class="text-nowrap text-xs text-gray-8">Cross chain</span>
     </div>
     <div to="/swap" active-class="active-menu" class="flex flex-col items-center justify-center">
       <BaseIcon name="menu-liquidity" class="text-gray-8" size="22" />
-      <span class="text-xs text-gray-8">Add Liquidity</span>
+      <span class="text-nowrap text-xs text-gray-8">Add Liquidity</span>
     </div>
     <div to="/swap" active-class="active-menu" class="flex flex-col items-center justify-center">
       <BaseIcon name="menu-farm" class="text-gray-8" size="22" />
