@@ -1,13 +1,13 @@
 <template>
-  <div class="flex flex-col gap-2 rounded-lg bg-white px-8 pb-10 pt-[21px] shadow-md">
+  <div class="flex flex-col gap-2 rounded-lg bg-white px-8 pb-10 pt-[21px] shadow-md sm:p-4">
     <div class="flex items-center justify-between">
-      <span class="text-2xl font-semibold leading-7">{{ title }}</span>
+      <span class="text-2xl font-semibold leading-7 sm:text-lg">{{ title }}</span>
       <div class="flex items-center gap-3">
-        <span class="text-sm font-semibold text-gray-6">Choose network</span>
+        <span class="text-sm font-semibold text-gray-6 sm:hidden">Choose network</span>
         <ChooseNetwork />
       </div>
     </div>
-    <div class="relative mt-7 flex flex-col gap-1">
+    <div class="relative mt-7 flex flex-col gap-1 sm:mt-[14px]">
       <InputSwap
         v-model:amount="sellAmount"
         :is-focus="focusInput.token0"
@@ -80,8 +80,8 @@
               <span class="text-sm">Setting slippage</span>
               <BaseIcon name="x" size="18" class="cursor-pointer" @click="isEditSlippage = false" />
             </div>
-            <div class="mt-5 flex justify-between">
-              <div class="flex gap-3">
+            <div class="mt-5 flex justify-between sm:flex-col sm:gap-4">
+              <div class="flex flex-wrap gap-3 sm:justify-between">
                 <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="settingSlippage = '1'"
                   >1%</span
                 >
@@ -98,13 +98,13 @@
                   >Max</span
                 >
               </div>
-              <div class="flex">
-                <ElInput v-model="settingSlippage" placeholder="0" class="input-slippage !h-11 !w-[88px]">
+              <div class="flex sm:w-full">
+                <ElInput v-model="settingSlippage" placeholder="0" class="input-slippage !h-11 !w-[88px] sm:!w-full sm:flex-1">
                   <template #suffix>
                     <span class="text-sm text-gray-8">%</span>
                   </template>
                 </ElInput>
-                <button class="bg-linear w-20 rounded-ee-lg rounded-se-lg text-white" @click="slippage = settingSlippage">Apply</button>
+                <button class="bg-linear w-20 rounded-ee-lg rounded-se-lg text-white sm:w-[95px]" @click="slippage = settingSlippage">Apply</button>
               </div>
             </div>
           </div>
@@ -135,7 +135,7 @@
       <button
         v-if="isConnected"
         :disabled="isDisabledButton"
-        class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90"
+        class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:h-[42px] sm:text-sm"
         @click="handleSwap"
       >
         <BaseLoadingButton v-if="isFetchQuote" />
@@ -143,7 +143,7 @@
       </button>
       <button
         v-else
-        class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90"
+        class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:h-[42px] sm:text-sm"
         @click="setOpenPopup('popup-connect')"
       >
         <BaseIcon name="wallet" size="24" class="text-white" />

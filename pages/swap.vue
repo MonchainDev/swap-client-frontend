@@ -1,13 +1,12 @@
 <template>
-  <div class="mt-[92px]">
-    <FormSwap class="mx-auto max-w-[581px]" />
-    <BannerAds class="mt-[67px]" />
+  <div class="relative mt-[92px] sm:mt-0 sm:px-4">
+    <FormSwap class="relative z-10 mx-auto max-w-[581px]" />
+    <div class="bg-linear absolute left-0 top-0 hidden h-[100px] w-screen sm:block"></div>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { useBalance, useAccount } from '@wagmi/vue'
-  import BannerAds from '~/components/ads/BannerAds.vue'
+  import { useAccount, useBalance } from '@wagmi/vue'
 
   useHead({
     title: 'Buy, sell & trade Monchain and other top tokens'
@@ -24,4 +23,8 @@
   )
 </script>
 
-<style lang="scss"></style>
+<style scoped lang="scss">
+  .bg-linear {
+    background: linear-gradient(116deg, #5c2f64 24.35%, #092143 72.01%);
+  }
+</style>

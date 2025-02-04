@@ -1,5 +1,5 @@
 <template>
-  <header class="container h-[72px] sm:h-[192px]">
+  <header class="container h-[72px] sm:h-[95px]">
     <div class="flex h-full items-center justify-between sm:h-fit sm:pt-3">
       <div class="flex items-center">
         <div class="flex items-center gap-2">

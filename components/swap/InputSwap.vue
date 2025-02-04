@@ -1,10 +1,15 @@
 <template>
-  <div class="input-swap flex h-[138px] flex-col gap-4 rounded-lg px-8 pt-4" @click="handleClick">
+  <div class="input-swap flex h-[138px] flex-col gap-4 rounded-lg px-8 pt-4 sm:h-[120px] sm:px-4 sm:pt-2" @click="handleClick">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-5">
         <span class="text-sm text-primary">{{ type === 'BASE' ? 'Sell' : 'Buy' }}</span>
         <div v-if="type === 'BASE' && isConnected" class="grid grid-cols-[44px_44px_44px_44px] gap-2">
-          <div v-for="(item, index) in 4" :key="item" class="flex h-[22px] cursor-pointer items-center justify-center rounded-[4px] bg-white">
+          <div
+            v-for="(item, index) in 4"
+            :key="item"
+            class="flex h-[22px] cursor-pointer items-center justify-center rounded-[4px] bg-white"
+            :class="{ 'sm:hidden': index % 2 !== 0 }"
+          >
             <span class="text-sm text-gray-8">{{ index ? (100 / 4) * index + '%' : 'Max' }}</span>
           </div>
         </div>
@@ -14,7 +19,7 @@
     <div class="flex items-center gap-2">
       <template v-if="isSelected">
         <div class="flex max-w-[150px] cursor-pointer items-center gap-[10px]" @click="emits('select-token', type)">
-          <img :src="token.icon_url" alt="logo" class="size-9 rounded-full" @error="handleImageError($event)" />
+          <img :src="token.icon_url" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError($event)" />
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
               <span class="font-medium">{{ token.symbol }}</span>

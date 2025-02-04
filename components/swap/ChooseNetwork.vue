@@ -12,7 +12,7 @@
       <template #reference>
         <div class="flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-[#EFEFFF] px-2">
           <img :src="network.logo" alt="logo" class="size-6 rounded-lg" />
-          <span class="text-sm font-semibold">{{ network.title }}</span>
+          <span class="text-sm font-semibold sm:font-normal">{{ network.title }}</span>
           <BaseIcon name="arrow" size="16" class="-rotate-90" />
         </div>
       </template>
@@ -34,7 +34,7 @@
               "
             >
               <img :src="item.logo" alt="logo" class="size-6 rounded-lg" />
-              <span class="text-sm font-semibold text-primary">{{ item.title }}</span>
+              <span class="text-sm font-semibold text-primary sm:font-normal">{{ item.title }}</span>
             </div>
           </li>
         </ul>
