@@ -8,6 +8,7 @@
       </main>
       <TheFooter />
     </div>
+    <TheHeaderMobile />
   </div>
   <PopupConnectWallet />
 </template>
