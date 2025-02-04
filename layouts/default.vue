@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-dvh w-full flex-col bg-white">
+  <div class="flex w-full flex-col bg-white">
     <TheHeader />
 
     <div v-if="!loading" class="flex flex-1 flex-col bg-[#F5F5F5]">

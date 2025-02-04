@@ -11,7 +11,7 @@
     >
       <template #reference>
         <div class="flex justify-end">
-          <BaseIcon name="setting" class="cursor-pointer text-secondary" size="20" />
+          <BaseIcon name="setting" class="text-secondary cursor-pointer" size="20" />
         </div>
       </template>
       <div class="flex flex-col gap-4 text-primary">
@@ -21,7 +21,7 @@
             <span class="text-base">Max slippage</span>
             <div class="border-base flex items-center gap-1 p-1">
               <span
-                class="rounded-full border border-transparent bg-surface3 px-1 text-sm text-secondary"
+                class="text-secondary rounded-full border border-transparent bg-surface3 px-1 text-sm"
                 :class="{ '!bg-[#fef4ff] !text-pink': activeSlippageAuto }"
                 >Auto</span
               >

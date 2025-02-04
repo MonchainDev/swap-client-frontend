@@ -15,37 +15,46 @@
       </div>
     </div>
 
-    <ElPopover v-if="isConnected" placement="bottom" :show-arrow="false" :width="200" trigger="hover" popper-class="popper-menu-pool" :teleported="false">
-      <template #reference>
-        <div class="flex h-9 cursor-pointer items-center gap-4 rounded-full bg-[#EFEFFF] px-5" @click="isOpen = true">
-          <div class="flex items-center gap-2">
-            <BaseIcon name="default-avatar" size="24" />
-            <span>Mainnet <span class="text-hyperlink">0.03134$</span></span>
-          </div>
-          <span class="h-full w-[2px] bg-white"></span>
-          <span>{{ sliceString(address!, 2, 4) }}</span>
-        </div>
-      </template>
-      <div class="flex w-full items-center justify-between">
-        <div
-          class="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-full bg-surface px-[6px] py-2 hover:bg-surface3"
-          @click="
-            () => {
-              disconnect()
-              isOpen = false
-            }
-          "
-        >
-          <BaseIcon name="shutdown" size="20" class="text-primary" />
-          <span class="text-sm text-primary">Disconnect</span>
-        </div>
+    <template v-if="isSwapping">
+      <div class="flex h-9 w-40 items-center justify-center gap-2 rounded-full bg-[#C7DDFF]">
+        <BaseLoadingButton />
+        <span class="text-sm font-medium text-primary">Waiting</span>
       </div>
-    </ElPopover>
+    </template>
 
-    <div v-else class="flex h-9 w-40 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#EFEFFF] hover:opacity-80" @click="connectWallet">
-      <BaseIcon name="wallet" size="24" class="text-[#616161]" />
-      <span class="text-sm">Connect Wallet</span>
-    </div>
+    <template v-else>
+      <ElPopover v-if="isConnected" placement="bottom" :show-arrow="false" :width="200" trigger="hover" popper-class="popper-menu-pool" :teleported="false">
+        <template #reference>
+          <div class="flex h-9 cursor-pointer items-center gap-4 rounded-full bg-[#EFEFFF] px-5" @click="isOpen = true">
+            <div class="flex items-center gap-2">
+              <BaseIcon name="default-avatar" size="24" />
+              <span>Mainnet <span class="text-hyperlink">0.03134$</span></span>
+            </div>
+            <span class="h-full w-[2px] bg-white"></span>
+            <span>{{ sliceString(address!, 2, 4) }}</span>
+          </div>
+        </template>
+        <div class="flex w-full items-center justify-between">
+          <div
+            class="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-full bg-surface px-[6px] py-2 hover:bg-surface3"
+            @click="
+              () => {
+                disconnect()
+                isOpen = false
+              }
+            "
+          >
+            <BaseIcon name="shutdown" size="20" class="text-primary" />
+            <span class="text-sm text-primary">Disconnect</span>
+          </div>
+        </div>
+      </ElPopover>
+
+      <div v-else class="flex h-9 w-40 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#EFEFFF] hover:opacity-80" @click="connectWallet">
+        <BaseIcon name="wallet" size="24" class="text-[#616161]" />
+        <span class="text-sm">Connect Wallet</span>
+      </div>
+    </template>
 
     <!-- <ElDrawer
       v-model="isOpen"
@@ -91,6 +100,7 @@
   import { useAccount, useDisconnect } from '@wagmi/vue'
 
   const { setOpenPopup } = useBaseStore()
+  const { isSwapping } = storeToRefs(useSwapStore())
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
 

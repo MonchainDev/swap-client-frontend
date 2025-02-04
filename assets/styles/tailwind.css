@@ -7,8 +7,10 @@
 
     :root {
         --color-primary:#000;
-        --color-gray-6:#9E9E9E;
         --color-gray-3:#EEEEEE;
+        --color-gray-4:#D9D9D9;
+        --color-gray-6:#9E9E9E;
+        --color-gray-8:#616161;
         --color-white:#ffffff;
         --color-hyperlink:#1573FE;
     }
