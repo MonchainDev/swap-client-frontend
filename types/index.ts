@@ -10,3 +10,9 @@ export interface IToken {
   exchange_rate?: string
   total_supply?: string
 }
+
+export interface INetwork {
+  title: string
+  logo: string
+  value: string
+}

@@ -105,8 +105,9 @@
 </style>
 <style lang="scss">
   .base-popup {
-    --el-dialog-border-radius: 16px;
+    --el-dialog-border-radius: 8px;
     --el-dialog-padding-primary: 0;
+    overflow-y: hidden;
 
     .el-dialog__header {
       padding: 19px 32px 15px;

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import type { INetwork } from '~/types'
 
 export const useSwapStore = defineStore('swap', () => {
   const slippage = ref<string>('5.5')
@@ -6,5 +7,11 @@ export const useSwapStore = defineStore('swap', () => {
   const txDeadline = ref<string>('30')
   const isSwapping = ref<boolean>(false)
 
-  return { slippage, activeSlippageAuto, txDeadline, isSwapping }
+  const networkSelected = ref<INetwork>({
+    title: 'Mon chain',
+    logo: '/logo-mon-chain.png',
+    value: 'MON'
+  })
+
+  return { slippage, activeSlippageAuto, txDeadline, isSwapping, networkSelected }
 })

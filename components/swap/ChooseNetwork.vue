@@ -44,51 +44,15 @@
 </template>
 
 <script lang="ts" setup>
-  interface INetwork {
-    title: string
-    logo: string
-    value: string
-  }
+  import { LIST_NETWORK } from '~/constant'
+
+  const { networkSelected: network } = storeToRefs(useSwapStore())
   const visible = ref(false)
   const search = ref('')
 
   const listNetwork = computed(() => {
     return LIST_NETWORK.filter((item) => item.title.toLowerCase().includes(search.value.toLowerCase()))
   })
-
-  const network = ref<INetwork>({
-    title: 'Mon chain',
-    logo: '/logo-mon-chain.png',
-    value: 'MON'
-  })
-
-  const LIST_NETWORK = [
-    {
-      title: 'BNB Chain',
-      logo: '/logo-bnb-chain.png',
-      value: 'BNB'
-    },
-    {
-      title: 'Ethereum',
-      logo: '/logo-ethereum-chain.png',
-      value: 'ETH'
-    },
-    {
-      title: 'Polygon',
-      logo: '/logo-polygon-chain.png',
-      value: 'MATIC'
-    },
-    {
-      title: 'Mon chain',
-      logo: '/logo-mon-chain.png',
-      value: 'MON'
-    },
-    {
-      title: 'Liena chain',
-      logo: '/logo-liena-chain.png',
-      value: 'LIENA'
-    }
-  ]
 </script>
 
 <style lang="scss" scoped>

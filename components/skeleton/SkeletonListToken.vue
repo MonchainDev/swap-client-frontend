@@ -1,5 +1,5 @@
 <template>
-  <div class="max-h-[545px] overflow-hidden px-4">
+  <div class="max-h-[545px] overflow-hidden">
     <ElSkeleton animated>
       <template #template>
         <el-skeleton-item variant="text" style="width: 100px; height: 24px; border-radius: 999px" />
