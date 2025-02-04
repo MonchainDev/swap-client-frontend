@@ -1,5 +1,7 @@
 <template>
-  <footer class="mx-auto mt-[21px] grid w-[1009px] grid-cols-[1fr_1fr_1fr_240px] gap-[72px] border-t border-solid border-gray-4 pb-7 pt-8">
+  <footer
+    class="mx-auto mt-[21px] grid w-[1009px] grid-cols-[1fr_1fr_1fr_240px] gap-[72px] border-t border-solid border-gray-4 pb-7 pt-8 sm:w-full sm:grid-cols-3 sm:gap-3 sm:border-none sm:px-4"
+  >
     <div class="flex flex-col gap-4">
       <span class="font-semibold">Website</span>
       <ul class="flex flex-col gap-2 text-sm opacity-60">
@@ -24,7 +26,7 @@
         <li>Facebook</li>
       </ul>
     </div>
-    <div class="flex flex-col gap-7">
+    <div class="flex flex-col gap-7 sm:hidden">
       <span class="font-semibold">Sign up for ous newsletter</span>
       <ElInput v-model="email" placeholder="Email address" class="input-email">
         <template #suffix>
