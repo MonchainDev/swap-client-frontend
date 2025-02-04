@@ -1,6 +1,17 @@
 <template>
-  <LazyBasePopup name="popup-select-token" :is-show-footer="false" width="540" title="Select a token" class="popup-select-token" @close="search = ''">
-    <div class="mt-1 px-8 pb-6">
+  <LazyBasePopup
+    name="popup-select-token"
+    :is-show-footer="false"
+    :fullscreen="!isDesktop"
+    width="540"
+    title="Select a token"
+    class="popup-select-token"
+    @close="search = ''"
+  >
+    <template #close>
+      <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-select-token', false)" />
+    </template>
+    <div class="mt-1 px-8 pb-6 sm:px-4">
       <ElInput
         v-model="search"
         autofocus
@@ -17,7 +28,7 @@
           <BaseIcon name="search" class="text-primary" size="20" />
         </template>
         <template #suffix>
-          <div class="flex min-w-[136px] items-center gap-[9px] rounded-lg bg-white p-[6px]">
+          <div class="flex min-w-[136px] items-center gap-[9px] rounded-lg bg-white p-[6px] sm:hidden">
             <img :src="network.logo" alt="logo" class="size-6 rounded-lg" />
             <span class="text-xs font-semibold text-primary">{{ network.title }}</span>
           </div>
@@ -26,8 +37,8 @@
     </div>
     <div class="bg-[#FAFAFA] pt-6">
       <template v-if="recentTokens.length">
-        <span class="pl-8 text-base font-semibold text-gray-8">Recents</span>
-        <div class="mt-3 pb-6 pl-8">
+        <span class="pl-8 text-base font-semibold text-gray-8 sm:pl-4">Recents</span>
+        <div class="mt-3 pb-6 pl-8 sm:pl-4">
           <ElScrollbar class="hidden-scroll">
             <ul class="flex gap-4">
               <li
@@ -43,16 +54,16 @@
           </ElScrollbar>
         </div>
       </template>
-      <SkeletonListToken v-if="loading" class="px-8" />
+      <SkeletonListToken v-if="loading" class="px-8 sm:px-4" />
       <div v-else class="flex h-[545px] flex-col gap-2 pb-4">
-        <span class="pl-8 text-base font-semibold text-gray-8">Tokens</span>
+        <span class="pl-8 text-base font-semibold text-gray-8 sm:pl-4">Tokens</span>
 
         <ElScrollbar v-if="data.length" max-height="500px">
           <ul class="pr-4">
             <li
               v-for="item in data"
               :key="item.address"
-              class="grid h-[68px] cursor-pointer grid-cols-[40px_1fr] items-center gap-3 pl-8 hover:bg-gray-3"
+              class="grid h-[68px] cursor-pointer grid-cols-[40px_1fr] items-center gap-3 pl-8 hover:bg-gray-3 sm:pl-4"
               @click="handleClickToken(item)"
             >
               <img :src="item.icon_url || ''" alt="logo token" class="size-10 rounded-full object-cover" @error="handleImageError($event)" />
@@ -86,7 +97,7 @@
   }>()
 
   const { setOpenPopup } = useBaseStore()
-  const { listToken } = storeToRefs(useBaseStore())
+  const { listToken, isDesktop } = storeToRefs(useBaseStore())
   const { networkSelected: network } = storeToRefs(useSwapStore())
   const search = ref('')
   const loading = ref(false)
@@ -120,6 +131,7 @@
 
 <style lang="scss">
   .popup-select-token {
+    @apply sm:!max-w-full;
     .hidden-scroll {
       .el-scrollbar__bar {
         display: none !important;
@@ -137,6 +149,9 @@
           font-size: 16px;
         }
       }
+    }
+    .wrap-header {
+      @apply sm:w-fit sm:flex-row-reverse sm:gap-2;
     }
   }
 </style>

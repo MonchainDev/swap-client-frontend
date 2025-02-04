@@ -133,13 +133,6 @@
 
   const isOpen = ref(false)
 
-  const isDesktop = ref(false)
-  onMounted(() => {
-    nextTick(() => {
-      isDesktop.value = window.innerWidth > 768
-    })
-  })
-
   const connectWallet = () => {
     setOpenPopup('popup-connect')
   }
