@@ -9,6 +9,7 @@
       <footer class="h-[200px]">aaa</footer>
     </div>
   </div>
+  <PopupConnectWallet />
 </template>
 
 <script lang="ts" setup>

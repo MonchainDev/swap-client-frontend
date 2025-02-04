@@ -1,0 +1,59 @@
+<template>
+  <BasePopup name="popup-connect" width="540" title="Connect Wallet">
+    <div class="px-8">
+      <h4 class="font-[Roboto] text-sm text-[#616161]">
+        Start by connecting with one of the wallets below. Be sure to store your private keys or seed phrase securely. Never share them with anyone.
+      </h4>
+      <div class="mx-auto mt-8 grid max-w-[400px] grid-cols-3 gap-16 pb-[62px]">
+        <div class="group flex cursor-pointer flex-col items-center justify-center gap-3" @click="handleConnect('METAMASK')">
+          <img src="/metamask.png" alt="metamask" class="size-16" />
+          <span class="text-sm group-hover:text-hyperlink">Metamask</span>
+        </div>
+        <div class="group flex cursor-pointer flex-col items-center justify-center gap-3" @click="handleConnect('TRUST_WALLET')">
+          <img src="/trust-wallet.png" alt="trust wallet" class="size-16" />
+          <span class="text-sm group-hover:text-hyperlink">Trust wallet</span>
+        </div>
+        <div class="group flex cursor-pointer flex-col items-center justify-center gap-3" @click="handleConnect('COINBASE')">
+          <img src="/coinbase.png" alt="coinbase" class="size-16" />
+          <span class="text-nowrap text-sm group-hover:text-hyperlink">Coinbase Wallet</span>
+        </div>
+      </div>
+    </div>
+  </BasePopup>
+</template>
+
+<script lang="ts" setup>
+  import { useChainId, useConnect } from '@wagmi/vue'
+  import type { WalletType } from '~/types/connect.type'
+
+  declare global {
+    interface Window {
+      trustWallet: unknown
+    }
+  }
+
+  const { connectors, connectAsync } = useConnect()
+  const chainId = useChainId()
+
+  const { setOpenPopup } = useBaseStore()
+
+  const handleConnect = async (type: WalletType) => {
+    if (type === 'TRUST_WALLET') {
+      if (!window.trustWallet) {
+        ElMessage.error('Trust wallet not found')
+      } else {
+        const connector = connectors.find((item) => item.name === 'Trust Wallet')
+        if (connector) {
+          await connectAsync({ connector, chainId: chainId.value })
+        }
+      }
+    } else if (type === 'METAMASK') {
+      await connectAsync({ connector: connectors[0], chainId: chainId.value })
+    } else {
+      await connectAsync({ connector: connectors[1], chainId: chainId.value })
+    }
+    setOpenPopup('popup-connect', false)
+  }
+</script>
+
+<style lang="scss"></style>

@@ -90,6 +90,7 @@
 <script setup lang="ts">
   import { useAccount, useDisconnect } from '@wagmi/vue'
 
+  const { setOpenPopup } = useBaseStore()
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
 
@@ -101,6 +102,10 @@
       isDesktop.value = window.innerWidth > 768
     })
   })
+
+  const connectWallet = () => {
+    setOpenPopup('popup-connect')
+  }
 </script>
 
 <style scoped lang="scss">

@@ -14,7 +14,7 @@
     @close="handleClose"
   >
     <template #header>
-      <div class="flex w-full items-center justify-between text-lg text-primary first-letter:uppercase">
+      <div class="flex w-full items-center justify-between text-[22px] font-semibold leading-7 text-primary first-letter:uppercase">
         <slot name="title">
           <span>{{ props.title }}</span></slot
         >
@@ -109,7 +109,7 @@
     --el-dialog-padding-primary: 0;
 
     .el-dialog__header {
-      padding: 16px;
+      padding: 19px 32px 15px;
     }
     .el-dialog__body {
       color: var(--color-primary);
