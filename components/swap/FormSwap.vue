@@ -141,7 +141,11 @@
         <BaseLoadingButton v-if="isFetchQuote" />
         <span>{{ msgButton }}</span>
       </button>
-      <button v-else class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90">
+      <button
+        v-else
+        class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90"
+        @click="setOpenPopup('popup-connect')"
+      >
         <BaseIcon name="wallet" size="24" class="text-white" />
         <span>Connect Wallet</span>
       </button>
