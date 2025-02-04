@@ -1,60 +1,87 @@
 <template>
-  <header class="container flex h-[72px] items-center justify-between">
-    <div class="flex items-center">
-      <div class="flex items-center gap-2">
-        <img src="/logo.png" alt="logo" class="w-12" />
-        <span class="text-[22px] font-semibold leading-7">ORB</span>
+  <header class="container h-[72px] sm:h-[192px]">
+    <div class="flex h-full items-center justify-between sm:h-fit sm:pt-3">
+      <div class="flex items-center">
+        <div class="flex items-center gap-2">
+          <img src="/logo.png" alt="logo" class="w-12 sm:w-7" />
+          <span class="text-[22px] font-semibold leading-7 sm:text-base sm:text-white">ORB</span>
+        </div>
+        <div class="ml-[68px] flex items-center gap-8 sm:hidden">
+          <NuxtLink active-class="active-menu" to="/" class="text-center text-base font-medium leading-6 hover:text-primary">Home</NuxtLink>
+          <NuxtLink active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Swap</NuxtLink>
+          <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Cross chain</div>
+          <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Add Liquidity</div>
+          <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Farming</div>
+          <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Bridge</div>
+        </div>
       </div>
-      <div class="ml-[68px] flex items-center gap-8 sm:hidden">
-        <NuxtLink active-class="active-menu" to="/" class="text-center text-base font-medium leading-6 hover:text-primary">Home</NuxtLink>
-        <NuxtLink active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Swap</NuxtLink>
-        <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Cross chain</div>
-        <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Add Liquidity</div>
-        <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Farming</div>
-        <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Bridge</div>
-      </div>
-    </div>
 
-    <template v-if="isSwapping">
-      <div class="flex h-9 w-40 items-center justify-center gap-2 rounded-full bg-[#C7DDFF]">
-        <BaseLoadingButton />
-        <span class="text-sm font-medium text-primary">Waiting</span>
-      </div>
-    </template>
+      <div class="flex items-center gap-8 sm:gap-3">
+        <div class="flex items-center gap-1">
+          <BaseIcon name="flag-uk" size="24" class="sm:hidden" />
+          <span class="hidden sm:block sm:text-sm sm:text-white">EN</span>
+          <BaseIcon name="arrow" size="18" class="hidden -rotate-90 text-primary sm:block sm:text-white" />
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="font-semibold sm:text-sm sm:font-normal sm:text-white">
+            <span class="text-[#757575] sm:hidden">Currency :</span>
+            USD
+          </span>
+          <BaseIcon name="arrow" size="18" class="-rotate-90 text-primary sm:text-white" />
+        </div>
 
-    <template v-else>
-      <ElPopover v-if="isConnected" placement="bottom" :show-arrow="false" :width="200" trigger="hover" popper-class="popper-menu-pool" :teleported="false">
-        <template #reference>
-          <div class="flex h-9 cursor-pointer items-center gap-4 rounded-full bg-[#EFEFFF] px-5" @click="isOpen = true">
-            <div class="flex items-center gap-2">
-              <BaseIcon name="default-avatar" size="24" />
-              <span>Mainnet <span class="text-hyperlink">0.03134$</span></span>
-            </div>
-            <span class="h-full w-[2px] bg-white"></span>
-            <span>{{ sliceString(address!, 2, 4) }}</span>
+        <template v-if="isSwapping">
+          <div class="flex h-9 w-40 items-center justify-center gap-2 rounded-full bg-[#C7DDFF]">
+            <BaseLoadingButton />
+            <span class="text-sm font-medium text-primary">Waiting</span>
           </div>
         </template>
-        <div class="flex w-full items-center justify-between">
-          <div
-            class="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-full bg-surface px-[6px] py-2 hover:bg-surface3"
-            @click="
-              () => {
-                disconnect()
-                isOpen = false
-              }
-            "
-          >
-            <BaseIcon name="shutdown" size="20" class="text-primary" />
-            <span class="text-sm text-primary">Disconnect</span>
-          </div>
-        </div>
-      </ElPopover>
 
-      <div v-else class="flex h-9 w-40 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#EFEFFF] hover:opacity-80" @click="connectWallet">
-        <BaseIcon name="wallet" size="24" class="text-[#616161]" />
-        <span class="text-sm">Connect Wallet</span>
+        <template v-else>
+          <ElPopover v-if="isConnected" placement="bottom" :show-arrow="false" :width="200" trigger="hover" popper-class="popper-menu-pool" :teleported="false">
+            <template #reference>
+              <div class="flex h-9 cursor-pointer items-center gap-4 rounded-full bg-[#EFEFFF] px-5 sm:bg-transparent sm:px-0" @click="isOpen = true">
+                <div class="flex items-center gap-2">
+                  <BaseIcon name="default-avatar" size="24" />
+                  <div class="sm:text-sm sm:text-white">
+                    <div>
+                      <span>Mainnet </span>
+                      <span class="text-hyperlink">0.03134$</span>
+                    </div>
+                    <div class="hidden sm:block">{{ sliceString(address!, 2, 4) }}</div>
+                  </div>
+                </div>
+                <span class="h-full w-[2px] bg-white sm:hidden"></span>
+                <span class="sm:hidden">{{ sliceString(address!, 2, 4) }}</span>
+              </div>
+            </template>
+            <div class="flex w-full items-center justify-between">
+              <div
+                class="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-full bg-surface px-[6px] py-2 hover:bg-surface3"
+                @click="
+                  () => {
+                    disconnect()
+                    isOpen = false
+                  }
+                "
+              >
+                <BaseIcon name="shutdown" size="20" class="text-primary" />
+                <span class="text-sm text-primary">Disconnect</span>
+              </div>
+            </div>
+          </ElPopover>
+
+          <div
+            v-else
+            class="flex h-9 w-40 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#EFEFFF] hover:opacity-80 sm:w-fit sm:bg-transparent"
+            @click="connectWallet"
+          >
+            <BaseIcon name="wallet" size="24" class="text-[#616161] sm:hidden" />
+            <span class="text-sm sm:text-white">Connect Wallet</span>
+          </div>
+        </template>
       </div>
-    </template>
+    </div>
 
     <!-- <ElDrawer
       v-model="isOpen"
@@ -133,5 +160,10 @@
     padding: 6px 26px;
     border-radius: 32px;
     background: #e3eeff;
+  }
+  .container {
+    @media screen and (max-width: 768px) {
+      background: linear-gradient(116deg, #5c2f64 24.35%, #092143 72.01%);
+    }
   }
 </style>
