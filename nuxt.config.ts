@@ -34,7 +34,8 @@ export default defineNuxtConfig({
   ],
   googleFonts: {
     families: {
-      Poppins: [400, 500, 600, 700]
+      Poppins: [400, 500, 600, 700],
+      Roboto: [400, 500, 600]
     },
     display: 'swap',
     preload: true,
