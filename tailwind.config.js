@@ -8,7 +8,8 @@ export default {
     extend: {},
     colors:{
       primary:'var(--color-primary)',
-      secondary:'var(--color-secondary)',
+      'gray-6':'var(--color-gray-6)',
+      'gray-3': 'var(--color-gray-3)',
       surface:'var(--color-surface)',
       surface2:'var(--color-surface2)',
       surface3:'var(--color-surface3)',
