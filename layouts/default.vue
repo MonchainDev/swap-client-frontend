@@ -6,7 +6,7 @@
       <main>
         <slot />
       </main>
-      <footer class="h-[200px]">aaa</footer>
+      <TheFooter />
     </div>
   </div>
   <PopupConnectWallet />

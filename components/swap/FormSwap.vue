@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-2 rounded-lg bg-white px-8 pb-10 pt-[21px]">
+  <div class="flex flex-col gap-2 rounded-lg bg-white px-8 pb-10 pt-[21px] shadow-md">
     <div class="flex items-center justify-between">
       <span class="text-2xl font-semibold leading-7">{{ title }}</span>
       <div class="flex items-center gap-3">
