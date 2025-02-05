@@ -196,10 +196,10 @@
   const handleSelectToken = (token: IToken) => {
     if (typeOpenPopup.value === 'BASE') {
       token0.value = token
-      // Fetch balance
+      token1.value = token.address === token1.value.address ? { address: '', decimals: '', icon_url: '', name: '', symbol: '' } : token1.value
     } else {
       token1.value = token
-      // Fetch balance
+      token0.value = token.address === token0.value.address ? { address: '', decimals: '', icon_url: '', name: '', symbol: '' } : token0.value
     }
   }
 
@@ -350,7 +350,7 @@
   }
   .bg-gray,
   .btn-disabled {
-    background: linear-gradient(0deg, #757575 0%, #757575 100%);
+    background: linear-gradient(0deg, #a8a8a8 0%, #a8a8a8 100%);
   }
 </style>
 
