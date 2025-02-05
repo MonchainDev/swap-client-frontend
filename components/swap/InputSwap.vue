@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-5">
         <span class="text-sm text-primary">{{ type === 'BASE' ? 'Sell' : 'Buy' }}</span>
-        <div v-if="type === 'BASE' && isConnected" class="grid grid-cols-[44px_44px_44px_44px] gap-2">
+        <div v-if="type === 'BASE' && isConnected && stepSwap === 'SELECT_TOKEN'" class="grid grid-cols-[44px_44px_44px_44px] gap-2">
           <div
             v-for="(item, index) in 4"
             :key="item"
@@ -14,7 +14,7 @@
           </div>
         </div>
       </div>
-      <span v-if="isConnected" class="text-sm text-gray-8">Max: {{ formattedBalance }}</span>
+      <span v-if="isConnected && stepSwap === 'SELECT_TOKEN'" class="text-sm text-gray-8">Max: {{ formattedBalance }}</span>
     </div>
     <div class="flex items-center gap-2">
       <template v-if="isSelected">
@@ -38,13 +38,13 @@
       <div class="flex flex-1 flex-col items-end gap-1">
         <ElInput
           v-model="amount"
-          :disabled="!isSelected"
+          :disabled="!isSelected || stepSwap === 'CONFIRM_SWAP'"
           placeholder="0"
           class="input-amount flex-1"
           @focus="emits('focus-input', type)"
           @input="handleInput"
         />
-        <span class="text-sm font-semibold text-gray-6">≈ ${{ amount ? Math.random() : '0' }}</span>
+        <span v-if="stepSwap === 'SELECT_TOKEN' || type === 'BASE'" class="text-sm font-semibold text-gray-6">≈ ${{ amount ? Math.random() : '0' }}</span>
       </div>
     </div>
   </div>
@@ -55,6 +55,7 @@
 
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
+  import type { StepSwap } from './FormSwap.vue'
 
   interface IProps {
     isFocus: boolean
@@ -62,6 +63,7 @@
     token: IToken
     type: TYPE_SWAP
     balance: string | undefined
+    stepSwap: StepSwap
   }
 
   const props = withDefaults(defineProps<IProps>(), {
@@ -69,7 +71,8 @@
     isSelected: false,
     token: () => ({ name: '', symbol: '', icon_url: '', address: '', decimals: 0 }),
     type: 'BASE',
-    balance: '0'
+    balance: '0',
+    stepSwap: 'SELECT_TOKEN'
   })
 
   const emits = defineEmits<{

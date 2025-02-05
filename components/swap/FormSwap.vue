@@ -1,8 +1,18 @@
 <template>
   <div class="flex flex-col gap-2 rounded-lg bg-white px-8 pb-10 pt-[21px] shadow-md sm:p-4">
     <div class="flex items-center justify-between">
-      <span class="text-2xl font-semibold leading-7 sm:text-lg">{{ title }}</span>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-6">
+        <BaseIcon
+          v-if="stepSwap === 'CONFIRM_SWAP'"
+          name="arrow-down"
+          size="24"
+          class="rotate-90 text-primary"
+          :class="{ 'pointer-events-none cursor-default': isSwapping || isConfirmApprove }"
+          @click="stepSwap = 'SELECT_TOKEN'"
+        />
+        <span class="text-2xl font-semibold leading-7 sm:text-lg">{{ formatTitle }}</span>
+      </div>
+      <div v-if="stepSwap === 'SELECT_TOKEN'" class="flex items-center gap-3">
         <span class="text-sm font-semibold text-gray-6 sm:hidden">Choose network</span>
         <ChooseNetwork />
       </div>
@@ -14,6 +24,7 @@
         :is-selected="isToken0Selected"
         :token="token0"
         :balance="balance0?.formatted"
+        :step-swap
         type="BASE"
         class="bg-[#EFEFFF]"
         @select-token="handleOpenPopupSelectToken"
@@ -23,9 +34,11 @@
       <div class="relative z-10">
         <div
           class="absolute left-1/2 top-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[4px] border-solid border-white bg-[#1573FE] p-2"
+          :class="{ 'bg-gray-6': stepSwap === 'CONFIRM_SWAP' }"
           @click="handleSwapOrder"
         >
-          <BaseIcon name="repeat" class="text-white" size="24" />
+          <BaseIcon v-if="stepSwap === 'SELECT_TOKEN'" name="repeat" class="text-white" size="24" />
+          <BaseIcon v-else name="arrow-down-bold" class="text-white" size="24" />
         </div>
       </div>
       <InputSwap
@@ -34,6 +47,7 @@
         :is-selected="isToken1Selected"
         :token="token1"
         :balance="balance1?.formatted"
+        :step-swap
         type="QUOTE"
         class="bg-[#F3F8FF]"
         @select-token="handleOpenPopupSelectToken"
@@ -43,28 +57,18 @@
     </div>
 
     <template v-if="isQuoteExist">
-      <InfoSwap v-model:edit-slippage="isEditSlippage" :token0 :token1 />
+      <InfoSwap v-model:edit-slippage="isEditSlippage" :token0 :token1 :step-swap />
     </template>
 
     <template v-if="!isEditSlippage">
-      <!-- <BaseButton
-        v-if="isConnected"
-        :disabled="isDisabledButton"
-        :type="typeButton"
-        class="flex items-center space-x-1 text-lg font-medium"
-        @click="setOpenPopup('popup-review-swap')"
-      >
-        <BaseLoadingButton v-if="isFetchQuote" />
-        <span>{{ msgButton }}</span>
-      </BaseButton>
-      <BaseButton v-else class="text-lg font-medium opacity-70"> Connect wallet </BaseButton> -->
       <button
         v-if="isConnected"
         :disabled="isDisabledButton"
         class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:h-[42px] sm:text-sm"
+        :class="{ 'bg-gray pointer-events-none cursor-default': isSwapping || isConfirmApprove }"
         @click="handleSwap"
       >
-        <BaseLoadingButton v-if="isFetchQuote" />
+        <BaseLoadingButton v-if="isFetchQuote || isSwapping || isConfirmApprove" />
         <span>{{ msgButton }}</span>
       </button>
       <button
@@ -82,11 +86,12 @@
 </template>
 
 <script lang="ts" setup>
-  import { useAccount, useBalance } from '@wagmi/vue'
+  import { useAccount, useBalance, useSignMessage } from '@wagmi/vue'
   import { NATIVE_TOKEN } from '~/constant'
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
-  import BaseIcon from '../base/BaseIcon.vue'
+
+  export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
 
   interface IProps {
     title?: string
@@ -99,7 +104,9 @@
   const { setOpenPopup } = useBaseStore()
 
   const { isSwapping } = storeToRefs(useSwapStore())
+  const isConfirmApprove = ref(false)
   const isEditSlippage = ref(false)
+  const stepSwap = ref<StepSwap>('SELECT_TOKEN')
   const buyAmount = ref('')
   const sellAmount = ref('')
   const token0 = ref<IToken>({
@@ -122,14 +129,35 @@
   const isToken0Selected = computed(() => token0.value.symbol !== '')
   const isToken1Selected = computed(() => token1.value.symbol !== '')
   const isQuoteExist = computed(() => buyAmount.value && sellAmount.value)
+  const formatTitle = computed(() => {
+    return stepSwap.value === 'SELECT_TOKEN' ? _props.title : 'Confirm swap'
+  })
 
+  /*
+   * Message button
+   * case 1: Select a token
+   * case 2: Enter an amount
+   * case 3: Finalizing quote...
+   * case 4: Swap {sellAmount} {token0.symbol} ⇒ {buyAmount} {token1.symbol}
+   * case 7: APPROVE AND SWAP
+   * case 6: CONFIRM IN WALLET
+   * case 5: SWAPPING! PLEASE WAIT..
+   */
   const msgButton = computed(() => {
     if (!isToken0Selected.value || !isToken1Selected.value) {
       return 'Select a token'
     } else if (isFetchQuote.value) {
       return 'Finalizing quote...'
     } else if (isToken0Selected.value && isToken1Selected.value && buyAmount.value && sellAmount.value) {
-      return `Swap ${sellAmount.value} ${token0.value.symbol} ⇒ ${buyAmount.value} ${token1.value.symbol}`
+      if (stepSwap.value === 'SELECT_TOKEN') {
+        return `Swap ${sellAmount.value} ${token0.value.symbol} ⇒ ${buyAmount.value} ${token1.value.symbol}`
+      } else {
+        if (isSwapping.value) {
+          return 'SWAPPING! PLEASE WAIT..'
+        } else {
+          return isConfirmApprove.value ? 'CONFIRM IN WALLET' : 'APPROVE AND SWAP'
+        }
+      }
     } else {
       return 'Enter an amount'
     }
@@ -150,6 +178,7 @@
   }
 
   const handleSwapOrder = () => {
+    if (stepSwap.value === 'CONFIRM_SWAP') return
     const temp = token0.value
     token0.value = token1.value
     token1.value = temp
@@ -159,6 +188,7 @@
 
   const typeOpenPopup = ref<TYPE_SWAP>('BASE')
   const handleOpenPopupSelectToken = (type: TYPE_SWAP) => {
+    if (stepSwap.value === 'CONFIRM_SWAP') return
     typeOpenPopup.value = type
     setOpenPopup('popup-select-token', true)
   }
@@ -192,6 +222,8 @@
     }, 1000)
   }
 
+  const token0IsToken = computed(() => token0.value.address !== '')
+
   const { address, isConnected } = useAccount()
 
   const { data: balance0 } = useBalance(
@@ -210,11 +242,61 @@
     }))
   )
 
-  const handleSwap = () => {
+  const handleSwap = async () => {
     try {
+      // if (isDisabledButton.value) return
+
+      // step 1: next step 2
+      if (stepSwap.value === 'SELECT_TOKEN') {
+        stepSwap.value = 'CONFIRM_SWAP'
+        return
+      }
+      // step 2: approve
+      if (token0IsToken.value) {
+        handleApprove()
+      } else {
+        // step 3: swap
+        swap()
+      }
+    } catch (error) {
+      console.log('🚀 ~ handleSwap ~ error:', error)
+    }
+  }
+
+  const { approveToken } = useApproveToken()
+
+  const handleApprove = () => {
+    try {
+      isConfirmApprove.value = true
+      approveToken(token0.value.address, swap)
+    } catch (error) {
+      throw new Error()
+    }
+  }
+
+  const { signMessageAsync } = useSignMessage()
+  const swap = async () => {
+    try {
+      isConfirmApprove.value = false
       isSwapping.value = true
-      const el1 = ElNotification({
-        // Should pass a function if VNode contains dynamic props
+      showNotify('PENDING')
+      await signMessageAsync({
+        message: 'Swap'
+      })
+      showNotify('SUCCESS')
+      buyAmount.value = ''
+      sellAmount.value = ''
+      isSwapping.value = false
+      stepSwap.value = 'SELECT_TOKEN'
+    } catch (error) {
+      isSwapping.value = false
+    }
+  }
+
+  let el1: ReturnType<typeof ElNotification> | null = null
+  const showNotify = (type: 'PENDING' | 'SUCCESS') => {
+    if (type === 'PENDING') {
+      el1 = ElNotification({
         message: () =>
           h('div', { class: 'flex items-center gap-3' }, [
             h('div', { class: 'flex relative w-[54px]' }, [
@@ -229,29 +311,25 @@
         duration: 0,
         customClass: 'notify-swap',
         showClose: false,
-        offset: 72
+        offset: 30
       })
-
+    } else {
       setTimeout(() => {
-        el1.close()
-        isSwapping.value = false
-        ElNotification({
-          // Should pass a function if VNode contains dynamic props
-          message: () =>
-            h('div', { class: 'flex items-center gap-3' }, [
-              h('img', { src: '/tick-success.png', alt: 'tick', class: 'size-10 ' }),
-              h('div', { class: 'flex flex-col flex-1' }, [
-                h('span', { class: 'text-sm text-[#049C6B] font-medium' }, 'Swapping successfully'),
-                h('span', { class: 'text-xs text-gray-8 pr-5' }, ` ${sellAmount.value} ${token0.value.symbol} ⇒ ${buyAmount.value} ${token1.value.symbol}`)
-              ])
-            ]),
-          duration: 5000,
-          customClass: 'notify-swap',
-          offset: 72
-        })
-      }, 4000)
-    } catch (error) {
-      isSwapping.value = false
+        el1?.close()
+      }, 2000)
+      ElNotification({
+        message: () =>
+          h('div', { class: 'flex items-center gap-3' }, [
+            h('img', { src: '/tick-success.png', alt: 'tick', class: 'size-10 ' }),
+            h('div', { class: 'flex flex-col flex-1' }, [
+              h('span', { class: 'text-sm text-[#049C6B] font-medium' }, 'Swapping successfully'),
+              h('span', { class: 'text-xs text-gray-8 pr-5' }, ` ${sellAmount.value} ${token0.value.symbol} ⇒ ${buyAmount.value} ${token1.value.symbol}`)
+            ])
+          ]),
+        duration: 5000,
+        customClass: 'notify-swap',
+        offset: 30
+      })
     }
   }
 </script>
@@ -263,6 +341,10 @@
   }
   .bg-linear {
     background: linear-gradient(91deg, #790c8b 17.53%, #1573fe 84.87%);
+  }
+  .bg-gray {
+    background: unset;
+    background-color: #757575;
   }
   :deep(.input-slippage) {
     .el-input__wrapper {

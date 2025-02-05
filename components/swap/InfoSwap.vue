@@ -68,9 +68,9 @@
     <template v-else>
       <div class="flex justify-between">
         <span class="text-sm">Slippage</span>
-        <span class="text-sm font-bold text-primary"
-          ><span class="cursor-pointer text-hyperlink underline" @click="editSlippage = true">Edit</span> {{ slippage }}%</span
-        >
+        <span class="text-sm font-bold text-primary">
+          <span v-if="stepSwap === 'SELECT_TOKEN'" class="cursor-pointer text-hyperlink underline" @click="editSlippage = true">Edit </span> {{ slippage }}%
+        </span>
       </div>
     </template>
   </div>
@@ -78,15 +78,18 @@
 
 <script lang="ts" setup>
   import type { IToken } from '~/types'
+  import type { StepSwap } from './FormSwap.vue'
 
   interface IProps {
     token0: IToken
     token1: IToken
+    stepSwap: StepSwap
   }
 
   const _props = withDefaults(defineProps<IProps>(), {
     token0: () => ({}) as IToken,
-    token1: () => ({}) as IToken
+    token1: () => ({}) as IToken,
+    stepSwap: 'SELECT_TOKEN'
   })
 
   const editSlippage = defineModel('editSlippage', {
