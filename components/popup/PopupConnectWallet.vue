@@ -45,6 +45,7 @@
     if (type === 'TRUST_WALLET') {
       if (!window.trustWallet) {
         ElMessage.error('Trust wallet not found')
+        window.open(`https://link.trustwallet.com/open_url?coin_id=60&url=${window.location.href}`, '_blank')
       } else {
         const connector = connectors.find((item) => item.name === 'Trust Wallet')
         if (connector) {
