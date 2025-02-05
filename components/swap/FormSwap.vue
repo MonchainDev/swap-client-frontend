@@ -270,6 +270,7 @@
       isConfirmApprove.value = true
       approveToken(token0.value.address, swap)
     } catch (error) {
+      isConfirmApprove.value = false
       throw new Error()
     }
   }
