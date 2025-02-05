@@ -65,7 +65,7 @@
         v-if="isConnected"
         :disabled="isDisabledButton"
         class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:h-[42px] sm:text-sm"
-        :class="{ 'bg-gray pointer-events-none cursor-default': isSwapping || isConfirmApprove }"
+        :class="{ 'bg-gray pointer-events-none cursor-default': isSwapping || isConfirmApprove, 'btn-disabled': isDisabledButton }"
         @click="handleSwap"
       >
         <BaseLoadingButton v-if="isFetchQuote || isSwapping || isConfirmApprove" />
@@ -77,7 +77,7 @@
         @click="setOpenPopup('popup-connect')"
       >
         <BaseIcon name="wallet" size="24" class="text-white" />
-        <span>Connect Wallet</span>
+        <span class="uppercase">Connect Wallet</span>
       </button>
     </template>
 
@@ -290,6 +290,7 @@
       stepSwap.value = 'SELECT_TOKEN'
     } catch (error) {
       isSwapping.value = false
+      el1?.close()
     }
   }
 
@@ -300,8 +301,12 @@
         message: () =>
           h('div', { class: 'flex items-center gap-3' }, [
             h('div', { class: 'flex relative w-[54px]' }, [
-              h('img', { src: token0.value.icon_url, alt: token0.value.symbol, class: 'size-9 rounded-lg' }),
-              h('img', { src: token1.value.icon_url, alt: token1.value.symbol, class: 'size-9 rounded-lg absolute top-1/2 -translate-y-1/2 left-[18px]' })
+              h('img', { src: token0.value.icon_url ? token0.value.icon_url : '/token-default.png', alt: token0.value.symbol, class: 'size-9 rounded-lg' }),
+              h('img', {
+                src: token1.value.icon_url ? token1.value.icon_url : '/token-default.png',
+                alt: token1.value.symbol,
+                class: 'size-9 rounded-lg absolute top-1/2 -translate-y-1/2 left-[18px]'
+              })
             ]),
             h('div', { class: 'flex flex-col flex-1' }, [
               h('span', { class: 'text-sm text-primary font-medium' }, 'Swapping'),
@@ -342,22 +347,9 @@
   .bg-linear {
     background: linear-gradient(91deg, #790c8b 17.53%, #1573fe 84.87%);
   }
-  .bg-gray {
-    background: unset;
-    background-color: #757575;
-  }
-  :deep(.input-slippage) {
-    .el-input__wrapper {
-      box-shadow: unset;
-      border: 1px solid var(--color-gray-4);
-      border-radius: 8px;
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-    .el-input__inner {
-      font-size: 16px;
-      color: var(--color-primary);
-    }
+  .bg-gray,
+  .btn-disabled {
+    background: linear-gradient(0deg, #757575 0%, #757575 100%);
   }
 </style>
 

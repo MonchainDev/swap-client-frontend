@@ -33,7 +33,7 @@
                 }
               "
             >
-              <img :src="item.logo" alt="logo" class="size-6 rounded-lg" />
+              <img :src="item.logo" alt="logo" class="size-9 rounded-lg" />
               <span class="text-sm font-semibold text-primary sm:font-normal">{{ item.title }}</span>
             </div>
           </li>
@@ -51,7 +51,7 @@
   const search = ref('')
 
   const listNetwork = computed(() => {
-    return LIST_NETWORK.filter((item) => item.title.toLowerCase().includes(search.value.toLowerCase()))
+    return LIST_NETWORK.filter((item) => item.title.toLowerCase().includes(useTrim(search.value.toLowerCase())))
   })
 </script>
 

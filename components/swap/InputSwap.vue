@@ -41,6 +41,8 @@
           :disabled="!isSelected || stepSwap === 'CONFIRM_SWAP'"
           placeholder="0"
           class="input-amount flex-1"
+          :formatter="(value: string) => formatNumberInput(value)"
+          :parser="(value: string) => parseNumberInput(value)"
           @focus="emits('focus-input', type)"
           @input="handleInput"
         />
@@ -104,6 +106,46 @@
   }, 400)
 
   const { isConnected } = useAccount()
+
+  function formatNumberInput(value: string, _isSplit = true) {
+    if (!value) return ''
+    let text = ''
+    // const flag = false
+    text = value.replace(/[^\d.]/g, '')
+
+    // if (isSplit) {
+    //   const arrText: string[] = []
+
+    //   for (let index = 0; index < text.length; index++) {
+    //     if (flag) {
+    //       if (text[index] !== '.' && text[index] !== '-') {
+    //         arrText.push(text[index])
+    //       }
+    //     } else {
+    //       if (text[index] === '.') {
+    //         flag = true
+    //       }
+    //       arrText.push(text[index])
+    //     }
+    //   }
+    //   text = arrText.join('')
+
+    //   if (text.includes('.')) {
+    //     const naturalPart = text.toString().split('.')
+    //     naturalPart[0] = naturalPart[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    //     return naturalPart.join('.')
+    //   } else {
+    //     return text === '-' ? '-' : formatNumber(+text)
+    //   }
+    // }
+    return text
+  }
+
+  function parseNumberInput(value: string) {
+    if (!value) return ''
+    value = value.replace(/[^\d.-]/g, '')
+    return value.replace(/\$\s?|(,*)/g, '')
+  }
 </script>
 
 <style lang="scss" scoped>
@@ -116,8 +158,10 @@
         box-shadow: unset;
         height: 28px;
         background-color: transparent;
+        padding-right: 0;
         .el-input__inner {
           font-size: 32px;
+          font-weight: 600;
           text-align: right;
           background: var(--btn, linear-gradient(91deg, #790c8b 60%, #1573fe 98%));
           background-clip: text;

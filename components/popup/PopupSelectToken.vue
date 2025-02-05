@@ -8,7 +8,7 @@
     class="popup-select-token"
     @close="search = ''"
   >
-    <template #close>
+    <template v-if="!isDesktop" #close>
       <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-select-token', false)" />
     </template>
     <div class="mt-1 px-8 pb-6 sm:px-4">

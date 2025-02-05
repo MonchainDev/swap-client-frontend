@@ -38,13 +38,21 @@
         </template>
 
         <template v-else>
-          <ElPopover v-if="isConnected" placement="bottom" :show-arrow="false" :width="200" trigger="hover" popper-class="popper-menu-pool" :teleported="false">
+          <ElPopover
+            v-if="isConnected"
+            placement="bottom-end"
+            :show-arrow="false"
+            :width="200"
+            trigger="hover"
+            popper-class="popper-menu-pool"
+            :teleported="false"
+          >
             <template #reference>
               <div class="flex h-9 cursor-pointer items-center gap-4 rounded-full bg-[#EFEFFF] px-5 sm:bg-transparent sm:px-0" @click="isOpen = true">
                 <div class="flex items-center gap-2">
                   <BaseIcon name="default-avatar" size="24" />
                   <div class="sm:text-sm sm:text-white">
-                    <div>
+                    <div class="font-semibold">
                       <span>Mainnet </span>
                       <span class="text-hyperlink">0.03134$</span>
                     </div>
@@ -52,12 +60,12 @@
                   </div>
                 </div>
                 <span class="h-full w-[2px] bg-white sm:hidden"></span>
-                <span class="sm:hidden">{{ sliceString(address!, 2, 4) }}</span>
+                <span class="font-semibold text-gray-7 sm:hidden">{{ sliceString(address!, 2, 4) }}</span>
               </div>
             </template>
             <div class="flex w-full items-center justify-between">
               <div
-                class="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-full bg-surface px-[6px] py-2 hover:bg-surface3"
+                class="bg-surface hover:bg-surface3 flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-full px-[6px] py-2"
                 @click="
                   () => {
                     disconnect()

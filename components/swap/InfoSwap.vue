@@ -38,29 +38,30 @@
         </div>
         <div class="mt-5 flex justify-between sm:flex-col sm:gap-4">
           <div class="flex gap-3 sm:flex-wrap sm:justify-between">
-            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="settingSlippage = '1'"
+            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="handleChangeSlippage('1')"
               >1%</span
             >
-            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="settingSlippage = '2'"
+            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="handleChangeSlippage('2')"
               >2%</span
             >
-            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="settingSlippage = '3'"
+            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="handleChangeSlippage('3')"
               >3%</span
             >
-            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="settingSlippage = '4'"
+            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="handleChangeSlippage('4')"
               >4%</span
             >
-            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="settingSlippage = '100'"
+            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="handleChangeSlippage('100')"
               >Max</span
             >
           </div>
-          <div class="flex sm:w-full">
-            <ElInput v-model="settingSlippage" placeholder="0" class="input-slippage !h-11 !w-[88px] sm:!w-full sm:flex-1">
+          <div class="relative flex sm:w-full">
+            <ElInput v-model="settingSlippage" placeholder="0" class="input-slippage !h-11 !w-[88px] sm:!w-full sm:flex-1" @change="handleChangeSlippage">
               <template #suffix>
                 <span class="text-sm text-gray-8">%</span>
               </template>
             </ElInput>
-            <button class="bg-linear w-20 rounded-ee-lg rounded-se-lg text-white sm:w-[95px]" @click="slippage = settingSlippage">Apply</button>
+            <span v-if="isError" class="absolute -bottom-4 -left-3 text-nowrap text-[10px] text-error">Slippage must be between 0 and 100</span>
+            <button class="bg-linear w-20 rounded-ee-lg rounded-se-lg text-white sm:w-[95px]" @click="handleChangeSlippage(settingSlippage)">Apply</button>
           </div>
         </div>
       </div>
@@ -69,7 +70,7 @@
       <div class="flex justify-between">
         <span class="text-sm">Slippage</span>
         <span class="text-sm font-bold text-primary">
-          <span v-if="stepSwap === 'SELECT_TOKEN'" class="cursor-pointer text-hyperlink underline" @click="editSlippage = true">Edit </span> {{ slippage }}%
+          <span v-if="stepSwap === 'SELECT_TOKEN'" class="cursor-pointer text-hyperlink underline" @click="editSlippage = true">EDIT </span> {{ slippage }}%
         </span>
       </div>
     </template>
@@ -98,6 +99,17 @@
   })
   const { slippage } = storeToRefs(useSwapStore())
   const settingSlippage = ref(slippage.value)
+
+  const isError = computed(() => {
+    return Number(settingSlippage.value) < 0 || Number(settingSlippage.value) > 100
+  })
+
+  const handleChangeSlippage = (value: string) => {
+    if (isError.value) return
+    settingSlippage.value = value
+    slippage.value = value
+    editSlippage.value = false
+  }
 </script>
 
 <style lang="scss" scoped>
