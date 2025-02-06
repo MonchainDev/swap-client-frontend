@@ -9,7 +9,7 @@
   import { useAccount, useBalance } from '@wagmi/vue'
 
   useHead({
-    title: 'Buy, sell & trade Monchain and other top tokens'
+    title: 'Buy, sell & trade Mon and other top tokens'
   })
 
   const { address } = useAccount()

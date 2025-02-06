@@ -1,11 +1,9 @@
 <template>
-  <div class="mx-auto mt-10 h-screen max-w-[462px] sm:px-3">...</div>
+  <Swap />
 </template>
 
 <script lang="ts" setup>
-  useHead({
-    title: 'Buy, sell & trade Ethereum and other top tokens'
-  })
+  import Swap from './swap.vue'
 </script>
 
 <style lang="scss" scoped>
