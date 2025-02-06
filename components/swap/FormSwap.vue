@@ -32,7 +32,7 @@
         @focus-input="handleFocus"
         @change="handleInput"
       />
-      <div class="relative z-10">
+      <div class="relative z-10 select-none">
         <div
           class="absolute left-1/2 top-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[4px] border-solid border-white bg-[#1573FE] p-2"
           :class="{ 'bg-gray-6': stepSwap === 'CONFIRM_SWAP' }"
@@ -59,7 +59,7 @@
     </div>
 
     <template v-if="isQuoteExist">
-      <InfoSwap v-model:edit-slippage="isEditSlippage" :token0 :token1 :step-swap />
+      <InfoSwap v-model:edit-slippage="isEditSlippage" :buy-amount :sell-amount :token0 :token1 :step-swap />
     </template>
 
     <template v-if="!isEditSlippage">
@@ -186,6 +186,7 @@
     token1.value = temp
     focusInput.value.token0 = !focusInput.value.token0
     focusInput.value.token1 = !focusInput.value.token1
+    handleInput(sellAmount.value, 'BASE')
   }
 
   const typeOpenPopup = ref<TYPE_SWAP>('BASE')
@@ -195,17 +196,7 @@
     setOpenPopup('popup-select-token', true)
   }
 
-  const handleSelectToken = (token: IToken) => {
-    if (typeOpenPopup.value === 'BASE') {
-      token0.value = token
-      token1.value = token.address === token1.value.address ? { address: '', decimals: '', icon_url: '', name: '', symbol: '' } : token1.value
-    } else {
-      token1.value = token
-      token0.value = token.address === token0.value.address ? { address: '', decimals: '', icon_url: '', name: '', symbol: '' } : token0.value
-    }
-  }
-
-  const handleInput = (amount: string, type: TYPE_SWAP) => {
+  function handleInput(amount: string, type: TYPE_SWAP) {
     if (!isToken0Selected.value || !isToken1Selected.value) return
     isFetchQuote.value = true
     if (!amount) {
@@ -225,6 +216,43 @@
       isFetchQuote.value = false
     }, 1000)
   }
+
+  const handleSelectToken = (token: IToken) => {
+    if (typeOpenPopup.value === 'BASE') {
+      token0.value = token
+      if (token.address === token1.value.address) {
+        token1.value = { name: '', symbol: '', decimals: 0, icon_url: '', address: '' }
+        sellAmount.value = ''
+      }
+    } else {
+      token1.value = token
+      token0.value = token.address === token0.value.address ? { address: '', decimals: '', icon_url: '', name: '', symbol: '' } : token0.value
+      if (token.address === token0.value.address) {
+        token0.value = { name: '', symbol: '', decimals: 0, icon_url: '', address: '' }
+        buyAmount.value = ''
+      }
+    }
+
+    if (isToken0Selected.value && isToken1Selected.value) {
+      if ((sellAmount.value && !buyAmount.value) || (sellAmount.value && buyAmount.value)) {
+        handleInput(sellAmount.value, 'BASE')
+      } else if (!sellAmount.value && buyAmount.value) {
+        handleInput(buyAmount.value, 'QUOTE')
+      }
+    }
+  }
+
+  watch(isToken0Selected, () => {
+    if (!isToken0Selected.value) {
+      sellAmount.value = ''
+    }
+  })
+
+  watch(isToken1Selected, () => {
+    if (!isToken1Selected.value) {
+      buyAmount.value = ''
+    }
+  })
 
   const token0IsToken = computed(() => token0.value.address !== '')
 

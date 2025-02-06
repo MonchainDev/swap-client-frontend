@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-5">
         <span class="text-sm text-primary">{{ type === 'BASE' ? 'Sell' : 'Buy' }}</span>
-        <div v-if="type === 'BASE' && isConnected && stepSwap === 'SELECT_TOKEN'" class="grid grid-cols-[44px_44px_44px_44px] gap-2">
+        <div v-if="type === 'BASE' && isConnected && stepSwap === 'SELECT_TOKEN'" class="grid grid-cols-[44px_44px_44px_44px] gap-2 sm:grid-cols-[44px_44px]">
           <div
             v-for="(item, index) in 4"
             :key="item"

@@ -3,8 +3,8 @@
     <div class="flex justify-between">
       <span class="text-sm">Rate</span>
       <div class="flex flex-col items-end text-sm">
-        <span class="font-bold">1 {{ token0.symbol }} = 10 {{ token1.symbol }}</span>
-        <span class="text-gray-6">1 {{ token1.symbol }} = 0.1 {{ token0.symbol }}</span>
+        <span class="font-bold">1 {{ token0.symbol }} = {{ exchangeRate.base }} {{ token1.symbol }}</span>
+        <span class="text-gray-6">1 {{ token1.symbol }} = {{ exchangeRate.quote }} {{ token0.symbol }}</span>
       </div>
     </div>
     <div class="flex justify-between">
@@ -37,7 +37,7 @@
           <BaseIcon name="x" size="18" class="cursor-pointer" @click="editSlippage = false" />
         </div>
         <div class="mt-5 flex justify-between sm:flex-col sm:gap-4">
-          <div class="flex gap-3 sm:flex-wrap sm:justify-between">
+          <div class="flex gap-3 sm:justify-between sm:gap-0">
             <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="handleChangeSlippage('1')"
               >1%</span
             >
@@ -92,12 +92,16 @@
     token0: IToken
     token1: IToken
     stepSwap: StepSwap
+    sellAmount: string
+    buyAmount: string
   }
 
   const _props = withDefaults(defineProps<IProps>(), {
     token0: () => ({}) as IToken,
     token1: () => ({}) as IToken,
-    stepSwap: 'SELECT_TOKEN'
+    stepSwap: 'SELECT_TOKEN',
+    sellAmount: '0',
+    buyAmount: '0'
   })
 
   const editSlippage = defineModel('editSlippage', {
@@ -109,6 +113,13 @@
 
   const isErrorSlippage = computed(() => {
     return Number(settingSlippage.value) < 0 || Number(settingSlippage.value) > 100
+  })
+
+  const exchangeRate = computed(() => {
+    return {
+      base: (Number(_props.buyAmount) / Number(_props.sellAmount)).toFixed(2),
+      quote: (Number(_props.sellAmount) / Number(_props.buyAmount)).toFixed(2)
+    }
   })
 
   const handleChangeSlippage = (value: string) => {
