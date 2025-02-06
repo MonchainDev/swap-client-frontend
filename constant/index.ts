@@ -1,6 +1,6 @@
 import type { INetwork, IToken } from '~/types'
 
-const DEFAULT_SLIPPAGE = 1
+const DEFAULT_SLIPPAGE = '1'
 const DECIMALS_NATIVE = 18
 
 const NATIVE_TOKEN: IToken = {

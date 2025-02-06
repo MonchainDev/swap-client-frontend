@@ -23,7 +23,7 @@
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
               <span class="font-medium">{{ token.symbol }}</span>
-              <BaseIcon name="arrow" size="18" class="text-secondary -rotate-90" />
+              <BaseIcon v-if="stepSwap === 'SELECT_TOKEN'" name="arrow" size="18" class="text-secondary -rotate-90" />
             </div>
             <h4 class="line-clamp-1 text-xs text-[#6F6A79]">{{ token.name }}</h4>
           </div>
@@ -46,7 +46,7 @@
           @focus="emits('focus-input', type)"
           @input="handleInput"
         />
-        <span v-if="stepSwap === 'SELECT_TOKEN' || type === 'BASE'" class="text-sm font-semibold text-gray-6">≈ ${{ amount ? Math.random() : '0' }}</span>
+        <span v-if="type === 'BASE'" class="text-sm font-semibold text-gray-6">≈ {{ amountUsd }}</span>
       </div>
     </div>
   </div>
@@ -93,6 +93,11 @@
 
   const formattedBalance = computed(() => {
     return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0'
+  })
+
+  const amountUsd = computed(() => {
+    const random = Math.random()
+    return amount.value ? (random > 0.01 ? '$' + random.toFixed(2) : '<$0.01') : '$0'
   })
 
   const handleClick = () => {

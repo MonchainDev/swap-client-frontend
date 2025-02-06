@@ -6,7 +6,7 @@
           v-if="stepSwap === 'CONFIRM_SWAP'"
           name="arrow-down"
           size="24"
-          class="rotate-90 text-primary"
+          class="rotate-90 cursor-pointer text-primary"
           :class="{ 'pointer-events-none cursor-default': isSwapping || isConfirmApprove }"
           @click="stepSwap = 'SELECT_TOKEN'"
         />
@@ -27,6 +27,7 @@
         :step-swap
         type="BASE"
         class="bg-[#EFEFFF]"
+        :class="{ 'bg-[#F5F5F5]': stepSwap === 'CONFIRM_SWAP' }"
         @select-token="handleOpenPopupSelectToken"
         @focus-input="handleFocus"
         @change="handleInput"
@@ -50,6 +51,7 @@
         :step-swap
         type="QUOTE"
         class="bg-[#F3F8FF]"
+        :class="{ 'bg-[#F5F5F5]': stepSwap === 'CONFIRM_SWAP' }"
         @select-token="handleOpenPopupSelectToken"
         @focus-input="handleFocus"
         @change="handleInput"
@@ -87,7 +89,7 @@
 
 <script lang="ts" setup>
   import { useAccount, useBalance, useSignMessage } from '@wagmi/vue'
-  import { NATIVE_TOKEN } from '~/constant'
+  import { DEFAULT_SLIPPAGE, NATIVE_TOKEN } from '~/constant'
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
 
@@ -103,7 +105,7 @@
 
   const { setOpenPopup } = useBaseStore()
 
-  const { isSwapping, isConfirmApprove } = storeToRefs(useSwapStore())
+  const { isSwapping, isConfirmApprove, slippage } = storeToRefs(useSwapStore())
 
   const isEditSlippage = ref(false)
   const stepSwap = ref<StepSwap>('SELECT_TOKEN')
@@ -210,13 +212,15 @@
       isFetchQuote.value = false
       buyAmount.value = ''
       sellAmount.value = ''
+      isEditSlippage.value = false
+      slippage.value = DEFAULT_SLIPPAGE
       return
     }
     setTimeout(() => {
       if (type === 'BASE') {
-        buyAmount.value = Number(amount) > 0 ? Math.random() * 1000 + '' : ''
+        buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
       } else {
-        sellAmount.value = Number(amount) > 0 ? Math.random() * 1000 + '' : ''
+        sellAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
       }
       isFetchQuote.value = false
     }, 1000)
@@ -280,11 +284,12 @@
     try {
       isConfirmApprove.value = false
       isSwapping.value = true
-      showNotify('PENDING')
+      const msg = ` ${sellAmount.value} ${token0.value.symbol} ⇒ ${buyAmount.value} ${token1.value.symbol}`
+      showNotify('PENDING', msg)
       await signMessageAsync({
         message: 'Swap'
       })
-      showNotify('SUCCESS')
+      showNotify('SUCCESS', msg)
       buyAmount.value = ''
       sellAmount.value = ''
       isSwapping.value = false
@@ -296,7 +301,7 @@
   }
 
   let el1: ReturnType<typeof ElNotification> | null = null
-  const showNotify = (type: 'PENDING' | 'SUCCESS') => {
+  const showNotify = (type: 'PENDING' | 'SUCCESS', msg: string) => {
     if (type === 'PENDING') {
       el1 = ElNotification({
         message: () =>
@@ -311,7 +316,7 @@
             ]),
             h('div', { class: 'flex flex-col flex-1' }, [
               h('span', { class: 'text-sm text-primary font-medium' }, 'Swapping'),
-              h('span', { class: 'text-xs text-gray-8' }, ` ${sellAmount.value} ${token0.value.symbol} ⇒ ${buyAmount.value} ${token1.value.symbol}`)
+              h('span', { class: 'text-xs text-gray-8' }, ` ${msg}`)
             ])
           ]),
         duration: 0,
@@ -329,7 +334,7 @@
             h('img', { src: '/tick-success.png', alt: 'tick', class: 'size-10 ' }),
             h('div', { class: 'flex flex-col flex-1' }, [
               h('span', { class: 'text-sm text-[#049C6B] font-medium' }, 'Swapping successfully'),
-              h('span', { class: 'text-xs text-gray-8 pr-5' }, ` ${sellAmount.value} ${token0.value.symbol} ⇒ ${buyAmount.value} ${token1.value.symbol}`)
+              h('span', { class: 'text-xs text-gray-8 pr-5' }, ` ${msg}`)
             ])
           ]),
         duration: 5000,

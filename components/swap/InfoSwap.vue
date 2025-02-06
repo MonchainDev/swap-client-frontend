@@ -55,12 +55,18 @@
             >
           </div>
           <div class="relative flex sm:w-full">
-            <ElInput v-model="settingSlippage" placeholder="0" class="input-slippage !h-11 !w-[88px] sm:!w-full sm:flex-1" @change="handleChangeSlippage">
+            <ElInput
+              v-model="settingSlippage"
+              :formatter="(value: string) => formatNumberInput(value)"
+              placeholder="0"
+              class="input-slippage !h-11 !w-[88px] sm:!w-full sm:flex-1"
+              @change="handleChangeSlippage"
+            >
               <template #suffix>
                 <span class="text-sm text-gray-8">%</span>
               </template>
             </ElInput>
-            <span v-if="isError" class="absolute -bottom-4 -left-3 text-nowrap text-[10px] text-error">Slippage must be between 0 and 100</span>
+            <span v-if="isErrorSlippage" class="absolute -bottom-4 left-0 text-nowrap text-[10px] text-error">Invalid slippage</span>
             <button class="bg-linear w-20 rounded-ee-lg rounded-se-lg text-white sm:w-[95px]" @click="handleChangeSlippage(settingSlippage)">Apply</button>
           </div>
         </div>
@@ -70,7 +76,8 @@
       <div class="flex justify-between">
         <span class="text-sm">Slippage</span>
         <span class="text-sm font-bold text-primary">
-          <span v-if="stepSwap === 'SELECT_TOKEN'" class="cursor-pointer text-hyperlink underline" @click="editSlippage = true">EDIT </span> {{ slippage }}%
+          <span v-if="stepSwap === 'SELECT_TOKEN'" class="cursor-pointer text-hyperlink underline" @click="editSlippage = true">EDIT</span>
+          &nbsp;{{ slippage }}%
         </span>
       </div>
     </template>
@@ -100,15 +107,24 @@
   const { slippage } = storeToRefs(useSwapStore())
   const settingSlippage = ref(slippage.value)
 
-  const isError = computed(() => {
+  const isErrorSlippage = computed(() => {
     return Number(settingSlippage.value) < 0 || Number(settingSlippage.value) > 100
   })
 
   const handleChangeSlippage = (value: string) => {
-    if (isError.value) return
+    if (isErrorSlippage.value) return
     settingSlippage.value = value
     slippage.value = value
     editSlippage.value = false
+  }
+
+  function formatNumberInput(value: string, _isSplit = true) {
+    if (!value) return ''
+    let text = ''
+    // const flag = false
+    text = value.replace(/[^\d.]/g, '')
+
+    return text
   }
 </script>
 

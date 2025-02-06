@@ -24,7 +24,7 @@
         </div>
         <div class="flex items-center gap-1">
           <span class="font-semibold sm:text-sm sm:font-normal sm:text-white">
-            <span class="text-[#757575] sm:hidden">Currency :</span>
+            <span class="text-[#757575] sm:hidden">Currency: </span>
             USD
           </span>
           <BaseIcon name="arrow" size="18" class="-rotate-90 text-primary sm:text-white" />
@@ -42,7 +42,7 @@
             v-if="isConnected"
             placement="bottom-end"
             :show-arrow="false"
-            :width="200"
+            :width="120"
             trigger="hover"
             popper-class="popper-menu-pool"
             :teleported="false"
@@ -54,7 +54,7 @@
                   <div class="sm:text-sm sm:text-white">
                     <div class="font-semibold">
                       <span>Mainnet </span>
-                      <span class="text-hyperlink">0.03134$</span>
+                      <span class="text-hyperlink">$0.03134</span>
                     </div>
                     <div class="hidden sm:block">{{ sliceString(address!, 2, 4) }}</div>
                   </div>
