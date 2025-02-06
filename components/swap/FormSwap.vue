@@ -1,26 +1,9 @@
 <template>
   <div class="flex flex-col gap-2 rounded-lg bg-white px-8 pb-10 pt-[21px] shadow-md sm:p-4">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-6">
-        <BaseIcon
-          v-if="stepSwap === 'CONFIRM_SWAP'"
-          name="arrow-down"
-          size="24"
-          class="rotate-90 cursor-pointer text-primary"
-          :class="{ 'pointer-events-none cursor-default': isSwapping || isConfirmApprove }"
-          @click="stepSwap = 'SELECT_TOKEN'"
-        />
-        <span class="text-2xl font-semibold leading-7 sm:text-lg">{{ formatTitle }}</span>
-      </div>
-      <div v-if="stepSwap === 'SELECT_TOKEN'" class="flex items-center gap-3">
-        <span class="text-sm font-semibold text-gray-6 sm:hidden">Choose network</span>
-        <ChooseNetwork />
-      </div>
-    </div>
+    <HeaderFormSwap v-model:step-swap="stepSwap" :title="formatTitle" :is-confirm-approve="isConfirmApprove" :is-swapping="isSwapping" />
     <div class="relative mt-7 flex flex-col gap-1 sm:mt-[14px]">
       <InputSwap
         v-model:amount="sellAmount"
-        :is-focus="focusInput.token0"
         :is-selected="isToken0Selected"
         :token="token0"
         :balance="balance0?.formatted"
@@ -29,7 +12,6 @@
         class="bg-[#EFEFFF]"
         :class="{ 'bg-[#F5F5F5]': stepSwap === 'CONFIRM_SWAP' }"
         @select-token="handleOpenPopupSelectToken"
-        @focus-input="handleFocus"
         @change="handleInput"
       />
       <div class="relative z-10 select-none">
@@ -44,7 +26,6 @@
       </div>
       <InputSwap
         v-model:amount="buyAmount"
-        :is-focus="focusInput.token1"
         :is-selected="isToken1Selected"
         :token="token1"
         :balance="balance1?.formatted"
@@ -53,7 +34,6 @@
         class="bg-[#F3F8FF]"
         :class="{ 'bg-[#F5F5F5]': stepSwap === 'CONFIRM_SWAP' }"
         @select-token="handleOpenPopupSelectToken"
-        @focus-input="handleFocus"
         @change="handleInput"
       />
     </div>
@@ -67,10 +47,10 @@
         v-if="isConnected"
         :disabled="isDisabledButton"
         class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:h-[42px] sm:text-sm"
-        :class="{ 'bg-gray pointer-events-none cursor-default': isSwapping || isConfirmApprove, 'btn-disabled': isDisabledButton }"
+        :class="{ 'bg-gray pointer-events-none cursor-default': isSwapping || isConfirmApprove || isConfirmSwap, 'btn-disabled': isDisabledButton }"
         @click="handleSwap"
       >
-        <BaseLoadingButton v-if="isFetchQuote || isSwapping || isConfirmApprove" />
+        <BaseLoadingButton v-if="isFetchQuote || isSwapping || isConfirmApprove || isConfirmSwap" />
         <span>{{ msgButton }}</span>
       </button>
       <button
@@ -92,6 +72,7 @@
   import { DEFAULT_SLIPPAGE, NATIVE_TOKEN } from '~/constant'
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
+  import HeaderFormSwap from './HeaderFormSwap.vue'
 
   export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
 
@@ -105,7 +86,7 @@
 
   const { setOpenPopup } = useBaseStore()
 
-  const { isSwapping, isConfirmApprove, slippage } = storeToRefs(useSwapStore())
+  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap } = storeToRefs(useSwapStore())
 
   const isEditSlippage = ref(false)
   const stepSwap = ref<StepSwap>('SELECT_TOKEN')
@@ -122,10 +103,6 @@
     address: ''
   })
 
-  const focusInput = ref({
-    token0: true,
-    token1: false
-  })
   const isFetchQuote = ref(false)
 
   const isToken0Selected = computed(() => token0.value.symbol !== '')
@@ -146,7 +123,9 @@
    * case 5: SWAPPING! PLEASE WAIT..
    */
   const msgButton = computed(() => {
-    if (!isToken0Selected.value || !isToken1Selected.value) {
+    if (isSwapping.value) {
+      return 'SWAPPING! PLEASE WAIT..'
+    } else if (!isToken0Selected.value || !isToken1Selected.value) {
       return 'Select a token'
     } else if (isFetchQuote.value) {
       return 'Finalizing quote...'
@@ -157,7 +136,7 @@
         if (isSwapping.value) {
           return 'SWAPPING! PLEASE WAIT..'
         } else {
-          return isConfirmApprove.value ? 'CONFIRM IN WALLET' : 'APPROVE AND SWAP'
+          return isConfirmApprove.value || isConfirmSwap.value ? 'CONFIRM IN WALLET' : 'APPROVE AND SWAP'
         }
       }
     } else {
@@ -169,23 +148,9 @@
     return !isToken0Selected.value || !isToken1Selected.value || !buyAmount.value || !sellAmount.value || isFetchQuote.value
   })
 
-  const handleFocus = (token: TYPE_SWAP) => {
-    if (token === 'BASE') {
-      focusInput.value.token0 = true
-      focusInput.value.token1 = false
-    } else {
-      focusInput.value.token0 = false
-      focusInput.value.token1 = true
-    }
-  }
-
   const handleSwapOrder = () => {
     if (stepSwap.value === 'CONFIRM_SWAP') return
-    const temp = token0.value
-    token0.value = token1.value
-    token1.value = temp
-    focusInput.value.token0 = !focusInput.value.token0
-    focusInput.value.token1 = !focusInput.value.token1
+    ;[token0.value, token1.value] = [token1.value, token0.value]
     handleInput(sellAmount.value, 'BASE')
   }
 
@@ -254,8 +219,6 @@
     }
   })
 
-  const token0IsToken = computed(() => token0.value.address !== '')
-
   const { address, isConnected } = useAccount()
 
   const { data: balance0 } = useBalance(
@@ -273,6 +236,8 @@
       watch: true
     }))
   )
+
+  const token0IsToken = computed(() => token0.value.address !== '')
 
   const handleSwap = async () => {
     try {
@@ -311,18 +276,23 @@
   const swap = async () => {
     try {
       isConfirmApprove.value = false
-      isSwapping.value = true
+      isConfirmSwap.value = true
       const msg = ` ${sellAmount.value} ${token0.value.symbol} ⇒ ${buyAmount.value} ${token1.value.symbol}`
-      showNotify('PENDING', msg)
       await signMessageAsync({
-        message: 'Swap'
+        message: msg
       })
-      showNotify('SUCCESS', msg)
+      isConfirmSwap.value = false
+      showNotify('PENDING', msg)
+      isSwapping.value = true
       buyAmount.value = ''
       sellAmount.value = ''
-      isSwapping.value = false
       stepSwap.value = 'SELECT_TOKEN'
+      setTimeout(() => {
+        showNotify('SUCCESS', msg)
+        isSwapping.value = false
+      }, 100000)
     } catch (error) {
+      isConfirmSwap.value = false
       isSwapping.value = false
       el1?.close()
     }

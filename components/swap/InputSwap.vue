@@ -16,7 +16,7 @@
       </div>
       <span v-if="isConnected && stepSwap === 'SELECT_TOKEN'" class="text-sm text-gray-8">Max: {{ formattedBalance }}</span>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex min-h-10 items-center gap-2">
       <template v-if="isSelected">
         <div class="flex max-w-[150px] cursor-pointer items-center gap-[10px]" @click="emits('select-token', type)">
           <img :src="token.icon_url" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError($event)" />
@@ -60,7 +60,6 @@
   import type { StepSwap } from './FormSwap.vue'
 
   interface IProps {
-    isFocus: boolean
     isSelected: boolean
     token: IToken
     type: TYPE_SWAP
@@ -69,7 +68,6 @@
   }
 
   const props = withDefaults(defineProps<IProps>(), {
-    isFocus: false,
     isSelected: false,
     token: () => ({ name: '', symbol: '', icon_url: '', address: '', decimals: 0 }),
     type: 'BASE',
