@@ -3,8 +3,9 @@ import { useWriteContract, useWaitForTransactionReceipt } from '@wagmi/vue'
 const MAX_AMOUNT = '115792089237316195423570985008687907853269984665640564039457584007913129639935'
 
 export function useApproveToken() {
-  const { writeContract, isPending, data: hash } = useWriteContract()
+  const { writeContract, isPending, data: hash, isError } = useWriteContract()
   const callback = ref<() => void>()
+  const { isConfirmApprove } = storeToRefs(useSwapStore())
 
   // Wait for transaction confirmation
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
@@ -14,6 +15,13 @@ export function useApproveToken() {
   watch(isSuccess, () => {
     if (isSuccess.value && callback.value) {
       callback.value()
+    }
+  })
+
+  watch(isError, () => {
+    if (isError.value) {
+      console.error('Approval error:', isError.value)
+      isConfirmApprove.value = false
     }
   })
 
@@ -31,7 +39,7 @@ export function useApproveToken() {
       }
     } catch (err) {
       console.error('Approval error:', err)
-      throw err
+      return Promise.reject(err)
     }
   }
 

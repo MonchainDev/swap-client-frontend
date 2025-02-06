@@ -103,8 +103,8 @@
 
   const { setOpenPopup } = useBaseStore()
 
-  const { isSwapping } = storeToRefs(useSwapStore())
-  const isConfirmApprove = ref(false)
+  const { isSwapping, isConfirmApprove } = storeToRefs(useSwapStore())
+
   const isEditSlippage = ref(false)
   const stepSwap = ref<StepSwap>('SELECT_TOKEN')
   const buyAmount = ref('')

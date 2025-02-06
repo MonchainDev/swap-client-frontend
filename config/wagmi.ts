@@ -1,4 +1,6 @@
+import { sepolia } from '@wagmi/core/chains'
 import { createConfig, http } from '@wagmi/vue'
+
 import { coinbaseWallet, metaMask } from '@wagmi/vue/connectors'
 
 import { type Chain } from 'viem'
@@ -17,10 +19,24 @@ export const testnet = {
 } as const satisfies Chain
 
 export const config = createConfig({
-  chains: [testnet],
-  connectors: [metaMask(), coinbaseWallet()],
+  chains: [testnet, sepolia],
+  connectors: [
+    metaMask(),
+    coinbaseWallet()
+    // walletConnect({
+    //   projectId: '001368a92a97b7f25233d5631fd4d524',
+    //   isNewChainsStale: true,
+    //   metadata: {
+    //     name: 'Monchain',
+    //     description: 'Monchain WalletConnect',
+    //     url: 'https://dex-swap.datdev.me',
+    //     icons: ['https://dex-swap.datdev.me/logo.png']
+    //   }
+    // })
+  ],
   transports: {
-    [testnet.id]: http()
+    [testnet.id]: http(),
+    [sepolia.id]: http()
   }
 })
 

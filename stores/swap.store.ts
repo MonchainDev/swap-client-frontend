@@ -7,6 +7,7 @@ export const useSwapStore = defineStore('swap', () => {
   const activeSlippageAuto = ref<boolean>(true)
   const txDeadline = ref<string>('30')
   const isSwapping = ref<boolean>(false)
+  const isConfirmApprove = ref<boolean>(false)
 
   const networkSelected = ref<INetwork>({
     title: 'Mon chain',
@@ -14,5 +15,5 @@ export const useSwapStore = defineStore('swap', () => {
     value: 'MON'
   })
 
-  return { slippage, activeSlippageAuto, txDeadline, isSwapping, networkSelected }
+  return { slippage, activeSlippageAuto, txDeadline, isSwapping, networkSelected, isConfirmApprove }
 })
