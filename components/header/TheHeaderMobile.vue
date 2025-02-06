@@ -1,5 +1,5 @@
 <template>
-  <div class="sticky bottom-0 hidden h-[76px] items-center justify-around bg-white sm:flex">
+  <div class="sticky bottom-0 z-20 hidden h-[76px] items-center justify-around bg-white drop-shadow-2xl sm:flex">
     <NuxtLink to="/" active-class="active-menu" class="flex flex-col items-center justify-center">
       <BaseIcon name="menu-home" class="text-gray-8" size="22" />
       <span class="text-xs text-gray-8">Home</span>
