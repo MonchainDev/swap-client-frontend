@@ -32,7 +32,7 @@
         :step-swap
         type="QUOTE"
         class="bg-[#F3F8FF]"
-        :class="{ 'bg-[#F5F5F5]': stepSwap === 'CONFIRM_SWAP' }"
+        :class="{ '!bg-[#EEEEEE]': stepSwap === 'CONFIRM_SWAP' }"
         @select-token="handleOpenPopupSelectToken"
         @change="handleInput"
       />
@@ -290,7 +290,7 @@
       setTimeout(() => {
         showNotify('SUCCESS', msg)
         isSwapping.value = false
-      }, 100000)
+      }, 5000)
     } catch (error) {
       isConfirmSwap.value = false
       isSwapping.value = false
