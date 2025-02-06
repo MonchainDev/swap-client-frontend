@@ -25,7 +25,7 @@
   const { data } = await useAsyncData(() => apiBase.getListToken(), { server: true })
   listToken.value = [NATIVE_TOKEN, ...data.value!.items]
 
-  const loading = ref(false)
+  const loading = ref(true)
 
   // const { init } = useWeb3()
 
