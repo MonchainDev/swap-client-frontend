@@ -267,12 +267,18 @@
     }
   }
 
-  const { approveToken } = useApproveToken()
+  const { approveToken: _approveToken } = useApproveToken()
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     try {
       isConfirmApprove.value = true
-      approveToken(token0.value.address, swap)
+      // approveToken(token0.value.address, swap)
+      await signMessageAsync({
+        message: `Approve ${sellAmount.value} ${token0.value.symbol}`
+      })
+      setTimeout(() => {
+        swap()
+      }, 2000)
     } catch (error) {
       isConfirmApprove.value = false
       throw new Error()
@@ -284,7 +290,7 @@
     try {
       isConfirmApprove.value = false
       isConfirmSwap.value = true
-      const msg = ` ${sellAmount.value} ${token0.value.symbol} ⇒ ${buyAmount.value} ${token1.value.symbol}`
+      const msg = `Swap ${sellAmount.value} ${token0.value.symbol} ⇒ ${buyAmount.value} ${token1.value.symbol}`
       await signMessageAsync({
         message: msg
       })
