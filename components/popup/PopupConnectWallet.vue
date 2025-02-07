@@ -7,18 +7,18 @@
       <h4 class="text-sm text-[#616161]">
         Start by connecting with one of the wallets below. Be sure to store your private keys or seed phrase securely. Never share them with anyone.
       </h4>
-      <div class="mx-auto mt-8 grid max-w-[400px] grid-cols-3 pb-[62px] sm:mt-10 sm:gap-8">
-        <div class="group flex cursor-pointer flex-col items-center justify-center gap-3" @click="handleConnect('METAMASK')">
-          <img src="/metamask.png" alt="metamask" class="size-16 sm:size-11" />
-          <span class="text-sm group-hover:text-hyperlink">MetaMask</span>
-        </div>
-        <div class="group flex cursor-pointer flex-col items-center justify-center gap-3" @click="handleConnect('TRUST_WALLET')">
-          <img src="/trust-wallet.png" alt="trust wallet" class="size-16 sm:size-11" />
-          <span class="text-sm group-hover:text-hyperlink">Trust Wallet</span>
-        </div>
-        <div class="group flex cursor-pointer flex-col items-center justify-center gap-3" @click="handleConnect('COINBASE')">
-          <img src="/coinbase.png" alt="coinbase" class="size-16 sm:size-11" />
-          <span class="text-nowrap text-sm group-hover:text-hyperlink">Coinbase Wallet</span>
+      <div class="mx-auto mt-8 flex max-w-[400px] justify-between pb-[62px] sm:mt-10">
+        <div
+          v-for="(item, key) in walletList"
+          :key="key"
+          class="group flex cursor-pointer flex-col items-center justify-center gap-3"
+          @click="handleConnect(item.type)"
+        >
+          <img v-if="typeConnect !== item.type" :src="item.icon" :alt="item.name" class="size-16 sm:size-11" />
+          <div v-if="typeConnect === item.type" class="flex size-16 items-center justify-center sm:size-11">
+            <BaseLoadingButton class="!w-10 sm:!w-7" />
+          </div>
+          <span class="text-nowrap text-sm group-hover:text-hyperlink">{{ item.name }}</span>
         </div>
       </div>
     </div>
@@ -41,29 +41,54 @@
 
   const { setOpenPopup } = useBaseStore()
 
-  const handleConnect = async (type: WalletType) => {
-    if (type === 'TRUST_WALLET') {
-      if (window.trustWallet) {
-        const connector = connectors.find((item) => item.name === 'Trust Wallet')
-        if (connector) {
-          await connectAsync({ connector, chainId: chainId.value })
-        }
-      } else {
-        window.open(`https://link.trustwallet.com/open_url?coin_id=60&url=${window.location.href}`, '_blank')
-      }
-    } else if (type === 'METAMASK') {
-      if (window.ethereum) {
-        await connectAsync({ connector: connectors[0], chainId: chainId.value })
-      } else {
-        window.open(`https://metamask.app.link/dapp/${window.location.href}`, '_blank')
-      }
-    } else if (type === 'COINBASE') {
-      await connectAsync({ connector: connectors[1], chainId: chainId.value })
+  const walletList: { name: string; icon: string; type: WalletType }[] = [
+    {
+      name: 'MetaMask',
+      icon: '/metamask.png',
+      type: 'METAMASK'
+    },
+    {
+      name: 'Trust Wallet',
+      icon: '/trust-wallet.png',
+      type: 'TRUST_WALLET'
+    },
+    {
+      name: 'Coinbase Wallet',
+      icon: '/coinbase.png',
+      type: 'COINBASE'
     }
-    // else {
-    //   await connectAsync({ connector: connectors[2], chainId: chainId.value })
-    // }
-    setOpenPopup('popup-connect', false)
+  ]
+
+  const typeConnect = ref<WalletType | null>(null)
+  const handleConnect = async (type: WalletType) => {
+    try {
+      typeConnect.value = type
+      if (type === 'TRUST_WALLET') {
+        if (window.trustWallet) {
+          const connector = connectors.find((item) => item.name === 'Trust Wallet')
+          if (connector) {
+            await connectAsync({ connector, chainId: chainId.value })
+          }
+        } else {
+          window.open(`https://link.trustwallet.com/open_url?coin_id=60&url=${window.location.href}`, '_blank')
+        }
+      } else if (type === 'METAMASK') {
+        if (window.ethereum) {
+          await connectAsync({ connector: connectors[0], chainId: chainId.value })
+        } else {
+          window.open(`https://metamask.app.link/dapp/${window.location.href}`, '_blank')
+        }
+      } else if (type === 'COINBASE') {
+        await connectAsync({ connector: connectors[1], chainId: chainId.value })
+      }
+      // else {
+      //   await connectAsync({ connector: connectors[2], chainId: chainId.value })
+      // }
+      setOpenPopup('popup-connect', false)
+      typeConnect.value = null
+    } catch (error) {
+      typeConnect.value = null
+    }
   }
 </script>
 
