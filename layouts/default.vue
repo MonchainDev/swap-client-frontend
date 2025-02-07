@@ -1,19 +1,22 @@
 <template>
   <div class="flex w-full flex-col bg-white">
-    <TheHeader />
-
-    <div v-if="!loading" class="flex flex-1 flex-col bg-[#F5F5F5]">
-      <main>
-        <slot />
-      </main>
-      <TheFooter />
-    </div>
-    <TheHeaderMobile />
+    <PageLoading v-if="loading" />
+    <template v-else>
+      <TheHeader />
+      <div class="flex flex-1 flex-col bg-[#F5F5F5]">
+        <main>
+          <slot />
+        </main>
+        <TheFooter />
+      </div>
+      <TheHeaderMobile />
+    </template>
   </div>
   <PopupConnectWallet />
 </template>
 
 <script lang="ts" setup>
+  import PageLoading from '~/components/loading/PageLoading.vue'
   import { NATIVE_TOKEN } from '~/constant'
   import { baseRepository } from '~/repository/base'
 
