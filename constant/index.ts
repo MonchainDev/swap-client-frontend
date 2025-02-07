@@ -36,14 +36,14 @@ const LIST_NETWORK: INetwork[] = [
     value: 'MATIC'
   },
   {
-    title: 'Mon chain',
+    title: 'Mon Chain',
     logo: '/logo-mon-chain.png',
     value: 'MON'
   },
   {
-    title: 'Liena chain',
+    title: 'Linea Chain',
     logo: '/logo-liena-chain.png',
-    value: 'LIENA'
+    value: 'LINEA'
   }
 ]
 

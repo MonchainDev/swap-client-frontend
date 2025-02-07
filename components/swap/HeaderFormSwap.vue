@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center justify-between">
-    <div class="flex items-center gap-6">
+    <div class="flex items-center gap-6 sm:gap-2">
       <BaseIcon
         v-if="stepSwap === 'CONFIRM_SWAP'"
         name="arrow-down"

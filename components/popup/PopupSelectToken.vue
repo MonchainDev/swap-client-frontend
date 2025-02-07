@@ -151,6 +151,7 @@
         padding: 0 4px 0 21px;
         .el-input__inner {
           font-size: 16px;
+          color: var(--color-primary);
         }
       }
     }

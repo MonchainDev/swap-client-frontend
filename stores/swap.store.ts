@@ -11,7 +11,7 @@ export const useSwapStore = defineStore('swap', () => {
   const isConfirmSwap = ref<boolean>(false)
 
   const networkSelected = ref<INetwork>({
-    title: 'Mon chain',
+    title: 'Mon Chain',
     logo: '/logo-mon-chain.png',
     value: 'MON'
   })

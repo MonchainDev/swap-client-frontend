@@ -118,7 +118,7 @@
   const exchangeRate = computed(() => {
     return {
       base: (Number(_props.buyAmount) / Number(_props.sellAmount)).toFixed(2),
-      quote: (Number(_props.sellAmount) / Number(_props.buyAmount)).toFixed(2)
+      quote: (Number(_props.sellAmount) / Number(_props.buyAmount)).toFixed(4)
     }
   })
 
