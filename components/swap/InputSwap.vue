@@ -38,9 +38,9 @@
       <div class="flex flex-1 flex-col items-end gap-1">
         <ElInput
           v-model="amount"
-          :disabled="!isSelected || stepSwap === 'CONFIRM_SWAP'"
           placeholder="0"
           class="input-amount flex-1"
+          :class="{ 'disabled-input': !isSelected || stepSwap === 'CONFIRM_SWAP' }"
           :formatter="(value: string) => formatNumberInput(value)"
           :parser="(value: string) => parseNumberInput(value)"
           @focus="emits('focus-input', type)"
@@ -159,19 +159,31 @@
     :deep(.input-amount) {
       .el-input__wrapper {
         box-shadow: unset;
-        height: 28px;
         background-color: transparent;
         padding-right: 0;
+
         .el-input__inner {
+          height: 32px;
           font-size: 32px;
           font-weight: 600;
           text-align: right;
-          background: var(--btn, linear-gradient(91deg, #790c8b 60%, #1573fe 98%));
+          background: linear-gradient(91deg, #790c8b 60%, #1573fe 98%);
           background-clip: text;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
+          overflow: hidden;
+          &::placeholder {
+            background: linear-gradient(91deg, #a8abb2 0%, #a8abb2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+          }
         }
       }
+    }
+    :deep(.disabled-input) {
+      cursor: not-allowed;
+      pointer-events: none;
     }
   }
 </style>

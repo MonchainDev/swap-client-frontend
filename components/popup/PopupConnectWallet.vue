@@ -7,7 +7,7 @@
       <h4 class="text-sm text-[#616161]">
         Start by connecting with one of the wallets below. Be sure to store your private keys or seed phrase securely. Never share them with anyone.
       </h4>
-      <div class="mx-auto mt-8 grid max-w-[400px] grid-cols-3 pb-[62px] sm:mt-10 sm:gap-10">
+      <div class="mx-auto mt-8 grid max-w-[400px] grid-cols-3 pb-[62px] sm:mt-10 sm:gap-8">
         <div class="group flex cursor-pointer flex-col items-center justify-center gap-3" @click="handleConnect('METAMASK')">
           <img src="/metamask.png" alt="metamask" class="size-16 sm:size-11" />
           <span class="text-sm group-hover:text-hyperlink">MetaMask</span>

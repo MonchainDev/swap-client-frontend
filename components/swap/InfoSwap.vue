@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-6 flex flex-col gap-3 rounded-lg border border-dashed border-gray-4 px-[30px] py-4">
+  <div class="mt-6 flex flex-col gap-3 rounded-lg border border-dashed border-gray-4 px-[30px] py-4 sm:px-4">
     <div class="flex justify-between">
       <span class="text-sm">Rate</span>
       <div class="flex flex-col items-end text-sm">
