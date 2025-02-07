@@ -2,17 +2,21 @@
 export default {
   content: [],
   theme: {
+    container:{
+      center:true,
+    },
     extend: {},
     colors:{
       primary:'var(--color-primary)',
-      secondary:'var(--color-secondary)',
-      surface:'var(--color-surface)',
-      surface2:'var(--color-surface2)',
-      surface3:'var(--color-surface3)',
-      neutral3:'var(--color-neutral3)',
+      'gray-3': 'var(--color-gray-3)',
+      'gray-4': 'var(--color-gray-4)',
+      'gray-6':'var(--color-gray-6)',
+      'gray-7':'var(--color-gray-7)',
+      'gray-8': 'var(--color-gray-8)',
       white:'#fff',
-      pink:'var(--color-pink)',
+      error: 'var(--color-error)',
       transparent:'transparent',
+      hyperlink: 'var(--color-hyperlink)',
     },
     screens: {
       xxl: {

@@ -1,81 +1,94 @@
 <template>
-  <header class="flex h-[72px] items-center justify-between px-3">
-    <div class="flex items-center gap-3">
-      <img src="/logo.png" alt="logo" class="w-12" />
-      <div class="grid grid-cols-3 gap-3 sm:hidden">
-        <NuxtLink active-class="!text-primary" to="/" class="mx-2 text-base leading-6 text-secondary hover:text-primary">Home</NuxtLink>
-
-        <ElPopover placement="bottom" :show-arrow="false" :width="180" trigger="hover" popper-class="popper-menu-pool" :teleported="false">
-          <template #reference>
-            <NuxtLink active-class="!text-primary" to="/positions" class="mx-2 text-base leading-6 text-secondary hover:text-primary">Pool</NuxtLink>
-          </template>
-          <div class="flex flex-col gap-1">
-            <NuxtLink
-              active-class="!text-primary"
-              to="/positions"
-              class="h-10 w-full rounded-xl bg-surface pl-2 text-base leading-10 text-secondary hover:bg-[#22222212] hover:text-primary"
-              >View positions</NuxtLink
-            >
-            <NuxtLink
-              active-class="!text-primary"
-              to="/positions/create"
-              class="h-10 w-full rounded-xl bg-surface pl-2 text-base leading-10 text-secondary hover:bg-[#22222212] hover:text-primary"
-              >Create position</NuxtLink
-            >
-          </div>
-        </ElPopover>
+  <header class="container h-[72px]">
+    <div class="flex h-full items-center justify-between sm:h-fit sm:pt-3">
+      <div class="flex items-center">
+        <div class="flex items-center gap-2">
+          <img src="/logo.png" alt="logo" class="w-12 sm:w-7" />
+          <span class="text-[22px] font-semibold leading-7 sm:text-base sm:text-white">ORB</span>
+        </div>
+        <div class="ml-[68px] flex items-center gap-8 sm:hidden">
+          <NuxtLink active-class="active-menu" to="/" class="text-center text-base font-medium leading-6 hover:text-primary">Swap</NuxtLink>
+          <!-- <NuxtLink active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Swap</NuxtLink> -->
+          <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Cross chain</div>
+          <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Add Liquidity</div>
+          <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Farming</div>
+          <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Bridge</div>
+        </div>
       </div>
-      <ElPopover
-        v-model:visible="visible"
-        placement="bottom"
-        :show-arrow="false"
-        :width="300"
-        trigger="click"
-        popper-class="popper-menu-pool"
-        :teleported="false"
-      >
-        <template #reference>
-          <div class="hidden items-center space-x-1 sm:flex">
-            <BaseIcon name="menu-bar" size="24" class="text-secondary" />
-            <BaseIcon name="arrow-fill" size="12" class="text-secondary" />
+
+      <div class="flex items-center gap-8 sm:gap-3">
+        <div class="flex items-center gap-1">
+          <BaseIcon name="flag-uk" size="24" class="sm:hidden" />
+          <span class="hidden sm:block sm:text-sm sm:text-white">EN</span>
+          <BaseIcon name="arrow" size="18" class="hidden -rotate-90 text-primary sm:block sm:text-white" />
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="font-semibold sm:text-sm sm:font-normal sm:text-white">
+            <span class="text-[#757575] sm:hidden">Currency: </span>
+            USD
+          </span>
+          <BaseIcon name="arrow" size="18" class="-rotate-90 text-primary sm:text-white" />
+        </div>
+
+        <template v-if="isSwapping">
+          <div class="flex h-9 w-40 items-center justify-center gap-2 rounded-full bg-[#C7DDFF]">
+            <BaseLoadingButton />
+            <span class="text-sm font-medium text-primary">Waiting</span>
           </div>
         </template>
-        <div class="flex flex-col gap-1" @click="visible = false">
-          <NuxtLink active-class="!text-primary" to="/positions" class="h-10 w-full rounded-xl pl-2 text-base leading-10 text-secondary">
-            View positions
-          </NuxtLink>
-          <NuxtLink active-class="!text-primary" to="/positions/create" class="h-10 w-full rounded-xl pl-2 text-base leading-10 text-secondary">
-            Create position
-          </NuxtLink>
-        </div>
-      </ElPopover>
-    </div>
 
-    <ElPopover v-if="isLogged" placement="bottom" :show-arrow="false" :width="150" trigger="hover" popper-class="popper-menu-pool" :teleported="false">
-      <template #reference>
-        <div class="flex cursor-pointer items-center gap-1 rounded-full px-[6px] py-2 hover:bg-surface" @click="isOpen = true">
-          <BaseIcon name="default-avatar" size="24" />
-          <span>{{ sliceString(userAddress!, 6) }}</span>
-        </div>
-      </template>
-      <div class="flex w-full items-center justify-between">
-        <div
-          class="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-full bg-surface px-[6px] py-2 hover:bg-surface3"
-          @click="
-            () => {
-              disconnectWallet()
-              isOpen = false
-            }
-          "
-        >
-          <BaseIcon name="shutdown" size="20" class="text-secondary" />
-          <span class="text-sm text-secondary">Disconnect</span>
-        </div>
+        <template v-else>
+          <ElPopover
+            v-if="isConnected"
+            placement="bottom-end"
+            :show-arrow="false"
+            :width="120"
+            trigger="hover"
+            popper-class="popper-menu-pool"
+            :teleported="false"
+          >
+            <template #reference>
+              <div class="flex h-9 cursor-pointer items-center gap-4 rounded-full bg-[#EFEFFF] px-5 sm:bg-transparent sm:px-0" @click="isOpen = true">
+                <div class="flex items-center gap-2">
+                  <BaseIcon name="default-avatar" size="24" />
+                  <div class="sm:text-sm sm:text-white">
+                    <div class="font-semibold">
+                      <span>Mainnet </span>
+                      <span class="text-hyperlink">$0.03134</span>
+                    </div>
+                    <div class="hidden sm:block">{{ sliceString(address!, 2, 4) }}</div>
+                  </div>
+                </div>
+                <span class="h-full w-[2px] bg-white sm:hidden"></span>
+                <span class="font-semibold text-gray-7 sm:hidden">{{ sliceString(address!, 2, 4) }}</span>
+              </div>
+            </template>
+            <div class="flex w-full items-center justify-between">
+              <div
+                class="bg-surface hover:bg-surface3 flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-full px-[6px] py-2"
+                @click="
+                  () => {
+                    disconnect()
+                    isOpen = false
+                  }
+                "
+              >
+                <BaseIcon name="shutdown" size="20" class="text-primary" />
+                <span class="text-sm text-primary">Disconnect</span>
+              </div>
+            </div>
+          </ElPopover>
+
+          <div
+            v-else
+            class="flex h-9 w-40 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#EFEFFF] hover:opacity-80 sm:w-fit sm:bg-transparent"
+            @click="connectWallet"
+          >
+            <BaseIcon name="wallet" size="24" class="text-[#616161] sm:hidden" />
+            <span class="text-sm sm:text-white">Connect Wallet</span>
+          </div>
+        </template>
       </div>
-    </ElPopover>
-
-    <div v-else class="flex h-10 cursor-pointer items-center justify-center rounded-full bg-[#ffefff] px-3 hover:bg-[#ffe7ff]" @click="connectWallet">
-      <span class="text-sm text-pink">Connect</span>
     </div>
 
     <!-- <ElDrawer
@@ -119,20 +132,18 @@
 </template>
 
 <script setup lang="ts">
-  import BaseIcon from '../base/BaseIcon.vue'
+  import { useAccount, useDisconnect } from '@wagmi/vue'
 
-  const { connectWallet, disconnectWallet } = useWeb3()
-  const { isLogged, userAddress } = storeToRefs(useAuthStore())
+  const { setOpenPopup } = useBaseStore()
+  const { isSwapping } = storeToRefs(useSwapStore())
+  const { address, isConnected } = useAccount()
+  const { disconnect } = useDisconnect()
 
   const isOpen = ref(false)
-  const visible = ref(false)
 
-  const isDesktop = ref(false)
-  onMounted(() => {
-    nextTick(() => {
-      isDesktop.value = window.innerWidth > 768
-    })
-  })
+  const connectWallet = () => {
+    setOpenPopup('popup-connect')
+  }
 </script>
 
 <style scoped lang="scss">
@@ -144,5 +155,16 @@
     transition:
       visibility 0s,
       opacity 0.5s linear;
+  }
+
+  .active-menu {
+    padding: 6px 26px;
+    border-radius: 32px;
+    background: #e3eeff;
+  }
+  .container {
+    @media screen and (max-width: 768px) {
+      background: linear-gradient(116deg, #5c2f64 24.35%, #092143 72.01%);
+    }
   }
 </style>

@@ -1,49 +1,84 @@
 <template>
-  <div class="border-base input-swap flex flex-col bg-surface2 p-4" :class="{ '!bg-transparent': isFocus }" @click="handleClick">
-    <span class="text-secondary">{{ type === 'BASE' ? 'Sell' : 'Buy' }}</span>
-    <div class="flex items-center gap-2 py-2">
-      <ElInput v-model="amount" :disabled="!isSelected" placeholder="0" class="input-amount flex-1" @focus="emits('focus-input', type)" @input="handleInput" />
+  <div class="input-swap flex flex-col gap-4 rounded-lg px-8 pt-4 sm:px-4 sm:pt-2" @click="handleClick">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-5">
+        <span class="text-sm text-primary">{{ type === 'BASE' ? 'Sell' : 'Buy' }}</span>
+        <div v-if="type === 'BASE' && isConnected && stepSwap === 'SELECT_TOKEN'" class="grid grid-cols-[44px_44px_44px_44px] gap-2 sm:grid-cols-[44px_44px]">
+          <div
+            v-for="(item, index) in 4"
+            :key="item"
+            class="flex h-[22px] cursor-pointer items-center justify-center rounded-[4px] bg-white"
+            :class="{ 'sm:hidden': index % 2 !== 0 }"
+          >
+            <span class="text-sm text-gray-8">{{ index ? (100 / 4) * index + '%' : 'Max' }}</span>
+          </div>
+        </div>
+      </div>
+      <span v-if="isConnected && stepSwap === 'SELECT_TOKEN'" class="text-sm text-gray-8">Max: {{ formattedBalance }}</span>
+    </div>
+    <div class="flex min-h-10 items-center gap-2">
       <template v-if="isSelected">
-        <div class="border-base flex h-9 cursor-pointer items-center gap-1 px-2" @click="emits('select-token', type)">
-          <img :src="token.icon_url" alt="logo" class="size-7" @error="handleImageError($event)" />
-          <span class="font-medium">{{ token.symbol }}</span>
-          <BaseIcon name="arrow" size="24" class="-rotate-90 text-secondary" />
+        <div class="flex max-w-[150px] cursor-pointer items-center gap-[10px]" @click="emits('select-token', type)">
+          <img :src="token.icon_url" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError($event)" />
+          <div class="flex flex-col">
+            <div class="flex items-center gap-1">
+              <span class="font-medium">{{ token.symbol }}</span>
+              <BaseIcon v-if="stepSwap === 'SELECT_TOKEN'" name="arrow" size="18" class="text-secondary -rotate-90" />
+            </div>
+            <h4 class="line-clamp-1 text-xs text-[#6F6A79]">{{ token.name }}</h4>
+          </div>
         </div>
       </template>
       <template v-else>
-        <div class="border-base flex h-9 cursor-pointer items-center gap-1 bg-pink px-2" @click="emits('select-token', type)">
-          <span class="text-white">Select token</span>
-          <BaseIcon name="arrow" size="24" class="-rotate-90 text-white" />
+        <div class="flex h-9 cursor-pointer items-center gap-[10px] rounded-lg" @click="emits('select-token', type)">
+          <!-- <span class="text-sm text-gray-6">Select token</span>
+          <BaseIcon name="arrow" size="18" class="-rotate-90 text-gray-6" /> -->
+          <img src="/empty-token.png" alt="empty token" class="size-9 sm:size-8" />
+
+          <div class="flex items-center gap-1 text-gray-6">
+            <span>Select a token</span>
+            <BaseIcon name="arrow" size="18" class="-rotate-90 text-gray-6" />
+          </div>
         </div>
       </template>
-    </div>
-    <div v-if="isSelected" class="flex justify-end">
-      <div class="flex items-center gap-1 text-sm text-secondary">
-        <span>{{ formatNumber(balance) }} {{ token.symbol }}</span>
-        <span class="cursor-pointer rounded-full bg-surface3 p-1 text-xs">Max</span>
+      <div class="flex flex-1 flex-col items-end gap-1">
+        <ElInput
+          v-model="amount"
+          placeholder="0"
+          class="input-amount flex-1"
+          :class="{ 'disabled-input': !isSelected || stepSwap === 'CONFIRM_SWAP' }"
+          :formatter="(value: string) => formatNumberInput(value)"
+          :parser="(value: string) => parseNumberInput(value)"
+          @focus="emits('focus-input', type)"
+          @input="handleInput"
+        />
+        <span v-if="type === 'BASE'" class="text-sm font-semibold text-gray-6">≈ {{ amountUsd }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+  import { useAccount } from '@wagmi/vue'
+
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
+  import type { StepSwap } from './FormSwap.vue'
 
   interface IProps {
-    isFocus: boolean
     isSelected: boolean
     token: IToken
     type: TYPE_SWAP
-    balance: string
+    balance: string | undefined
+    stepSwap: StepSwap
   }
 
   const props = withDefaults(defineProps<IProps>(), {
-    isFocus: false,
     isSelected: false,
     token: () => ({ name: '', symbol: '', icon_url: '', address: '', decimals: 0 }),
     type: 'BASE',
-    balance: '0'
+    balance: '0',
+    stepSwap: 'SELECT_TOKEN'
   })
 
   const emits = defineEmits<{
@@ -60,6 +95,15 @@
 
   const { handleImageError } = useErrorImage()
 
+  const formattedBalance = computed(() => {
+    return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
+  })
+
+  const amountUsd = computed(() => {
+    const random = Math.random()
+    return amount.value ? (random > 0.01 ? '$' + random.toFixed(2) : '<$0.01') : '$0'
+  })
+
   const handleClick = () => {
     if (!props.isSelected) {
       emits('select-token', props.type)
@@ -69,6 +113,48 @@
   const handleInput = useDebounce(() => {
     emits('change', amount.value, props.type)
   }, 400)
+
+  const { isConnected } = useAccount()
+
+  function formatNumberInput(value: string, _isSplit = true) {
+    if (!value) return ''
+    let text = ''
+    // const flag = false
+    text = value.replace(/[^\d.]/g, '')
+
+    // if (isSplit) {
+    //   const arrText: string[] = []
+
+    //   for (let index = 0; index < text.length; index++) {
+    //     if (flag) {
+    //       if (text[index] !== '.' && text[index] !== '-') {
+    //         arrText.push(text[index])
+    //       }
+    //     } else {
+    //       if (text[index] === '.') {
+    //         flag = true
+    //       }
+    //       arrText.push(text[index])
+    //     }
+    //   }
+    //   text = arrText.join('')
+
+    //   if (text.includes('.')) {
+    //     const naturalPart = text.toString().split('.')
+    //     naturalPart[0] = naturalPart[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    //     return naturalPart.join('.')
+    //   } else {
+    //     return text === '-' ? '-' : formatNumber(+text)
+    //   }
+    // }
+    return text
+  }
+
+  function parseNumberInput(value: string) {
+    if (!value) return ''
+    value = value.replace(/[^\d.-]/g, '')
+    return value.replace(/\$\s?|(,*)/g, '')
+  }
 </script>
 
 <style lang="scss" scoped>
@@ -79,13 +165,31 @@
     :deep(.input-amount) {
       .el-input__wrapper {
         box-shadow: unset;
-        height: 44px;
         background-color: transparent;
+        padding-right: 0;
+
         .el-input__inner {
-          font-size: 36px;
-          color: var(--color-primary);
+          height: 32px;
+          font-size: 32px;
+          font-weight: 600;
+          text-align: right;
+          background: linear-gradient(91deg, #790c8b 60%, #1573fe 98%);
+          background-clip: text;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          overflow: hidden;
+          &::placeholder {
+            background: linear-gradient(91deg, #a8abb2 0%, #a8abb2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+          }
         }
       }
+    }
+    :deep(.disabled-input) {
+      cursor: not-allowed;
+      pointer-events: none;
     }
   }
 </style>

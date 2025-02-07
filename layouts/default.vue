@@ -1,13 +1,22 @@
 <template>
-  <div class="w-full">
-    <TheHeader />
-    <main v-if="!loading">
-      <slot />
-    </main>
+  <div class="flex w-full flex-col bg-white">
+    <PageLoading v-if="loading" />
+    <template v-else>
+      <TheHeader />
+      <div class="flex flex-1 flex-col bg-[#F5F5F5]">
+        <main>
+          <slot />
+        </main>
+        <TheFooter />
+      </div>
+      <TheHeaderMobile />
+    </template>
   </div>
+  <PopupConnectWallet />
 </template>
 
 <script lang="ts" setup>
+  import PageLoading from '~/components/loading/PageLoading.vue'
   import { NATIVE_TOKEN } from '~/constant'
   import { baseRepository } from '~/repository/base'
 
@@ -21,12 +30,12 @@
 
   const loading = ref(true)
 
-  const { init } = useWeb3()
+  // const { init } = useWeb3()
 
   onMounted(() => {
-    init().then(() => {
-      loading.value = false
-    })
+    loading.value = false
+    // init().then(() => {
+    // })
   })
 </script>
 

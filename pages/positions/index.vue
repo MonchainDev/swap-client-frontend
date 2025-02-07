@@ -22,8 +22,8 @@
               </div>
             </div>
             <span>{{ row.token0.symbol }}/{{ row.token1.symbol }}</span>
-            <span class="rounded bg-surface px-[6px] py-[2px] text-xs font-medium lowercase text-secondary">{{ row.protocolVersion }}</span>
-            <span class="rounded bg-surface px-[6px] py-[2px] text-xs font-medium lowercase text-secondary">{{ row.feeTier / 10000 }}%</span>
+            <span class="text-secondary bg-surface rounded px-[6px] py-[2px] text-xs font-medium lowercase">{{ row.protocolVersion }}</span>
+            <span class="text-secondary bg-surface rounded px-[6px] py-[2px] text-xs font-medium lowercase">{{ row.feeTier / 10000 }}%</span>
           </div>
         </template>
       </ElTableColumn>

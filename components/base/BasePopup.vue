@@ -9,12 +9,13 @@
     :top="props.top"
     :align-center="props.alignCenter"
     :show-close="false"
+    :fullscreen="fullscreen"
     class="base-popup"
     @open="handleOpen"
     @close="handleClose"
   >
     <template #header>
-      <div class="flex w-full items-center justify-between text-lg text-primary first-letter:uppercase">
+      <div class="wrap-header flex w-full items-center justify-between text-[22px] font-semibold leading-7 text-primary first-letter:uppercase sm:text-base">
         <slot name="title">
           <span>{{ props.title }}</span></slot
         >
@@ -50,6 +51,7 @@
     padding?: string
     title?: string
     alignCenter?: boolean
+    fullscreen?: boolean
   }
   const props = withDefaults(defineProps<IPopup>(), {
     name: '',
@@ -61,7 +63,8 @@
     closePressEscape: true,
     padding: '0px',
     alignCenter: true,
-    title: ''
+    title: '',
+    fullscreen: false
   })
 
   const emits = defineEmits<{
@@ -105,11 +108,13 @@
 </style>
 <style lang="scss">
   .base-popup {
-    --el-dialog-border-radius: 16px;
+    --el-dialog-border-radius: 8px;
     --el-dialog-padding-primary: 0;
+    overflow-y: hidden;
 
     .el-dialog__header {
-      padding: 16px;
+      padding: 19px 32px 15px;
+      @apply sm:px-4;
     }
     .el-dialog__body {
       color: var(--color-primary);

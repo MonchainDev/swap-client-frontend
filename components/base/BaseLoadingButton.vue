@@ -9,8 +9,8 @@
     width: 18px;
     aspect-ratio: 1;
     border-radius: 50%;
-    border: 3px solid var(--color-surface3);
-    border-right-color: var(--color-secondary);
+    border: 3px solid var(--color-gray-3);
+    border-right-color: var(--color-gray-6);
     animation: l2 1s infinite linear;
   }
   @keyframes l2 {

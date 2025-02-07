@@ -1,6 +1,6 @@
-import type { IToken } from '~/types'
+import type { INetwork, IToken } from '~/types'
 
-const DEFAULT_SLIPPAGE = 5.5
+const DEFAULT_SLIPPAGE = '1'
 const DECIMALS_NATIVE = 18
 
 const NATIVE_TOKEN: IToken = {
@@ -19,4 +19,32 @@ const WRAPPED_NATIVE_TOKEN: IToken = {
   address: '0xF76eF13fb6B775e4609C921cAA1BD9307E338276'
 }
 
-export { DEFAULT_SLIPPAGE, DECIMALS_NATIVE, NATIVE_TOKEN, WRAPPED_NATIVE_TOKEN }
+const LIST_NETWORK: INetwork[] = [
+  {
+    title: 'BNB Chain',
+    logo: '/logo-bnb-chain.png',
+    value: 'BNB'
+  },
+  {
+    title: 'Ethereum',
+    logo: '/logo-ethereum-chain.png',
+    value: 'ETH'
+  },
+  {
+    title: 'Polygon',
+    logo: '/logo-polygon-chain.png',
+    value: 'MATIC'
+  },
+  {
+    title: 'Mon Chain',
+    logo: '/logo-mon-chain.png',
+    value: 'MON'
+  },
+  {
+    title: 'Linea Chain',
+    logo: '/logo-liena-chain.png',
+    value: 'LINEA'
+  }
+]
+
+export { DEFAULT_SLIPPAGE, DECIMALS_NATIVE, NATIVE_TOKEN, WRAPPED_NATIVE_TOKEN, LIST_NETWORK }
