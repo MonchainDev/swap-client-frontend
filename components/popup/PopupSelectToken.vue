@@ -11,7 +11,7 @@
     <template v-if="!isDesktop" #close>
       <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-select-token', false)" />
     </template>
-    <div class="mt-1 px-8 pb-6 sm:px-4">
+    <div class="relative mt-1 px-8 pb-6 shadow sm:px-4">
       <ElInput
         v-model="search"
         autofocus
@@ -127,7 +127,11 @@
   const { handleImageError } = useErrorImage()
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+  .shadow {
+    box-shadow: 0px 2px 4px 0px rgb(0 0 0 / 10%);
+  }
+</style>
 
 <style lang="scss">
   .popup-select-token {

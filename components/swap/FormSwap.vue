@@ -9,19 +9,19 @@
         :balance="balance0?.formatted"
         :step-swap
         type="BASE"
-        class="bg-[#EFEFFF]"
+        class="h-[138px] bg-[#EFEFFF] sm:h-[120px]"
         :class="{ 'bg-[#F5F5F5]': stepSwap === 'CONFIRM_SWAP' }"
         @select-token="handleOpenPopupSelectToken"
         @change="handleInput"
       />
       <div class="relative z-10 select-none">
         <div
-          class="absolute left-1/2 top-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[4px] border-solid border-white bg-[#1573FE] p-2"
+          class="absolute left-1/2 top-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[4px] border-solid border-white bg-[#1573FE] p-2 sm:size-9"
           :class="{ 'bg-gray-6': stepSwap === 'CONFIRM_SWAP' }"
           @click="handleSwapOrder"
         >
-          <BaseIcon v-if="stepSwap === 'SELECT_TOKEN'" name="repeat" class="text-white" size="24" />
-          <BaseIcon v-else name="arrow-down-bold" class="text-white" size="24" />
+          <BaseIcon v-if="stepSwap === 'SELECT_TOKEN'" name="repeat" class="text-white" :size="isDesktop ? '24' : '18'" />
+          <BaseIcon v-else name="arrow-down-bold" class="text-white" :size="isDesktop ? '24' : '18'" />
         </div>
       </div>
       <InputSwap
@@ -31,7 +31,7 @@
         :balance="balance1?.formatted"
         :step-swap
         type="QUOTE"
-        class="bg-[#F3F8FF]"
+        class="h-[124px] bg-[#F3F8FF] sm:h-[100px]"
         :class="{ '!bg-[#EEEEEE]': stepSwap === 'CONFIRM_SWAP' }"
         @select-token="handleOpenPopupSelectToken"
         @change="handleInput"
@@ -91,6 +91,7 @@
   })
 
   const { setOpenPopup } = useBaseStore()
+  const { isDesktop } = storeToRefs(useBaseStore())
 
   const { isSwapping, isConfirmApprove, slippage, isConfirmSwap } = storeToRefs(useSwapStore())
 

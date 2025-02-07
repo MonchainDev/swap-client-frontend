@@ -1,5 +1,5 @@
 <template>
-  <div class="input-swap flex h-[138px] flex-col gap-4 rounded-lg px-8 pt-4 sm:h-[120px] sm:px-4 sm:pt-2" @click="handleClick">
+  <div class="input-swap flex flex-col gap-4 rounded-lg px-8 pt-4 sm:px-4 sm:pt-2" @click="handleClick">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-5">
         <span class="text-sm text-primary">{{ type === 'BASE' ? 'Sell' : 'Buy' }}</span>
@@ -30,9 +30,15 @@
         </div>
       </template>
       <template v-else>
-        <div class="flex h-9 cursor-pointer items-center gap-1 rounded-lg bg-gray-3 px-2" @click="emits('select-token', type)">
-          <span class="text-sm text-gray-6">Select token</span>
-          <BaseIcon name="arrow" size="18" class="-rotate-90 text-gray-6" />
+        <div class="flex h-9 cursor-pointer items-center gap-[10px] rounded-lg" @click="emits('select-token', type)">
+          <!-- <span class="text-sm text-gray-6">Select token</span>
+          <BaseIcon name="arrow" size="18" class="-rotate-90 text-gray-6" /> -->
+          <img src="/empty-token.png" alt="empty token" class="size-9 sm:size-8" />
+
+          <div class="flex items-center gap-1 text-gray-6">
+            <span>Select a token</span>
+            <BaseIcon name="arrow" size="18" class="-rotate-90 text-gray-6" />
+          </div>
         </div>
       </template>
       <div class="flex flex-1 flex-col items-end gap-1">
