@@ -90,7 +90,7 @@
   const { handleImageError } = useErrorImage()
 
   const formattedBalance = computed(() => {
-    return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0'
+    return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
   })
 
   const amountUsd = computed(() => {

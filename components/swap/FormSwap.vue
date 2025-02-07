@@ -58,8 +58,14 @@
         class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:h-[42px] sm:text-sm"
         @click="setOpenPopup('popup-connect')"
       >
-        <BaseIcon name="wallet" size="24" class="text-white" />
-        <span class="uppercase">Connect Wallet</span>
+        <template v-if="isFetchQuote">
+          <BaseLoadingButton />
+          <span>{{ msgButton }}</span>
+        </template>
+        <template v-else>
+          <BaseIcon name="wallet" size="24" class="text-white" />
+          <span class="uppercase">Connect Wallet</span>
+        </template>
       </button>
     </template>
 
