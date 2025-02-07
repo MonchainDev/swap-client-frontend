@@ -43,21 +43,26 @@
 
   const handleConnect = async (type: WalletType) => {
     if (type === 'TRUST_WALLET') {
-      if (!window.trustWallet) {
-        window.open(`https://link.trustwallet.com/open_url?coin_id=60&url=${window.location.href}`, '_blank')
-      } else {
+      if (window.trustWallet) {
         const connector = connectors.find((item) => item.name === 'Trust Wallet')
         if (connector) {
           await connectAsync({ connector, chainId: chainId.value })
         }
+      } else {
+        window.open(`https://link.trustwallet.com/open_url?coin_id=60&url=${window.location.href}`, '_blank')
       }
     } else if (type === 'METAMASK') {
-      await connectAsync({ connector: connectors[0], chainId: chainId.value })
+      if (window.ethereum) {
+        await connectAsync({ connector: connectors[0], chainId: chainId.value })
+      } else {
+        window.open(`https://metamask.app.link/dapp/${window.location.href}`, '_blank')
+      }
     } else if (type === 'COINBASE') {
       await connectAsync({ connector: connectors[1], chainId: chainId.value })
-    } else {
-      await connectAsync({ connector: connectors[2], chainId: chainId.value })
     }
+    // else {
+    //   await connectAsync({ connector: connectors[2], chainId: chainId.value })
+    // }
     setOpenPopup('popup-connect', false)
   }
 </script>
