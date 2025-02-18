@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { NATIVE_TOKEN } from '~/constant'
 import type { IFormCreatePosition } from '~/types/position.type'
 
-export const usePositionStore = defineStore('position', () => {
+export const useLiquidityStore = defineStore('liquidity', () => {
   const stepCurrent = ref(1)
   const form = ref<IFormCreatePosition>({
     feeTier: 0.3,

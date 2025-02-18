@@ -1,12 +1,12 @@
 <template>
-  <div class="grid grid-cols-1 gap-y-8 rounded-3xl border border-solid border-surface3 p-6">
+  <div class="border-surface3 grid grid-cols-1 gap-y-8 rounded-3xl border border-solid p-6">
     <div class="flex flex-col">
       <span class="text-lg leading-6">Select pair</span>
-      <span class="text-sm text-secondary">Choose the tokens you want to provide liquidity for. You can select tokens on all supported networks.</span>
+      <span class="text-secondary text-sm">Choose the tokens you want to provide liquidity for. You can select tokens on all supported networks.</span>
 
       <div class="mt-3 grid grid-cols-2 gap-x-4 sm:grid-cols-1 sm:gap-y-4">
         <div
-          class="h-[50px] cursor-pointer rounded-2xl border border-solid border-[transparent] bg-surface3 py-3 pl-4 pr-3 hover:opacity-[0.8]"
+          class="bg-surface3 h-[50px] cursor-pointer rounded-2xl border border-solid border-[transparent] py-3 pl-4 pr-3 hover:opacity-[0.8]"
           @click="openPopupSelectToken('BASE')"
         >
           <div class="flex items-center justify-between">
@@ -18,7 +18,7 @@
           </div>
         </div>
         <div
-          class="h-[50px] cursor-pointer rounded-2xl border border-solid border-[transparent] bg-surface3 py-3 pl-4 pr-3 hover:opacity-[0.8]"
+          class="bg-surface3 h-[50px] cursor-pointer rounded-2xl border border-solid border-[transparent] py-3 pl-4 pr-3 hover:opacity-[0.8]"
           :class="{ '!bg-primary': !isToken1Selected }"
           @click="openPopupSelectToken('QUOTE')"
         >
@@ -40,16 +40,16 @@
     <div class="grid grid-cols-1 gap-6">
       <div class="flex flex-col">
         <span class="text-lg leading-6">Fee tier</span>
-        <span class="text-sm text-secondary">The amount earned providing liquidity. Choose an amount that suits your risk tolerance and strategy.</span>
+        <span class="text-secondary text-sm">The amount earned providing liquidity. Choose an amount that suits your risk tolerance and strategy.</span>
       </div>
       <div class="grid grid-cols-1 gap-2">
-        <div class="flex items-center justify-between rounded-xl border border-solid border-surface3 px-4 py-3">
+        <div class="border-surface3 flex items-center justify-between rounded-xl border border-solid px-4 py-3">
           <div class="flex flex-col gap-y-1">
             <span>{{ form.feeTier }}% fee tier</span>
-            <span class="text-sm text-secondary">The % you will earn in fees </span>
+            <span class="text-secondary text-sm">The % you will earn in fees </span>
           </div>
           <div
-            class="flex h-[38px] cursor-pointer items-center justify-center gap-1 rounded-2xl border border-solid border-[transparent] bg-surface3 px-3 text-xs hover:opacity-80"
+            class="bg-surface3 flex h-[38px] cursor-pointer items-center justify-center gap-1 rounded-2xl border border-solid border-[transparent] px-3 text-xs hover:opacity-80"
             @click="isOpen = !isOpen"
           >
             <span> {{ isOpen ? 'Less' : 'More' }}</span>
@@ -61,7 +61,7 @@
             v-for="item in listFee"
             :key="item.value"
             :class="{ 'bg-surface3': form.feeTier === item.value }"
-            class="grid cursor-pointer grid-cols-1 gap-2 rounded-xl border border-solid border-surface3 p-3"
+            class="border-surface3 grid cursor-pointer grid-cols-1 gap-2 rounded-xl border border-solid p-3"
             @click="form.feeTier = item.value"
           >
             <div class="flex justify-between">
@@ -71,7 +71,7 @@
               </div>
             </div>
             <span class="text-xs">{{ item.description }}</span>
-            <span class="text-xs text-secondary">0 TVL</span>
+            <span class="text-secondary text-xs">0 TVL</span>
           </div>
         </div>
       </div>
@@ -85,7 +85,7 @@
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
 
-  const { form } = storeToRefs(usePositionStore())
+  const { form } = storeToRefs(useLiquidityStore())
   const isOpen = ref(false)
   const listFee = [
     {

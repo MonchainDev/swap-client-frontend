@@ -10,7 +10,9 @@
           <NuxtLink active-class="active-menu" to="/" class="text-center text-base font-medium leading-6 hover:text-primary">Swap</NuxtLink>
           <!-- <NuxtLink active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Swap</NuxtLink> -->
           <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Cross chain</div>
-          <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Add Liquidity</div>
+          <NuxtLink active-class="active-menu" to="/liquidity/create" class="text-center text-base font-medium leading-6 hover:text-primary"
+            >Farm/ Liquidity</NuxtLink
+          >
           <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Farming</div>
           <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Bridge</div>
         </div>
