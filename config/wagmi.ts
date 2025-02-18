@@ -10,10 +10,10 @@ export const testnet = {
   name: 'Monchain Testnet',
   nativeCurrency: { name: 'Mon', symbol: 'MON', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://rpc.monchain.info'] }
+    default: { http: ['https://rpc-testnet.monchain.info'] }
   },
   blockExplorers: {
-    default: { name: 'Monscan', url: 'https://explorer.monchain.info', apiUrl: 'https://explorer.monchain.info/api/v2' }
+    default: { name: 'Monscan', url: 'https://dev.explorer.hdev99.io.vn/', apiUrl: 'https://explorer.monchain.info/api/v2' }
   },
   testnet: true
 } as const satisfies Chain
