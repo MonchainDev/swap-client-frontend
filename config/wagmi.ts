@@ -6,11 +6,11 @@ import { coinbaseWallet, metaMask } from '@wagmi/vue/connectors'
 import { type Chain } from 'viem'
 
 export const testnet = {
-  id: 16_788,
+  id: 16_789,
   name: 'Monchain Testnet',
   nativeCurrency: { name: 'Mon', symbol: 'MON', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://rpc.monchain.info'] }
+    default: { http: ['https://rpc-testnet.monchain.info'] }
   },
   blockExplorers: {
     default: { name: 'Monscan', url: 'https://explorer.monchain.info', apiUrl: 'https://explorer.monchain.info/api/v2' }
