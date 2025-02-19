@@ -1,5 +1,5 @@
 <template>
-  <BannerAds class="mt-[67px]" />
+  <!-- <BannerAds class="mt-[67px]" /> -->
 
   <footer
     class="mx-auto mt-[21px] grid w-[1009px] grid-cols-[1fr_1fr_1fr_240px] gap-[72px] border-t border-solid border-gray-4 pb-7 pt-8 sm:w-full sm:grid-cols-3 sm:gap-3 sm:border-none sm:px-4"
@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts" setup>
-  import BannerAds from '../ads/BannerAds.vue'
+  // import BannerAds from '../ads/BannerAds.vue'
 
   const email = ref('')
 </script>

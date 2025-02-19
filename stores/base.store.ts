@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia'
-import type { IToken } from '~/types'
+import { DEFAULT_NETWORK } from '~/constant'
+import type { INetwork, IToken } from '~/types'
 import type { POPUP_NAME } from '~/types/popup.type'
 
 export const useBaseStore = defineStore('base', () => {
   const listToken = ref<IToken[]>([])
   const nativeBalance = ref<string>('0')
   const isDesktop = ref(false)
+  const currentNetwork = ref<INetwork>({ ...DEFAULT_NETWORK })
 
   onMounted(() => {
     nextTick(() => {
@@ -24,5 +26,5 @@ export const useBaseStore = defineStore('base', () => {
     }
   }
 
-  return { popup, setOpenPopup, listToken, nativeBalance, isDesktop }
+  return { popup, setOpenPopup, listToken, nativeBalance, isDesktop, currentNetwork }
 })

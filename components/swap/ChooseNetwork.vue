@@ -10,12 +10,15 @@
       :teleported="false"
     >
       <template #reference>
-        <div class="flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-[#EFEFFF] px-2">
-          <img :src="network.logo" alt="logo" class="size-6 rounded-lg" />
-          <span class="text-sm font-semibold sm:font-normal">{{ network.title }}</span>
-          <BaseIcon name="arrow" size="16" class="-rotate-90" />
-        </div>
+        <slot name="reference">
+          <div class="flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-[#EFEFFF] px-2">
+            <img :src="network.logo" alt="logo" class="size-6 rounded-lg" />
+            <span class="text-sm font-semibold sm:font-normal">{{ network.title }}</span>
+            <BaseIcon name="arrow" size="16" class="-rotate-90" />
+          </div>
+        </slot>
       </template>
+
       <div class="flex flex-col gap-7">
         <ElInput v-model="search" placeholder="Search network by name" class="input-search">
           <template #prefix>
@@ -24,17 +27,14 @@
         </ElInput>
         <ul class="space-y-4">
           <li v-for="item in listNetwork" :key="item.value">
-            <div
-              class="flex cursor-pointer items-center gap-3"
-              @click="
-                () => {
-                  network = item
-                  visible = false
-                }
-              "
-            >
-              <img :src="item.logo" alt="logo" class="size-9 rounded-lg" />
-              <span class="text-sm font-semibold text-primary sm:font-normal">{{ item.title }}</span>
+            <div class="flex cursor-pointer items-center justify-between gap-3" @click="handleSelectNetwork(item)">
+              <div class="flex items-center gap-3">
+                <img :src="item.logo" alt="logo" class="size-9 rounded-lg" />
+                <span class="text-sm font-semibold text-primary sm:font-normal">{{ item.title }}</span>
+              </div>
+              <div v-if="isSelect">
+                <BaseIcon :name="useIncludes(networkSelected, item.value) ? 'checkbox-fill' : 'checkbox'" size="24" />
+              </div>
             </div>
           </li>
         </ul>
@@ -44,15 +44,46 @@
 </template>
 
 <script lang="ts" setup>
-  import { LIST_NETWORK } from '~/constant'
+  import { DEFAULT_NETWORK, LIST_NETWORK } from '~/constant'
+  import type { INetwork } from '~/types'
 
-  const { networkSelected: network } = storeToRefs(useSwapStore())
+  interface IProps {
+    isSelect?: boolean
+  }
+
+  const _props = withDefaults(defineProps<IProps>(), {
+    isSelect: false
+  })
+
+  const { currentNetwork: network } = storeToRefs(useBaseStore())
   const visible = ref(false)
   const search = ref('')
+
+  const networkSelected = defineModel('networkSelected', {
+    type: Array<string>,
+    default: []
+  })
 
   const listNetwork = computed(() => {
     return LIST_NETWORK.filter((item) => item.title.toLowerCase().includes(useTrim(search.value.toLowerCase())))
   })
+
+  const handleSelectNetwork = (item: INetwork) => {
+    if (_props.isSelect) {
+      const index = networkSelected.value.indexOf(item.value)
+      if (index > -1) {
+        networkSelected.value.splice(index, 1)
+      } else {
+        networkSelected.value.push(item.value)
+      }
+      if (networkSelected.value.length === 0) {
+        networkSelected.value.push(DEFAULT_NETWORK.value)
+      }
+    } else {
+      network.value = item
+      visible.value = false
+    }
+  }
 </script>
 
 <style lang="scss" scoped>

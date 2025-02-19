@@ -1,6 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [],
+  content: [
+    "./components/**/*.{js,vue,ts}",
+    "./layouts/**/*.vue",
+    "./pages/**/*.vue",
+    "./plugins/**/*.{js,ts}",
+    "./app.vue",
+    "./error.vue",
+  ],
   theme: {
     container:{
       center:true,
@@ -17,6 +24,7 @@ export default {
       error: 'var(--color-error)',
       transparent:'transparent',
       hyperlink: 'var(--color-hyperlink)',
+      'linear-gradient': 'var(--color-linear-gradient)',
     },
     screens: {
       xxl: {

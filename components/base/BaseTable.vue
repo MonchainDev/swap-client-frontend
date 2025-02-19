@@ -28,20 +28,12 @@
           thead {
             tr th {
               height: 48px;
-              border-top: 1px solid #2222220d;
+              // border-top: 1px solid #2222220d;
               .cell {
                 font-size: 16px;
                 line-height: 24px;
                 color: var(--color-secondary);
               }
-            }
-            tr th:first-child {
-              border-left: 1px solid #2222220d;
-              border-top-left-radius: 20px;
-            }
-            tr th:last-child {
-              border-right: 1px solid #2222220d;
-              border-top-right-radius: 20px;
             }
           }
         }

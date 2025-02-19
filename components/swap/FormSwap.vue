@@ -361,13 +361,6 @@
     --el-popover-border-radius: 9px;
     --el-popover-padding: 12px 24px 16px;
   }
-  .bg-linear {
-    background: linear-gradient(91deg, #790c8b 17.53%, #1573fe 84.87%);
-  }
-  .bg-gray,
-  .btn-disabled {
-    background: linear-gradient(0deg, #a8a8a8 0%, #a8a8a8 100%);
-  }
 </style>
 
 <style lang="scss">

@@ -47,4 +47,10 @@ const LIST_NETWORK: INetwork[] = [
   }
 ]
 
-export { DEFAULT_SLIPPAGE, DECIMALS_NATIVE, NATIVE_TOKEN, WRAPPED_NATIVE_TOKEN, LIST_NETWORK }
+const DEFAULT_NETWORK: INetwork = {
+  title: 'Mon Chain',
+  logo: '/logo-mon-chain.png',
+  value: 'MON'
+}
+
+export { DEFAULT_SLIPPAGE, DECIMALS_NATIVE, NATIVE_TOKEN, WRAPPED_NATIVE_TOKEN, LIST_NETWORK, DEFAULT_NETWORK }

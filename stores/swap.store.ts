@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { DEFAULT_SLIPPAGE } from '~/constant'
-import type { INetwork } from '~/types'
 
 export const useSwapStore = defineStore('swap', () => {
   const slippage = ref<string>(DEFAULT_SLIPPAGE.toString())
@@ -10,11 +9,5 @@ export const useSwapStore = defineStore('swap', () => {
   const isConfirmApprove = ref<boolean>(false)
   const isConfirmSwap = ref<boolean>(false)
 
-  const networkSelected = ref<INetwork>({
-    title: 'Mon Chain',
-    logo: '/logo-mon-chain.png',
-    value: 'MON'
-  })
-
-  return { slippage, activeSlippageAuto, txDeadline, isSwapping, networkSelected, isConfirmApprove, isConfirmSwap }
+  return { slippage, activeSlippageAuto, txDeadline, isSwapping, isConfirmApprove, isConfirmSwap }
 })
