@@ -12,7 +12,7 @@
         />
         <span class="text-2xl font-semibold leading-7 sm:text-lg">{{ title }}</span>
       </div>
-      <span v-if="stepSwap === 'SELECT_TOKEN'" class="text-sm text-gray-8">Securely exchange tokens without intermediaries.</span>
+      <span v-if="stepSwap === 'SELECT_TOKEN'" class="text-sm text-gray-8 sm:hidden">Securely exchange tokens without intermediaries.</span>
     </div>
     <ChooseNetwork v-if="stepSwap === 'SELECT_TOKEN'" />
   </div>
