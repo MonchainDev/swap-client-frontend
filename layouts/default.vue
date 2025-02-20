@@ -7,8 +7,8 @@
         <main>
           <slot />
         </main>
-        <TheFooter />
       </div>
+      <TheFooter />
       <TheHeaderMobile />
     </template>
   </div>

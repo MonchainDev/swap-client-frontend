@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto mt-[38px] max-w-[1024px]">
+  <div class="mx-auto mb-[85px] mt-[38px] max-w-[1024px]">
     <div class="flex items-center justify-between">
       <div class="flex flex-col gap-1">
         <h4 class="text-xl font-semibold">Liquidity Pools & Farms</h4>

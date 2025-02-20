@@ -1,5 +1,5 @@
 <template>
-  <div class="relative mt-[92px] sm:mt-0 sm:px-4">
+  <div class="relative mb-[50px] mt-[92px] sm:mt-0 sm:px-4">
     <FormSwap class="relative z-10 mx-auto max-w-[581px]" />
     <div class="bg-linear absolute left-0 top-0 hidden h-[100px] w-screen sm:block"></div>
   </div>

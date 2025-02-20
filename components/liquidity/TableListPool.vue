@@ -79,7 +79,7 @@
         </div>
       </div>
     </div>
-    <BaseTable :data="DATA_POOL" class="mt-9">
+    <BaseTable :data="DATA_POOL" class="table-pool mt-9">
       <ElTableColumn label="Pools" width="320">
         <div class="flex gap-[10px]">
           <div class="flex">
@@ -109,7 +109,27 @@
           <span class="text-sm">${{ formatNumberAbbreviation(row.volume1Day.value) }}</span>
         </template>
       </ElTableColumn>
-      <ElTableColumn label="" align="right" width="50" />
+      <ElTableColumn label="" align="center" width="50">
+        <ElPopover placement="right" :show-arrow="false" :width="200" trigger="hover" popper-class="popper-menu-pool">
+          <template #reference>
+            <BaseIcon name="three-dot" size="24" class="cursor-pointer" />
+          </template>
+          <ul class="flex flex-col gap-4">
+            <li class="flex items-center gap-2">
+              <BaseIcon name="info" size="24" />
+              <span>View pool details</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <BaseIcon name="wallet-1" size="24" />
+              <span>Connect wallet</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <BaseIcon name="article" size="24" />
+              <span>View Info page</span>
+            </li>
+          </ul>
+        </ElPopover>
+      </ElTableColumn>
     </BaseTable>
   </div>
   <PopupSelectToken v-model:token-selected="tokenSelected" :show-network="false" is-select />
@@ -171,4 +191,25 @@
   }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+  .table-pool {
+    :deep(.el-table) {
+      .el-table__header {
+        tr th:first-child {
+          padding-left: 12px;
+        }
+      }
+      .el-table__body {
+        tr td:first-child {
+          padding-left: 12px;
+        }
+      }
+    }
+  }
+  :deep(.popper-menu-pool) {
+    --el-popover-border-radius: 8px;
+    --el-popover-padding: 12px 24px;
+
+    z-index: 9999;
+  }
+</style>

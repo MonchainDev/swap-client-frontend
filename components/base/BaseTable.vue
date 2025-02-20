@@ -19,7 +19,7 @@
 <style lang="scss" scoped>
   .base-table {
     :deep(.el-table) {
-      --el-table-header-bg-color: #f9f9f9;
+      --el-table-header-bg-color: #fafafa;
       .el-table__inner-wrapper {
         &::before {
           display: none;
@@ -39,29 +39,15 @@
         }
         .el-table__body {
           tr td {
-            &:first-child {
-              border-left: 1px solid #2222220d;
-            }
-            &:last-child {
-              border-right: 1px solid #2222220d;
-            }
             height: 64px;
             .cell {
-              font-size: 16px;
+              font-size: 14px;
               color: var(--color-primary);
             }
           }
           .index {
             .cell {
               color: var(--color-secondary);
-            }
-          }
-          tr:last-child {
-            td:last-child {
-              border-bottom-right-radius: 20px;
-            }
-            td:first-child {
-              border-bottom-left-radius: 20px;
             }
           }
         }
