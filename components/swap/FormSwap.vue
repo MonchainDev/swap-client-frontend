@@ -2,40 +2,67 @@
   <div class="flex flex-col gap-2 rounded-lg bg-white px-8 pb-10 pt-[21px] shadow-md sm:p-4">
     <HeaderFormSwap v-model:step-swap="stepSwap" :title="formatTitle" :is-confirm-approve="isConfirmApprove" :is-swapping="isSwapping" />
     <div class="relative mt-7 flex flex-col gap-1 sm:mt-[14px]">
-      <InputSwap
-        v-model:amount="sellAmount"
-        :is-selected="isToken0Selected"
-        :token="token0"
-        :balance="balance0?.formatted"
-        :step-swap
-        type="BASE"
-        class="h-[138px] bg-[#EFEFFF] sm:h-[120px]"
-        :class="{ 'bg-[#F5F5F5]': stepSwap === 'CONFIRM_SWAP' }"
-        @select-token="handleOpenPopupSelectToken"
-        @change="handleInput"
-      />
-      <div class="relative z-10 select-none">
-        <div
-          class="absolute left-1/2 top-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[4px] border-solid border-white bg-[#1573FE] p-2 sm:size-9"
-          :class="{ 'bg-gray-6': stepSwap === 'CONFIRM_SWAP' }"
-          @click="handleSwapOrder"
-        >
-          <BaseIcon v-if="stepSwap === 'SELECT_TOKEN'" name="repeat" class="text-white" :size="isDesktop ? '24' : '18'" />
-          <BaseIcon v-else name="arrow-down-bold" class="text-white" :size="isDesktop ? '24' : '18'" />
+      <template v-if="stepSwap === 'SELECT_TOKEN'">
+        <InputSwap
+          v-model:amount="sellAmount"
+          :is-selected="isToken0Selected"
+          :token="token0"
+          :balance="balance0?.formatted"
+          :step-swap
+          type="BASE"
+          class="h-[138px] bg-[#EFEFFF] sm:h-[120px]"
+          @select-token="handleOpenPopupSelectToken"
+          @change="handleInput"
+        />
+        <div class="relative z-10 select-none">
+          <div
+            class="absolute left-1/2 top-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[4px] border-solid border-white bg-[#1573FE] p-2 sm:size-9"
+            @click="handleSwapOrder"
+          >
+            <BaseIcon v-if="stepSwap === 'SELECT_TOKEN'" name="repeat" class="text-white" :size="isDesktop ? '24' : '18'" />
+            <BaseIcon v-else name="arrow-down-bold" class="text-white" :size="isDesktop ? '24' : '18'" />
+          </div>
         </div>
-      </div>
-      <InputSwap
-        v-model:amount="buyAmount"
-        :is-selected="isToken1Selected"
-        :token="token1"
-        :balance="balance1?.formatted"
-        :step-swap
-        type="QUOTE"
-        class="h-[124px] bg-[#F3F8FF] sm:h-[100px]"
-        :class="{ '!bg-[#EEEEEE]': stepSwap === 'CONFIRM_SWAP' }"
-        @select-token="handleOpenPopupSelectToken"
-        @change="handleInput"
-      />
+        <InputSwap
+          v-model:amount="buyAmount"
+          :is-selected="isToken1Selected"
+          :token="token1"
+          :balance="balance1?.formatted"
+          :step-swap
+          type="QUOTE"
+          class="h-[124px] bg-[#F3F8FF] sm:h-[100px]"
+          @select-token="handleOpenPopupSelectToken"
+          @change="handleInput"
+        />
+      </template>
+      <template v-else>
+        <div class="rounded-lg border border-solid border-gray-3 bg-[#FAFAFA] px-8 py-4 sm:p-4">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-[10px]">
+              <img :src="token0.icon_url" alt="logo" class="size-9 rounded-full" @error="handleImageError($event)" />
+              <div class="flex flex-col">
+                <span class="text-base font-semibold">{{ token0.symbol }}</span>
+                <span class="text-xs text-[#6F6A79]">{{ token0.name }}</span>
+              </div>
+            </div>
+            <div class="flex flex-col text-right">
+              <span class="text-[32px] font-semibold leading-7">{{ sellAmount }}</span>
+              <span class="text-sm font-semibold text-gray-6">≈ $150.6</span>
+            </div>
+          </div>
+          <div class="relative flex items-center justify-between gap-2 pt-[38px]">
+            <img src="/line-arrow.png" class="absolute left-4 top-0 h-[63px] sm:w-5" />
+            <div class="flex items-center gap-[10px] pl-[63px] sm:pl-[46px]">
+              <img :src="token0.icon_url" alt="logo" class="size-9 rounded-full" @error="handleImageError($event)" />
+              <div class="flex flex-col">
+                <div class="line-clamp-1 text-base font-semibold">{{ token1.symbol }}</div>
+                <div class="line-clamp-1 text-xs text-[#6F6A79]">{{ token1.name }}</div>
+              </div>
+            </div>
+            <span class="flex-1 text-right text-[32px] font-semibold leading-7">≈ {{ buyAmount }}</span>
+          </div>
+        </div>
+      </template>
     </div>
 
     <template v-if="isQuoteExist">
@@ -354,6 +381,8 @@
       })
     }
   }
+
+  const { handleImageError } = useErrorImage()
 </script>
 
 <style scoped lang="scss">
