@@ -14,7 +14,8 @@
     </div>
     <p class="mt-2 text-sm">Current Price: <span class="text-hyperlink">268.367</span> {{ form.token0.symbol }} per {{ form.token1.symbol }}</p>
     <div class="mt-5">
-      <img src="/demo-chart.png" alt="" />
+      <!-- <img src="/demo-chart.png" alt="" /> -->
+      <ChartPriceRange />
     </div>
     <div class="mt-6 flex flex-col gap-5">
       <div class="grid grid-cols-2">
