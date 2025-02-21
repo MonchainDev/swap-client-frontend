@@ -29,7 +29,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     minPrice: '0',
     maxPrice: '∞',
     amount: '',
-    amountDeposit0: '0',
+    amountDeposit0: '',
     amountDeposit1: ''
   })
 

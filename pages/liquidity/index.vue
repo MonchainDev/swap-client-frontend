@@ -17,10 +17,12 @@
             >My Positions</span
           >
         </div>
-        <BaseButton size="sm" class="flex w-[149px] items-center gap-1 !text-white">
-          <BaseIcon name="plus" size="24" />
-          <span>Add Liquidity</span>
-        </BaseButton>
+        <NuxtLink to="/liquidity/add">
+          <BaseButton size="sm" class="flex w-[149px] items-center gap-1 !text-white">
+            <BaseIcon name="plus" size="24" />
+            <span>Add Liquidity</span>
+          </BaseButton>
+        </NuxtLink>
       </div>
     </div>
     <TableListPool />
@@ -28,6 +30,8 @@
 </template>
 
 <script lang="ts" setup>
+  import { NuxtLink } from '#components'
+
   const tabActive = ref<'ALL' | 'POSITION'>('ALL')
 </script>
 

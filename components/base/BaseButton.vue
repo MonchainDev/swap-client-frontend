@@ -46,11 +46,19 @@
 
   .btn-linear {
     background: var(--color-linear-gradient);
+    color: #fff;
     &:hover {
       opacity: 0.8;
     }
   }
 
+  .btn-outline {
+    background: #f5f5f5;
+    border: 1px solid var(--color-gray-4);
+    &:hover {
+      opacity: 0.8;
+    }
+  }
   .btn-primary {
     background-color: var(--color-pink);
     color: var(--color-white);

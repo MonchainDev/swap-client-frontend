@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-10 bg-[#f5f5f5]">
+  <div class="mb-[51px] mt-10 bg-[#f5f5f5]">
     <div class="flex items-center justify-center gap-[79px]">
       <div class="w-[581px] rounded-lg bg-white px-8 py-[21px] shadow-sm">
         <div class="flex items-center justify-between" :class="{ '!justify-normal gap-4': currentStep !== 1 }">

@@ -1,7 +1,7 @@
 <template>
-  <div class="flex items-center justify-between gap-1 py-3 pl-6 pr-3">
-    <div class="flex flex-col">
-      <span class="text-sm">{{ formatText }}</span>
+  <div class="flex h-[90px] items-center justify-between gap-1 border border-solid border-gray-3 px-4">
+    <div class="flex flex-col gap-1">
+      <span class="text-xs text-gray-8">{{ formatText }} </span>
       <ElInput
         v-model="amount"
         placeholder="0"
@@ -10,14 +10,22 @@
         :parser="(value: string) => parseNumberInput(value)"
         @input="handleInput"
       />
-      <span>{{ textSuffix }}</span>
+      <span class="text-xs text-gray-8">{{ textSuffix }}</span>
+    </div>
+    <div class="flex flex-col gap-1">
+      <div class="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-3">
+        <BaseIcon name="plus" size="24" />
+      </div>
+      <div class="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-3">
+        <BaseIcon name="minus" size="24" />
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
   import type { TYPE_SWAP } from '~/types/swap.type'
-  import type { INPUT_PRICE } from './LiquidityStep2.vue'
+  import type { INPUT_PRICE } from './BlockAddLiquidityRight.vue'
 
   interface IProps {
     type: INPUT_PRICE
@@ -37,14 +45,14 @@
 
   const textSuffix = computed(() => {
     return props.activeRange === 'BASE'
-      ? `${form.value.token1.symbol} per ${form.value.token0.symbol}`
-      : `${form.value.token0.symbol} per ${form.value.token1.symbol}`
+      ? `(1 ${form.value.token1.symbol} per ${form.value.token0.symbol})`
+      : `(1 ${form.value.token0.symbol} per ${form.value.token1.symbol})`
   })
 
   const amount = defineModel('amount', {
     type: String,
     required: true,
-    default: ''
+    default: '∞'
   })
 
   const emits = defineEmits<{
@@ -54,7 +62,7 @@
   function formatNumberInput(value: string, _isSplit = true) {
     if (!value) return ''
     let text = ''
-    text = value.replace(/[^\d.]/g, '')
+    text = value.replace(/[^\d.∞]/g, '')
     return text
   }
 
@@ -77,8 +85,8 @@
       padding: 0;
 
       .el-input__inner {
-        height: 24px;
-        font-size: 16px;
+        height: 28px;
+        font-size: 22px;
         font-weight: 600;
         background: linear-gradient(91deg, #790c8b 60%, #1573fe 98%);
         background-clip: text;

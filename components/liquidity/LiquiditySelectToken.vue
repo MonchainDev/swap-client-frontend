@@ -5,7 +5,7 @@
       <div class="flex flex-col">
         <div class="flex items-center gap-1">
           <span class="text-base font-semibold">{{ token.name }}</span>
-          <BaseIcon v-if="step === 1" name="arrow" :size="18" class="-rotate-90" />
+          <BaseIcon name="arrow" :size="18" class="-rotate-90" />
         </div>
         <h4 class="line-clamp-1 text-xs text-[#6F6A79]">{{ token.name }}</h4>
       </div>
@@ -13,7 +13,7 @@
     <template v-else>
       <img src="/empty-token.png" alt="empty token" class="size-9 sm:size-8" />
       <div class="flex items-center gap-1 text-gray-6">
-        <span>Select a token</span>
+        <span class="text-sm">Select a token</span>
         <BaseIcon name="arrow" size="18" class="-rotate-90 text-gray-6" />
       </div>
     </template>
@@ -28,14 +28,12 @@
     isSelected: boolean
     type: TYPE_SWAP
     token: IToken
-    step: number
   }
 
   const _props = withDefaults(defineProps<IProps>(), {
     isSelected: false,
     type: 'BASE',
-    token: () => ({}) as IToken,
-    step: 1
+    token: () => ({}) as IToken
   })
 
   const emit = defineEmits<{

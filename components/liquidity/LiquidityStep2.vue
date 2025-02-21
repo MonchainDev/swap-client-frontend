@@ -8,7 +8,7 @@
         <span class="text-base text-hyperlink"> {{ form.feeTier }}%</span>
       </div>
     </div>
-    <div class="price-range relative mt-7 pb-[23px] pt-[21px]">
+    <div class="price-range relative mt-7">
       <div class="flex items-center gap-3">
         <span class="text-lg font-semibold leading-7">Set price range</span>
         <div class="flex cursor-pointer items-center gap-2" @click="activeRange = 'BASE'">
@@ -20,26 +20,26 @@
           <BaseIcon :name="activeRange === 'QUOTE' ? 'radio-fill' : 'radio'" size="24" />
           <span class="text-base">{{ form.token1.symbol }}</span>
         </div>
-      </div>
-    </div>
-    <div class="mt-[14px]">
-      <div class="flex gap-8 text-sm font-semibold text-gray-7">
-        <span class="cursor-pointer pb-[10px] hover:text-hyperlink" :class="{ 'tab-active': form.typeRange === 'FULL' }" @click="form.typeRange = 'FULL'"
-          >Full range</span
-        >
-        <span class="cursor-pointer pb-[10px] hover:text-hyperlink" :class="{ 'tab-active': form.typeRange === 'CUSTOM' }" @click="form.typeRange = 'CUSTOM'"
-          >Custom range</span
-        >
-      </div>
-      <div class="mt-6">
-        <p class="text-sm text-gray-6">
-          Providing full range liquidity ensures continuous market participation across all possible prices, offering simplicity but with potential for higher
-          impermanent loss.
-        </p>
-        <div class="grid grid-cols-2 gap-5">
-          <InputPriceRange v-model:amount="form.minPrice" :active-range="activeRange" type="MIN" />
+        <div class="clip-path" />
+        <div class="flex gap-4 text-sm font-semibold text-gray-7">
+          <span class="cursor-pointer hover:text-hyperlink" :class="{ 'tab-active': form.typeRange === 'FULL' }" @click="form.typeRange = 'FULL'"
+            >Full range</span
+          >
+          <span class="cursor-pointer hover:text-hyperlink" :class="{ 'tab-active': form.typeRange === 'CUSTOM' }" @click="form.typeRange = 'CUSTOM'"
+            >Custom range</span
+          >
         </div>
       </div>
+    </div>
+    <div class="mt-6">
+      <div class="grid grid-cols-2">
+        <InputPriceRange v-model:amount="form.minPrice" :active-range="activeRange" type="MIN" class="rounded-bl-lg rounded-tl-lg" />
+        <InputPriceRange v-model:amount="form.maxPrice" :active-range="activeRange" type="MIN" class="rounded-br-lg rounded-tr-lg border-l-0" />
+      </div>
+    </div>
+    <div class="mt-5 grid grid-cols-2 gap-4">
+      <BaseButton type="outline">BACK</BaseButton>
+      <BaseButton type="linear" class="!text-white">CONTINUE</BaseButton>
     </div>
   </div>
 </template>
@@ -75,7 +75,7 @@
     &::before {
       content: '';
       position: absolute;
-      bottom: 0;
+      bottom: -10px;
       left: 50%;
       transform: translateX(-50%);
       width: 32px;
@@ -83,5 +83,14 @@
       border-radius: 2px;
       background-color: #1573fe;
     }
+  }
+  .clip-path {
+    width: 18px;
+    height: 70px;
+    background: #eee;
+    border-right: 1px solid #eee;
+    border-left: 1px solid #eee;
+    clip-path: polygon(0% 0%, 50% 50%, 0% 100%, 10% 100%, 60% 50%, 10% 0%);
+    margin-left: 15px !important;
   }
 </style>

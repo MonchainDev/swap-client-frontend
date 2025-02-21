@@ -39,4 +39,8 @@
   })
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+  main {
+    background: url('/bg-body.png') repeat-x top;
+  }
+</style>
