@@ -30,8 +30,20 @@
     <div class="mt-[34px]">
       <span class="text-lg font-semibold leading-7">Deposit Amount</span>
       <div class="mt-3 flex flex-col gap-4">
-        <InputDepositLiquidity v-model:amount="form.amountDeposit0" :token="form.token0" type="BASE" :is-selected="isToken0Selected" balance="0" />
-        <InputDepositLiquidity v-model:amount="form.amountDeposit1" :token="form.token1" type="QUOTE" :is-selected="isToken1Selected" balance="0" />
+        <InputDepositLiquidity
+          v-model:amount="form.amountDeposit0"
+          :token="form.token0"
+          type="BASE"
+          :is-selected="isToken0Selected"
+          :balance="balance0?.formatted"
+        />
+        <InputDepositLiquidity
+          v-model:amount="form.amountDeposit1"
+          :token="form.token1"
+          type="QUOTE"
+          :is-selected="isToken1Selected"
+          :balance="balance1?.formatted"
+        />
       </div>
     </div>
   </div>
@@ -39,6 +51,7 @@
 </template>
 
 <script lang="ts" setup>
+  import { useAccount, useBalance } from '@wagmi/vue'
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
 
@@ -89,6 +102,23 @@
       form.value.token0 = token.address === form.value.token0.address ? { name: '', symbol: '', decimals: 0, icon_url: '', address: '' } : form.value.token0
     }
   }
+
+  const { address } = useAccount()
+  const { data: balance0 } = useBalance(
+    computed(() => ({
+      address: address.value,
+      token: form.value.token0.address as MaybeRef<`0x${string}`>,
+      watch: true
+    }))
+  )
+
+  const { data: balance1 } = useBalance(
+    computed(() => ({
+      address: address.value,
+      token: form.value.token1.address as MaybeRef<`0x${string}`>,
+      watch: true
+    }))
+  )
 </script>
 
 <style lang="scss"></style>
