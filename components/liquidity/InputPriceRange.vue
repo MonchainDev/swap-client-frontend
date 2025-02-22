@@ -1,6 +1,6 @@
 <template>
   <div class="flex h-[90px] items-center justify-between gap-1 border border-solid border-gray-3 px-4">
-    <div class="flex flex-col gap-1">
+    <div class="flex flex-col gap-2">
       <span class="text-xs text-gray-8">{{ formatText }} </span>
       <ElInput
         v-model="amount"
@@ -45,8 +45,8 @@
 
   const textSuffix = computed(() => {
     return props.activeRange === 'BASE'
-      ? `(1 ${form.value.token1.symbol} per ${form.value.token0.symbol})`
-      : `(1 ${form.value.token0.symbol} per ${form.value.token1.symbol})`
+      ? `(${form.value.token1.symbol} per ${form.value.token0.symbol})`
+      : `(${form.value.token0.symbol} per ${form.value.token1.symbol})`
   })
 
   const amount = defineModel('amount', {

@@ -1,4 +1,6 @@
-import type { INetwork, IToken } from '~/types'
+import { FeeAmount } from '@pancakeswap/v3-sdk'
+import type { INetwork, IToken, ZoomLevels } from '~/types'
+import { ZOOM_LEVELS } from './zoom-level'
 
 const DEFAULT_SLIPPAGE = '1'
 const DECIMALS_NATIVE = 18
@@ -53,4 +55,96 @@ const DEFAULT_NETWORK: INetwork = {
   value: 'MON'
 }
 
-export { DEFAULT_SLIPPAGE, DECIMALS_NATIVE, NATIVE_TOKEN, WRAPPED_NATIVE_TOKEN, LIST_NETWORK, DEFAULT_NETWORK }
+const QUICK_ACTION_CONFIGS: Record<FeeAmount, { [percentage: number]: ZoomLevels }> = {
+  [FeeAmount.LOWEST]: {
+    0.1: {
+      initialMin: 0.999,
+      initialMax: 1.001,
+      min: 0.00001,
+      max: 1.5
+    },
+    0.5: {
+      initialMin: 0.995,
+      initialMax: 1.005,
+      min: 0.00001,
+      max: 1.5
+    },
+    1: {
+      initialMin: 0.99,
+      initialMax: 1.01,
+      min: 0.00001,
+      max: 1.5
+    }
+  },
+  [FeeAmount.LOW]: {
+    5: {
+      initialMin: 0.95,
+      initialMax: 1.054,
+      min: 0.00001,
+      max: 1.5
+    },
+    10: {
+      initialMin: 0.9,
+      initialMax: 1.11,
+      min: 0.00001,
+      max: 1.5
+    },
+    20: {
+      initialMin: 0.8,
+      initialMax: 1.25,
+      min: 0.00001,
+      max: 1.5
+    }
+  },
+  [FeeAmount.MEDIUM]: {
+    10: {
+      initialMin: 0.9,
+      initialMax: 1.11,
+      min: 0.00001,
+      max: 20
+    },
+    20: {
+      initialMin: 0.8,
+      initialMax: 1.25,
+      min: 0.00001,
+      max: 20
+    },
+    50: ZOOM_LEVELS[FeeAmount.MEDIUM]
+  },
+  [FeeAmount.HIGH]: {
+    10: {
+      initialMin: 0.9,
+      initialMax: 1.1,
+      min: 0.00001,
+      max: 1.5
+    },
+    20: {
+      initialMin: 0.8,
+      initialMax: 1.25,
+      min: 0.00001,
+      max: 20
+    },
+    50: ZOOM_LEVELS[FeeAmount.HIGH]
+  }
+}
+
+const LIST_FEE_AMOUNT = [
+  {
+    value: FeeAmount.LOWEST,
+    description: 'Best for very stable pairs.'
+  },
+  {
+    value: FeeAmount.LOW,
+    description: 'Best for stable pairs.'
+  },
+  {
+    value: FeeAmount.MEDIUM,
+    description: 'Best for most pairs.'
+  },
+  {
+    value: FeeAmount.HIGH,
+    description: 'Best for exotic pairs.'
+  }
+]
+
+export { DEFAULT_SLIPPAGE, DECIMALS_NATIVE, NATIVE_TOKEN, WRAPPED_NATIVE_TOKEN, LIST_NETWORK, DEFAULT_NETWORK, QUICK_ACTION_CONFIGS, LIST_FEE_AMOUNT }

@@ -13,15 +13,15 @@
       <h4 class="text-lg font-semibold leading-7">Fee tier</h4>
       <div class="mt-4 grid grid-cols-[repeat(4,100px)] gap-5">
         <div
-          v-for="item in listFee"
+          v-for="item in LIST_FEE_AMOUNT"
           :key="item.value"
           class="cursor-pointer rounded-lg border border-solid border-gray-3 bg-[#fafafa] px-[13px] pb-[26px] pt-[15px]"
-          @click="form.feeTier = item.value"
+          @click="feeAmount = item.value"
         >
           <div class="flex items-center gap-[6px]">
-            <BaseIcon v-show="form.feeTier === item.value" name="radio-fill" size="24" />
-            <BaseIcon v-show="form.feeTier !== item.value" name="radio" size="24" />
-            <span class="text-sm font-bold leading-5">{{ item.value }}%</span>
+            <BaseIcon v-show="feeAmount === item.value" name="radio-fill" size="24" />
+            <BaseIcon v-show="feeAmount !== item.value" name="radio" size="24" />
+            <span class="text-sm font-bold leading-5">{{ item.value / 10000 }}%</span>
           </div>
           <p class="mt-5 text-xs text-gray-8">{{ item.description }}</p>
         </div>
@@ -36,6 +36,7 @@
           type="BASE"
           :is-selected="isToken0Selected"
           :balance="balance0?.formatted"
+          @change="handleChangeAmount"
         />
         <InputDepositLiquidity
           v-model:amount="form.amountDeposit1"
@@ -43,6 +44,7 @@
           type="QUOTE"
           :is-selected="isToken1Selected"
           :balance="balance1?.formatted"
+          @change="handleChangeAmount"
         />
       </div>
     </div>
@@ -52,10 +54,12 @@
 
 <script lang="ts" setup>
   import { useAccount, useBalance } from '@wagmi/vue'
+  import { LIST_FEE_AMOUNT } from '~/constant'
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
+  import useV3DerivedInfoComposable from '~/composables/useV3DerivedInfo'
 
-  const { form } = storeToRefs(useLiquidityStore())
+  const { form, feeAmount, independentField, typedValue } = storeToRefs(useLiquidityStore())
   const { setOpenPopup } = useBaseStore()
 
   interface IProps {
@@ -68,24 +72,35 @@
     isToken1Selected: false
   })
 
-  const listFee = [
-    {
-      value: 0.01,
-      description: 'Best for very stable pairs.'
-    },
-    {
-      value: 0.05,
-      description: 'Best for stable pairs.'
-    },
-    {
-      value: 0.3,
-      description: 'Best for most pairs.'
-    },
-    {
-      value: 1,
-      description: 'Best for exotic pairs.'
+  const { independentAmount, dependentAmount, parsedAmounts } = useV3DerivedInfoComposable()
+
+  watch(
+    () => independentAmount.value,
+    (value) => {
+      if (value) {
+        console.log('🚀 ~ value:', parsedAmounts.value[CurrencyField.CURRENCY_A]!.toSignificant(5))
+        form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]!.toSignificant(5)
+      } else {
+        form.value.amountDeposit0 = ''
+      }
     }
-  ]
+  )
+
+  watch(
+    () => dependentAmount.value,
+    (value) => {
+      if (value) {
+        if (independentField.value === CurrencyField.CURRENCY_A) {
+          form.value.amountDeposit1 = parsedAmounts.value[CurrencyField.CURRENCY_B]!.toSignificant(5)
+        }
+        if (independentField.value === CurrencyField.CURRENCY_B) {
+          form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]!.toSignificant(5)
+        }
+      } else {
+        form.value.amountDeposit1 = ''
+      }
+    }
+  )
 
   const typeCurrent = ref<TYPE_SWAP>('BASE')
   const openPopupSelectToken = (type: TYPE_SWAP) => {
@@ -119,6 +134,16 @@
       watch: true
     }))
   )
+
+  const handleChangeAmount = (value: string, type: TYPE_SWAP) => {
+    if (type === 'BASE') {
+      form.value.amountDeposit0 = value
+    } else {
+      form.value.amountDeposit1 = value
+    }
+    typedValue.value = value
+    independentField.value = type === 'BASE' ? CurrencyField.CURRENCY_A : CurrencyField.CURRENCY_B
+  }
 </script>
 
 <style lang="scss"></style>
