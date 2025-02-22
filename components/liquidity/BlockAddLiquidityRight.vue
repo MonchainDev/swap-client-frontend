@@ -111,7 +111,11 @@
   }
 
   const handleChangePriceRange = (type: INPUT_PRICE) => {
-    console.log('🚀 ~ handleChangePriceRange ~ type', type)
+    if (type === 'MIN') {
+      dispatchRangeTypedValue('MIN', +form.value.minPrice!)
+    } else {
+      dispatchRangeTypedValue('MAX', +form.value.maxPrice!)
+    }
   }
 
   const { price, invertPrice, ticks, tickLower, parsedAmounts, tickUpper, lowerPrice, upperPrice, poolForPosition, pricesAtTicks } =
@@ -161,7 +165,7 @@
       const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
 
       if (currentPrice) {
-        dispatchRangeTypedValue('BOTH', _zoomLevel, currentPrice)
+        dispatchRangeTypedValue('BOTH', currentPrice, _zoomLevel)
       }
     }
   }

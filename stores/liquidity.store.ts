@@ -78,15 +78,15 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     ;[form.value.token0, form.value.token1] = [form.value.token1, form.value.token0]
   }
 
-  function dispatchRangeTypedValue(type: 'MIN' | 'MAX' | 'BOTH' | 'INFINITY', zoomLevel?: ZoomLevels, currentPrice?: number | undefined) {
+  function dispatchRangeTypedValue(type: 'MIN' | 'MAX' | 'BOTH' | 'INFINITY', currentPrice?: number | undefined, zoomLevel?: ZoomLevels) {
     if (type === 'INFINITY') {
       leftRangeTypedValue.value = true
       rightRangeTypedValue.value = true
       return
     }
 
-    const left = tryParsePrice(baseCurrency.value?.wrapped, quoteCurrency.value?.wrapped, (currentPrice! * zoomLevel!.initialMin).toString())
-    const right = tryParsePrice(baseCurrency.value?.wrapped, quoteCurrency.value?.wrapped, (currentPrice! * zoomLevel!.initialMax).toString())
+    const left = tryParsePrice(baseCurrency.value?.wrapped, quoteCurrency.value?.wrapped, (currentPrice! * (zoomLevel ? zoomLevel!.initialMin : 1)).toString())
+    const right = tryParsePrice(baseCurrency.value?.wrapped, quoteCurrency.value?.wrapped, (currentPrice! * (zoomLevel ? zoomLevel!.initialMax : 1)).toString())
     if (type === 'BOTH') {
       leftRangeTypedValue.value = left
       rightRangeTypedValue.value = right
