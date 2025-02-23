@@ -4,7 +4,7 @@
       <span class="text-xs text-gray-8">{{ formatText }} </span>
       <ElInput
         v-model="amount"
-        placeholder="0"
+        placeholder="0.0"
         class="input-amount flex-1"
         :formatter="(value: string) => formatNumberInput(value)"
         :parser="(value: string) => parseNumberInput(value)"
@@ -53,7 +53,7 @@
   const amount = defineModel('amount', {
     type: String,
     required: true,
-    default: '∞'
+    default: ''
   })
 
   const emits = defineEmits<{

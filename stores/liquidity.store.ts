@@ -1,9 +1,12 @@
 import type { Price } from '@pancakeswap/swap-sdk-core'
 import { Token } from '@pancakeswap/swap-sdk-core'
+import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import { defineStore } from 'pinia'
 import { NATIVE_TOKEN } from '~/constant'
 import { ChainId, CurrencyField, type ZoomLevels } from '~/types'
 import type { IFormCreatePosition } from '~/types/position.type'
+import ABI_TOKEN from '@/constant/contract/contract-token.json'
+import { LIST_ADDRESS_FEE } from '~/constant/contract'
 
 export const useLiquidityStore = defineStore('liquidity', () => {
   const { listToken } = storeToRefs(useBaseStore())
@@ -22,12 +25,13 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     },
 
     typeRange: 'FULL',
-    minPrice: '0',
-    maxPrice: '∞',
+    minPrice: '',
+    maxPrice: '',
     amount: '',
     amountDeposit0: '',
     amountDeposit1: ''
   })
+  const buttonRangePercent = ref<number | null>(null)
   const independentField = ref(CurrencyField.CURRENCY_A)
   const startPriceTypedValue = ref('')
   const feeAmount = ref(0)
@@ -103,7 +107,44 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     rightRangeTypedValue.value = undefined
     startPriceTypedValue.value = ''
     independentField.value = CurrencyField.CURRENCY_A
+    buttonRangePercent.value = null
   }
+
+  const { address } = useAccount()
+
+  const { data: balance0 } = useBalance(
+    computed(() => ({
+      address: address.value,
+      token: form.value.token0.address as MaybeRef<`0x${string}`>,
+      watch: true
+    }))
+  )
+
+  const { data: balance1 } = useBalance(
+    computed(() => ({
+      address: address.value,
+      token: form.value.token1.address as MaybeRef<`0x${string}`>,
+      watch: true
+    }))
+  )
+
+  const { data: allowance0, refetch: refetchAllowance0 } = useReadContract(
+    computed(() => ({
+      abi: ABI_TOKEN,
+      address: baseCurrency.value?.wrapped.address,
+      functionName: 'allowance',
+      args: [address.value, LIST_ADDRESS_FEE.SPENDER_CREATE_POOL]
+    }))
+  )
+
+  const { data: allowance1, refetch: refetchAllowance1 } = useReadContract(
+    computed(() => ({
+      abi: ABI_TOKEN,
+      address: quoteCurrency.value?.wrapped.address,
+      functionName: 'allowance',
+      args: [address.value, LIST_ADDRESS_FEE.SPENDER_CREATE_POOL]
+    }))
+  )
 
   return {
     form,
@@ -118,6 +159,13 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     rightRangeTypedValue,
     switchTokens,
     dispatchRangeTypedValue,
-    resetFiled
+    resetFiled,
+    balance0,
+    balance1,
+    buttonRangePercent,
+    allowance0,
+    allowance1,
+    refetchAllowance0,
+    refetchAllowance1
   }
 })

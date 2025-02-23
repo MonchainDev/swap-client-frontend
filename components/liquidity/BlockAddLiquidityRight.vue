@@ -43,23 +43,7 @@
           @decrease="handleDecreasePriceRange('MAX')"
         />
       </div>
-      <div class="grid grid-cols-4 gap-3" :class="{ 'pointer-events-none opacity-50': isDisabledPriceRange, '!grid-cols-1': !feeAmount }">
-        <div
-          v-for="(item, key) in listSelectRange"
-          :key="key"
-          :class="{ 'bg-hyperlink text-white': rangeActive === key }"
-          class="flex h-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-hyperlink text-sm font-semibold text-hyperlink"
-          @click="handleClickRange(key, item)"
-        >
-          {{ key }}%
-        </div>
-        <div
-          class="flex h-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-hyperlink text-sm font-semibold text-hyperlink"
-          @click="handleClickRange(100)"
-        >
-          Full range
-        </div>
-      </div>
+      <ListSelectRange @select="handleClickRange" />
     </div>
     <div v-if="outOfRange || invalidRange" class="mt-5 flex items-center gap-3 rounded-lg border border-solid border-warning bg-[#FFB23719] p-4">
       <BaseIcon name="warning" size="24" class="text-warning" />
@@ -68,13 +52,13 @@
         <template v-if="invalidRange"> Invalid range selected. The min price must be lower than the max price. </template>
       </span>
     </div>
-    <GroupButtonLiquidity />
+    <GroupButtonLiquidity :loading0="loadingApprove0" :loading1="loadingApprove1" @approve="handleApprove" />
   </div>
 </template>
 
 <script lang="ts" setup>
   import { FeeAmount } from '@pancakeswap/v3-sdk'
-  import { QUICK_ACTION_CONFIGS } from '~/constant'
+  import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import { ZOOM_LEVELS } from '~/constant/zoom-level'
   import type { ZoomLevels } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
@@ -90,9 +74,12 @@
     isToken1Selected: false
   })
   const activeRange = ref<TYPE_SWAP>('BASE')
+  const loadingApprove0 = ref(false)
+  const loadingApprove1 = ref(false)
 
-  const { form, startPriceTypedValue, feeAmount, leftRangeTypedValue, rightRangeTypedValue, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
-  const { switchTokens, dispatchRangeTypedValue } = useLiquidityStore()
+  const { form, startPriceTypedValue, feeAmount, buttonRangePercent, leftRangeTypedValue, rightRangeTypedValue, baseCurrency, quoteCurrency } =
+    storeToRefs(useLiquidityStore())
+  const { switchTokens, dispatchRangeTypedValue, refetchAllowance0, refetchAllowance1 } = useLiquidityStore()
 
   const disabledInputCurrentPrice = computed(() => {
     return !baseCurrency.value || !quoteCurrency.value || !feeAmount.value
@@ -101,11 +88,6 @@
   const isSorted = computed(() => {
     return tokenA.value && tokenB.value && tokenA.value.sortsBefore(tokenB.value)
   })
-
-  const listSelectRange = computed(() => {
-    return QUICK_ACTION_CONFIGS[feeAmount.value ?? FeeAmount.MEDIUM]
-  })
-  const rangeActive = ref<number | null>(null)
 
   const isDisabledPriceRange = computed(() => {
     return !startPriceTypedValue.value
@@ -150,17 +132,17 @@
     if (range === activeRange.value) return
     activeRange.value = range
     switchTokens()
-    rangeActive.value = null
+    buttonRangePercent.value = null
   }
 
   const handleClickRange = (percent: number, zoomLevel?: ZoomLevels) => {
     if (percent === 100) {
-      rangeActive.value = null
+      buttonRangePercent.value = null
       dispatchRangeTypedValue('INFINITY')
     } else {
-      rangeActive.value = percent === rangeActive.value ? null : percent
+      buttonRangePercent.value = percent === buttonRangePercent.value ? null : percent
       let _zoomLevel: ZoomLevels = { ...zoomLevel! }
-      if (!rangeActive.value) {
+      if (!buttonRangePercent.value) {
         _zoomLevel = ZOOM_LEVELS[FeeAmount.MEDIUM]
       }
       const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
@@ -180,7 +162,7 @@
       const value = isSorted.value ? getIncrementUpper() : getDecrementLower()
       rightRangeTypedValue.value = value
     }
-    rangeActive.value = null
+    buttonRangePercent.value = null
   }
   const handleDecreasePriceRange = (_type: INPUT_PRICE) => {
     if (_type === 'MIN') {
@@ -190,7 +172,25 @@
       const value = isSorted.value ? getDecrementUpper() : getIncrementLower()
       rightRangeTypedValue.value = value
     }
-    rangeActive.value = null
+    buttonRangePercent.value = null
+  }
+
+  const { approveToken } = useApproveToken()
+
+  const handleApprove = async (type: TYPE_SWAP) => {
+    if (type === 'BASE') {
+      loadingApprove0.value = true
+      await approveToken(tokenA.value?.address as string, CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER, MAX_NUMBER_APPROVE, () => {
+        refetchAllowance0()
+        loadingApprove0.value = false
+      })
+    } else {
+      loadingApprove1.value = true
+      await approveToken(tokenB.value?.address as string, CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER, MAX_NUMBER_APPROVE, () => {
+        refetchAllowance1()
+        loadingApprove1.value = false
+      })
+    }
   }
 </script>
 

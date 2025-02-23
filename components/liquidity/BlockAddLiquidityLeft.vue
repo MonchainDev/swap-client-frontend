@@ -36,11 +36,10 @@
 </template>
 
 <script lang="ts" setup>
-  import { useAccount, useBalance } from '@wagmi/vue'
   import { CurrencyField, type IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
 
-  const { form, independentField, typedValue } = storeToRefs(useLiquidityStore())
+  const { form, independentField, typedValue, balance0, balance1 } = storeToRefs(useLiquidityStore())
   const { resetFiled } = useLiquidityStore()
   const { setOpenPopup } = useBaseStore()
 
@@ -100,23 +99,6 @@
     // reset form to 0 after select token
     resetFiled()
   }
-
-  const { address } = useAccount()
-  const { data: balance0 } = useBalance(
-    computed(() => ({
-      address: address.value,
-      token: form.value.token0.address as MaybeRef<`0x${string}`>,
-      watch: true
-    }))
-  )
-
-  const { data: balance1 } = useBalance(
-    computed(() => ({
-      address: address.value,
-      token: form.value.token1.address as MaybeRef<`0x${string}`>,
-      watch: true
-    }))
-  )
 
   const handleChangeAmount = (value: string, type: TYPE_SWAP) => {
     if (type === 'BASE') {

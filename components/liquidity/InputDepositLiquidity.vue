@@ -97,10 +97,10 @@
   const { handleImageError } = useErrorImage()
 
   const { outOfRange, invalidRange } = useV3DerivedInfo()
-  const { startPriceTypedValue } = storeToRefs(useLiquidityStore())
+  const { startPriceTypedValue, form } = storeToRefs(useLiquidityStore())
 
   const isDisabled = computed(() => {
-    return outOfRange.value || invalidRange.value || startPriceTypedValue.value === ''
+    return outOfRange.value || invalidRange.value || startPriceTypedValue.value === '' || form.value.minPrice === '' || form.value.maxPrice === ''
   })
 
   watch(

@@ -1,5 +1,6 @@
 <template>
-  <button :class="classes" @click="emit('click')">
+  <button :class="classes" class="flex items-center justify-center gap-2" @click="emit('click')">
+    <BaseLoadingButton v-if="props.loading" />
     <slot></slot>
   </button>
 </template>
@@ -9,12 +10,14 @@
     size?: 'sm' | 'md' | 'lg'
     type?: 'outline' | 'primary' | 'black' | 'surface' | 'linear'
     disabled?: boolean
+    loading?: boolean
   }
 
   const props = withDefaults(defineProps<IProps>(), {
     size: 'lg',
     type: 'linear',
-    disabled: false
+    disabled: false,
+    loading: false
   })
 
   const emit = defineEmits<{
@@ -22,7 +25,7 @@
   }>()
 
   const classes = computed(() => {
-    return ['btn', `btn-${props.size}`, `btn-${props.type}`, { disabled: props.disabled }]
+    return ['btn', `btn-${props.size}`, `btn-${props.type}`, { disabled: props.disabled }, { loading: props.loading }]
   })
 </script>
 
@@ -33,6 +36,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    user-select: none;
   }
   .btn-lg {
     height: 67px;
@@ -84,8 +88,13 @@
     opacity: 0.8;
     cursor: not-allowed;
     pointer-events: none;
+    color: var(--color-gray-6);
     &:hover {
       opacity: 0.4;
     }
+  }
+  .loading {
+    pointer-events: none;
+    opacity: 0.8;
   }
 </style>
