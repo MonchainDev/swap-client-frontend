@@ -2,14 +2,16 @@
   <div class="block-right rounded-br-lg rounded-tr-lg bg-white pl-8 pr-[22px] pt-[21px] shadow-sm">
     <div class="flex items-center gap-3">
       <span class="text-lg font-semibold leading-7">Set price range</span>
-      <div v-if="props.isToken0Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange('BASE')">
-        <BaseIcon :name="activeRange === 'BASE' ? 'radio-fill' : 'radio'" size="24" />
-        <span class="text-base">{{ form.token0.symbol }}</span>
-      </div>
+      <div class="flex items-center gap-3" :class="{ 'flex-row-reverse': flip }">
+        <div v-if="props.isToken0Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange(form.token0.address)">
+          <BaseIcon :name="activeRange === form.token0.address ? 'radio-fill' : 'radio'" size="24" />
+          <span class="text-base">{{ form.token0.symbol }}</span>
+        </div>
 
-      <div v-if="props.isToken1Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange('QUOTE')">
-        <BaseIcon :name="activeRange === 'QUOTE' ? 'radio-fill' : 'radio'" size="24" />
-        <span class="text-base">{{ form.token1.symbol }}</span>
+        <div v-if="props.isToken1Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange(form.token1.address)">
+          <BaseIcon :name="activeRange === form.token1.address ? 'radio-fill' : 'radio'" size="24" />
+          <span class="text-base">{{ form.token1.symbol }}</span>
+        </div>
       </div>
     </div>
     <ElInput v-model="startPriceTypedValue" :disabled="disabledInputCurrentPrice" placeholder="0.0" class="input-init-amount mt-5" />
@@ -26,7 +28,6 @@
       <div class="grid grid-cols-2" :class="{ 'pointer-events-none opacity-50': isDisabledPriceRange }">
         <InputPriceRange
           v-model:amount="form.minPrice!"
-          :active-range="activeRange"
           type="MIN"
           class="rounded-bl-lg rounded-tl-lg"
           @blur="handleChangePriceRange"
@@ -35,7 +36,6 @@
         />
         <InputPriceRange
           v-model:amount="form.maxPrice!"
-          :active-range="activeRange"
           type="MAX"
           class="rounded-br-lg rounded-tr-lg border-l-0"
           @blur="handleChangePriceRange"
@@ -79,14 +79,15 @@
     isToken0Selected: false,
     isToken1Selected: false
   })
-  const activeRange = ref<TYPE_SWAP>('BASE')
-  const loadingApprove0 = ref(false)
-  const loadingApprove1 = ref(false)
-  const loadingAdd = ref(false)
 
   const { form, startPriceTypedValue, feeAmount, buttonRangePercent, leftRangeTypedValue, rightRangeTypedValue, baseCurrency, quoteCurrency } =
     storeToRefs(useLiquidityStore())
   const { switchTokens, dispatchRangeTypedValue, refetchAllowance0, refetchAllowance1 } = useLiquidityStore()
+
+  const activeRange = ref<string>(form.value.token0.address)
+  const loadingApprove0 = ref(false)
+  const loadingApprove1 = ref(false)
+  const loadingAdd = ref(false)
 
   const disabledInputCurrentPrice = computed(() => {
     return !baseCurrency.value || !quoteCurrency.value || !feeAmount.value
@@ -191,9 +192,11 @@
     }
   )
 
-  const handleChangeActiveRange = (range: TYPE_SWAP) => {
-    if (range === activeRange.value) return
-    activeRange.value = range
+  const flip = ref(false)
+  const handleChangeActiveRange = (address: string) => {
+    if (address === activeRange.value) return
+    flip.value = !flip.value
+    activeRange.value = address
     switchTokens()
     buttonRangePercent.value = null
   }
@@ -264,7 +267,7 @@
       .el-input__wrapper {
         box-shadow: unset;
         background-color: transparent;
-        padding-right: 0;
+        padding-right: 16px;
         border: 1px solid var(--color-gray-3);
         border-radius: 8px;
 
@@ -274,6 +277,7 @@
           font-weight: 600;
           overflow: hidden;
           color: var(--color-primary);
+          text-align: right;
           &::placeholder {
             background: linear-gradient(91deg, #a8abb2 0%, #a8abb2 100%);
             background-clip: text;

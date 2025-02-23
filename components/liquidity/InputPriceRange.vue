@@ -25,17 +25,14 @@
 </template>
 
 <script lang="ts" setup>
-  import type { TYPE_SWAP } from '~/types/swap.type'
   import type { INPUT_PRICE } from './BlockAddLiquidityRight.vue'
 
   interface IProps {
     type: INPUT_PRICE
-    activeRange: TYPE_SWAP
   }
 
   const props = withDefaults(defineProps<IProps>(), {
-    type: 'MIN',
-    activeRange: 'BASE'
+    type: 'MIN'
   })
 
   const { form } = storeToRefs(useLiquidityStore())
@@ -45,9 +42,7 @@
   })
 
   const textSuffix = computed(() => {
-    return props.activeRange === 'BASE'
-      ? `(${form.value.token1.symbol} per ${form.value.token0.symbol})`
-      : `(${form.value.token0.symbol} per ${form.value.token1.symbol})`
+    return `${form.value.token1.symbol} per ${form.value.token0.symbol}`
   })
 
   const amount = defineModel('amount', {

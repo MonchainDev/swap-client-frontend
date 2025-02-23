@@ -33,7 +33,7 @@
     return QUICK_ACTION_CONFIGS[feeAmount.value ?? FeeAmount.MEDIUM]
   })
 
-  const sortListRange = computed(() => Object.keys(listSelectRange.value).sort((a, b) => Number(a) - Number(b)))
+  const sortListRange = computed(() => Object.keys(listSelectRange.value || []).sort((a, b) => Number(a) - Number(b)))
 
   const isDisabledPriceRange = computed(() => {
     return !startPriceTypedValue.value
