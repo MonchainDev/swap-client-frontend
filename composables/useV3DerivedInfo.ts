@@ -2,7 +2,7 @@ import type { Token } from '@pancakeswap/swap-sdk-core'
 import { CurrencyAmount, Price } from '@pancakeswap/swap-sdk-core'
 import { Position, type FeeAmount } from '@pancakeswap/v3-sdk'
 import { encodeSqrtRatioX96, nearestUsableTick, Pool, priceToClosestTick, TICK_SPACINGS, TickMath } from '@pancakeswap/v3-sdk'
-import { Bound, CurrencyField } from '~/types'
+import { BIG_INT_ZERO, Bound, CurrencyField } from '~/types'
 
 export default function useV3DerivedInfo() {
   const { feeAmount, typedValue, startPriceTypedValue, leftRangeTypedValue, rightRangeTypedValue, independentField, baseCurrency, quoteCurrency } =
@@ -195,6 +195,48 @@ export default function useV3DerivedInfo() {
     }
   })
 
+  // single deposit only if price is out of range
+  const deposit0Disabled = computed(() =>
+    Boolean(typeof tickUpper.value === 'number' && poolForPosition.value && poolForPosition.value.tickCurrent >= tickUpper.value)
+  )
+  const deposit1Disabled = computed(() =>
+    Boolean(typeof tickLower.value === 'number' && poolForPosition.value && poolForPosition.value.tickCurrent <= tickLower.value)
+  )
+
+  // create position entity based on users selection
+  const position = computed(() => {
+    if (
+      !poolForPosition.value ||
+      !tokenA.value ||
+      !tokenB.value ||
+      typeof tickLower.value !== 'number' ||
+      typeof tickUpper.value !== 'number' ||
+      invalidRange.value
+    ) {
+      return undefined
+    }
+
+    // mark as 0 if disabled because out of range
+    const amount0 = !deposit0Disabled.value
+      ? parsedAmounts.value?.[tokenA.value.equals(poolForPosition.value.token0) ? CurrencyField.CURRENCY_A : CurrencyField.CURRENCY_B]?.quotient
+      : BIG_INT_ZERO
+    const amount1 = !deposit1Disabled.value
+      ? parsedAmounts.value?.[tokenA.value.equals(poolForPosition.value.token0) ? CurrencyField.CURRENCY_B : CurrencyField.CURRENCY_A]?.quotient
+      : BIG_INT_ZERO
+
+    if (amount0 !== undefined && amount1 !== undefined) {
+      return Position.fromAmounts({
+        pool: poolForPosition.value,
+        tickLower: tickLower.value,
+        tickUpper: tickUpper.value,
+        amount0,
+        amount1,
+        useFullPrecision: true // we want full precision for the theoretical position
+      })
+    }
+    return undefined
+  })
+
   /**
    * if fee tier = 100 then TickMath.MAX_TICK will cause overflow, so minus 1 here
    */
@@ -226,6 +268,7 @@ export default function useV3DerivedInfo() {
     invalidRange,
     baseToken,
     outOfRange,
-    pool
+    pool,
+    position
   }
 }

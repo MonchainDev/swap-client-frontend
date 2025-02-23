@@ -15,7 +15,7 @@
     <BaseButton v-if="isShowBtnEnable1" :loading="props.loading1" size="md" class="w-full text-xl font-semibold" @click="emit('approve', 'QUOTE')"
       >ENABLE {{ tokenB?.symbol }}</BaseButton
     >
-    <BaseButton v-if="isShowBtnAdd" size="md" class="w-full text-xl font-semibold" @click="emit('add')"> ADD </BaseButton>
+    <BaseButton v-if="isShowBtnAdd" :loading="props.loadingAdd" size="md" class="w-full text-xl font-semibold" @click="emit('add')"> ADD </BaseButton>
   </div>
 </template>
 
@@ -26,11 +26,13 @@
   interface IProps {
     loading0: boolean
     loading1: boolean
+    loadingAdd: boolean
   }
 
   const props = withDefaults(defineProps<IProps>(), {
     loading0: false,
-    loading1: false
+    loading1: false,
+    loadingAdd: false
   })
 
   const { tokenA, tokenB } = useV3DerivedInfo()

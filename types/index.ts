@@ -37,3 +37,6 @@ export enum Bound {
   LOWER = 'LOWER',
   UPPER = 'UPPER'
 }
+
+export const BIG_INT_ZERO = 0n
+export const BIG_INT_TEN = 10n

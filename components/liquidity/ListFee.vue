@@ -41,7 +41,7 @@
         abi: ABI,
         address: CONTRACT_ADDRESS.MON_FACTORY as `0x${string}`,
         functionName: 'getPool',
-        args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, feeAmount.value]
+        args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, item.value]
       })
       if (result === '0x0000000000000000000000000000000000000000') {
         feeAmount.value = item.value

@@ -1,8 +1,7 @@
 ///Tính sqrtPriceX96
-export const calcSqrtPriceX96 = (price: number, token0Decimals: number, token1Decimals: number) => {
-  const decimalAdjustment = 10 ** (token0Decimals - token1Decimals)
-  const mathPrice = price / decimalAdjustment
-
-  const sqrtPriceX96 = Math.floor(Math.sqrt(mathPrice) * 2 ** 96)
-  return BigInt(sqrtPriceX96)
+export const calcSqrtPriceX96 = (price: number) => {
+  const sqrtPrice = Math.sqrt(price)
+  const shift = BigInt(2) ** BigInt(96)
+  const sqrtPriceX96 = BigInt(Math.round(sqrtPrice * Number(shift)))
+  return sqrtPriceX96
 }
