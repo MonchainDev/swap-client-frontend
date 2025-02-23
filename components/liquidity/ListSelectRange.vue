@@ -1,11 +1,11 @@
 <template>
   <div class="grid grid-cols-4 gap-3" :class="{ 'pointer-events-none opacity-50': isDisabledPriceRange, '!grid-cols-1': !feeAmount }">
     <div
-      v-for="(item, key) in listSelectRange"
+      v-for="key in sortListRange"
       :key="key"
-      :class="{ 'bg-hyperlink text-white': buttonRangePercent === key }"
+      :class="{ 'bg-hyperlink text-white': buttonRangePercent === +key }"
       class="flex h-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-hyperlink text-sm font-semibold text-hyperlink"
-      @click="emit('select', key, item)"
+      @click="emit('select', +key, listSelectRange[+key])"
     >
       {{ key }}%
     </div>
@@ -32,6 +32,8 @@
   const listSelectRange = computed(() => {
     return QUICK_ACTION_CONFIGS[feeAmount.value ?? FeeAmount.MEDIUM]
   })
+
+  const sortListRange = computed(() => Object.keys(listSelectRange.value).sort((a, b) => Number(a) - Number(b)))
 
   const isDisabledPriceRange = computed(() => {
     return !startPriceTypedValue.value
