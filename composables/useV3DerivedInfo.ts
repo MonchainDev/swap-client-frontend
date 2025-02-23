@@ -113,7 +113,7 @@ export default function useV3DerivedInfoComposable() {
             ? tickSpaceLimits.value[Bound.UPPER]
               ? checkAndParseMaxTick(tickSpaceLimits.value[Bound.UPPER])
               : tickSpaceLimits.value[Bound.UPPER]
-            : invertPrice
+            : invertPrice.value
               ? tryParseTick(feeAmount.value, leftRangeTypedValue.value as boolean | Price<Token, Token> | undefined)
               : tryParseTick(feeAmount.value, rightRangeTypedValue.value as boolean | Price<Token, Token> | undefined)
     }

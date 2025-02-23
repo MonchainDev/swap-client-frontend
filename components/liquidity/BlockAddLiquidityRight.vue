@@ -127,6 +127,7 @@
   }
 
   const {
+    tickSpaceLimits,
     price,
     invertPrice,
     ticks,
@@ -145,6 +146,7 @@
   } = useV3DerivedInfoComposable()
 
   setInterval(() => {
+    console.log('🚀 ~ tickSpaceLimits:', tickSpaceLimits.value)
     console.log('🚀 ~ ticks:', ticks.value)
     console.log('🚀 ~ invertPrice:', invertPrice.value)
     console.log('🚀 ~ pricesAtTicks:', pricesAtTicks.value)
