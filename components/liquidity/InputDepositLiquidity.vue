@@ -1,5 +1,9 @@
 <template>
-  <div class="input-swap flex flex-col gap-4 rounded-lg border border-solid border-gray-4 py-4 pl-8 pr-6 sm:px-4 sm:pt-2" @click="handleClick">
+  <div
+    class="input-swap flex flex-col gap-4 rounded-lg border border-solid border-gray-4 py-4 pl-8 pr-6 sm:px-4 sm:pt-2"
+    :class="{ 'pointer-events-none opacity-50': isDisabled }"
+    @click="handleClick"
+  >
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-5">
         <div v-if="isConnected" class="grid grid-cols-[44px_44px_44px_44px] gap-2 sm:grid-cols-[44px_44px]">
@@ -18,7 +22,7 @@
     <div class="flex min-h-10 items-center gap-2">
       <template v-if="isSelected">
         <div class="flex max-w-[150px] cursor-pointer items-center gap-[10px]" @click="emits('select-token', type)">
-          <img :src="token.icon_url" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError($event)" />
+          <img :src="token.icon_url || ''" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError($event)" />
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
               <span class="font-medium">{{ token.symbol }}</span>
@@ -58,6 +62,7 @@
 
 <script lang="ts" setup>
   import { useAccount } from '@wagmi/vue'
+  import useV3DerivedInfoComposable from '~/composables/useV3DerivedInfo'
 
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
@@ -91,6 +96,13 @@
   })
 
   const { handleImageError } = useErrorImage()
+
+  const { outOfRange, invalidRange } = useV3DerivedInfoComposable()
+  const { startPriceTypedValue } = storeToRefs(useLiquidityStore())
+
+  const isDisabled = computed(() => {
+    return outOfRange.value || invalidRange.value || startPriceTypedValue.value === ''
+  })
 
   const formattedBalance = computed(() => {
     return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'

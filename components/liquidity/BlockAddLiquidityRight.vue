@@ -12,7 +12,7 @@
         <span class="text-base">{{ form.token1.symbol }}</span>
       </div>
     </div>
-    <ElInput v-model="startPriceTypedValue" placeholder="0.0" class="input-init-amount mt-5" />
+    <ElInput v-model="startPriceTypedValue" :disabled="disabledInputCurrentPrice" placeholder="0.0" class="input-init-amount mt-5" />
     <p class="mt-2 flex justify-between text-sm">
       <span> Current {{ form.token0.symbol }} Price:</span>
       <!-- <span>{{ startPriceTypedValue ? startPriceTypedValue : '-' }} {{ form.token1.symbol }}</span> -->
@@ -29,14 +29,14 @@
           :active-range="activeRange"
           type="MIN"
           class="rounded-bl-lg rounded-tl-lg"
-          @change="handleChangePriceRange('MIN')"
+          @blur="handleChangePriceRange"
         />
         <InputPriceRange
           v-model:amount="form.maxPrice!"
           :active-range="activeRange"
           type="MAX"
           class="rounded-br-lg rounded-tr-lg border-l-0"
-          @change="handleChangePriceRange('MIN')"
+          @blur="handleChangePriceRange"
         />
       </div>
       <div class="grid grid-cols-4 gap-3" :class="{ 'pointer-events-none opacity-50': isDisabledPriceRange }">
@@ -57,23 +57,14 @@
         </div>
       </div>
     </div>
+    <div v-if="outOfRange || invalidRange" class="mt-5 flex items-center gap-3 rounded-lg border border-solid border-warning bg-[#FFB23719] p-4">
+      <BaseIcon name="warning" size="24" class="text-warning" />
+      <span class="text-xs text-warning">
+        <template v-if="outOfRange"> Your position will not earn fees or be used in trades until the market price moves into your range.' </template>
+        <template v-if="invalidRange"> Invalid range selected. The min price must be lower than the max price. </template>
+      </span>
+    </div>
     <BaseButton class="mt-[33px] w-full text-xl font-semibold">ENABLE {{ form.token1.symbol }}</BaseButton>
-    <!-- <BaseButton class="mt-4 w-full text-xl font-semibold">ADD</BaseButton> -->
-    <p>tickLower: {{ tickLower?.toString() }}</p>
-    <p>tickUpper: {{ tickUpper?.toString() }}</p>
-    <p>-----------------</p>
-    <p>prices At Ticks min: {{ pricesAtTicks[Bound.LOWER]?.toSignificant(5) }}</p>
-    <p>prices At Ticks max: {{ pricesAtTicks[Bound.UPPER]?.toSignificant(5) }}</p>
-    <p>-----------------</p>
-    <p>Token A: {{ tokenA.symbol }}</p>
-    <p>Token B: {{ tokenB.symbol }}</p>
-    <p>-----------------</p>
-    <p>Token 0: {{ token0?.symbol }}</p>
-    <p>Token 1: {{ token1?.symbol }}</p>
-    <p>-----------------</p>
-    <p>
-      Invalid range: <span :class="{ 'text-error': invalidRange }"> {{ invalidRange }}</span>
-    </p>
   </div>
 </template>
 
@@ -97,12 +88,16 @@
   })
   const activeRange = ref<TYPE_SWAP>('BASE')
 
-  const { form, startPriceTypedValue, feeAmount, leftRangeTypedValue, rightRangeTypedValue } = storeToRefs(useLiquidityStore())
+  const { form, startPriceTypedValue, feeAmount, leftRangeTypedValue, rightRangeTypedValue, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
   const { switchTokens, dispatchRangeTypedValue } = useLiquidityStore()
 
-  // const isSorted = computed(() => {
-  //   return baseCurrency.value.wrapped && quoteCurrency.value.wrapped && baseCurrency.value.wrapped.sortsBefore(quoteCurrency.value.wrapped)
-  // })
+  const disabledInputCurrentPrice = computed(() => {
+    return !baseCurrency.value || !quoteCurrency.value
+  })
+
+  const isSorted = computed(() => {
+    return tokenA.value && tokenB.value && tokenA.value.sortsBefore(tokenB.value)
+  })
 
   const listSelectRange = computed(() => {
     return QUICK_ACTION_CONFIGS[feeAmount.value ?? FeeAmount.MEDIUM]
@@ -112,11 +107,6 @@
   const isDisabledPriceRange = computed(() => {
     return !startPriceTypedValue.value
   })
-
-  const handleChangeActiveRange = (range: TYPE_SWAP) => {
-    activeRange.value = range
-    switchTokens()
-  }
 
   const handleChangePriceRange = (type: INPUT_PRICE) => {
     if (type === 'MIN') {
@@ -133,16 +123,13 @@
     ticks,
     tokenA,
     tokenB,
-    token0,
-    token1,
-    tickLower,
     parsedAmounts,
-    tickUpper,
     lowerPrice,
     upperPrice,
     poolForPosition,
     pricesAtTicks,
-    invalidRange
+    invalidRange,
+    outOfRange
   } = useV3DerivedInfoComposable()
 
   setInterval(() => {
@@ -161,7 +148,7 @@
         form.value.minPrice = '0'
         form.value.maxPrice = '∞'
       } else {
-        form.value.minPrice = value?.toSignificant(5)
+        form.value.minPrice = isSorted.value ? value?.toSignificant(5) : upperPrice.value?.invert().toSignificant(5)
       }
     }
   )
@@ -172,10 +159,16 @@
         form.value.minPrice = '0'
         form.value.maxPrice = '∞'
       } else {
-        form.value.maxPrice = value?.toSignificant(5)
+        form.value.maxPrice = isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5)
       }
     }
   )
+
+  const handleChangeActiveRange = (range: TYPE_SWAP) => {
+    activeRange.value = range
+    switchTokens()
+    rangeActive.value = null
+  }
 
   const handleClickRange = (percent: number, zoomLevel?: ZoomLevels) => {
     if (percent === 100) {

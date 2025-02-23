@@ -222,6 +222,8 @@ export default function useV3DerivedInfoComposable() {
     independentAmount,
     tickLower,
     tickUpper,
-    invalidRange
+    invalidRange,
+    baseToken,
+    outOfRange
   }
 }

@@ -9,6 +9,7 @@
         :formatter="(value: string) => formatNumberInput(value)"
         :parser="(value: string) => parseNumberInput(value)"
         @input="handleInput"
+        @blur="emits('blur', props.type)"
       />
       <span class="text-xs text-gray-8">{{ textSuffix }}</span>
     </div>
@@ -57,6 +58,7 @@
 
   const emits = defineEmits<{
     change: [value: string, type: INPUT_PRICE]
+    blur: [type: INPUT_PRICE]
   }>()
 
   function formatNumberInput(value: string, _isSplit = true) {

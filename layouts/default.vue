@@ -26,6 +26,7 @@
 
   const { data } = await useAsyncData(() => apiBase.getListToken(), { server: true })
   listToken.value = [...data.value!.items]
+  console.log('🚀 ~ data:', data)
 
   const loading = ref(true)
 

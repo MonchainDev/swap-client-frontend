@@ -43,27 +43,31 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     if (form.value.token0.symbol === NATIVE_TOKEN.symbol || form.value.token0.address === '') {
       return Native.onChain(ChainId.MON_TESTNET)
     } else {
-      return new Token(
-        ChainId.MON_TESTNET,
-        form.value.token0.address as `0x${string}`,
-        +form.value.token0.decimals,
-        form.value.token0.symbol,
-        form.value.token0.name
-      )
+      return form.value.token0.symbol
+        ? new Token(
+            ChainId.MON_TESTNET,
+            form.value.token0.address as `0x${string}`,
+            +form.value.token0.decimals,
+            form.value.token0.symbol,
+            form.value.token0.name
+          )
+        : undefined
     }
   })
 
   const quoteCurrency = computed(() => {
-    if (form.value.token1.symbol === NATIVE_TOKEN.symbol || form.value.token1.address === '') {
+    if (form.value.token1.symbol === NATIVE_TOKEN.symbol && form.value.token1.address === '') {
       return Native.onChain(ChainId.MON_TESTNET)
     } else {
-      return new Token(
-        ChainId.MON_TESTNET,
-        form.value.token1.address as `0x${string}`,
-        +form.value.token1.decimals,
-        form.value.token1.symbol,
-        form.value.token1.name
-      )
+      return form.value.token1.symbol
+        ? new Token(
+            ChainId.MON_TESTNET,
+            form.value.token1.address as `0x${string}`,
+            +form.value.token1.decimals,
+            form.value.token1.symbol,
+            form.value.token1.name
+          )
+        : undefined
     }
   })
 
