@@ -104,6 +104,15 @@
     return outOfRange.value || invalidRange.value || startPriceTypedValue.value === ''
   })
 
+  watch(
+    () => isDisabled.value,
+    (value) => {
+      if (value) {
+        amount.value = ''
+      }
+    }
+  )
+
   const formattedBalance = computed(() => {
     return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
   })

@@ -14,10 +14,10 @@
       <span class="text-xs text-gray-8">{{ textSuffix }}</span>
     </div>
     <div class="flex flex-col gap-1">
-      <div class="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-3">
+      <div class="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-3" @click="emits('increase')">
         <BaseIcon name="plus" size="24" />
       </div>
-      <div class="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-3">
+      <div class="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-3" @click="emits('decrease')">
         <BaseIcon name="minus" size="24" />
       </div>
     </div>
@@ -59,6 +59,8 @@
   const emits = defineEmits<{
     change: [value: string, type: INPUT_PRICE]
     blur: [type: INPUT_PRICE]
+    increase: []
+    decrease: []
   }>()
 
   function formatNumberInput(value: string, _isSplit = true) {

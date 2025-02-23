@@ -30,6 +30,8 @@
           type="MIN"
           class="rounded-bl-lg rounded-tl-lg"
           @blur="handleChangePriceRange"
+          @increase="handleIncreasePriceRange('MIN')"
+          @decrease="handleDecreasePriceRange('MIN')"
         />
         <InputPriceRange
           v-model:amount="form.maxPrice!"
@@ -37,6 +39,8 @@
           type="MAX"
           class="rounded-br-lg rounded-tr-lg border-l-0"
           @blur="handleChangePriceRange"
+          @increase="handleIncreasePriceRange('MAX')"
+          @decrease="handleDecreasePriceRange('MAX')"
         />
       </div>
       <div class="grid grid-cols-4 gap-3" :class="{ 'pointer-events-none opacity-50': isDisabledPriceRange }">
@@ -116,31 +120,8 @@
     }
   }
 
-  const {
-    tickSpaceLimits,
-    price,
-    invertPrice,
-    ticks,
-    tokenA,
-    tokenB,
-    parsedAmounts,
-    lowerPrice,
-    upperPrice,
-    poolForPosition,
-    pricesAtTicks,
-    invalidRange,
-    outOfRange
-  } = useV3DerivedInfoComposable()
+  const { price, invertPrice, tokenA, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange } = useV3DerivedInfoComposable()
 
-  setInterval(() => {
-    console.log('🚀 ~ tickSpaceLimits:', tickSpaceLimits.value)
-    console.log('🚀 ~ ticks:', ticks.value)
-    console.log('🚀 ~ invertPrice:', invertPrice.value)
-    console.log('🚀 ~ pricesAtTicks:', pricesAtTicks.value)
-    console.log('🚀 ~ poolForPosition:', poolForPosition.value)
-    console.log('🚀 ~ CURRENCY_A:', parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(5))
-    console.log('🚀 ~ CURRENCY_B:', parsedAmounts.value[CurrencyField.CURRENCY_B]?.toSignificant(5))
-  }, 4000)
   watch(
     () => lowerPrice.value,
     (value) => {
@@ -148,6 +129,7 @@
         form.value.minPrice = '0'
         form.value.maxPrice = '∞'
       } else {
+        console.log('🚀 ~ value lowerPrice change:', isSorted.value ? value?.toSignificant(5) : upperPrice.value?.invert().toSignificant(5))
         form.value.minPrice = isSorted.value ? value?.toSignificant(5) : upperPrice.value?.invert().toSignificant(5)
       }
     }
@@ -159,6 +141,7 @@
         form.value.minPrice = '0'
         form.value.maxPrice = '∞'
       } else {
+        console.log('🚀 ~ value upperPrice change:', isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5))
         form.value.maxPrice = isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5)
       }
     }
@@ -186,6 +169,28 @@
         dispatchRangeTypedValue('BOTH', currentPrice, _zoomLevel)
       }
     }
+  }
+
+  const { getDecrementLower, getDecrementUpper, getIncrementLower, getIncrementUpper } = useRangeHopCallbacks()
+  const handleIncreasePriceRange = (type: INPUT_PRICE) => {
+    if (type === 'MIN') {
+      const value = isSorted.value ? getIncrementLower() : getDecrementUpper()
+      leftRangeTypedValue.value = value
+    } else {
+      const value = isSorted.value ? getIncrementUpper() : getDecrementLower()
+      rightRangeTypedValue.value = value
+    }
+    rangeActive.value = null
+  }
+  const handleDecreasePriceRange = (_type: INPUT_PRICE) => {
+    if (_type === 'MIN') {
+      const value = isSorted.value ? getDecrementLower() : getIncrementUpper()
+      leftRangeTypedValue.value = value
+    } else {
+      const value = isSorted.value ? getDecrementUpper() : getIncrementLower()
+      rightRangeTypedValue.value = value
+    }
+    rangeActive.value = null
   }
 </script>
 
