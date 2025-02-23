@@ -78,8 +78,7 @@
     () => independentAmount.value,
     (value) => {
       if (value) {
-        console.log('🚀 ~ value:', parsedAmounts.value[CurrencyField.CURRENCY_A]!.toSignificant(5))
-        form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]!.toSignificant(5)
+        form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(5) || ''
       } else {
         form.value.amountDeposit0 = ''
       }
@@ -91,10 +90,10 @@
     (value) => {
       if (value) {
         if (independentField.value === CurrencyField.CURRENCY_A) {
-          form.value.amountDeposit1 = parsedAmounts.value[CurrencyField.CURRENCY_B]!.toSignificant(5)
+          form.value.amountDeposit1 = parsedAmounts.value[CurrencyField.CURRENCY_B]?.toSignificant(5) || ''
         }
         if (independentField.value === CurrencyField.CURRENCY_B) {
-          form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]!.toSignificant(5)
+          form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(5) || ''
         }
       } else {
         form.value.amountDeposit1 = ''
