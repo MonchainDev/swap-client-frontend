@@ -1,6 +1,5 @@
 import type { Price } from '@pancakeswap/swap-sdk-core'
 import { Token } from '@pancakeswap/swap-sdk-core'
-import { FeeAmount } from '@pancakeswap/v3-sdk'
 import { defineStore } from 'pinia'
 import { NATIVE_TOKEN } from '~/constant'
 import { ChainId, type ZoomLevels } from '~/types'
@@ -31,7 +30,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
   })
   const independentField = ref(CurrencyField.CURRENCY_A)
   const startPriceTypedValue = ref('')
-  const feeAmount = ref(FeeAmount.MEDIUM)
+  const feeAmount = ref(0)
 
   const leftRangeTypedValue = ref<Price<Token, Token> | boolean | undefined>(undefined)
   const rightRangeTypedValue = ref<Price<Token, Token> | boolean | undefined>(undefined)
@@ -97,6 +96,15 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     }
   }
 
+  const resetFiled = () => {
+    feeAmount.value = 0
+    typedValue.value = ''
+    leftRangeTypedValue.value = undefined
+    rightRangeTypedValue.value = undefined
+    startPriceTypedValue.value = ''
+    independentField.value = CurrencyField.CURRENCY_A
+  }
+
   return {
     form,
     currentStep,
@@ -109,6 +117,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     leftRangeTypedValue,
     rightRangeTypedValue,
     switchTokens,
-    dispatchRangeTypedValue
+    dispatchRangeTypedValue,
+    resetFiled
   }
 })

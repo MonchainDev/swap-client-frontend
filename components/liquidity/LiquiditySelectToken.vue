@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-[55px] items-center gap-[10px] rounded-lg bg-[#F3F8FF] px-8" @click="emit('selectToken')">
+  <div class="flex h-[55px] cursor-pointer items-center gap-[10px] rounded-lg bg-[#F3F8FF] px-8" @click="emit('selectToken')">
     <template v-if="isSelected">
       <img :src="token.icon_url || ''" alt="logo token" class="size-7 rounded-full" @error="handleImageError($event)" />
       <div class="flex flex-col">

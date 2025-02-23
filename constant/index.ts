@@ -55,7 +55,7 @@ const DEFAULT_NETWORK: INetwork = {
   value: 'MON'
 }
 
-const QUICK_ACTION_CONFIGS: Record<FeeAmount, { [percentage: number]: ZoomLevels }> = {
+const QUICK_ACTION_CONFIGS: Record<FeeAmount | string, { [percentage: number]: ZoomLevels }> = {
   [FeeAmount.LOWEST]: {
     0.1: {
       initialMin: 0.999,

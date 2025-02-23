@@ -36,16 +36,18 @@
   // })
 
   const handleSelectFee = async (item: { value: number }) => {
-    const result = await readContract(config, {
-      abi: ABI,
-      address: CONTRACT_ADDRESS.MON_FACTORY as `0x${string}`,
-      functionName: 'getPool',
-      args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, feeAmount.value]
-    })
-    if (result === '0x0000000000000000000000000000000000000000') {
-      feeAmount.value = item.value
-    } else {
-      ElMessage.warning('This fee tier is not available for this pair')
+    if (baseCurrency.value?.wrapped.address && quoteCurrency.value?.wrapped.address) {
+      const result = await readContract(config, {
+        abi: ABI,
+        address: CONTRACT_ADDRESS.MON_FACTORY as `0x${string}`,
+        functionName: 'getPool',
+        args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, feeAmount.value]
+      })
+      if (result === '0x0000000000000000000000000000000000000000') {
+        feeAmount.value = item.value
+      } else {
+        ElMessage.warning('This fee tier is not available for this pair')
+      }
     }
   }
 </script>

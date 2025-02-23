@@ -2,12 +2,12 @@
   <div class="block-right rounded-br-lg rounded-tr-lg bg-white pl-8 pr-[22px] pt-[21px] shadow-sm">
     <div class="flex items-center gap-3">
       <span class="text-lg font-semibold leading-7">Set price range</span>
-      <div class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange('BASE')">
+      <div v-if="props.isToken0Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange('BASE')">
         <BaseIcon :name="activeRange === 'BASE' ? 'radio-fill' : 'radio'" size="24" />
         <span class="text-base">{{ form.token0.symbol }}</span>
       </div>
 
-      <div class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange('QUOTE')">
+      <div v-if="props.isToken1Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange('QUOTE')">
         <BaseIcon :name="activeRange === 'QUOTE' ? 'radio-fill' : 'radio'" size="24" />
         <span class="text-base">{{ form.token1.symbol }}</span>
       </div>
@@ -43,7 +43,7 @@
           @decrease="handleDecreasePriceRange('MAX')"
         />
       </div>
-      <div class="grid grid-cols-4 gap-3" :class="{ 'pointer-events-none opacity-50': isDisabledPriceRange }">
+      <div class="grid grid-cols-4 gap-3" :class="{ 'pointer-events-none opacity-50': isDisabledPriceRange, '!grid-cols-1': !feeAmount }">
         <div
           v-for="(item, key) in listSelectRange"
           :key="key"
@@ -86,7 +86,7 @@
     isToken1Selected: boolean
   }
 
-  const _props = withDefaults(defineProps<IProps>(), {
+  const props = withDefaults(defineProps<IProps>(), {
     isToken0Selected: false,
     isToken1Selected: false
   })
@@ -148,6 +148,7 @@
   )
 
   const handleChangeActiveRange = (range: TYPE_SWAP) => {
+    if (range === activeRange.value) return
     activeRange.value = range
     switchTokens()
     rangeActive.value = null

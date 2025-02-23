@@ -42,6 +42,7 @@
   import type { TYPE_SWAP } from '~/types/swap.type'
 
   const { form, independentField, typedValue } = storeToRefs(useLiquidityStore())
+  const { resetFiled } = useLiquidityStore()
   const { setOpenPopup } = useBaseStore()
 
   interface IProps {
@@ -97,6 +98,8 @@
       form.value.token1 = token
       form.value.token0 = token.address === form.value.token0.address ? { name: '', symbol: '', decimals: 0, icon_url: '', address: '' } : form.value.token0
     }
+    // reset form to 0 after select token
+    resetFiled()
   }
 
   const { address } = useAccount()
