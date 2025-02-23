@@ -9,24 +9,7 @@
       <LiquiditySelectToken type="BASE" :is-selected="isToken0Selected" :token="form.token0" @select-token="openPopupSelectToken('BASE')" />
       <LiquiditySelectToken type="QUOTE" :is-selected="isToken1Selected" :token="form.token1" @select-token="openPopupSelectToken('QUOTE')" />
     </div>
-    <div class="mt-8">
-      <h4 class="text-lg font-semibold leading-7">Fee tier</h4>
-      <div class="mt-4 grid grid-cols-[repeat(4,100px)] gap-5">
-        <div
-          v-for="item in LIST_FEE_AMOUNT"
-          :key="item.value"
-          class="cursor-pointer rounded-lg border border-solid border-gray-3 bg-[#fafafa] px-[13px] pb-[26px] pt-[15px]"
-          @click="feeAmount = item.value"
-        >
-          <div class="flex items-center gap-[6px]">
-            <BaseIcon v-show="feeAmount === item.value" name="radio-fill" size="24" />
-            <BaseIcon v-show="feeAmount !== item.value" name="radio" size="24" />
-            <span class="text-sm font-bold leading-5">{{ item.value / 10000 }}%</span>
-          </div>
-          <p class="mt-5 text-xs text-gray-8">{{ item.description }}</p>
-        </div>
-      </div>
-    </div>
+    <ListFee />
     <div class="mt-[34px]">
       <span class="text-lg font-semibold leading-7">Deposit Amount</span>
       <div class="mt-3 flex flex-col gap-4">
@@ -54,12 +37,11 @@
 
 <script lang="ts" setup>
   import { useAccount, useBalance } from '@wagmi/vue'
-  import { LIST_FEE_AMOUNT } from '~/constant'
+  import useV3DerivedInfoComposable from '~/composables/useV3DerivedInfo'
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
-  import useV3DerivedInfoComposable from '~/composables/useV3DerivedInfo'
 
-  const { form, feeAmount, independentField, typedValue } = storeToRefs(useLiquidityStore())
+  const { form, independentField, typedValue } = storeToRefs(useLiquidityStore())
   const { setOpenPopup } = useBaseStore()
 
   interface IProps {
