@@ -68,13 +68,12 @@
         <template v-if="invalidRange"> Invalid range selected. The min price must be lower than the max price. </template>
       </span>
     </div>
-    <BaseButton class="mt-[33px] w-full text-xl font-semibold">ENABLE {{ form.token1.symbol }}</BaseButton>
+    <GroupButtonLiquidity />
   </div>
 </template>
 
 <script lang="ts" setup>
   import { FeeAmount } from '@pancakeswap/v3-sdk'
-  import useV3DerivedInfoComposable from '~/composables/useV3DerivedInfo'
   import { QUICK_ACTION_CONFIGS } from '~/constant'
   import { ZOOM_LEVELS } from '~/constant/zoom-level'
   import type { ZoomLevels } from '~/types'
@@ -96,7 +95,7 @@
   const { switchTokens, dispatchRangeTypedValue } = useLiquidityStore()
 
   const disabledInputCurrentPrice = computed(() => {
-    return !baseCurrency.value || !quoteCurrency.value
+    return !baseCurrency.value || !quoteCurrency.value || !feeAmount.value
   })
 
   const isSorted = computed(() => {
@@ -120,7 +119,7 @@
     }
   }
 
-  const { price, invertPrice, tokenA, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange } = useV3DerivedInfoComposable()
+  const { price, invertPrice, tokenA, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange } = useV3DerivedInfo()
 
   watch(
     () => lowerPrice.value,

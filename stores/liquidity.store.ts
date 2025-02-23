@@ -2,7 +2,7 @@ import type { Price } from '@pancakeswap/swap-sdk-core'
 import { Token } from '@pancakeswap/swap-sdk-core'
 import { defineStore } from 'pinia'
 import { NATIVE_TOKEN } from '~/constant'
-import { ChainId, type ZoomLevels } from '~/types'
+import { ChainId, CurrencyField, type ZoomLevels } from '~/types'
 import type { IFormCreatePosition } from '~/types/position.type'
 
 export const useLiquidityStore = defineStore('liquidity', () => {

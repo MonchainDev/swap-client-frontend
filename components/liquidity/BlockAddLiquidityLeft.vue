@@ -37,8 +37,7 @@
 
 <script lang="ts" setup>
   import { useAccount, useBalance } from '@wagmi/vue'
-  import useV3DerivedInfoComposable from '~/composables/useV3DerivedInfo'
-  import type { IToken } from '~/types'
+  import { CurrencyField, type IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
 
   const { form, independentField, typedValue } = storeToRefs(useLiquidityStore())
@@ -55,7 +54,7 @@
     isToken1Selected: false
   })
 
-  const { independentAmount, dependentAmount, parsedAmounts } = useV3DerivedInfoComposable()
+  const { independentAmount, dependentAmount, parsedAmounts } = useV3DerivedInfo()
 
   watch(
     () => independentAmount.value,

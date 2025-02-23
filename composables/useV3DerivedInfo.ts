@@ -2,8 +2,9 @@ import type { Token } from '@pancakeswap/swap-sdk-core'
 import { CurrencyAmount, Price } from '@pancakeswap/swap-sdk-core'
 import { Position, type FeeAmount } from '@pancakeswap/v3-sdk'
 import { encodeSqrtRatioX96, nearestUsableTick, Pool, priceToClosestTick, TICK_SPACINGS, TickMath } from '@pancakeswap/v3-sdk'
+import { Bound, CurrencyField } from '~/types'
 
-export default function useV3DerivedInfoComposable() {
+export default function useV3DerivedInfo() {
   const { feeAmount, typedValue, startPriceTypedValue, leftRangeTypedValue, rightRangeTypedValue, independentField, baseCurrency, quoteCurrency } =
     storeToRefs(useLiquidityStore())
 

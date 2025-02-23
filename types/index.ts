@@ -32,3 +32,8 @@ export interface ZoomLevels {
   min: number
   max: number
 }
+
+export enum Bound {
+  LOWER = 'LOWER',
+  UPPER = 'UPPER'
+}

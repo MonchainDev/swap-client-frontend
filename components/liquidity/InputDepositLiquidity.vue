@@ -62,7 +62,6 @@
 
 <script lang="ts" setup>
   import { useAccount } from '@wagmi/vue'
-  import useV3DerivedInfoComposable from '~/composables/useV3DerivedInfo'
 
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
@@ -97,7 +96,7 @@
 
   const { handleImageError } = useErrorImage()
 
-  const { outOfRange, invalidRange } = useV3DerivedInfoComposable()
+  const { outOfRange, invalidRange } = useV3DerivedInfo()
   const { startPriceTypedValue } = storeToRefs(useLiquidityStore())
 
   const isDisabled = computed(() => {
