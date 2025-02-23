@@ -2,16 +2,14 @@
   <div class="block-right rounded-br-lg rounded-tr-lg bg-white pl-8 pr-[22px] pt-[21px] shadow-sm">
     <div class="flex items-center gap-3">
       <span class="text-lg font-semibold leading-7">Set price range</span>
-      <div class="flex items-center gap-3" :class="{ 'flex-row-reverse': flip }">
-        <div v-if="props.isToken0Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange(form.token0.address)">
-          <BaseIcon :name="activeRange === form.token0.address ? 'radio-fill' : 'radio'" size="24" />
-          <span class="text-base">{{ form.token0.symbol }}</span>
-        </div>
+      <div v-if="props.isToken0Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange('BASE')">
+        <BaseIcon :name="activeRange === 'BASE' ? 'radio-fill' : 'radio'" size="24" />
+        <span class="text-base">{{ form.token0.symbol }}</span>
+      </div>
 
-        <div v-if="props.isToken1Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange(form.token1.address)">
-          <BaseIcon :name="activeRange === form.token1.address ? 'radio-fill' : 'radio'" size="24" />
-          <span class="text-base">{{ form.token1.symbol }}</span>
-        </div>
+      <div v-if="props.isToken1Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange('QUOTE')">
+        <BaseIcon :name="activeRange === 'QUOTE' ? 'radio-fill' : 'radio'" size="24" />
+        <span class="text-base">{{ form.token1.symbol }}</span>
       </div>
     </div>
     <ElInput v-model="startPriceTypedValue" :disabled="disabledInputCurrentPrice" placeholder="0.0" class="input-init-amount mt-5" />
@@ -48,7 +46,7 @@
     <div v-if="outOfRange || invalidRange" class="mt-5 flex items-center gap-3 rounded-lg border border-solid border-warning bg-[#FFB23719] p-4">
       <BaseIcon name="warning" size="24" class="text-warning" />
       <span class="text-xs text-warning">
-        <template v-if="outOfRange"> Your position will not earn fees or be used in trades until the market price moves into your range.' </template>
+        <template v-if="outOfRange"> Your position will not earn fees or be used in trades until the market price moves into your range.</template>
         <template v-if="invalidRange"> Invalid range selected. The min price must be lower than the max price. </template>
       </span>
     </div>
@@ -79,15 +77,14 @@
     isToken0Selected: false,
     isToken1Selected: false
   })
+  const activeRange = ref<TYPE_SWAP>('BASE')
+  const loadingApprove0 = ref(false)
+  const loadingApprove1 = ref(false)
+  const loadingAdd = ref(false)
 
   const { form, startPriceTypedValue, feeAmount, buttonRangePercent, leftRangeTypedValue, rightRangeTypedValue, baseCurrency, quoteCurrency } =
     storeToRefs(useLiquidityStore())
   const { switchTokens, dispatchRangeTypedValue, refetchAllowance0, refetchAllowance1 } = useLiquidityStore()
-
-  const activeRange = ref<string>(form.value.token0.address)
-  const loadingApprove0 = ref(false)
-  const loadingApprove1 = ref(false)
-  const loadingAdd = ref(false)
 
   const disabledInputCurrentPrice = computed(() => {
     return !baseCurrency.value || !quoteCurrency.value || !feeAmount.value
@@ -192,11 +189,9 @@
     }
   )
 
-  const flip = ref(false)
-  const handleChangeActiveRange = (address: string) => {
-    if (address === activeRange.value) return
-    flip.value = !flip.value
-    activeRange.value = address
+  const handleChangeActiveRange = (range: TYPE_SWAP) => {
+    if (range === activeRange.value) return
+    activeRange.value = range
     switchTokens()
     buttonRangePercent.value = null
   }

@@ -26,7 +26,7 @@
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
               <span class="font-medium">{{ token.symbol }}</span>
-              <BaseIcon v-if="stepSwap === 'SELECT_TOKEN'" name="arrow" size="18" class="text-secondary -rotate-90" />
+              <!-- <BaseIcon v-if="stepSwap === 'SELECT_TOKEN'" name="arrow" size="18" class="text-secondary -rotate-90" /> -->
             </div>
           </div>
         </div>
