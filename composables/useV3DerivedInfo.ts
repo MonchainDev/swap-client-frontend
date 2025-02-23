@@ -162,6 +162,7 @@ export default function useV3DerivedInfoComposable() {
     if (isValid) {
       // if price is out of range or invalid range - return 0 (single deposit will be independent)
       if (outOfRange.value || invalidRange.value) {
+        console.error('out of range or invalid range')
         return undefined
       }
 
@@ -220,6 +221,7 @@ export default function useV3DerivedInfoComposable() {
     upperPrice,
     independentAmount,
     tickLower,
-    tickUpper
+    tickUpper,
+    invalidRange
   }
 }

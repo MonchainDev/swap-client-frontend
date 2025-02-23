@@ -65,7 +65,15 @@
     <p>prices At Ticks min: {{ pricesAtTicks[Bound.LOWER]?.toSignificant(5) }}</p>
     <p>prices At Ticks max: {{ pricesAtTicks[Bound.UPPER]?.toSignificant(5) }}</p>
     <p>-----------------</p>
-    <p></p>
+    <p>Token A: {{ tokenA.symbol }}</p>
+    <p>Token B: {{ tokenB.symbol }}</p>
+    <p>-----------------</p>
+    <p>Token 0: {{ token0?.symbol }}</p>
+    <p>Token 1: {{ token1?.symbol }}</p>
+    <p>-----------------</p>
+    <p>
+      Invalid range: <span :class="{ 'text-error': invalidRange }"> {{ invalidRange }}</span>
+    </p>
   </div>
 </template>
 
@@ -118,16 +126,31 @@
     }
   }
 
-  const { price, invertPrice, ticks, tickLower, parsedAmounts, tickUpper, lowerPrice, upperPrice, poolForPosition, pricesAtTicks } =
-    useV3DerivedInfoComposable()
+  const {
+    price,
+    invertPrice,
+    ticks,
+    tokenA,
+    tokenB,
+    token0,
+    token1,
+    tickLower,
+    parsedAmounts,
+    tickUpper,
+    lowerPrice,
+    upperPrice,
+    poolForPosition,
+    pricesAtTicks,
+    invalidRange
+  } = useV3DerivedInfoComposable()
 
   setInterval(() => {
     console.log('🚀 ~ ticks:', ticks.value)
     console.log('🚀 ~ invertPrice:', invertPrice.value)
     console.log('🚀 ~ pricesAtTicks:', pricesAtTicks.value)
     console.log('🚀 ~ poolForPosition:', poolForPosition.value)
-    console.log('🚀 ~ CURRENCY_A:', parsedAmounts.value[CurrencyField.CURRENCY_A])
-    console.log('🚀 ~ CURRENCY_B:', parsedAmounts.value[CurrencyField.CURRENCY_B])
+    console.log('🚀 ~ CURRENCY_A:', parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(5))
+    console.log('🚀 ~ CURRENCY_B:', parsedAmounts.value[CurrencyField.CURRENCY_B]?.toSignificant(5))
   }, 4000)
   watch(
     () => lowerPrice.value,
