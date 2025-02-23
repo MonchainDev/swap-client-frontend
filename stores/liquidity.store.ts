@@ -7,28 +7,21 @@ import { ChainId, type ZoomLevels } from '~/types'
 import type { IFormCreatePosition } from '~/types/position.type'
 
 export const useLiquidityStore = defineStore('liquidity', () => {
+  const { listToken } = storeToRefs(useBaseStore())
   const currentStep = ref(2)
   const form = ref<IFormCreatePosition>({
     feeTier: 0.3,
     token0: {
-      ...NATIVE_TOKEN
+      ...listToken.value[0]
     },
-    // token1: {
-    //   address: '',
-    //   decimals: 0,
-    //   icon_url: '',
-    //   name: '',
-    //   symbol: ''
-    // },
     token1: {
-      address: '0x2E151A5CA0ea0373e983Fa9EB28eC98c058C8f34',
-      decimals: '18',
-      holders: '1',
+      address: '',
+      decimals: 0,
       icon_url: '',
-      name: 'DAVE TOKEN',
-      symbol: 'DAVE',
-      type: 'ERC-20'
+      name: '',
+      symbol: ''
     },
+
     typeRange: 'FULL',
     minPrice: '0',
     maxPrice: '∞',

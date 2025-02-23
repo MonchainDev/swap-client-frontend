@@ -1,10 +1,10 @@
 <template>
   <div class="flex h-[55px] items-center gap-[10px] rounded-lg bg-[#F3F8FF] px-8" @click="emit('selectToken')">
     <template v-if="isSelected">
-      <img :src="token.icon_url" alt="logo token" class="size-7 rounded-full" @error="handleImageError($event)" />
+      <img :src="token.icon_url || ''" alt="logo token" class="size-7 rounded-full" @error="handleImageError($event)" />
       <div class="flex flex-col">
         <div class="flex items-center gap-1">
-          <span class="text-base font-semibold">{{ token.name }}</span>
+          <div class="line-clamp-1 text-base font-semibold">{{ token.name }}</div>
           <BaseIcon name="arrow" :size="18" class="-rotate-90" />
         </div>
         <h4 class="line-clamp-1 text-xs text-[#6F6A79]">{{ token.name }}</h4>
