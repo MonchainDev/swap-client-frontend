@@ -21,15 +21,17 @@
     </div>
     <div class="mt-7 flex items-center gap-3">
       <span class="text-lg font-semibold leading-7">Set price range</span>
-      <div v-if="props.isToken0Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange">
-        <BaseIcon :name="listTokenOfRange[0].address === form.token0.address ? 'radio-fill' : 'radio'" size="24" />
-        <span class="text-base">{{ listTokenOfRange[0].symbol }}</span>
-      </div>
+      <template v-if="props.isToken0Selected && props.isToken1Selected">
+        <div class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange">
+          <BaseIcon :name="listTokenOfRange[0].address === form.token0.address ? 'radio-fill' : 'radio'" size="24" />
+          <span class="text-base">{{ listTokenOfRange[0].symbol }}</span>
+        </div>
 
-      <div v-if="props.isToken1Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange">
-        <BaseIcon :name="listTokenOfRange[1].address === form.token0.address ? 'radio-fill' : 'radio'" size="24" />
-        <span class="text-base">{{ listTokenOfRange[1].symbol }}</span>
-      </div>
+        <div class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange">
+          <BaseIcon :name="listTokenOfRange[1].address === form.token0.address ? 'radio-fill' : 'radio'" size="24" />
+          <span class="text-base">{{ listTokenOfRange[1].symbol }}</span>
+        </div>
+      </template>
     </div>
     <!-- 
     <div class="mt-5">
