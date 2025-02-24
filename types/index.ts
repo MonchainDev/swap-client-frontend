@@ -40,3 +40,5 @@ export enum Bound {
 
 export const BIG_INT_ZERO = 0n
 export const BIG_INT_TEN = 10n
+
+export type TYPE_STATUS = 'SUCCESS' | 'FAILED'

@@ -260,17 +260,21 @@
 
   const { approveToken } = useApproveToken()
 
-  const handleApprove = async (type: TYPE_SWAP) => {
+  const handleApprove = (type: TYPE_SWAP) => {
     if (type === 'BASE') {
       loadingApprove0.value = true
-      await approveToken(tokenA.value?.address as string, CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER, MAX_NUMBER_APPROVE, () => {
-        refetchAllowance0()
+      approveToken(tokenA.value?.address as string, CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER, MAX_NUMBER_APPROVE, (status) => {
+        if (status === 'SUCCESS') {
+          refetchAllowance0()
+        }
         loadingApprove0.value = false
       })
     } else {
       loadingApprove1.value = true
-      await approveToken(tokenB.value?.address as string, CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER, MAX_NUMBER_APPROVE, () => {
-        refetchAllowance1()
+      approveToken(tokenB.value?.address as string, CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER, MAX_NUMBER_APPROVE, (status) => {
+        if (status === 'SUCCESS') {
+          refetchAllowance1()
+        }
         loadingApprove1.value = false
       })
     }
