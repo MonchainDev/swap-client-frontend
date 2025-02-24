@@ -79,9 +79,14 @@
         </div>
       </div>
     </div>
-    <BaseTable :data="DATA_POOL" class="table-pool mt-9">
-      <ElTableColumn label="Pools" width="320">
-        <div class="flex gap-[10px]">
+    <BaseTable :data="props.data" :loading="loading" class="table-pool mt-9">
+      <ElTableColumn label="Pools" width="320" prop="poolAddress">
+        <template #default="{ row }">
+          <a :href="`https://explorer.monchain.info/address/${row.poolAddress}`" target="_blank" class="text-hyperlink">{{
+            sliceString(row.poolAddress, 10, 10)
+          }}</a>
+        </template>
+        <!-- <div class="flex gap-[10px]">
           <div class="flex">
             <img src="https://cryptologos.cc/logos/compound-comp-logo.png?v=040" alt="logo" class="size-9" />
             <img src="/token-default.png" alt="logo" class="-ml-[18px] size-9" />
@@ -93,24 +98,24 @@
               <span class="text-xs text-gray-8">Mon Chain</span>
             </div>
           </div>
-        </div>
+        </div> -->
       </ElTableColumn>
       <ElTableColumn label="Fee tier" align="center" width="100">
-        <div class="mx-auto flex h-8 w-[55px] items-center justify-center rounded-md bg-[#F5F5F5] text-sm font-semibold">0.01%</div>
+        <!-- <div class="mx-auto flex h-8 w-[55px] items-center justify-center rounded-md bg-[#F5F5F5] text-sm font-semibold">0.01%</div> -->
       </ElTableColumn>
       <ElTableColumn label="APR">
-        <div class="text-sm text-[#049C6B]">Up to 54.34% <span class="text-gray-6"> 44.88%</span></div>
+        <!-- <div class="text-sm text-[#049C6B]">Up to 54.34% <span class="text-gray-6"> 44.88%</span></div> -->
       </ElTableColumn>
       <ElTableColumn label="TVL" align="right">
-        <span class="text-sm">$ 5,631,395.2</span>
+        <!-- <span class="text-sm">$ 5,631,395.2</span> -->
       </ElTableColumn>
       <ElTableColumn label="Volume 24h" align="right">
-        <template #default="{ row }">
+        <!-- <template #default="{ row }">
           <span class="text-sm">${{ formatNumberAbbreviation(row.volume1Day.value) }}</span>
-        </template>
+        </template> -->
       </ElTableColumn>
       <ElTableColumn label="" align="center" width="50">
-        <ElPopover placement="right" :show-arrow="false" :width="200" trigger="hover" popper-class="popper-menu-pool">
+        <!-- <ElPopover placement="right" :show-arrow="false" :width="200" trigger="hover" popper-class="popper-menu-pool">
           <template #reference>
             <BaseIcon name="three-dot" size="24" class="cursor-pointer" />
           </template>
@@ -128,7 +133,7 @@
               <span>View Info page</span>
             </li>
           </ul>
-        </ElPopover>
+        </ElPopover> -->
       </ElTableColumn>
     </BaseTable>
   </div>
@@ -136,9 +141,18 @@
 </template>
 
 <script lang="ts" setup>
-  import DATA_POOL from '@/constant/data-pool.json'
-
   import { LIST_NETWORK } from '~/constant'
+
+  interface IProps {
+    data: Record<string, unknown>[]
+    loading: boolean
+  }
+
+  const props = withDefaults(defineProps<IProps>(), {
+    data: () => [],
+    loading: false
+  })
+
   const { setOpenPopup } = useBaseStore()
   const { listToken } = storeToRefs(useBaseStore())
 
@@ -164,7 +178,7 @@
     return tokenListSelected.value.length === 0 ? 'All tokens' : tokenListSelected.value.map((item) => item.symbol).join(', ')
   })
 
-  const formatNumberAbbreviation = (value: number) => {
+  const _formatNumberAbbreviation = (value: number) => {
     if (!value) return '0'
 
     const number = Number(value)

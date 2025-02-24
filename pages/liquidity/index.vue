@@ -25,7 +25,7 @@
         </NuxtLink>
       </div>
     </div>
-    <TableListPool />
+    <TableListPool :data="listPool" :loading="loading" />
   </div>
 </template>
 
@@ -33,6 +33,32 @@
   import { NuxtLink } from '#components'
 
   const tabActive = ref<'ALL' | 'POSITION'>('ALL')
+
+  const { getAllPools } = useGetPool()
+
+  const listPool = ref<Record<string, unknown>[]>([])
+  const loading = ref(false)
+
+  const init = async () => {
+    try {
+      loading.value = true
+      const rs = await getAllPools()
+      listPool.value = rs.map((item) => {
+        return {
+          poolAddress: item,
+          apr: '',
+          tvl: '',
+          volume: '',
+          fee: ''
+        }
+      })
+    } catch (error) {
+      console.log('🚀 ~ init ~ error:', error)
+    } finally {
+      loading.value = false
+    }
+  }
+  init()
 </script>
 
 <style lang="scss" scoped>

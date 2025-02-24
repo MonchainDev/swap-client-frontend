@@ -1,6 +1,6 @@
 <template>
   <div class="base-table">
-    <ElTable :data="data">
+    <ElTable v-loading="loading" :data="data">
       <slot></slot>
     </ElTable>
   </div>
@@ -9,10 +9,12 @@
 <script lang="ts" setup generic="T">
   interface IProps {
     data: T[]
+    loading: boolean
   }
 
   const _props = withDefaults(defineProps<IProps>(), {
-    data: () => []
+    data: () => [],
+    loading: false
   })
 </script>
 
