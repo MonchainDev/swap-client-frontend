@@ -8,10 +8,6 @@
 <script lang="ts" setup>
   import { useAccount, useBalance } from '@wagmi/vue'
 
-  useHead({
-    title: 'Buy, sell & trade Mon and other top tokens'
-  })
-
   const { address } = useAccount()
 
   // Fetch balance when connected

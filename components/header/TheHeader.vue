@@ -4,7 +4,7 @@
       <div class="flex items-center">
         <div class="flex items-center gap-2">
           <img src="/logo.png" alt="logo" class="w-12 sm:w-7" />
-          <span class="text-[22px] font-semibold leading-7 sm:text-base sm:text-white">ORB</span>
+          <span class="text-[22px] font-semibold leading-7 text-hyperlink sm:text-base sm:text-white">ORB</span>
         </div>
         <div class="ml-[68px] flex items-center gap-8 sm:hidden">
           <NuxtLink active-class="active-menu" to="/" class="text-center text-base font-medium leading-6 hover:text-primary">Swap</NuxtLink>
