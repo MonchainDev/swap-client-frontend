@@ -29,12 +29,8 @@
 
   const loading = ref(true)
 
-  // const { init } = useWeb3()
-
   onMounted(() => {
     loading.value = false
-    // init().then(() => {
-    // })
   })
 </script>
 
