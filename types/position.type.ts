@@ -3,8 +3,6 @@ import type { IToken } from '.'
 export interface IFormCreatePosition {
   token0: IToken
   token1: IToken
-  feeTier: number
-  typeRange: RANGE
   minPrice: string | undefined
   maxPrice: string | undefined
   amount: string

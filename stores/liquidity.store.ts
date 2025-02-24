@@ -11,9 +11,7 @@ import type { IFormCreatePosition } from '~/types/position.type'
 export const useLiquidityStore = defineStore('liquidity', () => {
   const currentStep = ref(2)
   const form = ref<IFormCreatePosition>({
-    feeTier: 0.3,
     token0: {
-      // ...listToken.value[0]
       address: '',
       decimals: 0,
       icon_url: '',
@@ -27,8 +25,6 @@ export const useLiquidityStore = defineStore('liquidity', () => {
       name: '',
       symbol: ''
     },
-
-    typeRange: 'FULL',
     minPrice: '',
     maxPrice: '',
     amount: '',
@@ -153,6 +149,31 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     }))
   )
 
+  const resetStore = () => {
+    resetFiled()
+    form.value = {
+      token0: {
+        address: '',
+        decimals: 0,
+        icon_url: '',
+        name: '',
+        symbol: ''
+      },
+      token1: {
+        address: '',
+        decimals: 0,
+        icon_url: '',
+        name: '',
+        symbol: ''
+      },
+      minPrice: '',
+      maxPrice: '',
+      amount: '',
+      amountDeposit0: '',
+      amountDeposit1: ''
+    }
+  }
+
   return {
     form,
     currentStep,
@@ -176,6 +197,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     refetchAllowance1,
     listTokenOfRange,
     refetchBalance0,
-    refetchBalance1
+    refetchBalance1,
+    resetStore
   }
 })

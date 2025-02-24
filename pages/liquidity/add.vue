@@ -16,6 +16,10 @@
 </template>
 
 <script lang="ts" setup>
+  definePageMeta({
+    middleware: ['reset-form-liquidity-middleware']
+  })
+
   const { form } = storeToRefs(useLiquidityStore())
 
   const isToken0Selected = computed(() => form.value.token0.symbol !== '')
