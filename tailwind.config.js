@@ -1,22 +1,24 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [],
+  content: ['./components/**/*.{js,vue,ts}', './layouts/**/*.vue', './pages/**/*.vue', './plugins/**/*.{js,ts}', './app.vue', './error.vue'],
   theme: {
-    container:{
-      center:true,
+    container: {
+      center: true
     },
     extend: {},
-    colors:{
-      primary:'var(--color-primary)',
+    colors: {
+      primary: 'var(--color-primary)',
       'gray-3': 'var(--color-gray-3)',
       'gray-4': 'var(--color-gray-4)',
-      'gray-6':'var(--color-gray-6)',
-      'gray-7':'var(--color-gray-7)',
+      'gray-6': 'var(--color-gray-6)',
+      'gray-7': 'var(--color-gray-7)',
       'gray-8': 'var(--color-gray-8)',
-      white:'#fff',
+      warning: 'var(--color-warning)',
+      white: '#fff',
       error: 'var(--color-error)',
-      transparent:'transparent',
+      transparent: 'transparent',
       hyperlink: 'var(--color-hyperlink)',
+      'linear-gradient': 'var(--color-linear-gradient)'
     },
     screens: {
       xxl: {
@@ -34,8 +36,7 @@ export default {
       xs: {
         max: '374'
       }
-    },
+    }
   },
-  plugins: [],
+  plugins: []
 }
-

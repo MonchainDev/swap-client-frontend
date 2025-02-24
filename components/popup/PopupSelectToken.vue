@@ -27,7 +27,7 @@
         <template #prefix>
           <BaseIcon name="search" class="text-primary" size="20" />
         </template>
-        <template #suffix>
+        <template v-if="showNetwork" #suffix>
           <div class="flex min-w-[136px] items-center gap-[9px] rounded-lg bg-white p-[6px] sm:hidden">
             <img :src="network.logo" alt="logo" class="size-6 rounded-lg" />
             <span class="text-xs font-semibold text-primary">{{ network.title }}</span>
@@ -63,13 +63,18 @@
             <li
               v-for="item in data"
               :key="item.address"
-              class="grid h-[68px] cursor-pointer grid-cols-[40px_1fr] items-center gap-3 pl-8 hover:bg-gray-3 sm:pl-4"
+              class="flex h-[68px] cursor-pointer items-center justify-between gap-3 pl-8 hover:bg-gray-3 sm:pl-4"
               @click="handleClickToken(item)"
             >
-              <img :src="item.icon_url || ''" alt="logo token" class="size-10 rounded-full object-cover" @error="handleImageError($event)" />
-              <div class="flex flex-col">
-                <span class="text-base font-medium">{{ item.name }}</span>
-                <span class="text-xs text-gray-8">{{ item.symbol }}</span>
+              <div class="grid h-[68px] cursor-pointer grid-cols-[40px_1fr] items-center gap-3">
+                <img :src="item.icon_url || ''" alt="logo token" class="size-10 rounded-full object-cover" @error="handleImageError($event)" />
+                <div class="flex flex-col">
+                  <span class="text-base font-medium">{{ item.name }}</span>
+                  <span class="text-xs text-gray-8">{{ item.symbol }}</span>
+                </div>
+              </div>
+              <div v-if="isSelect" class="mr-3">
+                <BaseIcon :name="useIncludes(tokenSelected, item.address) ? 'checkbox-fill' : 'checkbox'" size="24" />
               </div>
             </li>
           </ul>
@@ -84,21 +89,27 @@
   import type { IToken } from '~/types'
   import { useStorage } from '@vueuse/core'
 
-  // interface IProps {
-  //   network?: INetwork
-  // }
+  interface IProps {
+    showNetwork?: boolean
+    isSelect?: boolean
+  }
 
-  // const _props = withDefaults(defineProps<IProps>(), {
-  //   network: () => ({ title: '', logo: '', value: '' })
-  // })
+  const _props = withDefaults(defineProps<IProps>(), {
+    showNetwork: true,
+    isSelect: false
+  })
 
   const emit = defineEmits<{
     select: [token: IToken]
   }>()
 
+  const tokenSelected = defineModel('tokenSelected', {
+    type: Array<string>,
+    default: []
+  })
+
   const { setOpenPopup } = useBaseStore()
-  const { listToken, isDesktop } = storeToRefs(useBaseStore())
-  const { networkSelected: network } = storeToRefs(useSwapStore())
+  const { listToken, isDesktop, currentNetwork: network } = storeToRefs(useBaseStore())
   const search = ref('')
   const loading = ref(false)
 
@@ -120,8 +131,18 @@
 
   const handleClickToken = (item: IToken) => {
     recentTokens.value = [item, ...recentTokens.value.filter((token) => token.address !== item.address)].slice(0, 7)
-    emit('select', { ...item, icon_url: item.icon_url ?? '' })
-    setOpenPopup('popup-select-token', false)
+
+    if (_props.isSelect) {
+      const index = tokenSelected.value.indexOf(item.address)
+      if (index > -1) {
+        tokenSelected.value.splice(index, 1)
+      } else {
+        tokenSelected.value.push(item.address)
+      }
+    } else {
+      emit('select', { ...item, icon_url: item.icon_url ?? '' })
+      setOpenPopup('popup-select-token', false)
+    }
   }
 
   const { handleImageError } = useErrorImage()

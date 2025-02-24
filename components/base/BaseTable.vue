@@ -1,6 +1,6 @@
 <template>
   <div class="base-table">
-    <ElTable :data="data">
+    <ElTable v-loading="loading" :data="data">
       <slot></slot>
     </ElTable>
   </div>
@@ -9,17 +9,19 @@
 <script lang="ts" setup generic="T">
   interface IProps {
     data: T[]
+    loading: boolean
   }
 
   const _props = withDefaults(defineProps<IProps>(), {
-    data: () => []
+    data: () => [],
+    loading: false
   })
 </script>
 
 <style lang="scss" scoped>
   .base-table {
     :deep(.el-table) {
-      --el-table-header-bg-color: #f9f9f9;
+      --el-table-header-bg-color: #fafafa;
       .el-table__inner-wrapper {
         &::before {
           display: none;
@@ -28,48 +30,26 @@
           thead {
             tr th {
               height: 48px;
-              border-top: 1px solid #2222220d;
+              // border-top: 1px solid #2222220d;
               .cell {
                 font-size: 16px;
                 line-height: 24px;
                 color: var(--color-secondary);
               }
             }
-            tr th:first-child {
-              border-left: 1px solid #2222220d;
-              border-top-left-radius: 20px;
-            }
-            tr th:last-child {
-              border-right: 1px solid #2222220d;
-              border-top-right-radius: 20px;
-            }
           }
         }
         .el-table__body {
           tr td {
-            &:first-child {
-              border-left: 1px solid #2222220d;
-            }
-            &:last-child {
-              border-right: 1px solid #2222220d;
-            }
             height: 64px;
             .cell {
-              font-size: 16px;
+              font-size: 14px;
               color: var(--color-primary);
             }
           }
           .index {
             .cell {
               color: var(--color-secondary);
-            }
-          }
-          tr:last-child {
-            td:last-child {
-              border-bottom-right-radius: 20px;
-            }
-            td:first-child {
-              border-bottom-left-radius: 20px;
             }
           }
         }

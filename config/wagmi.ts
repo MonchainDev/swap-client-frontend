@@ -13,7 +13,7 @@ export const testnet = {
     default: { http: ['https://rpc-testnet.monchain.info'] }
   },
   blockExplorers: {
-    default: { name: 'Monscan', url: 'https://explorer.monchain.info', apiUrl: 'https://explorer.monchain.info/api/v2' }
+    default: { name: 'Monscan', url: 'https://dev.explorer.hdev99.io.vn/', apiUrl: 'https://explorer.monchain.info/api/v2' }
   },
   testnet: true
 } as const satisfies Chain

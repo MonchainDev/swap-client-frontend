@@ -1,5 +1,6 @@
 <template>
-  <button :class="classes" @click="emit('click')">
+  <button :class="classes" class="flex items-center justify-center gap-2" @click="emit('click')">
+    <BaseLoadingButton v-if="props.loading" />
     <slot></slot>
   </button>
 </template>
@@ -7,14 +8,16 @@
 <script lang="ts" setup>
   interface IProps {
     size?: 'sm' | 'md' | 'lg'
-    type?: 'outline' | 'primary' | 'black' | 'surface'
+    type?: 'outline' | 'primary' | 'black' | 'surface' | 'linear'
     disabled?: boolean
+    loading?: boolean
   }
 
   const props = withDefaults(defineProps<IProps>(), {
     size: 'lg',
-    type: 'primary',
-    disabled: false
+    type: 'linear',
+    disabled: false,
+    loading: false
   })
 
   const emit = defineEmits<{
@@ -22,28 +25,44 @@
   }>()
 
   const classes = computed(() => {
-    return ['btn', `btn-${props.size}`, `btn-${props.type}`, { disabled: props.disabled }]
+    return ['btn', `btn-${props.size}`, `btn-${props.type}`, { disabled: props.disabled }, { loading: props.loading }]
   })
 </script>
 
 <style lang="scss" scoped>
   .btn {
     color: var(--color-primary);
-    border-radius: 20px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
+    user-select: none;
   }
   .btn-lg {
-    height: 58px;
+    height: 67px;
   }
   .btn-md {
     height: 54px;
   }
   .btn-sm {
-    height: 46px;
+    height: 36px;
   }
 
+  .btn-linear {
+    background: var(--color-linear-gradient);
+    color: #fff;
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  .btn-outline {
+    background: #f5f5f5;
+    border: 1px solid var(--color-gray-4);
+    &:hover {
+      opacity: 0.8;
+    }
+  }
   .btn-primary {
     background-color: var(--color-pink);
     color: var(--color-white);
@@ -69,8 +88,13 @@
     opacity: 0.8;
     cursor: not-allowed;
     pointer-events: none;
+    color: var(--color-gray-6);
     &:hover {
       opacity: 0.4;
     }
+  }
+  .loading {
+    pointer-events: none;
+    opacity: 0.8;
   }
 </style>

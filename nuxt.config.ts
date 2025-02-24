@@ -35,7 +35,7 @@ export default defineNuxtConfig({
   googleFonts: {
     families: {
       Poppins: [400, 500, 600, 700],
-      Roboto: [400, 500, 600]
+      Roboto: [400, 500, 600, 700]
     },
     display: 'swap',
     preload: true,
@@ -63,6 +63,13 @@ export default defineNuxtConfig({
           }
         }
       ]
+    }
+  },
+  nitro: {
+    esbuild: {
+      options: {
+        target: 'esnext'
+      }
     }
   }
 })

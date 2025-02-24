@@ -1,5 +1,5 @@
 <template>
-  <div class="relative mt-[92px] sm:mt-0 sm:px-4">
+  <div class="relative mb-[50px] mt-[92px] sm:mt-0 sm:px-4">
     <FormSwap class="relative z-10 mx-auto max-w-[581px]" />
     <div class="bg-linear absolute left-0 top-0 hidden h-[100px] w-screen sm:block"></div>
   </div>
@@ -7,10 +7,6 @@
 
 <script lang="ts" setup>
   import { useAccount, useBalance } from '@wagmi/vue'
-
-  useHead({
-    title: 'Buy, sell & trade Mon and other top tokens'
-  })
 
   const { address } = useAccount()
 

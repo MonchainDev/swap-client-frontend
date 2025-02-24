@@ -1,18 +1,18 @@
 <template>
-  <div class="solid h-fit rounded-3xl border border-surface3 p-4">
+  <div class="h-fit">
     <template v-for="(item, index) in listStep" :key="item.value">
-      <div class="grid grid-cols-[32px_1fr] items-center gap-3">
+      <div class="flex items-center gap-4">
         <span
-          class="flex h-8 items-center justify-center rounded-full bg-surface3 text-secondary"
-          :class="{ '!bg-primary text-white': item.value === active }"
+          class="flex size-12 items-center justify-center rounded-full bg-[#DADADA] text-gray-7"
+          :class="{ '!bg-[#1573FE] text-white': item.value === active }"
           >{{ item.value }}</span
         >
         <div class="flex flex-col gap-[2px]">
-          <span class="text-sm text-neutral3" :class="{ '!text-secondary': item.value === active }">Step {{ item.value }}</span>
-          <span class="text-base text-secondary" :class="{ '!text-primary': item.value === active }">{{ item.description }}</span>
+          <span class="text-xs text-gray-8">Step {{ item.value }}</span>
+          <span class="text-sm font-semibold text-gray-7" :class="{ '!text-primary': item.value === active }">{{ item.description }}</span>
         </div>
       </div>
-      <div v-if="index < listStep.length - 1" class="my-2 ml-[15px] h-8 w-[2px] bg-surface3"></div>
+      <div v-if="index < listStep.length - 1" class="my-3 ml-[23px] h-[55px] w-[2px] border-l border-dashed border-[#D9D9D9]"></div>
     </template>
   </div>
 </template>

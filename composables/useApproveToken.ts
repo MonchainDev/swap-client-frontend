@@ -1,10 +1,11 @@
 import CONTRACT_TOKEN from '@/constant/contract/contract-token.json'
 import { useWriteContract, useWaitForTransactionReceipt } from '@wagmi/vue'
-const MAX_AMOUNT = '115792089237316195423570985008687907853269984665640564039457584007913129639935'
+import { MAX_NUMBER_APPROVE } from '~/constant/contract'
+import type { TYPE_STATUS } from '~/types'
 
 export function useApproveToken() {
   const { writeContract, isPending, data: hash, isError } = useWriteContract()
-  const callback = ref<() => void>()
+  const callback = ref<(status: TYPE_STATUS) => void>()
   const { isConfirmApprove } = storeToRefs(useSwapStore())
 
   // Wait for transaction confirmation
@@ -14,18 +15,19 @@ export function useApproveToken() {
 
   watch(isSuccess, () => {
     if (isSuccess.value && callback.value) {
-      callback.value()
+      callback.value('SUCCESS')
     }
   })
 
   watch(isError, () => {
-    if (isError.value) {
+    if (isError.value && callback.value) {
       console.error('Approval error:', isError.value)
       isConfirmApprove.value = false
+      callback.value('FAILED')
     }
   })
 
-  const approveToken = async (tokenAddress: string, cb?: () => void, spenderAddress = '0xe255392d81B4BaB741d5F1Fa1d89c3e49106CaaE', amount = MAX_AMOUNT) => {
+  const approveToken = async (tokenAddress: string, spenderAddress: string, amount = MAX_NUMBER_APPROVE, cb?: (status: TYPE_STATUS) => void) => {
     try {
       // Step 1: Trigger transaction (writeContract doesn't return a Promise)
       writeContract({

@@ -16,3 +16,29 @@ export interface INetwork {
   logo: string
   value: string
 }
+
+export enum ChainId {
+  BSC_TESTNET = 97,
+  MON_TESTNET = 16789
+}
+
+export enum CurrencyField {
+  CURRENCY_A = 'CURRENCY_A',
+  CURRENCY_B = 'CURRENCY_B'
+}
+export interface ZoomLevels {
+  initialMin: number
+  initialMax: number
+  min: number
+  max: number
+}
+
+export enum Bound {
+  LOWER = 'LOWER',
+  UPPER = 'UPPER'
+}
+
+export const BIG_INT_ZERO = 0n
+export const BIG_INT_TEN = 10n
+
+export type TYPE_STATUS = 'SUCCESS' | 'FAILED'
