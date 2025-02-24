@@ -1,20 +1,24 @@
+import ABI_TOKEN from '@/constant/contract/contract-token.json'
 import type { Price } from '@pancakeswap/swap-sdk-core'
 import { Token } from '@pancakeswap/swap-sdk-core'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import { defineStore } from 'pinia'
 import { NATIVE_TOKEN } from '~/constant'
-import { ChainId, CurrencyField, type ZoomLevels } from '~/types'
-import type { IFormCreatePosition } from '~/types/position.type'
-import ABI_TOKEN from '@/constant/contract/contract-token.json'
 import { LIST_ADDRESS_FEE } from '~/constant/contract'
+import { ChainId, CurrencyField, type IToken, type ZoomLevels } from '~/types'
+import type { IFormCreatePosition } from '~/types/position.type'
 
 export const useLiquidityStore = defineStore('liquidity', () => {
-  const { listToken } = storeToRefs(useBaseStore())
   const currentStep = ref(2)
   const form = ref<IFormCreatePosition>({
     feeTier: 0.3,
     token0: {
-      ...listToken.value[0]
+      // ...listToken.value[0]
+      address: '',
+      decimals: 0,
+      icon_url: '',
+      name: '',
+      symbol: ''
     },
     token1: {
       address: '',
@@ -41,6 +45,9 @@ export const useLiquidityStore = defineStore('liquidity', () => {
 
   // value of the input field for the current focus input
   const typedValue = ref('')
+
+  // array of Set price range
+  const listTokenOfRange = ref<IToken[]>([])
 
   const baseCurrency = computed(() => {
     if (form.value.token0.symbol === NATIVE_TOKEN.symbol || form.value.token0.address === '') {
@@ -166,6 +173,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     allowance0,
     allowance1,
     refetchAllowance0,
-    refetchAllowance1
+    refetchAllowance1,
+    listTokenOfRange
   }
 })

@@ -39,7 +39,7 @@
   import { CurrencyField, type IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
 
-  const { form, independentField, typedValue, balance0, balance1 } = storeToRefs(useLiquidityStore())
+  const { form, independentField, typedValue, balance0, balance1, listTokenOfRange } = storeToRefs(useLiquidityStore())
   const { resetFiled } = useLiquidityStore()
   const { setOpenPopup } = useBaseStore()
 
@@ -89,12 +89,16 @@
   }
 
   const handleSelectToken = (token: IToken) => {
-    if (typeCurrent.value === 'BASE') {
-      form.value.token0 = token
-      form.value.token1 = token.address === form.value.token1.address ? { name: '', symbol: '', decimals: 0, icon_url: '', address: '' } : form.value.token1
-    } else {
-      form.value.token1 = token
-      form.value.token0 = token.address === form.value.token0.address ? { name: '', symbol: '', decimals: 0, icon_url: '', address: '' } : form.value.token0
+    const isBase = typeCurrent.value === 'BASE'
+    const [primary, secondary]: ['token0' | 'token1', 'token0' | 'token1'] = isBase ? ['token0', 'token1'] : ['token1', 'token0']
+
+    form.value[primary] = token
+    form.value[secondary] =
+      token.address === form.value[secondary].address ? { name: '', symbol: '', decimals: 0, icon_url: '', address: '' } : form.value[secondary]
+
+    listTokenOfRange.value[isBase ? 0 : 1] = token
+    if (form.value[secondary].address) {
+      listTokenOfRange.value[isBase ? 1 : 0] = form.value[secondary]
     }
     // reset form to 0 after select token
     resetFiled()

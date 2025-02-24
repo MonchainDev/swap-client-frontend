@@ -21,14 +21,14 @@
     </div>
     <div class="mt-7 flex items-center gap-3">
       <span class="text-lg font-semibold leading-7">Set price range</span>
-      <div v-if="props.isToken0Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange('BASE')">
-        <BaseIcon :name="activeRange === 'BASE' ? 'radio-fill' : 'radio'" size="24" />
-        <span class="text-base">{{ form.token0.symbol }}</span>
+      <div v-if="props.isToken0Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange">
+        <BaseIcon :name="listTokenOfRange[0].address === form.token0.address ? 'radio-fill' : 'radio'" size="24" />
+        <span class="text-base">{{ listTokenOfRange[0].symbol }}</span>
       </div>
 
-      <div v-if="props.isToken1Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange('QUOTE')">
-        <BaseIcon :name="activeRange === 'QUOTE' ? 'radio-fill' : 'radio'" size="24" />
-        <span class="text-base">{{ form.token1.symbol }}</span>
+      <div v-if="props.isToken1Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange">
+        <BaseIcon :name="listTokenOfRange[1].address === form.token0.address ? 'radio-fill' : 'radio'" size="24" />
+        <span class="text-base">{{ listTokenOfRange[1].symbol }}</span>
       </div>
     </div>
     <!-- 
@@ -91,13 +91,21 @@
     isToken0Selected: false,
     isToken1Selected: false
   })
-  const activeRange = ref<TYPE_SWAP>('BASE')
   const loadingApprove0 = ref(false)
   const loadingApprove1 = ref(false)
   const loadingAdd = ref(false)
 
-  const { form, startPriceTypedValue, feeAmount, buttonRangePercent, leftRangeTypedValue, rightRangeTypedValue, baseCurrency, quoteCurrency } =
-    storeToRefs(useLiquidityStore())
+  const {
+    form,
+    startPriceTypedValue,
+    feeAmount,
+    listTokenOfRange,
+    buttonRangePercent,
+    leftRangeTypedValue,
+    rightRangeTypedValue,
+    baseCurrency,
+    quoteCurrency
+  } = storeToRefs(useLiquidityStore())
   const { switchTokens, dispatchRangeTypedValue, refetchAllowance0, refetchAllowance1 } = useLiquidityStore()
 
   const disabledInputCurrentPrice = computed(() => {
@@ -203,9 +211,7 @@
     }
   )
 
-  const handleChangeActiveRange = (range: TYPE_SWAP) => {
-    if (range === activeRange.value) return
-    activeRange.value = range
+  const handleChangeActiveRange = () => {
     switchTokens()
     buttonRangePercent.value = null
   }
