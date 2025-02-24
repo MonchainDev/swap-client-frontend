@@ -1,6 +1,25 @@
 <template>
   <div class="block-right rounded-br-lg rounded-tr-lg bg-white pl-8 pr-[22px] pt-[21px] shadow-sm">
-    <div class="flex items-center gap-3">
+    <div class="flex flex-col gap-4">
+      <span class="text-lg font-semibold leading-7">Set starting price</span>
+      <div class="flex gap-3 rounded-lg border border-solid border-warning p-6 pl-[18px]">
+        <BaseIcon name="info-warning" size="24" class="text-warning" />
+        <div class="flex flex-col gap-4 text-sm leading-5 text-warning">
+          <p>
+            This pool must be initialized before you can add liquidity. To initialize, select a starting price for the pool. Then, enter your liquidity price
+            range and deposit amount. Gas fees will be higher than usual due to the initialization transaction.
+          </p>
+          <p class="font-bold">Fee-on transfer tokens and rebasing tokens are NOT compatible with V3.</p>
+        </div>
+      </div>
+      <ElInput v-model="startPriceTypedValue" :disabled="disabledInputCurrentPrice" placeholder="0.0" class="input-init-amount" />
+      <p v-if="form.token0.symbol && form.token1.symbol" class="flex justify-between text-sm">
+        <span> Current {{ form.token0.symbol }} Price:</span>
+        <!-- <span>{{ startPriceTypedValue ? startPriceTypedValue : '-' }} {{ form.token1.symbol }}</span> -->
+        <span> {{ price ? (invertPrice ? price?.invert()?.toSignificant(5) : price?.toSignificant(5)) : '-' }} {{ form.token1.symbol }} </span>
+      </p>
+    </div>
+    <div class="mt-7 flex items-center gap-3">
       <span class="text-lg font-semibold leading-7">Set price range</span>
       <div v-if="props.isToken0Selected" class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange('BASE')">
         <BaseIcon :name="activeRange === 'BASE' ? 'radio-fill' : 'radio'" size="24" />
@@ -12,17 +31,12 @@
         <span class="text-base">{{ form.token1.symbol }}</span>
       </div>
     </div>
-    <ElInput v-model="startPriceTypedValue" :disabled="disabledInputCurrentPrice" placeholder="0.0" class="input-init-amount mt-5" />
-    <p class="mt-2 flex justify-between text-sm">
-      <span> Current {{ form.token0.symbol }} Price:</span>
-      <!-- <span>{{ startPriceTypedValue ? startPriceTypedValue : '-' }} {{ form.token1.symbol }}</span> -->
-      <span> {{ price ? (invertPrice ? price?.invert()?.toSignificant(5) : price?.toSignificant(5)) : '-' }} {{ form.token1.symbol }} </span>
-    </p>
+    <!-- 
     <div class="mt-5">
-      <!-- <img src="/demo-chart.png" alt="" /> -->
-      <!-- <ChartPriceRange /> -->
-    </div>
-    <div class="mt-6 flex flex-col gap-5">
+      <img src="/demo-chart.png" alt="" />
+      <ChartPriceRange />
+    </div> -->
+    <div class="mt-4 flex flex-col gap-5">
       <div class="grid grid-cols-2" :class="{ 'pointer-events-none opacity-50': isDisabledPriceRange }">
         <InputPriceRange
           v-model:amount="form.minPrice!"
