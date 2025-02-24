@@ -83,11 +83,11 @@
   })
 
   const isShowBtnEnable0 = computed(() => {
-    return !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && isNeedAllowance0.value
+    return !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance0.value
   })
 
   const isShowBtnEnable1 = computed(() => {
-    return !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceB.value && isNeedAllowance1.value
+    return !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance1.value
   })
 
   const isShowBtnAdd = computed(() => {
