@@ -6,6 +6,7 @@ export default withNuxt(
   {
     rules: {
       '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/ban-ts-comment': 'off',
       'vue/no-multiple-template-root': 'off',
       'vue/html-self-closing': [
         'error',

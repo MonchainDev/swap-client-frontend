@@ -72,16 +72,17 @@
 
 <script lang="ts" setup>
   import { FeeAmount, NonfungiblePositionManager } from '@pancakeswap/v3-sdk'
-  import { sendTransaction } from '@wagmi/core'
+  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import { ZOOM_LEVELS } from '~/constant/zoom-level'
   import type { ZoomLevels } from '~/types'
-  import type { TYPE_SWAP } from '~/types/swap.type'
 
   import { Percent } from '@pancakeswap/swap-sdk-core'
   import { useAccount } from '@wagmi/vue'
   import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
+  import { BIPS_BASE } from '~/constant'
+  import type { TYPE_SWAP } from '~/types/swap.type'
 
   export type INPUT_PRICE = 'MIN' | 'MAX'
   interface IProps {
@@ -108,7 +109,7 @@
     baseCurrency,
     quoteCurrency
   } = storeToRefs(useLiquidityStore())
-  const { switchTokens, dispatchRangeTypedValue, refetchAllowance0, refetchAllowance1 } = useLiquidityStore()
+  const { switchTokens, dispatchRangeTypedValue, refetchAllowance0, refetchAllowance1, resetFiled, refetchBalance0, refetchBalance1 } = useLiquidityStore()
 
   const disabledInputCurrentPrice = computed(() => {
     return !baseCurrency.value || !quoteCurrency.value || !feeAmount.value
@@ -131,62 +132,6 @@
   }
 
   const { price, invertPrice, tokenA, position, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange } = useV3DerivedInfo()
-
-  const BIPS_BASE = 10000n
-
-  const basisPointsToPercent = useMemoize((num: number): Percent => {
-    return new Percent(BigInt(num), BIPS_BASE)
-  })
-
-  const { address } = useAccount()
-
-  const handleCreatePool = async () => {
-    try {
-      if (position.value?.liquidity === 0n) {
-        ElMessage.error('The liquidity of this position is 0. Please try increasing the amount.')
-        return
-      }
-      loadingAdd.value = true
-
-      if (position.value) {
-        const useNative = baseCurrency.value?.isNative ? baseCurrency.value : quoteCurrency.value?.isNative ? quoteCurrency.value : undefined
-        console.log('🚀 ~ handleCreatePool ~ useNative:', useNative)
-
-        const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
-        const allowedSlippage = 50
-        const noLiquidity = true
-
-        console.log('🚀 ~ onAdd ~ option:', {
-          slippageTolerance: basisPointsToPercent(allowedSlippage),
-          recipient: address.value,
-          deadline: deadline.toString(),
-          useNative,
-          createPool: noLiquidity
-        })
-
-        const { calldata, value } = NonfungiblePositionManager.addCallParameters(position.value, {
-          slippageTolerance: basisPointsToPercent(allowedSlippage),
-          recipient: address.value!,
-          deadline: deadline.toString(),
-          useNative,
-          createPool: noLiquidity
-        })
-        console.log('🚀 ~ handleCreatePool ~ value:', value)
-        console.log('🚀 ~ handleCreatePool ~ calldata:', calldata)
-
-        const txHash = await sendTransaction(config, {
-          to: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER as `0x${string}`,
-          data: calldata,
-          value: hexToBigInt(value)
-        })
-        console.log('🚀 ~ handleCreatePool ~ txHash:', txHash)
-      }
-    } catch (error) {
-      console.error(error)
-    } finally {
-      loadingAdd.value = false
-    }
-  }
 
   watch(
     () => lowerPrice.value,
@@ -277,6 +222,79 @@
         }
         loadingApprove1.value = false
       })
+    }
+  }
+
+  const basisPointsToPercent = useMemoize((num: number): Percent => {
+    return new Percent(BigInt(num), BIPS_BASE)
+  })
+
+  const { address } = useAccount()
+
+  const handleCreatePool = async () => {
+    try {
+      if (position.value?.liquidity === 0n) {
+        ElMessage.error('The liquidity of this position is 0. Please try increasing the amount.')
+        return
+      }
+      loadingAdd.value = true
+
+      if (position.value) {
+        const useNative = baseCurrency.value?.isNative ? baseCurrency.value : quoteCurrency.value?.isNative ? quoteCurrency.value : undefined
+        console.log('🚀 ~ handleCreatePool ~ useNative:', useNative)
+
+        const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
+        const allowedSlippage = 50
+        const noLiquidity = true
+
+        console.log('🚀 ~ onAdd ~ option:', {
+          slippageTolerance: basisPointsToPercent(allowedSlippage),
+          recipient: address.value,
+          deadline: deadline.toString(),
+          useNative,
+          createPool: noLiquidity
+        })
+
+        const { calldata, value } = NonfungiblePositionManager.addCallParameters(position.value, {
+          slippageTolerance: basisPointsToPercent(allowedSlippage),
+          recipient: address.value!,
+          deadline: deadline.toString(),
+          useNative,
+          createPool: noLiquidity
+        })
+        console.log('🚀 ~ handleCreatePool ~ value:', value)
+        console.log('🚀 ~ handleCreatePool ~ calldata:', calldata)
+
+        const txHash = await sendTransaction(config, {
+          to: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER as `0x${string}`,
+          data: calldata,
+          value: hexToBigInt(value)
+        })
+        console.log('🚀 ~ handleCreatePool ~ txHash:', txHash)
+
+        const { status } = await waitForTransactionReceipt(config, {
+          hash: txHash,
+
+          pollingInterval: 2000
+        })
+
+        if (status === 'success') {
+          resetFiled()
+          refetchBalance0()
+          refetchBalance1()
+          ElMessage.success('Transaction successful')
+        } else {
+          ElMessage.error('Transaction failed')
+        }
+      }
+    } catch (error: unknown) {
+      //@ts-ignore
+      const msg = error?.shortMessage || null
+      if (msg) {
+        ElMessage.error(msg)
+      }
+    } finally {
+      loadingAdd.value = false
     }
   }
 </script>
