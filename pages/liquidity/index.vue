@@ -32,6 +32,10 @@
 <script lang="ts" setup>
   import { NuxtLink } from '#components'
 
+  definePageMeta({
+    middleware: ['reset-form-liquidity-middleware']
+  })
+
   const tabActive = ref<'ALL' | 'POSITION'>('ALL')
 
   const { getAllPools } = useGetPool()
