@@ -119,6 +119,8 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     buttonRangePercent.value = null
     form.value.amountDeposit0 = ''
     form.value.amountDeposit1 = ''
+    form.value.minPrice = ''
+    form.value.maxPrice = ''
   }
 
   const { address } = useAccount()

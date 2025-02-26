@@ -156,12 +156,14 @@
   watch(
     () => upperPrice.value,
     (value) => {
-      if (typeof rightRangeTypedValue.value === 'boolean') {
-        form.value.minPrice = '0'
-        form.value.maxPrice = '∞'
-      } else {
-        console.log('🚀 ~ value upperPrice change:', isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5))
-        form.value.maxPrice = isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5)
+      if (upperPrice.value) {
+        if (typeof rightRangeTypedValue.value === 'boolean') {
+          form.value.minPrice = '0'
+          form.value.maxPrice = '∞'
+        } else {
+          console.log('🚀 ~ value upperPrice change:', isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5))
+          form.value.maxPrice = isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5)
+        }
       }
     }
   )

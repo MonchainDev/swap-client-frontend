@@ -4,18 +4,8 @@ import { encodeSqrtRatioX96, nearestUsableTick, Pool, Position, priceToClosestTi
 import { BIG_INT_ZERO, Bound, CurrencyField } from '~/types'
 
 export default function useV3DerivedInfo() {
-  const {
-    feeAmount,
-    form,
-    typedValue,
-    startPriceTypedValue,
-    zoomLevel,
-    leftRangeTypedValue,
-    rightRangeTypedValue,
-    independentField,
-    baseCurrency,
-    quoteCurrency
-  } = storeToRefs(useLiquidityStore())
+  const { feeAmount, typedValue, startPriceTypedValue, zoomLevel, leftRangeTypedValue, rightRangeTypedValue, independentField, baseCurrency, quoteCurrency } =
+    storeToRefs(useLiquidityStore())
 
   const { dispatchRangeTypedValue } = useLiquidityStore()
 
@@ -63,11 +53,12 @@ export default function useV3DerivedInfo() {
       if (currentPrice) {
         dispatchRangeTypedValue('BOTH', currentPrice, zoomLevel.value)
       }
-    } else {
-      dispatchRangeTypedValue('BOTH', undefined)
-      form.value.minPrice = ''
-      form.value.maxPrice = ''
     }
+    // else {
+    //   dispatchRangeTypedValue('BOTH', undefined)
+    //   form.value.minPrice = ''
+    //   form.value.maxPrice = ''
+    // }
   })
 
   const price = computed(() => {
