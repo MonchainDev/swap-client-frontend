@@ -58,19 +58,6 @@
     decrease: []
   }>()
 
-  function formatNumberInput(value: string, _isSplit = true) {
-    if (!value) return ''
-    let text = ''
-    text = value.replace(/[^\d.∞]/g, '')
-    return text
-  }
-
-  function parseNumberInput(value: string) {
-    if (!value) return ''
-    value = value.replace(/[^\d.-]/g, '')
-    return value.replace(/\$\s?|(,*)/g, '')
-  }
-
   const handleInput = useDebounce(() => {
     emits('change', amount.value, props.type)
   }, 400)

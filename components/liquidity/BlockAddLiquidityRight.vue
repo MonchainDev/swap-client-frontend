@@ -12,7 +12,14 @@
           <p class="font-bold">Fee-on transfer tokens and rebasing tokens are NOT compatible with V3.</p>
         </div>
       </div>
-      <ElInput v-model="startPriceTypedValue" :disabled="disabledInputCurrentPrice" placeholder="0.0" class="input-init-amount" />
+      <ElInput
+        v-model="startPriceTypedValue"
+        :formatter="(value: string) => formatNumberInput(value)"
+        :parser="(value: string) => parseNumberInput(value)"
+        :disabled="disabledInputCurrentPrice"
+        placeholder="0.0"
+        class="input-init-amount"
+      />
       <p v-if="form.token0.symbol && form.token1.symbol" class="flex justify-between text-sm">
         <span> Current {{ form.token0.symbol }} Price:</span>
         <!-- <span>{{ startPriceTypedValue ? startPriceTypedValue : '-' }} {{ form.token1.symbol }}</span> -->
