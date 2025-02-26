@@ -27,6 +27,7 @@
     "@pancakeswap/v3-sdk": "^3.8.13",
     "@pinia/nuxt": "^0.5.2",
     "@tanstack/vue-query": "^5.66.0",
+    "@vueuse/nuxt": "^12.7.0",
     "@wagmi/vue": "^0.1.8",
     "d3": "^7.9.0",
     "decimal.js": "^10.4.3",
