@@ -1,25 +1,34 @@
 <template>
   <div class="mt-[33px] flex flex-col gap-4">
-    <BaseButton v-if="isInvalidPair" type="outline" size="md" disabled class="w-full text-xl font-semibold">INVALID PAIR</BaseButton>
-    <BaseButton
-      v-if="isShowEnterAmount || isInsufficientBalanceA || isInsufficientBalanceB"
-      type="outline"
-      size="md"
-      disabled
-      class="w-full text-xl font-semibold"
-      >{{ title }}</BaseButton
-    >
-    <BaseButton v-if="isShowBtnEnable0" :loading="props.loading0" size="md" class="w-full text-xl font-semibold" @click="emit('approve', 'BASE')"
-      >ENABLE {{ tokenA?.symbol }}</BaseButton
-    >
-    <BaseButton v-if="isShowBtnEnable1" :loading="props.loading1" size="md" class="w-full text-xl font-semibold" @click="emit('approve', 'QUOTE')"
-      >ENABLE {{ tokenB?.symbol }}</BaseButton
-    >
-    <BaseButton v-if="isShowBtnAdd" :loading="props.loadingAdd" size="md" class="w-full text-xl font-semibold" @click="emit('add')"> ADD </BaseButton>
+    <template v-if="isConnected">
+      <BaseButton v-if="isInvalidPair" type="outline" size="md" disabled class="w-full text-xl font-semibold">INVALID PAIR</BaseButton>
+      <BaseButton
+        v-if="isShowEnterAmount || isInsufficientBalanceA || isInsufficientBalanceB"
+        type="outline"
+        size="md"
+        disabled
+        class="w-full text-xl font-semibold"
+        >{{ title }}</BaseButton
+      >
+      <BaseButton v-if="isShowBtnEnable0" :loading="props.loading0" size="md" class="w-full text-xl font-semibold" @click="emit('approve', 'BASE')"
+        >ENABLE {{ tokenA?.symbol }}</BaseButton
+      >
+      <BaseButton v-if="isShowBtnEnable1" :loading="props.loading1" size="md" class="w-full text-xl font-semibold" @click="emit('approve', 'QUOTE')"
+        >ENABLE {{ tokenB?.symbol }}</BaseButton
+      >
+      <BaseButton v-if="isShowBtnAdd" :loading="props.loadingAdd" size="md" class="w-full text-xl font-semibold" @click="emit('add')"> ADD </BaseButton>
+    </template>
+    <template v-else>
+      <BaseButton size="md" class="w-full text-xl font-semibold" @click="setOpenPopup('popup-connect')">
+        <BaseIcon name="wallet" size="24" class="text-white" />
+        <span class="uppercase">Connect Wallet</span>
+      </BaseButton>
+    </template>
   </div>
 </template>
 
 <script lang="ts" setup>
+  import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
   import type { TYPE_SWAP } from '~/types/swap.type'
 
@@ -38,6 +47,9 @@
   const { tokenA, tokenB } = useV3DerivedInfo()
   const { feeAmount, form, balance0, balance1, startPriceTypedValue, allowance0, allowance1 } = storeToRefs(useLiquidityStore())
   const { poolExits } = usePools()
+  const { isConnected } = useAccount()
+
+  const { setOpenPopup } = useBaseStore()
 
   const emit = defineEmits<{
     approve: [type: TYPE_SWAP]
