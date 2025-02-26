@@ -69,7 +69,7 @@
   watch(
     () => dependentAmount.value,
     (value) => {
-      if (value) {
+      if (value && typedValue.value) {
         if (independentField.value === CurrencyField.CURRENCY_A) {
           form.value.amountDeposit1 = parsedAmounts.value[CurrencyField.CURRENCY_B]?.toSignificant(5) || ''
         }

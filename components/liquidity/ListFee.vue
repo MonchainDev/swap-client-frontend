@@ -20,13 +20,9 @@
 </template>
 
 <script lang="ts" setup>
-  import ABI from '@/constant/abi/MonFactory.json'
-  import { readContract } from '@wagmi/core'
-  import { config } from '~/config/wagmi'
   import { LIST_FEE_AMOUNT } from '~/constant'
-  import { CONTRACT_ADDRESS } from '~/constant/contract'
 
-  const { feeAmount, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
+  const { feeAmount, baseCurrency, quoteCurrency, leftRangeTypedValue, rightRangeTypedValue } = storeToRefs(useLiquidityStore())
   const { resetFiled } = useLiquidityStore()
 
   // const { data, refetch } = useReadContract({
@@ -38,20 +34,10 @@
 
   const handleSelectFee = async (item: { value: number }) => {
     if (baseCurrency.value?.wrapped.address && quoteCurrency.value?.wrapped.address) {
-      const result = await readContract(config, {
-        abi: ABI,
-        address: CONTRACT_ADDRESS.MON_FACTORY as `0x${string}`,
-        functionName: 'getPool',
-        args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, item.value]
-      })
-      if (result === '0x0000000000000000000000000000000000000000') {
-        // pool is not create
-        feeAmount.value = item.value
-      } else {
-        // pool is created
-        resetFiled()
-        feeAmount.value = item.value
-      }
+      resetFiled()
+      feeAmount.value = item.value
+      rightRangeTypedValue.value = undefined
+      leftRangeTypedValue.value = undefined
     }
   }
 </script>
