@@ -1,5 +1,9 @@
 export default function formatNumberInput(value: string, _isSplit = true) {
   if (!value) return ''
+  if (value === '∞') {
+    return value
+  }
+
   let text = ''
   //   const flag = false
   text = value.replace(/[^\d.]/g, '')
