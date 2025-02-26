@@ -94,6 +94,12 @@ export const useLiquidityStore = defineStore('liquidity', () => {
       return
     }
 
+    if (!currentPrice) {
+      form.value.minPrice = type === 'MIN' ? '' : form.value.minPrice
+      form.value.maxPrice = type === 'MAX' ? '' : form.value.maxPrice
+      return
+    }
+
     const left = tryParsePrice(baseCurrency.value?.wrapped, quoteCurrency.value?.wrapped, (currentPrice! * (zoomLevel ? zoomLevel!.initialMin : 1)).toString())
     const right = tryParsePrice(baseCurrency.value?.wrapped, quoteCurrency.value?.wrapped, (currentPrice! * (zoomLevel ? zoomLevel!.initialMax : 1)).toString())
     if (type === 'BOTH') {
