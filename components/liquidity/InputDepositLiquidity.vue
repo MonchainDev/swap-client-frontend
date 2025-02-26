@@ -12,6 +12,7 @@
             :key="item"
             class="flex h-6 cursor-pointer items-center justify-center rounded-[4px] bg-[#f5f5f5]"
             :class="{ 'sm:hidden': index % 2 !== 0 }"
+            @click="emits('select-percent', index, type)"
           >
             <span class="text-sm text-gray-8">{{ index ? (100 / 4) * index + '%' : 'Max' }}</span>
           </div>
@@ -86,6 +87,7 @@
     'focus-input': [value: TYPE_SWAP]
     'select-token': [value: TYPE_SWAP]
     change: [value: string, type: TYPE_SWAP]
+    'select-percent': [value: number, type: TYPE_SWAP]
   }>()
 
   const amount = defineModel('amount', {
