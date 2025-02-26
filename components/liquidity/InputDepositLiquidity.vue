@@ -98,9 +98,12 @@
 
   const { outOfRange, invalidRange } = useV3DerivedInfo()
   const { startPriceTypedValue, form } = storeToRefs(useLiquidityStore())
+  const { poolExits } = usePools()
 
   const isDisabled = computed(() => {
-    return outOfRange.value || invalidRange.value || startPriceTypedValue.value === '' || form.value.minPrice === '' || form.value.maxPrice === ''
+    const { minPrice, maxPrice } = form.value
+    const commonConditions = outOfRange.value || invalidRange.value || minPrice === '' || maxPrice === ''
+    return poolExits.value ? commonConditions : commonConditions || startPriceTypedValue.value === ''
   })
 
   watch(

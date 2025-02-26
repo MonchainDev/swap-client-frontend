@@ -27,6 +27,7 @@
   import { CONTRACT_ADDRESS } from '~/constant/contract'
 
   const { feeAmount, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
+  const { resetFiled } = useLiquidityStore()
 
   // const { data, refetch } = useReadContract({
   //   abi: ABI,
@@ -44,9 +45,12 @@
         args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, item.value]
       })
       if (result === '0x0000000000000000000000000000000000000000') {
+        // pool is not create
         feeAmount.value = item.value
       } else {
-        ElMessage.warning('This fee tier is not available for this pair')
+        // pool is created
+        resetFiled()
+        feeAmount.value = item.value
       }
     }
   }

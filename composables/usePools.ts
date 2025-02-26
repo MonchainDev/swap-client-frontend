@@ -113,6 +113,7 @@ export default function usePools() {
   )
 
   const pool = ref<Pool | undefined>(undefined)
+  const poolExits = computed(() => Boolean(pool.value))
 
   watchEffect(() => {
     if (liquidities.value && slot0s.value) {
@@ -123,9 +124,13 @@ export default function usePools() {
         const _pool = new Pool(token0, token1, fee, sqrtPriceX96, liquidities.value as bigint, tick)
         _pool.feeProtocol = feeProtocol
         pool.value = _pool
+      } else {
+        pool.value = undefined
       }
+    } else {
+      pool.value = undefined
     }
   })
 
-  return { poolAddresses, poolTokens, poolKeys, chainId, slot0s, liquidities, pool }
+  return { poolAddresses, poolTokens, poolKeys, chainId, slot0s, liquidities, pool, poolExits }
 }

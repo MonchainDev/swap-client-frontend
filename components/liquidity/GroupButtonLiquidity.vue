@@ -37,6 +37,7 @@
 
   const { tokenA, tokenB } = useV3DerivedInfo()
   const { feeAmount, form, balance0, balance1, startPriceTypedValue, allowance0, allowance1 } = storeToRefs(useLiquidityStore())
+  const { poolExits } = usePools()
 
   const emit = defineEmits<{
     approve: [type: TYPE_SWAP]
@@ -65,7 +66,10 @@
 
   //  isInvalidPair = false, start current price = '', amount deposit A = '', amount deposit B = ''
   const isShowEnterAmount = computed(() => {
-    return !isInvalidPair.value && (!startPriceTypedValue.value || !form.value.amountDeposit0 || !form.value.amountDeposit1)
+    const { amountDeposit0, amountDeposit1 } = form.value
+    const missingAmounts = !amountDeposit0 || !amountDeposit1
+
+    return poolExits.value ? isInvalidPair.value && missingAmounts : !isInvalidPair.value && (missingAmounts || !startPriceTypedValue.value)
   })
 
   const title = computed(() => {

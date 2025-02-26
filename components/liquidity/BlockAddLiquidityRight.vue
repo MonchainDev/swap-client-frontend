@@ -1,6 +1,6 @@
 <template>
   <div class="block-right rounded-br-lg rounded-tr-lg bg-white pl-8 pr-[22px] pt-[21px] shadow-sm">
-    <div class="flex flex-col gap-4">
+    <div v-if="!poolExits" class="flex flex-col gap-4">
       <span class="text-lg font-semibold leading-7">Set starting price</span>
       <div class="flex gap-3 rounded-lg border border-solid border-warning p-6 pl-[18px]">
         <BaseIcon name="info-warning" size="24" class="text-warning" />
@@ -19,7 +19,7 @@
         <span> {{ price ? (invertPrice ? price?.invert()?.toSignificant(5) : price?.toSignificant(5)) : '-' }} {{ form.token1.symbol }} </span>
       </p>
     </div>
-    <div class="mt-7 flex items-center gap-3">
+    <div class="mt-7 flex items-center gap-3" :class="{ '!mt-0': poolExits }">
       <span class="text-lg font-semibold leading-7">Set price range</span>
       <template v-if="props.isToken0Selected && props.isToken1Selected">
         <div class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange">
@@ -33,6 +33,10 @@
         </div>
       </template>
     </div>
+    <p v-if="poolExits" class="mt-2 flex justify-between text-sm">
+      <span> Current {{ form.token0.symbol }} Price:</span>
+      <span> {{ price ? (invertPrice ? price?.invert()?.toSignificant(5) : price?.toSignificant(5)) : '-' }} {{ form.token1.symbol }} </span>
+    </p>
     <!-- 
     <div class="mt-5">
       <img src="/demo-chart.png" alt="" />
@@ -57,7 +61,7 @@
           @decrease="handleDecreasePriceRange('MAX')"
         />
       </div>
-      <ListSelectRange @select="handleClickRange" />
+      <ListSelectRange :class="{ 'pointer-events-none opacity-50': isDisabledPriceRange }" @select="handleClickRange" />
     </div>
     <div v-if="outOfRange || invalidRange" class="mt-5 flex items-center gap-3 rounded-lg border border-solid border-warning bg-[#FFB23719] p-4">
       <BaseIcon name="warning" size="24" class="text-warning" />
@@ -98,6 +102,8 @@
   const loadingApprove1 = ref(false)
   const loadingAdd = ref(false)
 
+  const { poolExits } = usePools()
+
   const {
     form,
     startPriceTypedValue,
@@ -120,7 +126,7 @@
   })
 
   const isDisabledPriceRange = computed(() => {
-    return !startPriceTypedValue.value
+    return !startPriceTypedValue.value && !poolExits.value
   })
 
   const handleChangePriceRange = (type: INPUT_PRICE) => {
@@ -131,7 +137,7 @@
     }
   }
 
-  const { price, invertPrice, tokenA, position, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange } = useV3DerivedInfo()
+  const { price, invertPrice, tokenA, position, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange, noLiquidity } = useV3DerivedInfo()
 
   watch(
     () => lowerPrice.value,
@@ -245,14 +251,13 @@
 
         const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
         const allowedSlippage = 50
-        const noLiquidity = true
 
         console.log('🚀 ~ onAdd ~ option:', {
           slippageTolerance: basisPointsToPercent(allowedSlippage),
           recipient: address.value,
           deadline: deadline.toString(),
           useNative,
-          createPool: noLiquidity
+          createPool: noLiquidity.value
         })
 
         const { calldata, value } = NonfungiblePositionManager.addCallParameters(position.value, {
@@ -260,7 +265,7 @@
           recipient: address.value!,
           deadline: deadline.toString(),
           useNative,
-          createPool: noLiquidity
+          createPool: noLiquidity.value
         })
         console.log('🚀 ~ handleCreatePool ~ value:', value)
         console.log('🚀 ~ handleCreatePool ~ calldata:', calldata)
