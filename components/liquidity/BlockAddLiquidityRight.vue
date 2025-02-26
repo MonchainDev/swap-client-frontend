@@ -142,6 +142,7 @@
     } else {
       dispatchRangeTypedValue('MAX', +form.value.maxPrice!)
     }
+    buttonRangePercent.value = null
   }
 
   const { price, invertPrice, tokenA, position, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange, noLiquidity } = useV3DerivedInfo()
