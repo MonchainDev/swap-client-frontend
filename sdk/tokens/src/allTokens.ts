@@ -21,6 +21,7 @@ import { scrollSepoliaTokens } from './constants/scrollSepolia'
 import { sepoliaTokens } from './constants/sepolia'
 import { zksyncTokens } from './constants/zkSync'
 import { zkSyncTestnetTokens } from './constants/zkSyncTestnet'
+import { monTestnetTokens } from './constants/monTestnet'
 
 export const allTokens = {
   [ChainId.GOERLI]: goerliTestnetTokens,
@@ -44,4 +45,5 @@ export const allTokens = {
   [ChainId.ARBITRUM_SEPOLIA]: arbSepoliaTokens,
   [ChainId.BASE_SEPOLIA]: baseSepoliaTokens,
   [ChainId.MONAD_TESTNET]: monadTestnetTokens,
+  [ChainId.MON_TESTNET]: monTestnetTokens
 }

@@ -109,7 +109,7 @@ export const zRouterGetParams = z
     tradeType: true,
     amount: true,
     currency: true,
-    candidatePools: true,
+    // candidatePools: true,
   })
 
 export const zRouterPostParams = z

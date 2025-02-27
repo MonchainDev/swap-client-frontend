@@ -373,6 +373,14 @@ export const USDC = {
     'USD Coin',
     'https://www.centre.io/usdc',
   ),
+  [ChainId.MON_TESTNET]: new ERC20Token(
+    ChainId.MON_TESTNET,
+    '0x673cD70FA883394a1f3DEb3221937Ceb7C2618D7',
+    18,
+    'USDC',
+    'USD Coin',
+    'https://www.centre.io/usdc',
+  ),
 }
 
 export const USDT = {
@@ -534,4 +542,5 @@ export const STABLE_COIN = {
   [ChainId.ARBITRUM_SEPOLIA]: USDC[ChainId.ARBITRUM_SEPOLIA],
   [ChainId.BASE_SEPOLIA]: USDC[ChainId.BASE_SEPOLIA],
   [ChainId.MONAD_TESTNET]: USDC[ChainId.MONAD_TESTNET],
+  [ChainId.MON_TESTNET]: USDC[ChainId.MON_TESTNET],
 } satisfies Record<ChainId, ERC20Token>

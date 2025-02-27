@@ -13,6 +13,7 @@ import {
   goerliTestnetTokens,
   lineaTestnetTokens,
   lineaTokens,
+  monTestnetTokens,
   monadTestnetTokens,
   opBnbTestnetTokens,
   opBnbTokens,
@@ -20,7 +21,7 @@ import {
   polygonZkEvmTokens,
   scrollSepoliaTokens,
   zkSyncTestnetTokens,
-  zksyncTokens,
+  zksyncTokens
 } from '@monswap/tokens'
 
 export const usdGasTokensByChain = {
@@ -45,6 +46,7 @@ export const usdGasTokensByChain = {
   [ChainId.ARBITRUM_SEPOLIA]: [arbSepoliaTokens.usdc],
   [ChainId.BASE_SEPOLIA]: [baseSepoliaTokens.usdc],
   [ChainId.MONAD_TESTNET]: [monadTestnetTokens.usdc],
+  [ChainId.MON_TESTNET]: [monTestnetTokens.usdc]
 } satisfies Record<ChainId, Token[]>
 
 export * from './stableSwap'

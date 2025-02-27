@@ -26,3 +26,6 @@ logs
 .wrangler
 
 pnpm-lock.yaml
+# turbo
+.turbo
+.vercel

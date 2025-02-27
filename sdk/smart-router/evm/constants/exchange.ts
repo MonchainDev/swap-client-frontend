@@ -25,6 +25,7 @@ import {
   sepoliaTokens,
   zkSyncTestnetTokens,
   zksyncTokens,
+  monTestnetTokens
 } from '@monswap/tokens'
 
 import { ChainMap, ChainTokenList } from '../types'
@@ -51,6 +52,7 @@ export const SMART_ROUTER_ADDRESSES = {
   [ChainId.ARBITRUM_SEPOLIA]: '0x678Aa4bF4E210cf2166753e054d5b7c31cc7fa86',
   [ChainId.BASE_SEPOLIA]: '0x678Aa4bF4E210cf2166753e054d5b7c31cc7fa86',
   [ChainId.MONAD_TESTNET]: '0x1fA1618AE2F5b3EcC73692974a5E28926553c032',
+  [ChainId.MON_TESTNET]: '0x4c650FB471fe4e0f476fD3437C3411B1122c4e3B'
 } as const satisfies Record<ChainId, string>
 
 export const V2_ROUTER_ADDRESS: ChainMap<string> = {
@@ -75,6 +77,7 @@ export const V2_ROUTER_ADDRESS: ChainMap<string> = {
   [ChainId.ARBITRUM_SEPOLIA]: '0x8cFe327CEc66d1C090Dd72bd0FF11d690C33a2Eb',
   [ChainId.BASE_SEPOLIA]: '0x8cFe327CEc66d1C090Dd72bd0FF11d690C33a2Eb',
   [ChainId.MONAD_TESTNET]: '0xCba6b9A951749B8735C603e7fFC5151849248772',
+  [ChainId.MON_TESTNET]: '0x4c650FB471fe4e0f476fD3437C3411B1122c4e3B'
 }
 
 export const STABLE_SWAP_INFO_ADDRESS: ChainMap<string> = {
@@ -99,21 +102,14 @@ export const STABLE_SWAP_INFO_ADDRESS: ChainMap<string> = {
   [ChainId.ARBITRUM_SEPOLIA]: '',
   [ChainId.BASE_SEPOLIA]: '',
   [ChainId.MONAD_TESTNET]: '',
+  [ChainId.MON_TESTNET]: ''
 }
 
 // used to construct intermediary pairs for trading
 export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
   [ChainId.ETHEREUM]: [WNATIVE[ChainId.ETHEREUM], USDC[ChainId.ETHEREUM], USDT[ChainId.ETHEREUM], WBTC_ETH],
   [ChainId.GOERLI]: [WNATIVE[ChainId.GOERLI], USDC[ChainId.GOERLI], BUSD[ChainId.GOERLI]],
-  [ChainId.BSC]: [
-    bscTokens.wbnb,
-    bscTokens.cake,
-    bscTokens.busd,
-    bscTokens.usdt,
-    bscTokens.btcb,
-    bscTokens.eth,
-    bscTokens.usdc,
-  ],
+  [ChainId.BSC]: [bscTokens.wbnb, bscTokens.cake, bscTokens.busd, bscTokens.usdt, bscTokens.btcb, bscTokens.eth, bscTokens.usdc],
   [ChainId.BSC_TESTNET]: [bscTestnetTokens.wbnb, bscTestnetTokens.cake, bscTestnetTokens.busd],
   [ChainId.ARBITRUM_ONE]: [arbitrumTokens.weth, arbitrumTokens.usdt, arbitrumTokens.usdc],
   [ChainId.ARBITRUM_GOERLI]: [arbitrumGoerliTokens.weth, arbitrumGoerliTokens.usdc],
@@ -132,6 +128,7 @@ export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
   [ChainId.ARBITRUM_SEPOLIA]: [arbSepoliaTokens.usdc, arbSepoliaTokens.weth],
   [ChainId.BASE_SEPOLIA]: [baseSepoliaTokens.usdc, baseSepoliaTokens.weth],
   [ChainId.MONAD_TESTNET]: [monadTestnetTokens.weth, monadTestnetTokens.usdc, monadTestnetTokens.busd],
+  [ChainId.MON_TESTNET]: [monTestnetTokens.weth, monTestnetTokens.usdc]
 }
 
 const czusd = new ERC20Token(ChainId.BSC, '0xE68b79e51bf826534Ff37AA9CeE71a3842ee9c70', 18, 'CZUSD', 'CZUSD')
@@ -173,7 +170,7 @@ export const ADDITIONAL_BASES: {
     // GEM
     '0x701F1ed50Aa5e784B8Fb89d1Ba05cCCd627839a7': [czusd],
     // DOGD
-    '0x99F4cc2BAE97F82A823CA80DcAe52EF972B7F270': [czusd],
+    '0x99F4cc2BAE97F82A823CA80DcAe52EF972B7F270': [czusd]
   },
   [ChainId.ETHEREUM]: {
     // alETH - ALCX
@@ -181,17 +178,17 @@ export const ADDITIONAL_BASES: {
     [ethereumTokens.alETH.address]: [ethereumTokens.alcx],
 
     // rETH - ETH
-    [ethereumTokens.weth.address]: [ethereumTokens.rETH],
+    [ethereumTokens.weth.address]: [ethereumTokens.rETH]
   },
   [ChainId.BASE]: {
     // axlusdc - USDbC
     [baseTokens.axlusdc.address]: [baseTokens.usdbc],
-    [baseTokens.usdbc.address]: [baseTokens.axlusdc],
+    [baseTokens.usdbc.address]: [baseTokens.axlusdc]
   },
   [ChainId.ARBITRUM_ONE]: {
     [arbitrumTokens.mpendle.address]: [arbitrumTokens.pendle],
-    [arbitrumTokens.pendle.address]: [arbitrumTokens.mpendle],
-  },
+    [arbitrumTokens.pendle.address]: [arbitrumTokens.mpendle]
+  }
 }
 
 /**
@@ -203,6 +200,6 @@ export const CUSTOM_BASES: {
   [chainId in ChainId]?: { [tokenAddress: string]: Token[] }
 } = {
   [ChainId.BSC]: {
-    [bscTokens.axlusdc.address]: [bscTokens.usdt],
-  },
+    [bscTokens.axlusdc.address]: [bscTokens.usdt]
+  }
 }

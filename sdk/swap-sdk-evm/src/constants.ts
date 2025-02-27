@@ -175,6 +175,14 @@ export const WETH9 = {
     'Wrapped Ether',
     'https://weth.io',
   ),
+  [ChainId.MON_TESTNET]: new ERC20Token(
+    ChainId.MON_TESTNET,
+    '0x261D8c5e9742e6f7f1076Fa1F560894524e19cad',
+    18,
+    'WMON',
+    'Wrapped MON',
+    'https://weth.io',
+  ),
 }
 
 export const WBNB = {
@@ -242,6 +250,7 @@ export const WNATIVE = {
   [ChainId.ARBITRUM_SEPOLIA]: WETH9[ChainId.ARBITRUM_SEPOLIA],
   [ChainId.BASE_SEPOLIA]: WETH9[ChainId.BASE_SEPOLIA],
   [ChainId.MONAD_TESTNET]: WETH9[ChainId.MONAD_TESTNET],
+  [ChainId.MON_TESTNET]: WETH9[ChainId.MON_TESTNET],
 } satisfies Record<ChainId, ERC20Token>
 
 const ETHER = { name: 'Ether', symbol: 'ETH', decimals: 18 } as const
@@ -298,6 +307,11 @@ export const NATIVE = {
     decimals: 18,
   },
   [ChainId.MONAD_TESTNET]: {
+    name: 'Monad Testnet Ether',
+    symbol: 'MON',
+    decimals: 18,
+  },
+  [ChainId.MON_TESTNET]: {
     name: 'Monad Testnet Ether',
     symbol: 'MON',
     decimals: 18,
