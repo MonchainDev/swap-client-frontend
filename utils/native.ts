@@ -1,6 +1,6 @@
-import type { Currency, Token } from '@pancakeswap/swap-sdk-core'
-import { NativeCurrency } from '@pancakeswap/swap-sdk-core'
-import type { ERC20Token } from '@pancakeswap/swap-sdk-evm'
+import type { Currency, Token } from '@monswap/swap-sdk-core'
+import { NativeCurrency } from '@monswap/swap-sdk-core'
+import type { ERC20Token } from '@monswap/swap-sdk-evm'
 import { NATIVE, WMON } from '~/constant/token'
 import { ChainId } from '~/types'
 

@@ -1,0 +1,31 @@
+{
+  "name": "@monswap/farms",
+  "version": "1.0.84",
+  "sideEffects": false,
+  "private": true,
+  "scripts": {
+    "build": "npx tsx scripts/build.ts",
+    "update:snapshot": "vitest -u",
+    "test": "vitest --run"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.168",
+    "tsx": "^4.6.1",
+    "wrangler": "catalog:"
+  },
+  "dependencies": {
+    "@monswap/price-api-sdk": "workspace:*",
+    "@monswap/chains": "workspace:*",
+    "@monswap/sdk": "workspace:*",
+    "@monswap/stable-swap-sdk": "workspace:*",
+    "@monswap/swap-sdk-core": "workspace:*",
+    "@monswap/token-lists": "workspace:*",
+    "@monswap/tokens": "workspace:*",
+    "@monswap/utils": "workspace:*",
+    "@monswap/v3-sdk": "workspace:*",
+    "bignumber.js": "^9.0.0",
+    "dayjs": "^1.11.10",
+    "lodash": "^4.17.21",
+    "viem": "catalog:"
+  }
+}

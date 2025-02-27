@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { FeeAmount } from '@pancakeswap/v3-sdk'
+  import { FeeAmount } from '@monswap/v3-sdk'
   import { QUICK_ACTION_CONFIGS } from '~/constant'
   import type { ZoomLevels } from '~/types'
 

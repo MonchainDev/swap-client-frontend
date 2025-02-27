@@ -105,6 +105,7 @@
   import { DEFAULT_SLIPPAGE, NATIVE_TOKEN } from '~/constant'
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
+import { getBestTrade } from '~/utils/getBestTrade'
   import HeaderFormSwap from './HeaderFormSwap.vue'
 
   export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
@@ -195,7 +196,7 @@
     setOpenPopup('popup-select-token', true)
   }
 
-  function handleInput(amount: string, type: TYPE_SWAP) {
+  const handleInput = async (amount: string, type: TYPE_SWAP) => {
     if (!isToken0Selected.value || !isToken1Selected.value) return
     isFetchQuote.value = true
     if (!amount) {
@@ -206,14 +207,25 @@
       slippage.value = DEFAULT_SLIPPAGE
       return
     }
-    setTimeout(() => {
-      if (type === 'BASE') {
+
+    if (type === 'BASE') {
         buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
+        const bestTrade = await getBestTrade({
+          token0: token0.value.address,
+          token1: token1.value.address,
+          inputAmount: Number(sellAmount.value),
+        })
+        buyAmount.value = bestTrade?.outputAmount.toFixed(3) + ''
+        isFetchQuote.value = false 
       } else {
-        sellAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
+        setTimeout(() => {
+          sellAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
+          isFetchQuote.value = false 
+          }, 2000)
       }
       isFetchQuote.value = false
-    }, 1000)
+
+
   }
 
   const handleSelectToken = (token: IToken) => {

@@ -1,0 +1,3 @@
+{
+  "extends": "@monswap/tsconfig/base"
+}
