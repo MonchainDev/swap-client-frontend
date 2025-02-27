@@ -25,12 +25,14 @@
         </NuxtLink>
       </div>
     </div>
-    <TableListPool :data="listPool" :loading="loading" />
+    <component :is="component" :data="listPool" :loading="loading" />
   </div>
 </template>
 
 <script lang="ts" setup>
   import { NuxtLink } from '#components'
+  import MyPosition from '~/components/liquidity/MyPosition.vue'
+  import TableListPool from '~/components/liquidity/TableListPool.vue'
 
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
@@ -42,6 +44,10 @@
 
   const listPool = ref<Record<string, unknown>[]>([])
   const loading = ref(false)
+
+  const component = computed(() => {
+    return tabActive.value === 'ALL' ? TableListPool : MyPosition
+  })
 
   const init = async () => {
     try {

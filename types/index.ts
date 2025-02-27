@@ -1,3 +1,5 @@
+import type { Address } from 'viem'
+
 export interface IToken {
   circulating_market_cap?: string
   icon_url: string
@@ -48,4 +50,29 @@ export enum PoolState {
   NOT_EXISTS,
   EXISTS,
   INVALID
+}
+
+export type PositionDetail = {
+  // detail read from contract
+  nonce: bigint
+  tokenId: bigint
+  operator: string
+  token0: Address
+  token1: Address
+  fee: number
+  tickLower: number
+  tickUpper: number
+  liquidity: bigint
+  feeGrowthInside0LastX128: bigint
+  feeGrowthInside1LastX128: bigint
+  tokensOwed0: bigint
+  tokensOwed1: bigint
+
+  // additional detail
+  isStaked?: boolean
+  chainId: number
+  protocol: 'v3'
+
+  farmingMultiplier: number
+  farmingLiquidity: bigint
 }
