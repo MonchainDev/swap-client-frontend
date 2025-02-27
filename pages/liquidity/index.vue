@@ -33,7 +33,7 @@
   import { NuxtLink } from '#components'
 
   definePageMeta({
-    middleware: ['reset-form-liquidity-middleware']
+    middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
   })
 
   const tabActive = ref<'ALL' | 'POSITION'>('ALL')
