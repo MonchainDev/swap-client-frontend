@@ -20,6 +20,7 @@
           :is-selected="isToken0Selected"
           :balance="balance0?.formatted"
           @change="handleChangeAmount"
+          @select-percent="handleSelectPercent"
         />
         <InputDepositLiquidity
           v-model:amount="form.amountDeposit1"
@@ -28,6 +29,7 @@
           :is-selected="isToken1Selected"
           :balance="balance1?.formatted"
           @change="handleChangeAmount"
+          @select-percent="handleSelectPercent"
         />
       </div>
     </div>
@@ -36,6 +38,7 @@
 </template>
 
 <script lang="ts" setup>
+  import Decimal from 'decimal.js'
   import { CurrencyField, type IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
 
@@ -69,7 +72,7 @@
   watch(
     () => dependentAmount.value,
     (value) => {
-      if (value) {
+      if (value && typedValue.value) {
         if (independentField.value === CurrencyField.CURRENCY_A) {
           form.value.amountDeposit1 = parsedAmounts.value[CurrencyField.CURRENCY_B]?.toSignificant(5) || ''
         }
@@ -112,6 +115,15 @@
     }
     typedValue.value = value
     independentField.value = type === 'BASE' ? CurrencyField.CURRENCY_A : CurrencyField.CURRENCY_B
+  }
+
+  const handleSelectPercent = (index: number, type: TYPE_SWAP) => {
+    const percent = [1, 0.25, 0.5, 0.75][index]
+    const balance = type === 'BASE' ? balance0.value?.formatted : balance1.value?.formatted
+    if (balance) {
+      const result = new Decimal(balance).mul(percent).toSignificantDigits(6, Decimal.ROUND_DOWN).toString()
+      handleChangeAmount(result, type)
+    }
   }
 </script>
 

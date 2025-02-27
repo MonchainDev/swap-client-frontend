@@ -4,6 +4,10 @@
 
 <script lang="ts" setup>
   import Swap from './swap.vue'
+
+  definePageMeta({
+    middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
+  })
 </script>
 
 <style lang="scss" scoped>

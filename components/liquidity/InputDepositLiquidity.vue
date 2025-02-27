@@ -12,6 +12,7 @@
             :key="item"
             class="flex h-6 cursor-pointer items-center justify-center rounded-[4px] bg-[#f5f5f5]"
             :class="{ 'sm:hidden': index % 2 !== 0 }"
+            @click="emits('select-percent', index, type)"
           >
             <span class="text-sm text-gray-8">{{ index ? (100 / 4) * index + '%' : 'Max' }}</span>
           </div>
@@ -86,6 +87,7 @@
     'focus-input': [value: TYPE_SWAP]
     'select-token': [value: TYPE_SWAP]
     change: [value: string, type: TYPE_SWAP]
+    'select-percent': [value: number, type: TYPE_SWAP]
   }>()
 
   const amount = defineModel('amount', {
@@ -98,9 +100,12 @@
 
   const { outOfRange, invalidRange } = useV3DerivedInfo()
   const { startPriceTypedValue, form } = storeToRefs(useLiquidityStore())
+  const { poolExits } = usePools()
 
   const isDisabled = computed(() => {
-    return outOfRange.value || invalidRange.value || startPriceTypedValue.value === '' || form.value.minPrice === '' || form.value.maxPrice === ''
+    const { minPrice, maxPrice } = form.value
+    const commonConditions = outOfRange.value || invalidRange.value || minPrice === '' || maxPrice === ''
+    return poolExits.value ? commonConditions : commonConditions || startPriceTypedValue.value === ''
   })
 
   watch(
@@ -132,46 +137,6 @@
   }, 400)
 
   const { isConnected } = useAccount()
-
-  function formatNumberInput(value: string, _isSplit = true) {
-    if (!value) return ''
-    let text = ''
-    // const flag = false
-    text = value.replace(/[^\d.]/g, '')
-
-    // if (isSplit) {
-    //   const arrText: string[] = []
-
-    //   for (let index = 0; index < text.length; index++) {
-    //     if (flag) {
-    //       if (text[index] !== '.' && text[index] !== '-') {
-    //         arrText.push(text[index])
-    //       }
-    //     } else {
-    //       if (text[index] === '.') {
-    //         flag = true
-    //       }
-    //       arrText.push(text[index])
-    //     }
-    //   }
-    //   text = arrText.join('')
-
-    //   if (text.includes('.')) {
-    //     const naturalPart = text.toString().split('.')
-    //     naturalPart[0] = naturalPart[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    //     return naturalPart.join('.')
-    //   } else {
-    //     return text === '-' ? '-' : formatNumber(+text)
-    //   }
-    // }
-    return text
-  }
-
-  function parseNumberInput(value: string) {
-    if (!value) return ''
-    value = value.replace(/[^\d.-]/g, '')
-    return value.replace(/\$\s?|(,*)/g, '')
-  }
 </script>
 
 <style lang="scss" scoped>

@@ -14,10 +14,18 @@
       <span class="text-xs text-gray-8">{{ textSuffix }}</span>
     </div>
     <div class="flex flex-col gap-1">
-      <div class="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-3" @click="emits('increase')">
+      <div
+        class="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-3"
+        :class="{ 'pointer-events-none cursor-default bg-gray-2 opacity-70': isDisabledMinusAndPlus }"
+        @click="emits('increase')"
+      >
         <BaseIcon name="plus" size="24" />
       </div>
-      <div class="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-3" @click="emits('decrease')">
+      <div
+        class="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-3"
+        :class="{ 'pointer-events-none cursor-default bg-gray-2 opacity-70': isDisabledMinusAndPlus }"
+        @click="emits('decrease')"
+      >
         <BaseIcon name="minus" size="24" />
       </div>
     </div>
@@ -35,7 +43,11 @@
     type: 'MIN'
   })
 
-  const { form } = storeToRefs(useLiquidityStore())
+  const { form, leftRangeTypedValue, rightRangeTypedValue } = storeToRefs(useLiquidityStore())
+
+  const isDisabledMinusAndPlus = computed(() => {
+    return typeof leftRangeTypedValue.value === 'boolean' || typeof rightRangeTypedValue.value === 'boolean'
+  })
 
   const formatText = computed(() => {
     return props.type === 'MIN' ? 'Min price' : 'Max price'
@@ -57,19 +69,6 @@
     increase: []
     decrease: []
   }>()
-
-  function formatNumberInput(value: string, _isSplit = true) {
-    if (!value) return ''
-    let text = ''
-    text = value.replace(/[^\d.∞]/g, '')
-    return text
-  }
-
-  function parseNumberInput(value: string) {
-    if (!value) return ''
-    value = value.replace(/[^\d.-]/g, '')
-    return value.replace(/\$\s?|(,*)/g, '')
-  }
 
   const handleInput = useDebounce(() => {
     emits('change', amount.value, props.type)

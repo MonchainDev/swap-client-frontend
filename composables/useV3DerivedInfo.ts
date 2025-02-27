@@ -1,12 +1,13 @@
 import type { Token } from '@pancakeswap/swap-sdk-core'
 import { CurrencyAmount, Price } from '@pancakeswap/swap-sdk-core'
-import { Position, type FeeAmount } from '@pancakeswap/v3-sdk'
-import { encodeSqrtRatioX96, nearestUsableTick, Pool, priceToClosestTick, TICK_SPACINGS, TickMath } from '@pancakeswap/v3-sdk'
+import { encodeSqrtRatioX96, nearestUsableTick, Pool, Position, priceToClosestTick, TICK_SPACINGS, TickMath, type FeeAmount } from '@pancakeswap/v3-sdk'
 import { BIG_INT_ZERO, Bound, CurrencyField } from '~/types'
 
 export default function useV3DerivedInfo() {
-  const { feeAmount, typedValue, startPriceTypedValue, leftRangeTypedValue, rightRangeTypedValue, independentField, baseCurrency, quoteCurrency } =
+  const { feeAmount, typedValue, startPriceTypedValue, zoomLevel, leftRangeTypedValue, rightRangeTypedValue, independentField, baseCurrency, quoteCurrency } =
     storeToRefs(useLiquidityStore())
+
+  const { dispatchRangeTypedValue } = useLiquidityStore()
 
   const dependentField = computed(() => {
     return independentField.value === CurrencyField.CURRENCY_A ? CurrencyField.CURRENCY_B : CurrencyField.CURRENCY_A
@@ -39,12 +40,29 @@ export default function useV3DerivedInfo() {
     }
     return undefined
   })
-  const noLiquidity = true
+
+  const { pool } = usePools()
+  const noLiquidity = computed(() => !pool.value)
 
   const invertPrice = computed(() => Boolean(baseToken.value && token0.value && !baseToken.value.equals(token0.value)))
 
+  // set min and max price if pool exits
+  watchEffect(() => {
+    if (pool.value && !noLiquidity.value && price.value) {
+      const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
+      if (currentPrice) {
+        dispatchRangeTypedValue('BOTH', currentPrice, zoomLevel.value)
+      }
+    }
+    // else {
+    //   dispatchRangeTypedValue('BOTH', undefined)
+    //   form.value.minPrice = ''
+    //   form.value.maxPrice = ''
+    // }
+  })
+
   const price = computed(() => {
-    if (noLiquidity) {
+    if (noLiquidity.value) {
       const parsedQuoteAmount = tryParseCurrencyAmount(startPriceTypedValue.value, invertPrice.value ? token0.value : token1.value)
       if (parsedQuoteAmount && token0 && token1) {
         const baseAmount = tryParseCurrencyAmount('1', invertPrice.value ? token1.value : token0.value)
@@ -56,8 +74,8 @@ export default function useV3DerivedInfo() {
       }
       return undefined
     }
-    // return price of pool exists
-    return undefined
+    // get the amount of quote currency
+    return pool.value && token0.value ? pool.value.priceOf(token0.value) : undefined
   })
 
   // check for invalid price input (converts to invalid ratio)
@@ -66,11 +84,9 @@ export default function useV3DerivedInfo() {
     return price && sqrtRatioX96 && !(sqrtRatioX96 >= TickMath.MIN_SQRT_RATIO && sqrtRatioX96 < TickMath.MAX_SQRT_RATIO)
   })
 
-  const pool = null
-
   // used for ratio calculation when pool not initialized
   const mockPool = computed(() => {
-    if (!pool && tokenA.value && tokenB.value && feeAmount.value && price.value && !invalidPrice.value) {
+    if (!pool.value && tokenA.value && tokenB.value && feeAmount.value && price.value && !invalidPrice.value) {
       const currentTick = priceToClosestTick(price.value)
       const currentSqrt = TickMath.getSqrtRatioAtTick(currentTick)
       return new Pool(tokenA.value, tokenB.value, feeAmount.value, currentSqrt, 0n, currentTick, [])
@@ -80,7 +96,7 @@ export default function useV3DerivedInfo() {
 
   // if pool exists use it, if not use the mock pool
   const poolForPosition = computed(() => {
-    return pool ?? mockPool.value
+    return (pool.value as Pool) ?? mockPool.value
   })
 
   // lower and upper limits in the tick space for `feeAmoun<Trans>
@@ -218,10 +234,10 @@ export default function useV3DerivedInfo() {
 
     // mark as 0 if disabled because out of range
     const amount0 = !deposit0Disabled.value
-      ? parsedAmounts.value?.[tokenA.value.equals(poolForPosition.value.token0) ? CurrencyField.CURRENCY_A : CurrencyField.CURRENCY_B]?.quotient
+      ? parsedAmounts.value?.[tokenA.value.equals(poolForPosition.value?.token0) ? CurrencyField.CURRENCY_A : CurrencyField.CURRENCY_B]?.quotient
       : BIG_INT_ZERO
     const amount1 = !deposit1Disabled.value
-      ? parsedAmounts.value?.[tokenA.value.equals(poolForPosition.value.token0) ? CurrencyField.CURRENCY_B : CurrencyField.CURRENCY_A]?.quotient
+      ? parsedAmounts.value?.[tokenA.value.equals(poolForPosition.value?.token0) ? CurrencyField.CURRENCY_B : CurrencyField.CURRENCY_A]?.quotient
       : BIG_INT_ZERO
 
     if (amount0 !== undefined && amount1 !== undefined) {
@@ -269,6 +285,7 @@ export default function useV3DerivedInfo() {
     baseToken,
     outOfRange,
     pool,
-    position
+    position,
+    noLiquidity
   }
 }

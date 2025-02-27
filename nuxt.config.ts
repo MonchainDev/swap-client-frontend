@@ -14,8 +14,9 @@ export default defineNuxtConfig({
     '@element-plus/nuxt',
     '@nuxtjs/google-fonts',
     'nuxt-svgo',
-    'nuxt-lodash'
     // '@nuxthub/core'
+    'nuxt-lodash',
+    '@vueuse/nuxt'
   ],
   experimental: {
     typedPages: true

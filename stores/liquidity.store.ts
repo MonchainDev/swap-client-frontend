@@ -1,10 +1,12 @@
 import ABI_TOKEN from '@/constant/contract/contract-token.json'
 import type { Price } from '@pancakeswap/swap-sdk-core'
 import { Token } from '@pancakeswap/swap-sdk-core'
+import { FeeAmount } from '@pancakeswap/v3-sdk'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import { defineStore } from 'pinia'
 import { NATIVE_TOKEN } from '~/constant'
 import { LIST_ADDRESS_FEE } from '~/constant/contract'
+import { ZOOM_LEVELS } from '~/constant/zoom-level'
 import { ChainId, CurrencyField, type IToken, type ZoomLevels } from '~/types'
 import type { IFormCreatePosition } from '~/types/position.type'
 
@@ -44,6 +46,10 @@ export const useLiquidityStore = defineStore('liquidity', () => {
 
   // array of Set price range
   const listTokenOfRange = ref<IToken[]>([])
+
+  const zoomLevel = computed(() => {
+    return feeAmount.value ? ZOOM_LEVELS[feeAmount.value as FeeAmount] : ZOOM_LEVELS[FeeAmount.LOWEST]
+  })
 
   const baseCurrency = computed(() => {
     if (form.value.token0.symbol === NATIVE_TOKEN.symbol || form.value.token0.address === '') {
@@ -88,6 +94,12 @@ export const useLiquidityStore = defineStore('liquidity', () => {
       return
     }
 
+    if (!currentPrice) {
+      form.value.minPrice = type === 'MIN' ? '' : form.value.minPrice
+      form.value.maxPrice = type === 'MAX' ? '' : form.value.maxPrice
+      return
+    }
+
     const left = tryParsePrice(baseCurrency.value?.wrapped, quoteCurrency.value?.wrapped, (currentPrice! * (zoomLevel ? zoomLevel!.initialMin : 1)).toString())
     const right = tryParsePrice(baseCurrency.value?.wrapped, quoteCurrency.value?.wrapped, (currentPrice! * (zoomLevel ? zoomLevel!.initialMax : 1)).toString())
     if (type === 'BOTH') {
@@ -111,6 +123,10 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     startPriceTypedValue.value = ''
     independentField.value = CurrencyField.CURRENCY_A
     buttonRangePercent.value = null
+    form.value.amountDeposit0 = ''
+    form.value.amountDeposit1 = ''
+    form.value.minPrice = ''
+    form.value.maxPrice = ''
   }
 
   const { address } = useAccount()
@@ -198,6 +214,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     listTokenOfRange,
     refetchBalance0,
     refetchBalance1,
-    resetStore
+    resetStore,
+    zoomLevel
   }
 })

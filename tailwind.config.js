@@ -8,6 +8,7 @@ export default {
     extend: {},
     colors: {
       primary: 'var(--color-primary)',
+      'gray-2': 'var(--color-gray-2)',
       'gray-3': 'var(--color-gray-3)',
       'gray-4': 'var(--color-gray-4)',
       'gray-6': 'var(--color-gray-6)',

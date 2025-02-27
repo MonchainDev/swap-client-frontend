@@ -17,7 +17,7 @@
 
 <script lang="ts" setup>
   definePageMeta({
-    middleware: ['reset-form-liquidity-middleware']
+    middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
   })
 
   const { form } = storeToRefs(useLiquidityStore())

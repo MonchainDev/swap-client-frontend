@@ -10,9 +10,9 @@
       </div>
       <TheFooter />
       <TheHeaderMobile />
+      <PopupConnectWallet />
     </template>
   </div>
-  <PopupConnectWallet />
 </template>
 
 <script lang="ts" setup>
