@@ -1,9 +1,6 @@
 packages:
   - 'sdk/*'
   - 'sdk/routing-sdk/**'
-  - 'apps/*'
-  - 'apis/*'
-  - 'examples/*'
   - 'scripts'
 
 catalog:

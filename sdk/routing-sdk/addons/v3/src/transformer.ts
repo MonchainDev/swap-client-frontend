@@ -1,4 +1,4 @@
-import { ChainId } from '@monswap/chains'
+import { type ChainId } from '@monswap/chains'
 import {
   parseCurrency,
   parseCurrencyAmount,
@@ -8,7 +8,7 @@ import {
 import { Percent } from '@monswap/swap-sdk-core'
 import { Tick } from '@monswap/v3-sdk'
 
-import { SerializableTick, SerializableV3Pool, V3Pool, V3PoolData } from './types'
+import type { SerializableTick, SerializableV3Pool, V3Pool, V3PoolData } from './types'
 import { createV3Pool } from './createV3Pool'
 
 const ONE_HUNDRED = 100n

@@ -1,5 +1,5 @@
 import invariant from 'tiny-invariant'
-import { Currency, Token, NativeCurrency } from '@monswap/swap-sdk-core'
+import { type Currency, type Token, NativeCurrency } from '@monswap/swap-sdk-core'
 
 import { WNATIVE, NATIVE } from '../constants'
 

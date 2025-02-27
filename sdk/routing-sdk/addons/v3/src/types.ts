@@ -1,8 +1,8 @@
-import { Currency, CurrencyAmount, Percent } from '@monswap/swap-sdk-core'
-import { Tick } from '@monswap/v3-sdk'
+import { type Currency, type CurrencyAmount, type Percent } from '@monswap/swap-sdk-core'
+import { type Tick } from '@monswap/v3-sdk'
 import type { SerializableCurrency, SerializableCurrencyAmount, Pool } from '@monswap/routing-sdk'
 
-import { V3_POOL_TYPE } from './constants/poolType'
+import { type V3_POOL_TYPE } from './constants/poolType'
 
 export type Address = `0x${string}`
 

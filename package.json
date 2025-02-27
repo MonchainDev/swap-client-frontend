@@ -14,7 +14,8 @@
     "prepare": "husky",
     "lint-staged": "lint-staged",
     "commit": "git cz",
-    "test": "vitest"
+    "test": "vitest",
+    "build:packages": "turbo run build --filter=./sdk/* --filter=./sdk/routing-sdk/addons/*"
   },
   "dependencies": {
     "@element-plus/nuxt": "^1.1.1",
@@ -58,7 +59,8 @@
     "prettier-plugin-tailwindcss": "^0.6.5",
     "sass": "^1.83.4",
     "vitest": "^2.0.5",
-    "wrangler": "^3.103.0"
+    "wrangler": "^3.103.0",
+    "turbo": "2.0.6"
   },
   "lint-staged": {
     "*.scss": [
@@ -77,5 +79,6 @@
   "workspaces": [
     "sdk/*",
     "sdk/routing-sdk/addons/**"
-  ]
+  ],
+  "packageManager": "pnpm@10.5.1"
 }
