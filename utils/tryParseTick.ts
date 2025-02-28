@@ -1,5 +1,5 @@
-import type { Price, Token } from '@monswap/swap-sdk-core'
-import { encodeSqrtRatioX96, nearestUsableTick, priceToClosestTick, TICK_SPACINGS, TickMath, type FeeAmount } from '@monswap/v3-sdk'
+import type { Price, Token } from '@monchain/swap-sdk-core'
+import { encodeSqrtRatioX96, nearestUsableTick, priceToClosestTick, TICK_SPACINGS, TickMath, type FeeAmount } from '@monchain/v3-sdk'
 
 export default function tryParseTick(feeAmount?: FeeAmount, price?: Price<Token, Token> | undefined | boolean): number | undefined {
   if (!price || !feeAmount || typeof price === 'boolean') {

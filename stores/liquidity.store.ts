@@ -1,6 +1,6 @@
 import ABI_TOKEN from '@/constant/contract/contract-token.json'
-import type { Price } from '@monswap/swap-sdk-core'
-import { Token } from '@monswap/swap-sdk-core'
+import type { Price } from '@monchain/swap-sdk-core'
+import { Token } from '@monchain/swap-sdk-core'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import { defineStore } from 'pinia'
 import { NATIVE_TOKEN } from '~/constant'
