@@ -101,11 +101,12 @@
   const { outOfRange, invalidRange } = useV3DerivedInfo()
   const { startPriceTypedValue, form } = storeToRefs(useLiquidityStore())
   const { poolExits } = usePools()
+  const route = useRoute()
 
   const isDisabled = computed(() => {
     const { minPrice, maxPrice } = form.value
     const commonConditions = outOfRange.value || invalidRange.value || minPrice === '' || maxPrice === ''
-    return poolExits.value ? commonConditions : commonConditions || startPriceTypedValue.value === ''
+    return route.name === 'liquidity-tokenId' ? false : poolExits.value ? commonConditions : commonConditions || startPriceTypedValue.value === ''
   })
 
   watch(

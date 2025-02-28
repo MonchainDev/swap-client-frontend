@@ -38,7 +38,7 @@
           </div>
         </div>
         <div class="flex gap-2">
-          <BaseButton type="outline" size="md" class="flex w-[95px] items-center justify-center !gap-0 !bg-white text-xl">
+          <BaseButton type="outline" size="md" class="flex w-[95px] items-center justify-center !gap-0 !bg-white text-xl" @click="handleClickAddLiquidity">
             <BaseIcon name="plus" size="20" class="text-hyperlink" />
             <span class="text-hyperlink">Add</span>
           </BaseButton>
@@ -70,7 +70,7 @@
                 <span class="text-[22px] font-semibold leading-7">{{ unwrappedToken(positionValueUpper?.currency)?.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
-                <span class="text-[22px] font-semibold leading-7">{{ formattedCurrencyAmount(positionValueUpper) }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ formattedValueUpper }}</span>
                 <span class="text-sm text-gray-6">$0</span>
               </div>
             </div>
@@ -80,7 +80,7 @@
                 <span class="text-[22px] font-semibold leading-7">{{ unwrappedToken(positionValueLower?.currency)?.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
-                <span class="text-[22px] font-semibold leading-7">{{ formattedCurrencyAmount(positionValueLower) }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ formattedValueLower }}</span>
                 <span class="text-sm text-gray-6">$0</span>
               </div>
             </div>
@@ -147,6 +147,18 @@
       </BaseTable>
     </div>
   </div>
+  <PopupAddLiquidity
+    v-model:invert="manuallyInverted"
+    :currency-base
+    :position="position"
+    :currency-quote
+    :position-value-lower
+    :position-value-upper
+    :value-lower="formattedValueLower"
+    :value-upper="formattedValueUpper"
+    :fee-format="formatFee"
+    @reload="refetch"
+  />
 </template>
 
 <script lang="ts" setup>
@@ -154,17 +166,19 @@
   import type { FeeAmount, Pool } from '@pancakeswap/v3-sdk'
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@pancakeswap/v3-sdk'
   import { useAccount } from '@wagmi/vue'
-  import { Bound } from '~/types'
+  import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
+  import { Bound, type IToken } from '~/types'
 
   const route = useRoute('liquidity-tokenId')
+  const { setOpenPopup } = useBaseStore()
 
   const tokenId = computed(() => {
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
   })
   const { chainId } = useAccount()
-  const { feeAmount, form } = storeToRefs(useLiquidityStore())
+  const { feeAmount, form, existingPosition } = storeToRefs(useLiquidityStore())
 
-  const { isLoading, position: _position } = useV3PositionsFromTokenId(tokenId.value)
+  const { isLoading, position: _position, refetch } = useV3PositionsFromTokenId(tokenId.value)
 
   const liquidity = computed(() => _position.value?.liquidity)
   const tickLower = computed(() => _position.value?.tickLower)
@@ -222,11 +236,12 @@
   })
 
   const manuallyInverted = ref(false)
+
   const priceLower = computed(() => {
-    return manuallyInverted.value ? priceFromPosition.value?.priceLower?.invert() : priceFromPosition.value?.priceLower
+    return manuallyInverted.value ? priceFromPosition.value?.priceUpper?.invert() : priceFromPosition.value?.priceLower
   })
   const priceUpper = computed(() => {
-    return manuallyInverted.value ? priceFromPosition.value?.priceUpper?.invert() : priceFromPosition.value?.priceUpper
+    return manuallyInverted.value ? priceFromPosition.value?.priceLower?.invert() : priceFromPosition.value?.priceUpper
   })
   const base = computed(() => (manuallyInverted.value ? priceFromPosition.value?.quote : priceFromPosition.value?.base))
   // const quote = computed(() => (manuallyInverted.value ? priceFromPosition.value?.base : priceFromPosition.value?.quote))
@@ -257,6 +272,21 @@
 
   const positionValueUpper = computed(() => (inverted.value ? position.value?.amount0 : position.value?.amount1))
   const positionValueLower = computed(() => (inverted.value ? position.value?.amount1 : position.value?.amount0))
+
+  const formattedValueUpper = computed(() => {
+    return formattedCurrencyAmount(positionValueUpper.value)
+  })
+  const formattedValueLower = computed(() => {
+    return formattedCurrencyAmount(positionValueLower.value)
+  })
+
+  const handleClickAddLiquidity = () => {
+    existingPosition.value = position.value as Position
+    form.value.token0 = { ...token0.value, icon_url: '', name: token0.value?.name || '' } as unknown as IToken
+    form.value.token1 = { ...token1.value, icon_url: '', name: token1.value?.name || '' } as unknown as IToken
+    feeAmount.value = fee.value ?? 0
+    setOpenPopup('popup-add-liquidity')
+  }
 </script>
 
 <style lang="scss" scoped>

@@ -33,9 +33,9 @@
   import type { TYPE_SWAP } from '~/types/swap.type'
 
   interface IProps {
-    loading0: boolean
-    loading1: boolean
-    loadingAdd: boolean
+    loading0?: boolean
+    loading1?: boolean
+    loadingAdd?: boolean
   }
 
   const props = withDefaults(defineProps<IProps>(), {
@@ -55,6 +55,8 @@
     approve: [type: TYPE_SWAP]
     add: []
   }>()
+
+  const route = useRoute()
 
   const isInvalidPair = computed(() => {
     return !tokenA.value || !tokenB.value || !feeAmount.value
@@ -80,8 +82,11 @@
   const isShowEnterAmount = computed(() => {
     const { amountDeposit0, amountDeposit1 } = form.value
     const missingAmounts = !amountDeposit0 || !amountDeposit1
-
-    return poolExits.value ? isInvalidPair.value && missingAmounts : !isInvalidPair.value && (missingAmounts || !startPriceTypedValue.value)
+    if (route.name === 'liquidity-tokenId') {
+      return missingAmounts
+    } else {
+      return poolExits.value ? isInvalidPair.value && missingAmounts : !isInvalidPair.value && (missingAmounts || !startPriceTypedValue.value)
+    }
   })
 
   const title = computed(() => {

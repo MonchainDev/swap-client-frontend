@@ -118,6 +118,8 @@
     }
     .el-dialog__body {
       color: var(--color-primary);
+      max-height: 80vh;
+      overflow-y: auto;
     }
   }
 </style>

@@ -4,8 +4,18 @@ import { encodeSqrtRatioX96, nearestUsableTick, Pool, Position, priceToClosestTi
 import { BIG_INT_ZERO, Bound, CurrencyField } from '~/types'
 
 export default function useV3DerivedInfo() {
-  const { feeAmount, typedValue, startPriceTypedValue, zoomLevel, leftRangeTypedValue, rightRangeTypedValue, independentField, baseCurrency, quoteCurrency } =
-    storeToRefs(useLiquidityStore())
+  const {
+    feeAmount,
+    typedValue,
+    startPriceTypedValue,
+    zoomLevel,
+    existingPosition,
+    leftRangeTypedValue,
+    rightRangeTypedValue,
+    independentField,
+    baseCurrency,
+    quoteCurrency
+  } = storeToRefs(useLiquidityStore())
 
   const { dispatchRangeTypedValue } = useLiquidityStore()
 
@@ -46,21 +56,6 @@ export default function useV3DerivedInfo() {
 
   const invertPrice = computed(() => Boolean(baseToken.value && token0.value && !baseToken.value.equals(token0.value)))
 
-  // set min and max price if pool exits
-  watchEffect(() => {
-    if (pool.value && !noLiquidity.value && price.value) {
-      const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
-      if (currentPrice) {
-        dispatchRangeTypedValue('BOTH', currentPrice, zoomLevel.value)
-      }
-    }
-    // else {
-    //   dispatchRangeTypedValue('BOTH', undefined)
-    //   form.value.minPrice = ''
-    //   form.value.maxPrice = ''
-    // }
-  })
-
   const price = computed(() => {
     if (noLiquidity.value) {
       const parsedQuoteAmount = tryParseCurrencyAmount(startPriceTypedValue.value, invertPrice.value ? token0.value : token1.value)
@@ -76,6 +71,21 @@ export default function useV3DerivedInfo() {
     }
     // get the amount of quote currency
     return pool.value && token0.value ? pool.value.priceOf(token0.value) : undefined
+  })
+
+  // set min and max price if pool exits
+  watchEffect(() => {
+    if (pool.value && !noLiquidity.value && price.value) {
+      const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
+      if (currentPrice) {
+        dispatchRangeTypedValue('BOTH', currentPrice, zoomLevel.value)
+      }
+    }
+    // else {
+    //   dispatchRangeTypedValue('BOTH', undefined)
+    //   form.value.minPrice = ''
+    //   form.value.maxPrice = ''
+    // }
   })
 
   // check for invalid price input (converts to invalid ratio)
@@ -107,15 +117,13 @@ export default function useV3DerivedInfo() {
     }
   })
 
-  const existingPosition: Position | null = null as Position | null
-
   // parse typed range values and determine closest ticks
   // lower should always be a smaller tick
   const ticks = computed(() => {
     return {
       [Bound.LOWER]:
-        typeof existingPosition?.tickLower === 'number'
-          ? existingPosition.tickLower
+        typeof existingPosition.value?.tickLower === 'number'
+          ? existingPosition.value.tickLower
           : (invertPrice.value && typeof rightRangeTypedValue.value === 'boolean') || (!invertPrice.value && typeof leftRangeTypedValue.value === 'boolean')
             ? tickSpaceLimits.value[Bound.LOWER]
               ? tickSpaceLimits.value[Bound.LOWER]
@@ -124,8 +132,8 @@ export default function useV3DerivedInfo() {
               ? tryParseTick(feeAmount.value, rightRangeTypedValue.value as boolean | Price<Token, Token> | undefined)
               : tryParseTick(feeAmount.value, leftRangeTypedValue.value as boolean | Price<Token, Token> | undefined),
       [Bound.UPPER]:
-        typeof existingPosition?.tickUpper === 'number'
-          ? checkAndParseMaxTick(existingPosition.tickUpper)
+        typeof existingPosition.value?.tickUpper === 'number'
+          ? checkAndParseMaxTick(existingPosition.value.tickUpper)
           : (!invertPrice.value && typeof rightRangeTypedValue.value === 'boolean') || (invertPrice.value && typeof leftRangeTypedValue.value === 'boolean')
             ? tickSpaceLimits.value[Bound.UPPER]
               ? checkAndParseMaxTick(tickSpaceLimits.value[Bound.UPPER])
@@ -138,6 +146,12 @@ export default function useV3DerivedInfo() {
 
   const tickLower = computed(() => ticks.value[Bound.LOWER])
   const tickUpper = computed(() => ticks.value[Bound.UPPER])
+
+  // specifies whether the lower and upper ticks is at the extreme bounds
+  const ticksAtLimit = computed((): { [bound in Bound]?: boolean | undefined } => ({
+    [Bound.LOWER]: feeAmount.value ? tickLower.value === tickSpaceLimits.value[Bound.LOWER] : undefined,
+    [Bound.UPPER]: feeAmount.value ? tickUpper.value === tickSpaceLimits.value[Bound.UPPER] : undefined
+  }))
 
   // mark invalid range
   const invalidRange = computed(() => Boolean(typeof tickLower.value === 'number' && typeof tickUpper.value === 'number' && tickLower.value >= tickUpper.value))
@@ -286,6 +300,8 @@ export default function useV3DerivedInfo() {
     outOfRange,
     pool,
     position,
-    noLiquidity
+    noLiquidity,
+    ticksAtLimit,
+    currencies
   }
 }

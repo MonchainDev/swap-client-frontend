@@ -259,7 +259,7 @@
 
       if (position.value) {
         const useNative = baseCurrency.value?.isNative ? baseCurrency.value : quoteCurrency.value?.isNative ? quoteCurrency.value : undefined
-        console.log('🚀 ~ handleCreatePool ~ useNative:', useNative)
+        console.log('🚀 ~ handleCreatePool ~ useNative:', position.value.mintAmounts)
 
         const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
         const allowedSlippage = 50

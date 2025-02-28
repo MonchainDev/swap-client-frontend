@@ -1,6 +1,7 @@
 import ABI_TOKEN from '@/constant/contract/contract-token.json'
 import type { Price } from '@pancakeswap/swap-sdk-core'
 import { Token } from '@pancakeswap/swap-sdk-core'
+import type { Position } from '@pancakeswap/v3-sdk'
 import { FeeAmount } from '@pancakeswap/v3-sdk'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import { defineStore } from 'pinia'
@@ -37,6 +38,8 @@ export const useLiquidityStore = defineStore('liquidity', () => {
   const independentField = ref(CurrencyField.CURRENCY_A)
   const startPriceTypedValue = ref('')
   const feeAmount = ref(0)
+
+  const existingPosition = ref<Position | null>(null)
 
   const leftRangeTypedValue = ref<Price<Token, Token> | boolean | undefined>(undefined)
   const rightRangeTypedValue = ref<Price<Token, Token> | boolean | undefined>(undefined)
@@ -215,6 +218,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     refetchBalance0,
     refetchBalance1,
     resetStore,
-    zoomLevel
+    zoomLevel,
+    existingPosition
   }
 })

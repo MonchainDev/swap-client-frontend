@@ -9,7 +9,7 @@ export default function useV3PositionsFromTokenId(tokenId: bigint | undefined) {
 
   const { chainId } = useAccount()
 
-  const { isLoading, data, status } = useReadContract({
+  const { isLoading, data, status, refetch } = useReadContract({
     abi: positionManager.value?.abi,
     //@ts-ignore
     address: positionManager.value?.address as MaybeRef<`0x${string}`>,
@@ -44,5 +44,5 @@ export default function useV3PositionsFromTokenId(tokenId: bigint | undefined) {
     }
   })
 
-  return { isLoading, position }
+  return { isLoading, position, refetch }
 }
