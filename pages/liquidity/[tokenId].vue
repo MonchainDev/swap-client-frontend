@@ -42,9 +42,11 @@
             <BaseIcon name="plus" size="20" class="text-hyperlink" />
             <span class="text-hyperlink">Add</span>
           </BaseButton>
-          <BaseButton type="outline" size="md" class="w-[120px] !bg-white text-xl">
-            <span class="text-hyperlink">Remove</span>
-          </BaseButton>
+          <NuxtLink :to="`/remove/${tokenId}`">
+            <BaseButton type="outline" size="md" class="w-[120px] !bg-white text-xl">
+              <span class="text-hyperlink">Remove</span>
+            </BaseButton>
+          </NuxtLink>
         </div>
       </div>
     </div>

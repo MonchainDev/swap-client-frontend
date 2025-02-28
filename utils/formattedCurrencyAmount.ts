@@ -1,7 +1,7 @@
 import { Fraction, Rounding, type Token, type Currency, type CurrencyAmount } from '@pancakeswap/swap-sdk-core'
 const CURRENCY_AMOUNT_MIN = new Fraction(1n, 1000000n)
 
-export default function formattedCurrencyAmount(currencyAmount: CurrencyAmount<Token> | undefined, significantDigits = 4) {
+export default function formattedCurrencyAmount(currencyAmount: CurrencyAmount<Token> | CurrencyAmount<Currency> | undefined, significantDigits = 4) {
   const formattedAmount = formatAmount(currencyAmount, significantDigits)
   return !formattedAmount || !currencyAmount || currencyAmount.equalTo(0n)
     ? '0'

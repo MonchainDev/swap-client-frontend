@@ -3,7 +3,7 @@ import { useReadContract } from '@wagmi/vue'
 
 import type { Abi } from 'viem'
 import TokenAbi from '~/constant/abi/token.json'
-export function useTokenByChainId(tokenAddress: string, chainId: number) {
+export function useTokenByChainId(tokenAddress: string | `0x${string}`, chainId: number) {
   console.log('🚀 ~ useTokenByChainId ~ chainId:', chainId)
   console.log('🚀 ~ useTokenByChainId ~ tokenAddress:', tokenAddress)
 
