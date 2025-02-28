@@ -17,11 +17,15 @@ export interface INetwork {
   title: string
   logo: string
   value: string
+  chainId: ChainId
 }
 
 export enum ChainId {
   BSC_TESTNET = 97,
-  MON_TESTNET = 16789
+  MON_TESTNET = 16789,
+  SEPOLIA = 11155111,
+  POLYGON = 137,
+  LINEA = 80001
 }
 
 export enum CurrencyField {

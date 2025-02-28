@@ -1,5 +1,5 @@
 import { FeeAmount } from '@pancakeswap/v3-sdk'
-import type { INetwork, IToken, ZoomLevels } from '~/types'
+import { ChainId, type INetwork, type IToken, type ZoomLevels } from '~/types'
 import { ZOOM_LEVELS } from './zoom-level'
 
 const DEFAULT_SLIPPAGE = '1'
@@ -25,34 +25,40 @@ const LIST_NETWORK: INetwork[] = [
   {
     title: 'BNB Chain',
     logo: '/logo-bnb-chain.png',
-    value: 'BNB'
+    value: 'BNB',
+    chainId: ChainId.BSC_TESTNET
   },
   {
     title: 'Ethereum',
     logo: '/logo-ethereum-chain.png',
-    value: 'ETH'
+    value: 'ETH',
+    chainId: ChainId.SEPOLIA
   },
   {
     title: 'Polygon',
     logo: '/logo-polygon-chain.png',
-    value: 'MATIC'
+    value: 'MATIC',
+    chainId: ChainId.POLYGON
   },
   {
     title: 'Mon Chain',
     logo: '/logo-mon-chain.png',
-    value: 'MON'
+    value: 'MON',
+    chainId: ChainId.MON_TESTNET
   },
   {
     title: 'Linea Chain',
     logo: '/logo-liena-chain.png',
-    value: 'LINEA'
+    value: 'LINEA',
+    chainId: ChainId.LINEA
   }
 ]
 
 const DEFAULT_NETWORK: INetwork = {
   title: 'Mon Chain',
   logo: '/logo-mon-chain.png',
-  value: 'MON'
+  value: 'MON',
+  chainId: ChainId.MON_TESTNET
 }
 
 const QUICK_ACTION_CONFIGS: Record<FeeAmount | string, { [percentage: number]: ZoomLevels }> = {

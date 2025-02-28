@@ -8,7 +8,7 @@
 
 <script lang="ts" setup generic="T">
   interface IProps {
-    data: T[]
+    data: T[] | undefined
     loading: boolean
   }
 

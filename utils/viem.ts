@@ -72,10 +72,7 @@ export const CLIENT_CONFIG = {
 }
 
 export const publicClient = ({ chainId }: { chainId?: ChainId }) => {
-  console.log('🚀 ~ publicClient ~ chainId:', chainId)
   if (chainId && viemClients[chainId]) {
-    console.log('vao day', viemClients[chainId])
-
     return viemClients[chainId]
   }
   console.log('aa')
