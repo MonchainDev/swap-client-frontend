@@ -1,5 +1,8 @@
 <template>
-  <div class="grid cursor-pointer grid-cols-[3fr,1fr,1fr,3fr,3fr,2fr] border-b border-solid border-gray-2 py-6 hover:bg-gray-2">
+  <div
+    class="grid cursor-pointer grid-cols-[3fr,1fr,1fr,3fr,3fr,2fr] border-b border-solid border-gray-2 py-6 hover:bg-gray-2"
+    @click="router.push(`/liquidity/${props.position.tokenId}`)"
+  >
     <div class="flex items-center gap-[10px]">
       <div class="flex">
         <img src="/token-default.png" alt="token" class="size-9 rounded-full border border-solid border-white" />
@@ -41,6 +44,8 @@
   const props = withDefaults(defineProps<IProps>(), {
     position: () => ({}) as PositionDetail
   })
+
+  const router = useRouter()
 
   const { currency0, currency1, position: _position, tickAtLimit, base, priceLower, priceUpper, quote } = useExtraV3PositionInfo(props.position)
 
