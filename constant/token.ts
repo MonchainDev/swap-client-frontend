@@ -1,4 +1,4 @@
-import { ERC20Token } from '@monswap/swap-sdk-evm'
+import { ERC20Token } from 'monswap-client/packages/swap-sdk-evm/src'
 import { ChainId } from '~/types'
 
 export const WMON = {

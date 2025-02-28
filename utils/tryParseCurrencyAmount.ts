@@ -1,4 +1,4 @@
-import { CurrencyAmount, type Currency } from '@monswap/swap-sdk-core'
+import { CurrencyAmount, type Currency } from 'monswap-client/packages/swap-sdk-core/src'
 import { parseUnits } from 'viem'
 
 export default function tryParseCurrencyAmount<T extends Currency>(value?: string, currency?: T): CurrencyAmount<T> | undefined {

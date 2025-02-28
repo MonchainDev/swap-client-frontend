@@ -1,4 +1,4 @@
-import { Price, type Token } from '@monswap/swap-sdk-core'
+import { Price, type Token } from 'monswap-client/packages/swap-sdk-core/src'
 
 export function tryParsePrice(baseToken?: Token, quoteToken?: Token, value?: string) {
   if (!baseToken || !quoteToken || !value) {

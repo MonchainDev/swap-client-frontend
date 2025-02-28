@@ -1,4 +1,4 @@
-import { nearestUsableTick, TICK_SPACINGS, tickToPrice } from '@monswap/v3-sdk'
+import { nearestUsableTick, TICK_SPACINGS, tickToPrice } from 'monswap-client/packages/v3-sdk/src'
 
 export default function useRangeHopCallbacks() {
   const { tickLower, tickUpper } = useV3DerivedInfo()

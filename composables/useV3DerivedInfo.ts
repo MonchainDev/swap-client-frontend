@@ -1,7 +1,5 @@
-import type { Token } from '@monswap/swap-sdk-core'
-import { CurrencyAmount, Price } from '@monswap/swap-sdk-core'
-import { Position, type FeeAmount } from '@monswap/v3-sdk'
-import { encodeSqrtRatioX96, nearestUsableTick, Pool, priceToClosestTick, TICK_SPACINGS, TickMath } from '@monswap/v3-sdk'
+import { CurrencyAmount, Price, type Token } from 'monswap-client/packages/swap-sdk-core/src'
+import { encodeSqrtRatioX96, nearestUsableTick, Pool, priceToClosestTick, TICK_SPACINGS, TickMath, Position, type FeeAmount } from 'monswap-client/packages/v3-sdk/src'
 import { BIG_INT_ZERO, Bound, CurrencyField } from '~/types'
 
 export default function useV3DerivedInfo() {

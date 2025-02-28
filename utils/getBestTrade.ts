@@ -3,15 +3,14 @@ import { config } from '~/config/wagmi'
 import ABI_MON_FACTORY from '@/constant/abi/MonFactory.json'
 import { CONTRACT_ADDRESS } from '~/constant/contract'
 import { FEE_ALLOWANCE } from '~/utils/constanst';
-import { CurrencyAmount, Token, TradeType,  } from '@monswap/swap-sdk-core';
-import { TICK_SPACINGS, TickMath, 
-    Pool as V3PoolSDK,  
+import { CurrencyAmount, Token, TradeType, Percent, type Currency } from 'monswap-client/packages/swap-sdk-core/src';
+import { TICK_SPACINGS, TickMath,
+    Pool as V3PoolSDK,
     Route as V3Route,
-    Trade as V3Trade, } from '@monswap/v3-sdk';
-import type { FeeAmount } from '@monswap/v3-sdk';
+    Trade as V3Trade,
+    type FeeAmount } from 'monswap-client/packages/v3-sdk/src';
 import invariant from 'tiny-invariant';
-import { Percent, type Currency } from '@monswap/sdk'
-import { PoolType, RouteType, type SmartRouterTrade, type V3Pool } from '@monswap/smart-router';
+import { PoolType, RouteType, type SmartRouterTrade, type V3Pool } from 'monswap-client/packages/smart-router/evm';
 import type { Address } from 'viem';
 import { useGetTokenInfo } from '~/composables/useToken';
 import { useGetPoolLiquidity, useGetPoolSlot } from '~/composables/usePool';

@@ -1,4 +1,4 @@
-import { FeeAmount } from '@monswap/v3-sdk'
+import { FeeAmount } from 'monswap-client/packages/v3-sdk/src'
 import type { ZoomLevels } from '~/types'
 
 export const ZOOM_LEVELS: Record<FeeAmount, ZoomLevels> = {

@@ -1,6 +1,5 @@
-import type { Currency, Token } from '@monswap/swap-sdk-core'
-import { NativeCurrency } from '@monswap/swap-sdk-core'
-import type { ERC20Token } from '@monswap/swap-sdk-evm'
+import type { Currency, Token, type NativeCurrency } from 'monswap-client/packages/swap-sdk-core/src'
+import type { ERC20Token } from 'monswap-client/packages/swap-sdk-evm/src'
 import { NATIVE, WMON } from '~/constant/token'
 import { ChainId } from '~/types'
 

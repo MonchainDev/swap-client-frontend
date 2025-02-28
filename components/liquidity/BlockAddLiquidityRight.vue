@@ -71,13 +71,13 @@
 </template>
 
 <script lang="ts" setup>
-  import { FeeAmount, NonfungiblePositionManager } from '@monswap/v3-sdk'
+  import { FeeAmount, NonfungiblePositionManager } from 'monswap-client/packages/v3-sdk/src'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import { ZOOM_LEVELS } from '~/constant/zoom-level'
   import type { ZoomLevels } from '~/types'
 
-  import { Percent } from '@monswap/swap-sdk-core'
+  import { Percent } from 'monswap-client/packages/swap-sdk-core/src'
   import { useAccount } from '@wagmi/vue'
   import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
