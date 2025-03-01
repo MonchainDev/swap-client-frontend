@@ -137,6 +137,13 @@
   } = storeToRefs(useLiquidityStore())
   const { switchTokens, dispatchRangeTypedValue, refetchAllowance0, refetchAllowance1, resetFiled, refetchBalance0, refetchBalance1 } = useLiquidityStore()
 
+  watch(
+    () => startPriceTypedValue.value,
+    () => {
+      buttonRangePercent.value = null
+    }
+  )
+
   const disabledInputCurrentPrice = computed(() => {
     return !baseCurrency.value || !quoteCurrency.value || !feeAmount.value
   })
