@@ -93,7 +93,6 @@
 </template>
 
 <script lang="ts" setup>
-  import { FeeAmount } from '@pancakeswap/v3-sdk'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import { ZOOM_LEVELS } from '~/constant/zoom-level'
@@ -106,6 +105,7 @@
   import { BIPS_BASE } from '~/constant'
   import type { TYPE_SWAP } from '~/types/swap.type'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
+  import { FeeAmount } from '~/constant/fee'
 
   export type INPUT_PRICE = 'MIN' | 'MAX'
   interface IProps {

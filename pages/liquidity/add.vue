@@ -16,6 +16,8 @@
 </template>
 
 <script lang="ts" setup>
+  import { FeeAmount } from '~/constant/fee'
+
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
   })
@@ -24,6 +26,8 @@
 
   const isToken0Selected = computed(() => form.value.token0.symbol !== '')
   const isToken1Selected = computed(() => form.value.token1.symbol !== '')
+
+  console.log(FeeAmount.HIGH)
 </script>
 
 <style lang="scss"></style>
