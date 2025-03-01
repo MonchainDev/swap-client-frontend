@@ -19,6 +19,7 @@
         :disabled="disabledInputCurrentPrice"
         placeholder="0.0"
         class="input-init-amount"
+        @blur="handleBlurStartValue"
       />
       <p v-if="form.token0.symbol && form.token1.symbol" class="flex justify-between text-sm">
         <span> Current {{ form.token0.symbol }} Price:</span>
@@ -343,6 +344,10 @@
     } finally {
       loadingAdd.value = false
     }
+  }
+
+  const handleBlurStartValue = () => {
+    startPriceTypedValue.value = !startPriceTypedValue.value || !Number(startPriceTypedValue.value) ? '' : startPriceTypedValue.value
   }
 </script>
 
