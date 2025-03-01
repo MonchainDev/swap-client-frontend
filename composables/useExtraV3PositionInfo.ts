@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/vue-query'
 import type { Address } from 'viem'
 import v3PoolStateABI from '~/constant/abi/v3PoolStateABI.json'
 import { CONTRACT_ADDRESS } from '~/constant/contract'
+import { WNATIVE } from '~/constant/token'
 import { Bound, type PositionDetail } from '~/types'
 
 // Classes are expensive to instantiate, so this caches the recently instantiated pools.

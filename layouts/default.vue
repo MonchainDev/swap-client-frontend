@@ -17,6 +17,7 @@
 
 <script lang="ts" setup>
   import PageLoading from '~/components/loading/PageLoading.vue'
+  import { NATIVE_TOKEN } from '~/constant'
   import { baseRepository } from '~/repository/base'
 
   const { listToken } = storeToRefs(useBaseStore())
@@ -25,7 +26,7 @@
   const apiBase = baseRepository($fetch)
 
   const { data } = await useAsyncData(() => apiBase.getListToken(), { server: true })
-  listToken.value = [...data.value!.items]
+  listToken.value = [NATIVE_TOKEN, ...data.value!.items]
 
   const loading = ref(true)
 

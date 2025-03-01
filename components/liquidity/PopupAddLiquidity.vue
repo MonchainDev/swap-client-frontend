@@ -82,7 +82,7 @@
       <div v-if="step === 'INPUT' && props.showInput" class="mt-[30px] flex flex-col gap-4">
         <InputDepositLiquidity
           v-model:amount="form.amountDeposit0"
-          :token="currencyA"
+          :token="currency0"
           type="BASE"
           is-selected
           :balance="balance0?.formatted"
@@ -91,7 +91,7 @@
         />
         <InputDepositLiquidity
           v-model:amount="form.amountDeposit1"
-          :token="currencyB"
+          :token="currency1"
           type="QUOTE"
           is-selected
           :balance="balance1?.formatted"
@@ -109,7 +109,7 @@
 
 <script lang="ts" setup>
   import { Percent, type Currency } from '@pancakeswap/swap-sdk-core'
-  import { NonfungiblePositionManager, type Position } from '@pancakeswap/v3-sdk'
+  import { type Position } from '@pancakeswap/v3-sdk'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
@@ -119,6 +119,7 @@
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import { Bound, CurrencyField, type IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
+  import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
 
   interface IProps {
     valueUpper: string
@@ -227,12 +228,13 @@
   }
 
   const handleChangeAmount = (value: string, type: TYPE_SWAP) => {
+    const _value = !value || !Number(value) ? '' : value
     if (type === 'BASE') {
-      form.value.amountDeposit0 = value
+      form.value.amountDeposit0 = _value
     } else {
-      form.value.amountDeposit1 = value
+      form.value.amountDeposit1 = _value
     }
-    typedValue.value = value
+    typedValue.value = _value
     independentField.value = type === 'BASE' ? CurrencyField.CURRENCY_A : CurrencyField.CURRENCY_B
   }
 

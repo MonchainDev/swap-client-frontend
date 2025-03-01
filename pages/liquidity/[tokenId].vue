@@ -101,7 +101,7 @@
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-                <span class="text-[22px] font-semibold leading-7">ATOM</span>
+                <span class="text-[22px] font-semibold leading-7">{{ unwrappedToken(positionValueUpper?.currency)?.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">0</span>
@@ -111,7 +111,7 @@
             <div class="flex h-1/2 items-center justify-between px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-                <span class="text-[22px] font-semibold leading-7">ATOM</span>
+                <span class="text-[22px] font-semibold leading-7">{{ unwrappedToken(positionValueLower?.currency)?.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">0</span>
@@ -168,7 +168,7 @@
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@pancakeswap/v3-sdk'
   import { useAccount } from '@wagmi/vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
-  import { Bound, type IToken } from '~/types'
+  import { Bound } from '~/types'
 
   const route = useRoute('liquidity-tokenId')
   const { setOpenPopup } = useBaseStore()
@@ -197,14 +197,37 @@
   const token0 = ref<Token>()
   const token1 = ref<Token>()
 
+  const unwrapToken0 = computed(() => unwrappedToken(token0.value))
+  const unwrapToken1 = computed(() => unwrappedToken(token1.value))
+
   watchEffect(async () => {
     if (_position.value) {
       token0.value = await getTokenByChainId(token0Address.value as string, chainId.value!)
       token1.value = await getTokenByChainId(token1Address.value as string, chainId.value!)
 
-      form.value.token0 = { ...token0.value, icon_url: '', name: token0.value?.name || '' }
-      form.value.token1 = { ...token1.value, icon_url: '', name: token1.value?.name || '' }
       feeAmount.value = fee.value ?? 0
+    }
+  })
+
+  // if pool has aNATIVE, set token0 or 1 to NATIVE
+  watchEffect(() => {
+    if (unwrapToken0.value && unwrapToken1.value) {
+      form.value.token0 = {
+        ...unwrapToken0.value,
+        icon_url: '',
+        name: unwrapToken0.value?.name || '',
+        decimals: unwrapToken0.value?.decimals ?? 18,
+        symbol: unwrapToken0.value?.symbol ?? '',
+        address: unwrapToken0.value.isNative ? '' : (token0.value?.address as string)
+      }
+      form.value.token1 = {
+        ...unwrapToken1.value,
+        icon_url: '',
+        name: unwrapToken1.value?.name || '',
+        decimals: unwrapToken1.value?.decimals ?? 18,
+        symbol: unwrapToken1.value?.symbol ?? '',
+        address: unwrapToken1.value.isNative ? '' : (token1.value?.address as string)
+      }
     }
   })
 
@@ -283,9 +306,9 @@
 
   const handleClickAddLiquidity = () => {
     existingPosition.value = position.value as Position
-    form.value.token0 = { ...token0.value, icon_url: '', name: token0.value?.name || '' } as unknown as IToken
-    form.value.token1 = { ...token1.value, icon_url: '', name: token1.value?.name || '' } as unknown as IToken
-    feeAmount.value = fee.value ?? 0
+    // form.value.token0 = { ...token0.value, icon_url: '', name: token0.value?.name || '' } as unknown as IToken
+    // form.value.token1 = { ...token1.value, icon_url: '', name: token1.value?.name || '' } as unknown as IToken
+    // feeAmount.value = fee.value ?? 0
     setOpenPopup('popup-add-liquidity')
   }
 </script>

@@ -97,4 +97,8 @@
     pointer-events: none;
     opacity: 0.8;
   }
+
+  .btn-linear.disabled {
+    background: var(--color-gray-4);
+  }
 </style>

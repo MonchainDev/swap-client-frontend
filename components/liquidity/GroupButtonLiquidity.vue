@@ -16,7 +16,9 @@
       <BaseButton v-if="isShowBtnEnable1" :loading="props.loading1" size="md" class="w-full text-xl font-semibold" @click="emit('approve', 'QUOTE')"
         >ENABLE {{ tokenB?.symbol }}</BaseButton
       >
-      <BaseButton v-if="isShowBtnAdd" :loading="props.loadingAdd" size="md" class="w-full text-xl font-semibold" @click="emit('add')"> ADD </BaseButton>
+      <BaseButton v-if="isShowBtnAdd" :loading="props.loadingAdd" :disabled="isDisabledAdd" size="md" class="w-full text-xl font-semibold" @click="emit('add')">
+        ADD
+      </BaseButton>
     </template>
     <template v-else>
       <BaseButton size="md" class="w-full text-xl font-semibold" @click="setOpenPopup('popup-connect')">
@@ -45,7 +47,7 @@
   })
 
   const { tokenA, tokenB } = useV3DerivedInfo()
-  const { feeAmount, form, balance0, balance1, startPriceTypedValue, allowance0, allowance1 } = storeToRefs(useLiquidityStore())
+  const { feeAmount, form, balance0, balance1, startPriceTypedValue, allowance0, allowance1, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
   const { poolExits } = usePools()
   const { isConnected } = useAccount()
 
@@ -78,6 +80,10 @@
     return isInsufficientBalanceA.value ? `Insufficient ${tokenA.value?.symbol} balance` : `Insufficient ${tokenB.value?.symbol} balance`
   })
 
+  // const isValidAmountDeposit = computed(() => {
+  //   return Number(form.value.amountDeposit0) > 0 && Number(form.value.amountDeposit1) > 0
+  // })
+
   //  isInvalidPair = false, start current price = '', amount deposit A = '', amount deposit B = ''
   const isShowEnterAmount = computed(() => {
     const { amountDeposit0, amountDeposit1 } = form.value
@@ -104,11 +110,15 @@
   })
 
   const isShowBtnEnable0 = computed(() => {
-    return !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance0.value
+    return baseCurrency.value?.isNative
+      ? false
+      : !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance0.value
   })
 
   const isShowBtnEnable1 = computed(() => {
-    return !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance1.value
+    return quoteCurrency.value?.isNative
+      ? false
+      : !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance1.value
   })
 
   const isShowBtnAdd = computed(() => {
@@ -120,6 +130,10 @@
       !isShowBtnEnable0.value &&
       !isShowBtnEnable1.value
     )
+  })
+
+  const isDisabledAdd = computed(() => {
+    return !parseFloat(form.value.amountDeposit0) || !parseFloat(form.value.amountDeposit1)
   })
 </script>
 
