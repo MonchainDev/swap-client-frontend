@@ -38,7 +38,7 @@ export const config = createConfig({
     [testnet.id]: http(),
     [sepolia.id]: http()
   }
-})
+}) as any
 
 declare module '@wagmi/vue' {
   interface Register {

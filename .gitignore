@@ -24,3 +24,8 @@ logs
 !.env.example
 
 .wrangler
+
+pnpm-lock.yaml
+# turbo
+.turbo
+.vercel

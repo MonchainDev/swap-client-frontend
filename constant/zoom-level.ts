@@ -1,4 +1,4 @@
-import { FeeAmount } from '@pancakeswap/v3-sdk'
+import { FeeAmount } from '@monchain/v3-sdk'
 import type { ZoomLevels } from '~/types'
 
 export const ZOOM_LEVELS: Record<FeeAmount, ZoomLevels> = {

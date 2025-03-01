@@ -82,13 +82,13 @@
 </template>
 
 <script lang="ts" setup>
-  import { FeeAmount, NonfungiblePositionManager } from '@pancakeswap/v3-sdk'
+  import { FeeAmount, NonfungiblePositionManager } from '@monchain/v3-sdk'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import { ZOOM_LEVELS } from '~/constant/zoom-level'
   import type { ZoomLevels } from '~/types'
 
-  import { Percent } from '@pancakeswap/swap-sdk-core'
+  import { Percent } from '@monchain/swap-sdk-core'
   import { useAccount } from '@wagmi/vue'
   import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'

@@ -20,19 +20,19 @@ export default function useGetPools() {
 }
 
 interface PoolInput {
-  token0: string;
-  token1: string;
-  fee: number;
+  token0: string
+  token1: string
+  fee: number
 }
 
 type PoolInfo = {
-  token0: string;
-  token1: string;
-  fee: number;
-  pool: string;
+  token0: string
+  token1: string
+  fee: number
+  pool: string
 }
 
-export const useGetPool = async ({token0, token1, fee}: PoolInput) : Promise<PoolInfo | null> => {
+export const useGetPool = async ({ token0, token1, fee }: PoolInput): Promise<PoolInfo | null> => {
   const pool = (await readContract(config, {
     abi: ABI_MON_FACTORY,
     address: CONTRACT_ADDRESS.MON_FACTORY as `0x${string}`,

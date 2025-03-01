@@ -106,7 +106,6 @@
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
   import HeaderFormSwap from './HeaderFormSwap.vue'
-  import { getBestTrade } from '~/utils/getBestTrade'
 
   export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
 
@@ -213,7 +212,7 @@
       const bestTrade = await getBestTrade({
         token0: token0.value.address,
         token1: token1.value.address,
-        inputAmount: Number(sellAmount.value),
+        inputAmount: Number(sellAmount.value)
       })
       buyAmount.value = bestTrade?.outputAmount.toFixed(3) + ''
       isFetchQuote.value = false
