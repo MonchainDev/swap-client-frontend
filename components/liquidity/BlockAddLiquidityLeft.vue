@@ -62,7 +62,7 @@
     () => independentAmount.value,
     (value) => {
       if (value) {
-        form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(5) || ''
+        form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toExact() || ''
       } else {
         form.value.amountDeposit0 = ''
       }
@@ -74,10 +74,10 @@
     (value) => {
       if (value && typedValue.value) {
         if (independentField.value === CurrencyField.CURRENCY_A) {
-          form.value.amountDeposit1 = parsedAmounts.value[CurrencyField.CURRENCY_B]?.toSignificant(5) || ''
+          form.value.amountDeposit1 = parsedAmounts.value[CurrencyField.CURRENCY_B]?.toSignificant(6) || ''
         }
         if (independentField.value === CurrencyField.CURRENCY_B) {
-          form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(5) || ''
+          form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(6) || ''
         }
       } else {
         form.value.amountDeposit1 = ''

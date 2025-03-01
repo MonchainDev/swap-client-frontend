@@ -135,7 +135,7 @@
 
   const handleInput = useDebounce(() => {
     emits('change', amount.value, props.type)
-  }, 400)
+  }, 600)
 
   const { isConnected } = useAccount()
 </script>
