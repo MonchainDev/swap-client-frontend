@@ -134,13 +134,13 @@
 
 <script lang="ts" setup>
   import { CurrencyAmount, Percent } from '@pancakeswap/swap-sdk-core'
-  import { NonfungiblePositionManager } from '@pancakeswap/v3-sdk'
   import { useAccount } from '@wagmi/vue'
   import { hexToBigInt } from 'viem'
   import { BIPS_BASE } from '~/constant'
   import { CONTRACT_ADDRESS } from '~/constant/contract'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { config } from '~/config/wagmi'
+  import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
 
   const route = useRoute('remove-tokenId')
 

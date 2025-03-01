@@ -26,7 +26,7 @@ export const NATIVE = {
   },
   [ChainId.MON_TESTNET]: {
     name: 'Mon Chain Native Token',
-    symbol: 'tMON',
+    symbol: 'MON',
     decimals: 18
   }
 } satisfies Record<

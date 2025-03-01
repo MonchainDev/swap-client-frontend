@@ -45,7 +45,7 @@
   })
 
   const { tokenA, tokenB } = useV3DerivedInfo()
-  const { feeAmount, form, balance0, balance1, startPriceTypedValue, allowance0, allowance1 } = storeToRefs(useLiquidityStore())
+  const { feeAmount, form, balance0, balance1, startPriceTypedValue, allowance0, allowance1, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
   const { poolExits } = usePools()
   const { isConnected } = useAccount()
 
@@ -104,11 +104,15 @@
   })
 
   const isShowBtnEnable0 = computed(() => {
-    return !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance0.value
+    return baseCurrency.value?.isNative
+      ? false
+      : !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance0.value
   })
 
   const isShowBtnEnable1 = computed(() => {
-    return !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance1.value
+    return quoteCurrency.value?.isNative
+      ? false
+      : !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance1.value
   })
 
   const isShowBtnAdd = computed(() => {

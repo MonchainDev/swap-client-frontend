@@ -109,7 +109,7 @@
 
 <script lang="ts" setup>
   import { Percent, type Currency } from '@pancakeswap/swap-sdk-core'
-  import { NonfungiblePositionManager, type Position } from '@pancakeswap/v3-sdk'
+  import { type Position } from '@pancakeswap/v3-sdk'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
@@ -119,6 +119,7 @@
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import { Bound, CurrencyField, type IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
+  import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
 
   interface IProps {
     valueUpper: string
