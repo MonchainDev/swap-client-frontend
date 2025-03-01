@@ -1,12 +1,12 @@
 <template>
-  <BasePopup name="popup-add-liquidity" width="540" :title="title" @close="handleClose">
+  <BasePopup name="popup-add-liquidity" width="540" :title="title" @close="handleClose" @open="handleOpen">
     <div class="flex items-center justify-between px-8">
       <div class="flex items-center gap-[10px]">
         <div class="flex">
           <img src="/token-default.png" alt="logo" class="size-7 rounded-full" />
           <img src="/token-default.png" alt="logo" class="-ml-4 size-7 rounded-full" />
         </div>
-        <div class="text-base font-semibold">{{ props.currencyQuote?.symbol }}-{{ props.currencyBase?.symbol }}</div>
+        <div class="text-base font-semibold">{{ currency0?.symbol }}-{{ currency1?.symbol }}</div>
       </div>
       <div class="flex h-9 w-[117px] items-center justify-center rounded-lg bg-[#E8FFEB] text-[#049C6B]">
         <BaseIcon name="tick" size="24" class="text-[#049C6B]" />
@@ -19,12 +19,12 @@
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <div class="flex flex-col">
-              <span class="text-base font-semibold">{{ props.currencyQuote?.symbol }}</span>
-              <span class="text-xs text-[#6F6A79]">{{ props.currencyQuote?.name }}</span>
+              <span class="text-base font-semibold">{{ currency0?.symbol }}</span>
+              <span class="text-xs text-[#6F6A79]">{{ currency0?.name }}</span>
             </div>
           </div>
           <div class="flex flex-col text-right">
-            <span class="text-[32px] font-semibold">{{ valueUpper }}</span>
+            <span class="text-[32px] font-semibold">{{ formattedValue0 }}</span>
             <span class="text-sm font-semibold text-gray-6">$0</span>
           </div>
         </div>
@@ -33,12 +33,12 @@
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <div class="flex flex-col">
-              <span class="text-base font-semibold">{{ props.currencyBase?.symbol }}</span>
-              <span class="text-xs text-[#6F6A79]">{{ props.currencyBase?.name }}</span>
+              <span class="text-base font-semibold">{{ currency1?.symbol }}</span>
+              <span class="text-xs text-[#6F6A79]">{{ currency1?.name }}</span>
             </div>
           </div>
           <div class="flex flex-col text-right">
-            <span class="text-[32px] font-semibold">{{ valueLower }}</span>
+            <span class="text-[32px] font-semibold">{{ formattedValue1 }}</span>
             <span class="text-sm font-semibold text-gray-6">$0</span>
           </div>
         </div>
@@ -52,13 +52,13 @@
       <div class="mt-7 flex items-center gap-3">
         <span class="text-lg font-semibold leading-7">Set price range</span>
         <div class="flex cursor-pointer items-center gap-2" @click="handleClickViewPriceRange">
-          <BaseIcon :name="invert ? 'radio' : 'radio-fill'" size="24" />
-          <span class="text-base">{{ props.currencyQuote?.symbol }}</span>
+          <BaseIcon :name="sorted ? 'radio-fill' : 'radio'" size="24" />
+          <span class="text-base">{{ currency0?.symbol }}</span>
         </div>
 
         <div class="flex cursor-pointer items-center gap-2" @click="handleClickViewPriceRange">
-          <BaseIcon :name="invert ? 'radio-fill' : 'radio'" size="24" />
-          <span class="text-base">{{ props.currencyBase?.symbol }}</span>
+          <BaseIcon :name="!sorted ? 'radio-fill' : 'radio'" size="24" />
+          <span class="text-base">{{ currency1?.symbol }}</span>
         </div>
       </div>
 
@@ -79,7 +79,7 @@
           <span class="text-xs text-gray-8">{{ subtitle }}</span>
         </div>
       </div>
-      <div v-if="step === 'INPUT'" class="mt-[30px] flex flex-col gap-4">
+      <div v-if="step === 'INPUT' && props.showInput" class="mt-[30px] flex flex-col gap-4">
         <InputDepositLiquidity
           v-model:amount="form.amountDeposit0"
           :token="currencyA"
@@ -108,41 +108,41 @@
 </template>
 
 <script lang="ts" setup>
-  import { Percent, type Currency, type CurrencyAmount, type Token } from '@pancakeswap/swap-sdk-core'
+  import { Percent, type Currency } from '@pancakeswap/swap-sdk-core'
   import { NonfungiblePositionManager, type Position } from '@pancakeswap/v3-sdk'
+  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
+  import { hexToBigInt } from 'viem'
+  import { config } from '~/config/wagmi'
   import { BIPS_BASE } from '~/constant'
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import { Bound, CurrencyField, type IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
-  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
-  import { config } from '~/config/wagmi'
-  import { hexToBigInt } from 'viem'
 
   interface IProps {
-    positionValueUpper: CurrencyAmount<Token> | undefined
-    positionValueLower: CurrencyAmount<Token> | undefined
     valueUpper: string
     valueLower: string
     currencyQuote: Currency | undefined
     currencyBase: Currency | undefined
     feeFormat: string
     position: Position | undefined
+    showInput?: boolean
   }
 
   const props = withDefaults(defineProps<IProps>(), {
-    positionValueUpper: undefined,
-    positionValueLower: undefined,
     valueUpper: '',
     valueLower: '',
     currencyBase: undefined,
     currencyQuote: undefined,
     feeFormat: '',
-    position: undefined
+    position: undefined,
+    showInput: true
   })
 
   const emit = defineEmits<{
     reload: []
+    confirm: []
   }>()
 
   const loadingApprove0 = ref(false)
@@ -153,6 +153,8 @@
   const { form, balance0, balance1, typedValue, independentField } = storeToRefs(useLiquidityStore())
   const { refetchAllowance0, refetchAllowance1, refetchBalance0, refetchBalance1 } = useLiquidityStore()
   const { setOpenPopup } = useBaseStore()
+
+  const { address } = useAccount()
 
   const title = computed(() => {
     return step.value === 'INPUT'
@@ -171,6 +173,13 @@
 
   const currency0 = computed(() => unwrappedToken(props.position?.pool.token0))
   const currency1 = computed(() => unwrappedToken(props.position?.pool.token1))
+
+  const formattedValue0 = computed(() => {
+    return props.showInput ? props.valueUpper : formattedCurrencyAmount(props.position?.amount0)
+  })
+  const formattedValue1 = computed(() => {
+    return props.showInput ? props.valueLower : formattedCurrencyAmount(props.position?.amount1)
+  })
 
   const baseCurrency = ref<Currency>()
 
@@ -213,7 +222,7 @@
   })
 
   const handleClickViewPriceRange = () => {
-    invert.value = !invert.value
+    // invert.value = !invert.value
     baseCurrency.value = quoteCurrency.value
   }
 
@@ -263,13 +272,24 @@
     }
   )
 
+  const handleOpen = () => {
+    loadingAdd.value = false
+    loadingApprove0.value = false
+    loadingApprove1.value = false
+    if (props.showInput === false) {
+      step.value = 'CONFIRM'
+    }
+  }
+
   const handleClose = () => {
-    typedValue.value = ''
-    form.value.amountDeposit0 = ''
-    form.value.amountDeposit1 = ''
-    independentField.value = CurrencyField.CURRENCY_A
-    invert.value = false
-    step.value = 'INPUT'
+    if (props.showInput) {
+      typedValue.value = ''
+      form.value.amountDeposit0 = ''
+      form.value.amountDeposit1 = ''
+      independentField.value = CurrencyField.CURRENCY_A
+      invert.value = false
+      step.value = 'INPUT'
+    }
   }
 
   const { approveToken } = useApproveToken()
@@ -314,12 +334,30 @@
         const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
         const allowedSlippage = 50
 
-        const { calldata, value } = NonfungiblePositionManager.addCallParameters(positionDetail.value, {
-          tokenId: route.params.tokenId,
-          slippageTolerance: basisPointsToPercent(allowedSlippage),
-          deadline: deadline.toString(),
-          useNative
-        })
+        let calldata: `0x${string}` = '0x'
+        let value: `0x${string}` = '0x'
+
+        if (props.showInput) {
+          const { calldata: hexCall, value: hexValue } = NonfungiblePositionManager.addCallParameters(positionDetail.value, {
+            tokenId: route.params.tokenId,
+            slippageTolerance: basisPointsToPercent(allowedSlippage),
+            deadline: deadline.toString(),
+            useNative
+          })
+          calldata = hexCall
+          value = hexValue
+        } else {
+          const { calldata: hexCall, value: hexValue } = NonfungiblePositionManager.addCallParameters(positionDetail.value, {
+            slippageTolerance: basisPointsToPercent(allowedSlippage),
+            recipient: address.value!,
+            deadline: deadline.toString(),
+            useNative,
+            createPool: !positionDetail.value
+          })
+          calldata = hexCall
+          value = hexValue
+        }
+
         console.log('🚀 ~ handleAddLiquidity ~ value:', value)
         console.log('🚀 ~ handleAddLiquidity ~ calldata:', calldata)
 
@@ -342,6 +380,14 @@
           ElMessage.success('Transaction successful')
           setOpenPopup('popup-add-liquidity', false)
           emit('reload')
+          if (props.showInput === false) {
+            typedValue.value = ''
+            form.value.amountDeposit0 = ''
+            form.value.amountDeposit1 = ''
+            independentField.value = CurrencyField.CURRENCY_A
+            invert.value = false
+            step.value = 'INPUT'
+          }
         } else {
           ElMessage.error('Transaction failed')
         }

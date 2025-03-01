@@ -150,7 +150,6 @@
     </div>
   </div>
   <PopupAddLiquidity
-    v-model:invert="manuallyInverted"
     :currency-base
     :position="position"
     :currency-quote
