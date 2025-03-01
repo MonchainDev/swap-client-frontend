@@ -107,12 +107,13 @@
   }
 
   const handleChangeAmount = (value: string, type: TYPE_SWAP) => {
+    const _value = !value || !Number(value) ? '' : value
     if (type === 'BASE') {
-      form.value.amountDeposit0 = value
+      form.value.amountDeposit0 = _value
     } else {
-      form.value.amountDeposit1 = value
+      form.value.amountDeposit1 = _value
     }
-    typedValue.value = value
+    typedValue.value = _value
     independentField.value = type === 'BASE' ? CurrencyField.CURRENCY_A : CurrencyField.CURRENCY_B
   }
 
