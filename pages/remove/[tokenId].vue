@@ -85,7 +85,7 @@
               <span class="text-xl font-semibold leading-7">USDC Fee Earned</span>
             </div>
             <div class="flex flex-col gap-1 text-right">
-              <span class="text-[22px] font-semibold leading-7">2</span>
+              <span class="text-[22px] font-semibold leading-7"></span>
               <span class="text-sm text-gray-6">$0</span>
             </div>
           </div>
@@ -245,6 +245,7 @@
       }
     } catch (error) {
       console.error(error)
+      showToastMsg('Transaction failed', 'error')
     } finally {
       loadingBtn.value = false
     }

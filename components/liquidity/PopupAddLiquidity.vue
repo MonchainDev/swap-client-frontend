@@ -82,7 +82,7 @@
       <div v-if="step === 'INPUT' && props.showInput" class="mt-[30px] flex flex-col gap-4">
         <InputDepositLiquidity
           v-model:amount="form.amountDeposit0"
-          :token="currencyA"
+          :token="currency0"
           type="BASE"
           is-selected
           :balance="balance0?.formatted"
@@ -91,7 +91,7 @@
         />
         <InputDepositLiquidity
           v-model:amount="form.amountDeposit1"
-          :token="currencyB"
+          :token="currency1"
           type="QUOTE"
           is-selected
           :balance="balance1?.formatted"

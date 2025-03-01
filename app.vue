@@ -24,6 +24,7 @@
   .toast-message {
     padding: 16px;
     border-radius: 8px;
+    z-index: 9999 !important;
     .el-notification__group {
       margin: 0dvb;
     }

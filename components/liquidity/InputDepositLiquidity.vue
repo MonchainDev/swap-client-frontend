@@ -23,10 +23,10 @@
     <div class="flex min-h-10 items-center gap-2">
       <template v-if="isSelected">
         <div class="flex max-w-[150px] cursor-pointer items-center gap-[10px]" @click="emits('select-token', type)">
-          <img :src="token.icon_url || ''" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError($event)" />
+          <img :src="token && 'icon_url' in token ? token.icon_url : ''" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError($event)" />
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
-              <span class="font-medium">{{ token.symbol }}</span>
+              <span class="font-medium">{{ token?.symbol }}</span>
               <!-- <BaseIcon v-if="stepSwap === 'SELECT_TOKEN'" name="arrow" size="18" class="text-secondary -rotate-90" /> -->
             </div>
           </div>
@@ -62,6 +62,7 @@
 </template>
 
 <script lang="ts" setup>
+  import type { Currency } from '@pancakeswap/swap-sdk-core'
   import { useAccount } from '@wagmi/vue'
 
   import type { IToken } from '~/types'
@@ -69,7 +70,7 @@
 
   interface IProps {
     isSelected: boolean
-    token: IToken
+    token: IToken | Currency | undefined
     type: TYPE_SWAP
     balance: string | undefined
     stepSwap?: string
