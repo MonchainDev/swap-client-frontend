@@ -116,7 +116,7 @@ export default function usePools() {
   const poolExits = computed(() => Boolean(pool.value))
 
   watchEffect(() => {
-    if (liquidities.value && slot0s.value) {
+    if (typeof liquidities.value !== 'undefined' && slot0s.value) {
       const tokens = poolTokens.value[0]
       if (tokens?.length) {
         const [token0, token1, fee] = tokens
