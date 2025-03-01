@@ -86,7 +86,7 @@
 
 <script lang="ts" setup>
   import type { IToken } from '~/types'
-  import type { StepSwap } from './FormSwap.vue'
+  import type { StepSwap } from './FormSwap.client.vue'
 
   interface IProps {
     token0: IToken

@@ -105,7 +105,6 @@
   import { DEFAULT_SLIPPAGE, NATIVE_TOKEN } from '~/constant'
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
-import { getBestTrade } from '~/utils/getBestTrade'
   import HeaderFormSwap from './HeaderFormSwap.vue'
 
   export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
@@ -209,23 +208,21 @@ import { getBestTrade } from '~/utils/getBestTrade'
     }
 
     if (type === 'BASE') {
-        buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
-        const bestTrade = await getBestTrade({
-          token0: token0.value.address,
-          token1: token1.value.address,
-          inputAmount: Number(sellAmount.value),
-        })
-        buyAmount.value = bestTrade?.outputAmount.toFixed(3) + ''
-        isFetchQuote.value = false 
-      } else {
-        setTimeout(() => {
-          sellAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
-          isFetchQuote.value = false 
-          }, 2000)
-      }
+      buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
+      const bestTrade = await getBestTrade({
+        token0: token0.value.address,
+        token1: token1.value.address,
+        inputAmount: Number(sellAmount.value)
+      })
+      buyAmount.value = bestTrade?.outputAmount.toFixed(3) + ''
       isFetchQuote.value = false
-
-
+    } else {
+      setTimeout(() => {
+        sellAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
+        isFetchQuote.value = false
+      }, 2000)
+    }
+    isFetchQuote.value = false
   }
 
   const handleSelectToken = (token: IToken) => {

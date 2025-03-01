@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts" setup>
-  import type { StepSwap } from './FormSwap.vue'
+  import type { StepSwap } from './FormSwap.client.vue'
 
   interface IProps {
     isSwapping: boolean
