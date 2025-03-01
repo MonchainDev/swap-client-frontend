@@ -273,6 +273,7 @@
   })
 
   const { address } = useAccount()
+  const { showToastMsg } = useShowToastMsg()
 
   const handleCreatePool = async () => {
     try {
@@ -330,9 +331,10 @@
           resetFiled()
           refetchBalance0()
           refetchBalance1()
-          ElMessage.success('Transaction successful')
+          showToastMsg('Transaction successful', 'success', txHash)
         } else {
           ElMessage.error('Transaction failed')
+          showToastMsg('Transaction failed', 'error', txHash)
         }
       }
     } catch (error: unknown) {

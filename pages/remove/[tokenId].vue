@@ -183,6 +183,8 @@
   })
 
   const loadingBtn = ref(false)
+  const { showToastMsg } = useShowToastMsg()
+
   const handleRemove = async () => {
     try {
       if (
@@ -236,10 +238,10 @@
 
       if (status === 'success') {
         percent.value = ''
-        ElMessage.success('Transaction successful')
+        showToastMsg('Transaction successful', 'success', txHash)
         setOpenPopup('popup-confirm-remove', false)
       } else {
-        ElMessage.error('Transaction failed')
+        showToastMsg('Transaction failed', 'error', txHash)
       }
     } catch (error) {
       console.error(error)

@@ -319,6 +319,7 @@
   })
 
   const route = useRoute('liquidity-tokenId')
+  const { showToastMsg } = useShowToastMsg()
 
   const handleAddLiquidity = async () => {
     try {
@@ -377,8 +378,8 @@
         if (status === 'success') {
           refetchBalance0()
           refetchBalance1()
-          ElMessage.success('Transaction successful')
           setOpenPopup('popup-add-liquidity', false)
+          showToastMsg('Transaction successful', 'success', txHash)
           emit('reload')
           if (props.showInput === false) {
             typedValue.value = ''
@@ -389,14 +390,14 @@
             step.value = 'INPUT'
           }
         } else {
-          ElMessage.error('Transaction failed')
+          showToastMsg('Transaction failed', 'error', txHash)
         }
       }
     } catch (error: unknown) {
       //@ts-ignore
       const msg = error?.shortMessage || null
       if (msg) {
-        ElMessage.error(msg)
+        showToastMsg(msg, 'error')
       }
     } finally {
       loadingAdd.value = false
