@@ -1,5 +1,5 @@
-import type { Currency } from '@pancakeswap/swap-sdk-core'
-import type { FeeAmount } from '@pancakeswap/v3-sdk'
+import type { Currency } from '@monchain/swap-sdk-core'
+import type { FeeAmount } from '@monchain/v3-sdk'
 
 export default function usePoolsWithMultiChains(poolKeys: [Currency | undefined | number][][]) {
   const poolTokens: ([Token, Token, FeeAmount] | undefined)[] = useMemo(() => {

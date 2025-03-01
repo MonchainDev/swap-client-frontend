@@ -108,8 +108,8 @@
 </template>
 
 <script lang="ts" setup>
-  import { Percent, type Currency, type CurrencyAmount, type Token } from '@pancakeswap/swap-sdk-core'
-  import { NonfungiblePositionManager, type Position } from '@pancakeswap/v3-sdk'
+  import { Percent, type Currency, type CurrencyAmount, type Token } from '@monchain/swap-sdk-core'
+  import { NonfungiblePositionManager, type Position } from '@monchain/v3-sdk'
   import Decimal from 'decimal.js'
   import { BIPS_BASE } from '~/constant'
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'

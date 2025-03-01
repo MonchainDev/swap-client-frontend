@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts" setup>
-  import type { CurrencyAmount, Token } from '@pancakeswap/swap-sdk-core'
+  import type { CurrencyAmount, Token } from '@monchain/swap-sdk-core'
   import { LIST_NETWORK } from '~/constant'
   import { Bound, type PositionDetail } from '~/types'
 

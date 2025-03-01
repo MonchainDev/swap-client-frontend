@@ -1,6 +1,6 @@
-import type { Price, Token } from '@pancakeswap/sdk'
-import type { Position } from '@pancakeswap/v3-sdk'
-import { tickToPrice } from '@pancakeswap/v3-sdk'
+import type { Price, Token } from '@monchain/sdk'
+import type { Position } from '@monchain/v3-sdk'
+import { tickToPrice } from '@monchain/v3-sdk'
 
 export default function getPriceOrderingFromPositionForUI(position?: Position): {
   priceLower?: Price<Token, Token>

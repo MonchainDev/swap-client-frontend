@@ -1,4 +1,4 @@
-import { FeeAmount } from '@pancakeswap/v3-sdk'
+import { FeeAmount } from '@monchain/v3-sdk'
 import { ChainId, type INetwork, type IToken, type ZoomLevels } from '~/types'
 import { ZOOM_LEVELS } from './zoom-level'
 
