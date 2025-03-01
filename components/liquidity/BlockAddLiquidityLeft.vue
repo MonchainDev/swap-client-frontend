@@ -58,21 +58,12 @@
 
   const { independentAmount, dependentAmount, parsedAmounts } = useV3DerivedInfo()
 
-  // watch(
-  //   () => independentAmount.value,
-  //   (value) => {
-  //     if (value) {
-  //       console.log('🚀 ~ independentAmount:', value)
-  //       form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toExact() ?? ''
-  //     } else {
-  //       form.value.amountDeposit0 = ''
-  //     }
-  //   }
-  // )
-
   watchEffect(() => {
-    if (independentAmount.value) {
-      form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toExact() ?? ''
+    const field = independentField.value
+    const amount = independentAmount.value ? (parsedAmounts.value[field]?.toExact() ?? '') : typedValue.value
+
+    if (field === CurrencyField.CURRENCY_A) {
+      form.value.amountDeposit0 = amount
     }
   })
 
