@@ -101,7 +101,7 @@
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-                <span class="text-[22px] font-semibold leading-7">ATOM</span>
+                <span class="text-[22px] font-semibold leading-7">{{ unwrappedToken(positionValueUpper?.currency)?.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">0</span>
@@ -111,7 +111,7 @@
             <div class="flex h-1/2 items-center justify-between px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-                <span class="text-[22px] font-semibold leading-7">ATOM</span>
+                <span class="text-[22px] font-semibold leading-7">{{ unwrappedToken(positionValueLower?.currency)?.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">0</span>

@@ -2,7 +2,7 @@
   <div class="mx-auto mb-[74px] mt-[38px] max-w-[1024px]">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <NuxtLink to="/liquidity" class="flex size-10 items-center justify-center rounded-lg border border-solid border-gray-3 bg-white">
+        <NuxtLink to="/liquidity/pool" class="flex size-10 items-center justify-center rounded-lg border border-solid border-gray-3 bg-white">
           <BaseIcon name="arrow-down" size="24" class="rotate-90" />
         </NuxtLink>
         <h4 class="text-xl font-semibold">Liquidity Pools & Farms / Add Liquidity</h4>

@@ -72,7 +72,7 @@
           <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
             <div class="flex items-center gap-[10px]">
               <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-              <span class="text-xl font-semibold leading-7">ATOM Fee Earned</span>
+              <span class="text-xl font-semibold leading-7">{{ liquidityValue0?.currency.symbol }} Fee Earned</span>
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7"></span>
@@ -82,7 +82,7 @@
           <div class="flex h-1/2 items-center justify-between px-8">
             <div class="flex items-center gap-[10px]">
               <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-              <span class="text-xl font-semibold leading-7">USDC Fee Earned</span>
+              <span class="text-xl font-semibold leading-7">{{ liquidityValue1?.currency.symbol }} Fee Earned</span>
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7"></span>
@@ -140,7 +140,8 @@
   import { CONTRACT_ADDRESS } from '~/constant/contract'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { config } from '~/config/wagmi'
-  import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
+  import { NonfungiblePositionManager } from '@pancakeswap/v3-sdk'
+  // import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
 
   const route = useRoute('remove-tokenId')
 
