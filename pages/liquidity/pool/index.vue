@@ -11,12 +11,13 @@
         </p>
       </div>
       <div class="flex items-center gap-[50px]">
-        <div class="flex gap-6 text-sm font-semibold text-gray-7">
-          <span class="cursor-pointer pb-[10px] hover:text-hyperlink" :class="{ 'tab-active': tabActive === 'ALL' }" @click="tabActive = 'ALL'">All Pools</span>
-          <span class="cursor-pointer pb-[10px] hover:text-hyperlink" :class="{ 'tab-active': tabActive === 'POSITION' }" @click="tabActive = 'POSITION'"
-            >My Positions</span
-          >
-        </div>
+        <BaseTab
+          v-model:model="tabActive"
+          :list="[
+            { title: 'All Pools', value: 'ALL' },
+            { title: 'My Position', value: 'POSITION' }
+          ]"
+        />
         <NuxtLink to="/liquidity/add">
           <BaseButton size="sm" class="flex w-[149px] items-center gap-1 !text-white">
             <BaseIcon name="plus" size="24" />
@@ -25,12 +26,14 @@
         </NuxtLink>
       </div>
     </div>
-    <TableListPool :data="listPool" :loading="loading" />
+    <component :is="component" :data="listPool" :loading="loading" />
   </div>
 </template>
 
 <script lang="ts" setup>
   import { NuxtLink } from '#components'
+  import MyPosition from '~/components/liquidity/MyPosition.vue'
+  import TableListPool from '~/components/liquidity/TableListPool.vue'
 
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
@@ -42,6 +45,10 @@
 
   const listPool = ref<Record<string, unknown>[]>([])
   const loading = ref(false)
+
+  const component = computed(() => {
+    return tabActive.value === 'ALL' ? TableListPool : MyPosition
+  })
 
   const init = async () => {
     try {
@@ -65,20 +72,4 @@
   init()
 </script>
 
-<style lang="scss" scoped>
-  .tab-active {
-    position: relative;
-    color: var(--color-hyperlink);
-    &::before {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 32px;
-      height: 4px;
-      border-radius: 2px;
-      background-color: #1573fe;
-    }
-  }
-</style>
+<style lang="scss" scoped></style>

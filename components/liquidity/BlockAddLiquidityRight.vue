@@ -19,6 +19,7 @@
         :disabled="disabledInputCurrentPrice"
         placeholder="0.0"
         class="input-init-amount"
+        @blur="handleBlurStartValue"
       />
       <p v-if="form.token0.symbol && form.token1.symbol" class="flex justify-between text-sm">
         <span> Current {{ form.token0.symbol }} Price:</span>
@@ -79,6 +80,16 @@
     </div>
     <GroupButtonLiquidity :loading-add="loadingAdd" :loading0="loadingApprove0" :loading1="loadingApprove1" @approve="handleApprove" @add="handleCreatePool" />
   </div>
+  <PopupAddLiquidity
+    :currency-base="baseCurrency"
+    :currency-quote="quoteCurrency"
+    :position="position"
+    :value-lower="form.amountDeposit0"
+    :value-upper="form.amountDeposit1"
+    :fee-format="formatFee"
+    :show-input="false"
+    @confirm="handleCreatePool"
+  />
 </template>
 
 <script lang="ts" setup>
@@ -105,6 +116,9 @@
     isToken0Selected: false,
     isToken1Selected: false
   })
+
+  const { setOpenPopup } = useBaseStore()
+
   const loadingApprove0 = ref(false)
   const loadingApprove1 = ref(false)
   const loadingAdd = ref(false)
@@ -124,8 +138,19 @@
   } = storeToRefs(useLiquidityStore())
   const { switchTokens, dispatchRangeTypedValue, refetchAllowance0, refetchAllowance1, resetFiled, refetchBalance0, refetchBalance1 } = useLiquidityStore()
 
+  watch(
+    () => startPriceTypedValue.value,
+    () => {
+      buttonRangePercent.value = null
+    }
+  )
+
   const disabledInputCurrentPrice = computed(() => {
     return !baseCurrency.value || !quoteCurrency.value || !feeAmount.value
+  })
+
+  const formatFee = computed(() => {
+    return feeAmount.value ? `${feeAmount.value / 10000}%` : ''
   })
 
   const isSorted = computed(() => {
@@ -248,6 +273,7 @@
   })
 
   const { address } = useAccount()
+  const { showToastMsg } = useShowToastMsg()
 
   const handleCreatePool = async () => {
     try {
@@ -255,11 +281,17 @@
         ElMessage.error('The liquidity of this position is 0. Please try increasing the amount.')
         return
       }
+
+      if (poolExits.value && position.value) {
+        setOpenPopup('popup-add-liquidity')
+        return
+      }
+
       loadingAdd.value = true
 
       if (position.value) {
         const useNative = baseCurrency.value?.isNative ? baseCurrency.value : quoteCurrency.value?.isNative ? quoteCurrency.value : undefined
-        console.log('🚀 ~ handleCreatePool ~ useNative:', useNative)
+        console.log('🚀 ~ handleCreatePool ~ useNative:', position.value.mintAmounts)
 
         const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
         const allowedSlippage = 50
@@ -299,9 +331,10 @@
           resetFiled()
           refetchBalance0()
           refetchBalance1()
-          ElMessage.success('Transaction successful')
+          showToastMsg('Transaction successful', 'success', txHash)
         } else {
           ElMessage.error('Transaction failed')
+          showToastMsg('Transaction failed', 'error', txHash)
         }
       }
     } catch (error: unknown) {
@@ -313,6 +346,10 @@
     } finally {
       loadingAdd.value = false
     }
+  }
+
+  const handleBlurStartValue = () => {
+    startPriceTypedValue.value = !startPriceTypedValue.value || !Number(startPriceTypedValue.value) ? '' : startPriceTypedValue.value
   }
 </script>
 
