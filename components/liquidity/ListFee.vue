@@ -1,7 +1,10 @@
 <template>
   <div class="mt-8">
-    <h4 class="text-lg font-semibold leading-7">Fee tier</h4>
-    <div class="mt-4 grid grid-cols-[repeat(4,100px)] gap-5">
+    <div class="flex items-center justify-between">
+      <h4 class="text-lg font-semibold leading-7">Fee tier</h4>
+      <BaseLoadingButton v-if="isPendingAll" />
+    </div>
+    <div v-if="!isPendingAll" class="mt-4 grid grid-cols-[repeat(4,100px)] gap-5">
       <div
         v-for="(item, index) in LIST_FEE_AMOUNT"
         :key="item.value"
@@ -25,7 +28,7 @@
   const { feeAmount, baseCurrency, quoteCurrency, leftRangeTypedValue, rightRangeTypedValue } = storeToRefs(useLiquidityStore())
   const { resetFiled } = useLiquidityStore()
 
-  const { listPoolExits } = useFetchPool()
+  const { listPoolExits, isPendingAll } = useFetchPool()
 
   const handleSelectFee = async (item: { value: number }) => {
     if (baseCurrency.value?.wrapped.address && quoteCurrency.value?.wrapped.address) {

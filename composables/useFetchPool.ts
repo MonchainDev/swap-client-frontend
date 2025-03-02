@@ -62,5 +62,7 @@ export default function useFetchPool() {
 
   const poolExits = computed(() => listPoolExits.value[indexFee.value])
 
-  return { poolExits, listPoolExits }
+  const isPendingAll = computed(() => isPendingLowest.value && isPendingLow.value && isPendingMedium.value && isPendingHigh.value)
+
+  return { poolExits, listPoolExits, isPendingAll }
 }
