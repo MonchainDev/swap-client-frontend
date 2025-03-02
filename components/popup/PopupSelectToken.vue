@@ -35,7 +35,7 @@
         </template>
       </ElInput>
       <template v-if="recentTokens.length">
-        <div class="grid grid-cols-[1fr_40px] gap-1">
+        <div class="grid gap-1" :class="{ 'grid-cols-[1fr_40px]': _props.isSelect }">
           <ElScrollbar class="hidden-scroll">
             <ul class="flex gap-4">
               <li
@@ -55,14 +55,14 @@
               </li>
             </ul>
           </ElScrollbar>
-          <div class="reload flex items-center justify-end">
+          <div v-if="_props.isSelect" class="reload flex items-center justify-end">
             <BaseIcon name="reload" size="24" class="cursor-pointer" @click="removeAll" />
           </div>
         </div>
       </template>
     </div>
     <div class="bg-[#FAFAFA]">
-      <SkeletonListToken v-if="loading" class="px-8 sm:px-4" />
+      <SkeletonListToken v-if="loading" class="px-8 pt-6 sm:px-4" />
       <div v-else class="flex h-[500px] flex-col gap-2 pb-4">
         <ElScrollbar v-if="data.length" max-height="500px">
           <ul class="pr-4">
@@ -85,7 +85,7 @@
             </li>
           </ul>
         </ElScrollbar>
-        <h3 v-else class="text-secondary text-center">There are no data</h3>
+        <h3 v-else class="pt-6 text-center text-gray-6">There are no data</h3>
       </div>
     </div>
   </LazyBasePopup>
