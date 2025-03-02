@@ -194,7 +194,7 @@
     () => upperPrice.value,
     (value) => {
       if (typeof rightRangeTypedValue.value === 'boolean') {
-        form.value.maxPrice = form.value.maxPrice === '' ? '' : '∞'
+        form.value.maxPrice = form.value.maxPrice === '' || form.value.maxPrice === '0' ? form.value.maxPrice : '∞'
       } else {
         if (upperPrice.value) {
           console.log('🚀 ~ value upperPrice change:', isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5))
