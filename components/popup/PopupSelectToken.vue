@@ -51,7 +51,7 @@
                   @click="handleClickToken(item)"
                 />
                 <span class="flex-1 text-xs font-semibold" @click="handleClickToken(item)">{{ item.symbol }}</span>
-                <BaseIcon name="x-circle" size="14" class="cursor-pointer" @click="removeToken(item)" />
+                <BaseIcon v-if="_props.isSelect" name="x-circle" size="14" class="cursor-pointer" @click="removeToken(item)" />
               </li>
             </ul>
           </ElScrollbar>
