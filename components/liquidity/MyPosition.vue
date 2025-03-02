@@ -13,16 +13,22 @@
           </div>
         </template>
       </div>
-      <div v-loading="isPending" class="min-h-[100px]">
-        <template v-if="!isPending">
-          <PositionItem v-for="item in data" :key="item.tokenId.toString()" :position="item" />
-        </template>
-      </div>
+      <template v-if="isConnected">
+        <div v-loading="isPending" class="min-h-[100px]">
+          <template v-if="!isPending">
+            <PositionItem v-for="item in data" :key="item.tokenId.toString()" :position="item" />
+          </template>
+        </div>
+      </template>
+      <template v-else>
+        <div class="flex h-[100px] items-center justify-center text-base text-gray-6">There are no data</div>
+      </template>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+  import { useAccount } from '@wagmi/vue'
   import type { ITab } from '~/types/component.type'
   const enum TabValue {
     ALL = 'ALL',
@@ -65,6 +71,8 @@
   ]
 
   const tabActive = ref<TabValue>(TabValue.ALL)
+
+  const { isConnected } = useAccount()
 
   const chainIds = ref([16789])
   const { data, isPending } = useAccountV3Positions(chainIds)

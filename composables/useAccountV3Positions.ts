@@ -5,7 +5,7 @@ import { SLOW_INTERVAL } from '~/constant'
 import type { PositionDetail } from '~/types'
 
 export default function useAccountV3Positions(chainIds: Ref<number[]>) {
-  const { address } = useAccount()
+  const { address, isConnected } = useAccount()
 
   const getAccountV3Positions = async (chainId: number, account: Address): Promise<PositionDetail[]> => {
     const { farmingTokenIds, nonFarmTokenIds } = await getAccountV3TokenIds(chainId, account)
@@ -22,8 +22,10 @@ export default function useAccountV3Positions(chainIds: Ref<number[]>) {
     return positions
   }
 
-  const { data, isPending } = useQuery<PositionDetail[], Error>({
-    queryKey: ['accountV3Positions', address.value, chainIds.value.join('-')],
+  const queryKey = computed(() => ['accountV3Positions', address.value, chainIds.value.join('-'), isConnected.value])
+
+  const { data, isPending, status } = useQuery<PositionDetail[], Error>({
+    queryKey: queryKey.value,
 
     queryFn: async () => {
       if (!address.value) return []
@@ -41,14 +43,14 @@ export default function useAccountV3Positions(chainIds: Ref<number[]>) {
       )
       return results.flat()
     },
-    enabled: Boolean(address.value),
+    enabled: computed(() => !!address.value && isConnected.value),
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    refetchOnReconnect: true,
     refetchInterval: SLOW_INTERVAL,
     // Prevents re-fetching while the data is still fresh
     staleTime: SLOW_INTERVAL
   })
 
-  return { data: data ?? [], isPending }
+  return { data: data ?? [], isPending, status }
 }
