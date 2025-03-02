@@ -212,16 +212,22 @@
   }
 
   const handleClickRange = (percent: number, zoomLevel?: ZoomLevels) => {
+    const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
+
     if (percent === 100) {
-      buttonRangePercent.value = 100
-      dispatchRangeTypedValue('INFINITY')
+      if (buttonRangePercent.value === 100) {
+        buttonRangePercent.value = null
+        dispatchRangeTypedValue('BOTH', currentPrice, ZOOM_LEVELS[FeeAmount.MEDIUM])
+      } else {
+        buttonRangePercent.value = 100
+        dispatchRangeTypedValue('INFINITY')
+      }
     } else {
       buttonRangePercent.value = percent === buttonRangePercent.value ? null : percent
       let _zoomLevel: ZoomLevels = { ...zoomLevel! }
       if (!buttonRangePercent.value) {
         _zoomLevel = ZOOM_LEVELS[FeeAmount.MEDIUM]
       }
-      const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
 
       if (currentPrice) {
         dispatchRangeTypedValue('BOTH', currentPrice, _zoomLevel)
