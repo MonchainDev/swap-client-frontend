@@ -176,13 +176,14 @@
   watch(
     () => lowerPrice.value,
     (value) => {
-      if (lowerPrice.value) {
-        if (typeof leftRangeTypedValue.value === 'boolean') {
-          form.value.minPrice = '0'
-          form.value.maxPrice = '∞'
-        } else {
+      if (typeof leftRangeTypedValue.value === 'boolean') {
+        form.value.minPrice = '0'
+      } else {
+        if (lowerPrice.value) {
           console.log('🚀 ~ value lowerPrice change:', isSorted.value ? value?.toSignificant(5) : upperPrice.value?.invert().toSignificant(5))
           form.value.minPrice = isSorted.value ? value?.toSignificant(5) : upperPrice.value?.invert().toSignificant(5)
+        } else {
+          form.value.minPrice = ''
         }
       }
     }
@@ -190,13 +191,14 @@
   watch(
     () => upperPrice.value,
     (value) => {
-      if (upperPrice.value) {
-        if (typeof rightRangeTypedValue.value === 'boolean') {
-          form.value.minPrice = '0'
-          form.value.maxPrice = '∞'
-        } else {
+      if (typeof rightRangeTypedValue.value === 'boolean') {
+        form.value.maxPrice = '∞'
+      } else {
+        if (upperPrice.value) {
           console.log('🚀 ~ value upperPrice change:', isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5))
           form.value.maxPrice = isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5)
+        } else {
+          form.value.maxPrice = ''
         }
       }
     }
