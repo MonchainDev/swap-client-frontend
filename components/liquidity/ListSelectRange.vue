@@ -19,8 +19,8 @@
 </template>
 
 <script lang="ts" setup>
-  import { FeeAmount } from '@pancakeswap/v3-sdk'
   import { QUICK_ACTION_CONFIGS } from '~/constant'
+  import { FeeAmount } from '~/constant/fee'
   import type { ZoomLevels } from '~/types'
 
   const { feeAmount, buttonRangePercent } = storeToRefs(useLiquidityStore())

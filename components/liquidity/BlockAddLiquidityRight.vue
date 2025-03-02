@@ -93,7 +93,6 @@
 </template>
 
 <script lang="ts" setup>
-  import { FeeAmount } from '@pancakeswap/v3-sdk'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import { ZOOM_LEVELS } from '~/constant/zoom-level'
@@ -106,6 +105,7 @@
   import { BIPS_BASE } from '~/constant'
   import type { TYPE_SWAP } from '~/types/swap.type'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
+  import { FeeAmount } from '~/constant/fee'
 
   export type INPUT_PRICE = 'MIN' | 'MAX'
   interface IProps {
@@ -176,13 +176,16 @@
   watch(
     () => lowerPrice.value,
     (value) => {
-      if (lowerPrice.value) {
-        if (typeof leftRangeTypedValue.value === 'boolean') {
-          form.value.minPrice = '0'
-          form.value.maxPrice = '∞'
-        } else {
+      if (typeof leftRangeTypedValue.value === 'boolean') {
+        // case neu xoa het gia tri min va max, sau khi nhap max price se set gia tri min price = ''
+        // min price = 0  khi set full range
+        form.value.minPrice = form.value.minPrice === '' ? '' : '0'
+      } else {
+        if (lowerPrice.value) {
           console.log('🚀 ~ value lowerPrice change:', isSorted.value ? value?.toSignificant(5) : upperPrice.value?.invert().toSignificant(5))
           form.value.minPrice = isSorted.value ? value?.toSignificant(5) : upperPrice.value?.invert().toSignificant(5)
+        } else {
+          form.value.minPrice = ''
         }
       }
     }
@@ -190,13 +193,14 @@
   watch(
     () => upperPrice.value,
     (value) => {
-      if (upperPrice.value) {
-        if (typeof rightRangeTypedValue.value === 'boolean') {
-          form.value.minPrice = '0'
-          form.value.maxPrice = '∞'
-        } else {
+      if (typeof rightRangeTypedValue.value === 'boolean') {
+        form.value.maxPrice = form.value.maxPrice === '' ? '' : '∞'
+      } else {
+        if (upperPrice.value) {
           console.log('🚀 ~ value upperPrice change:', isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5))
           form.value.maxPrice = isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5)
+        } else {
+          form.value.maxPrice = ''
         }
       }
     }
@@ -208,16 +212,22 @@
   }
 
   const handleClickRange = (percent: number, zoomLevel?: ZoomLevels) => {
+    const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
+
     if (percent === 100) {
-      buttonRangePercent.value = null
-      dispatchRangeTypedValue('INFINITY')
+      if (buttonRangePercent.value === 100) {
+        buttonRangePercent.value = null
+        dispatchRangeTypedValue('BOTH', currentPrice, ZOOM_LEVELS[FeeAmount.MEDIUM])
+      } else {
+        buttonRangePercent.value = 100
+        dispatchRangeTypedValue('INFINITY')
+      }
     } else {
       buttonRangePercent.value = percent === buttonRangePercent.value ? null : percent
       let _zoomLevel: ZoomLevels = { ...zoomLevel! }
       if (!buttonRangePercent.value) {
         _zoomLevel = ZOOM_LEVELS[FeeAmount.MEDIUM]
       }
-      const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
 
       if (currentPrice) {
         dispatchRangeTypedValue('BOTH', currentPrice, _zoomLevel)
@@ -332,6 +342,8 @@
           resetFiled()
           refetchBalance0()
           refetchBalance1()
+          refetchAllowance0()
+          refetchAllowance1()
           showToastMsg('Transaction successful', 'success', txHash)
         } else {
           ElMessage.error('Transaction failed')

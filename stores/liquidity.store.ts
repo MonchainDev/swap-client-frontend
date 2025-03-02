@@ -2,11 +2,11 @@ import ABI_TOKEN from '@/constant/contract/contract-token.json'
 import type { Price } from '@pancakeswap/swap-sdk-core'
 import { Token } from '@pancakeswap/swap-sdk-core'
 import type { Position } from '@pancakeswap/v3-sdk'
-import { FeeAmount } from '@pancakeswap/v3-sdk'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import { defineStore } from 'pinia'
 import { NATIVE_TOKEN } from '~/constant'
 import { LIST_ADDRESS_FEE } from '~/constant/contract'
+import { FeeAmount } from '~/constant/fee'
 import { ZOOM_LEVELS } from '~/constant/zoom-level'
 import { ChainId, CurrencyField, type IToken, type ZoomLevels } from '~/types'
 import type { IFormCreatePosition } from '~/types/position.type'
@@ -94,12 +94,16 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     if (type === 'INFINITY') {
       leftRangeTypedValue.value = true
       rightRangeTypedValue.value = true
+      form.value.minPrice = '0'
+      form.value.maxPrice = '∞'
       return
     }
 
     if (!currentPrice) {
-      form.value.minPrice = type === 'MIN' ? '' : form.value.minPrice
-      form.value.maxPrice = type === 'MAX' ? '' : form.value.maxPrice
+      // form.value.minPrice = type === 'MIN' ? '' : form.value.minPrice
+      // form.value.maxPrice = type === 'MAX' ? '' : form.value.maxPrice
+      leftRangeTypedValue.value = type === 'MIN' ? true : leftRangeTypedValue.value
+      rightRangeTypedValue.value = type === 'MAX' ? true : rightRangeTypedValue.value
       return
     }
 

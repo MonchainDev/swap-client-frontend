@@ -1,5 +1,5 @@
-import { FeeAmount } from '@pancakeswap/v3-sdk'
 import type { ZoomLevels } from '~/types'
+import { FeeAmount } from './fee'
 
 export const ZOOM_LEVELS: Record<FeeAmount, ZoomLevels> = {
   [FeeAmount.LOWEST]: {

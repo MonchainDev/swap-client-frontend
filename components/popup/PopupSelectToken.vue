@@ -157,10 +157,19 @@
 
   const removeToken = (item: IToken) => {
     recentTokens.value = recentTokens.value.filter((token) => token.address !== item.address)
+    if (_props.isSelect) {
+      const index = tokenSelected.value.indexOf(item.address)
+      if (index > -1) {
+        tokenSelected.value.splice(index, 1)
+      }
+    }
   }
 
   const removeAll = () => {
     recentTokens.value = []
+    if (_props.isSelect) {
+      tokenSelected.value = []
+    }
   }
 
   const { handleImageError } = useErrorImage()
