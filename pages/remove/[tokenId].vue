@@ -143,6 +143,10 @@
   // import { NonfungiblePositionManager } from '@pancakeswap/v3-sdk'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
 
+  definePageMeta({
+    middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
+  })
+
   const route = useRoute('remove-tokenId')
   const router = useRouter()
 
