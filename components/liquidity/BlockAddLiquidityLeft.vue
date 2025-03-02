@@ -56,23 +56,22 @@
     isToken1Selected: false
   })
 
-  const { independentAmount, dependentAmount, parsedAmounts } = useV3DerivedInfo()
+  const { dependentAmount, parsedAmounts } = useV3DerivedInfo()
 
-  watch(
-    () => independentAmount.value,
-    (value) => {
-      if (value) {
-        form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(20) ?? ''
-      } else {
-        form.value.amountDeposit0 = ''
-      }
-    }
-  )
+  // watch(
+  //   () => independentAmount.value,
+  //   (value) => {
+  //     if (value) {
+  //       form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(20) ?? ''
+  //     } else {
+  //       form.value.amountDeposit0 = ''
+  //     }
+  //   }
+  // )
 
   watch(
     () => dependentAmount.value,
     (value) => {
-      console.log('🚀 ~ dependentAmount:', value)
       if (value && typedValue.value) {
         if (independentField.value === CurrencyField.CURRENCY_A) {
           form.value.amountDeposit1 = parsedAmounts.value[CurrencyField.CURRENCY_B]?.toSignificant(6) || ''
@@ -82,6 +81,7 @@
         }
       } else {
         form.value.amountDeposit1 = ''
+        form.value.amountDeposit0 = ''
       }
     }
   )
