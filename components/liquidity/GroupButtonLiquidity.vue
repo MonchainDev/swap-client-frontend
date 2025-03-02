@@ -100,13 +100,13 @@
   })
 
   const isNeedAllowance0 = computed(() => {
-    const allowance = allowance0.value?.toString() || '0'
-    return allowance0.value === BigInt(0) || new Decimal(allowance).lessThan(form.value.amountDeposit0 || 0)
+    const allowance = new Decimal(allowance0.value?.toString() || '0').div(10 ** +form.value.token0.decimals)
+    return allowance0.value === BigInt(0) || allowance.lessThan(form.value.amountDeposit0 || 0)
   })
 
   const isNeedAllowance1 = computed(() => {
-    const allowance = allowance1.value?.toString() || '0'
-    return allowance1.value === BigInt(0) || new Decimal(allowance).lessThan(form.value.amountDeposit1 || 0)
+    const allowance = new Decimal(allowance1.value?.toString() || '0').div(10 ** +form.value.token1.decimals)
+    return allowance1.value === BigInt(0) || allowance.lessThan(form.value.amountDeposit1 || 0)
   })
 
   const isShowBtnEnable0 = computed(() => {

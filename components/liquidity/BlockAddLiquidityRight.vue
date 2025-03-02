@@ -332,6 +332,8 @@
           resetFiled()
           refetchBalance0()
           refetchBalance1()
+          refetchAllowance0()
+          refetchAllowance1()
           showToastMsg('Transaction successful', 'success', txHash)
         } else {
           ElMessage.error('Transaction failed')
