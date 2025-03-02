@@ -133,7 +133,7 @@
   })
 
   const isDisabledAdd = computed(() => {
-    return !parseFloat(form.value.amountDeposit0) || !parseFloat(form.value.amountDeposit1)
+    return !parseFloat(form.value.amountDeposit0) || !parseFloat(form.value.amountDeposit1) || form.value.minPrice === '' || form.value.maxPrice === ''
   })
 </script>
 
