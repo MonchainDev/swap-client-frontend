@@ -1,5 +1,6 @@
 import { useAccount } from '@wagmi/vue'
 import type { Abi, Address } from 'viem'
+import { ChainId } from '~/types'
 
 type UseContractOptions = {
   chainId?: number
@@ -12,7 +13,7 @@ export default function useContract<TAbi extends Abi>(
   options?: UseContractOptions
 ) {
   const { chainId: currentChainId } = useAccount()
-  const chainId = options?.chainId || currentChainId.value
+  const chainId = options?.chainId || currentChainId.value || ChainId.MON_TESTNET
 
   const contract = computed(() => {
     if (!addressOrAddressMap || !abi || !chainId) return null

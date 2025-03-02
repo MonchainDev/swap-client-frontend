@@ -93,7 +93,7 @@
       </div>
       <div class="mt-[30px] flex items-center gap-4">
         <ElSwitch v-model="receiveNative" />
-        <span class="text-base">Collect as ORB</span>
+        <span class="text-base">Collect as WMON</span>
       </div>
       <BaseButton
         size="md"
@@ -140,10 +140,11 @@
   import { CONTRACT_ADDRESS } from '~/constant/contract'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { config } from '~/config/wagmi'
-  import { NonfungiblePositionManager } from '@pancakeswap/v3-sdk'
-  // import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
+  // import { NonfungiblePositionManager } from '@pancakeswap/v3-sdk'
+  import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
 
   const route = useRoute('remove-tokenId')
+  const router = useRouter()
 
   const percent = ref('')
   const percentList = ref(['10', '20', '50', '75'])
@@ -209,7 +210,7 @@
       // we fall back to expecting 0 fees in case the fetch fails, which is safe in the
       // vast majority of cases
       const { calldata, value } = NonfungiblePositionManager.removeCallParameters(positionSDK.value, {
-        tokenId: tokenId.value!.toString(),
+        tokenId: tokenId.value!,
         liquidityPercentage: liquidityPercentage.value,
         slippageTolerance: basisPointsToPercent(allowedSlippage),
         deadline: deadline.toString(),
@@ -241,6 +242,7 @@
         percent.value = ''
         showToastMsg('Transaction successful', 'success', txHash)
         setOpenPopup('popup-confirm-remove', false)
+        router.push({ name: 'liquidity-tokenId', params: { tokenId: route.params.tokenId } })
       } else {
         showToastMsg('Transaction failed', 'error', txHash)
       }

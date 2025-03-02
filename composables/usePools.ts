@@ -5,6 +5,7 @@ import { useAccount, useReadContract } from '@wagmi/vue'
 import type { Address } from 'viem'
 import v3PoolStateABI from '~/constant/abi/v3PoolStateABI.json'
 import { CONTRACT_ADDRESS } from '~/constant/contract'
+import { ChainId } from '~/types'
 
 // Classes are expensive to instantiate, so this caches the recently instantiated pools.
 // This avoids re-instantiating pools as the other pools in the same request are loaded.
@@ -70,7 +71,9 @@ class PoolCache {
 export default function usePools() {
   const { feeAmount, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
 
-  const { chainId } = useAccount()
+  const { chainId: chainNetwork } = useAccount()
+
+  const chainId = computed(() => chainNetwork.value ?? ChainId.MON_TESTNET)
 
   const poolKeys = computed((): [Currency | undefined | null, Currency | undefined | null, FeeAmount | undefined][] => {
     return [[baseCurrency.value, quoteCurrency.value, feeAmount.value]]

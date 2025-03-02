@@ -5,8 +5,9 @@ import { encodeFunctionData, toHex } from 'viem'
 
 import nonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
 
-import { ADDRESS_ZERO, Multicall, Payments, Position, SelfPermit, type MethodParameters, type PermitOptions, type Pool } from '@pancakeswap/v3-sdk'
+import { ADDRESS_ZERO, Multicall, Position, SelfPermit, type MethodParameters, type PermitOptions, type Pool } from '@pancakeswap/v3-sdk'
 import invariant from 'tiny-invariant'
+import { Payments } from './payments'
 
 export const MaxUint128 = 2n ** 128n - 1n
 
@@ -286,6 +287,7 @@ export abstract class NonfungiblePositionManager {
   }
 
   private static encodeCollect(options: CollectOptions): Hex[] {
+    console.log('🚀 ~ NonfungiblePositionManager ~ encodeCollect ~ options:', options)
     const calldatas: Hex[] = []
 
     const tokenId = BigInt(options.tokenId)
@@ -317,7 +319,7 @@ export abstract class NonfungiblePositionManager {
         : (options.expectedCurrencyOwed0.currency as Token)
       const tokenAmount = options.expectedCurrencyOwed0.currency.isNative ? options.expectedCurrencyOwed1.quotient : options.expectedCurrencyOwed0.quotient
 
-      calldatas.push(Payments.encodeUnwrapWETH9(ethAmount, recipient))
+      calldatas.push(Payments.encodeUnwrapWMON(ethAmount, recipient))
       calldatas.push(Payments.encodeSweepToken(token, tokenAmount, recipient))
     }
 

@@ -9,7 +9,7 @@
       <LiquiditySelectToken type="BASE" :is-selected="isToken0Selected" :token="form.token0" @select-token="openPopupSelectToken('BASE')" />
       <LiquiditySelectToken type="QUOTE" :is-selected="isToken1Selected" :token="form.token1" @select-token="openPopupSelectToken('QUOTE')" />
     </div>
-    <ListFee />
+    <ListFee :is-token0-selected="isToken0Selected" :is-token1-selected="isToken1Selected" />
     <div class="mt-[34px]">
       <span class="text-lg font-semibold leading-7">Deposit Amount</span>
       <div class="mt-3 flex flex-col gap-4">
