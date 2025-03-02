@@ -177,7 +177,9 @@
     () => lowerPrice.value,
     (value) => {
       if (typeof leftRangeTypedValue.value === 'boolean') {
-        form.value.minPrice = '0'
+        // case neu xoa het gia tri min va max, sau khi nhap max price se set gia tri min price = ''
+        // min price = 0  khi set full range
+        form.value.minPrice = form.value.minPrice === '' ? '' : '0'
       } else {
         if (lowerPrice.value) {
           console.log('🚀 ~ value lowerPrice change:', isSorted.value ? value?.toSignificant(5) : upperPrice.value?.invert().toSignificant(5))
@@ -192,7 +194,7 @@
     () => upperPrice.value,
     (value) => {
       if (typeof rightRangeTypedValue.value === 'boolean') {
-        form.value.maxPrice = '∞'
+        form.value.maxPrice = form.value.maxPrice === '' ? '' : '∞'
       } else {
         if (upperPrice.value) {
           console.log('🚀 ~ value upperPrice change:', isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5))
@@ -211,7 +213,7 @@
 
   const handleClickRange = (percent: number, zoomLevel?: ZoomLevels) => {
     if (percent === 100) {
-      buttonRangePercent.value = null
+      buttonRangePercent.value = 100
       dispatchRangeTypedValue('INFINITY')
     } else {
       buttonRangePercent.value = percent === buttonRangePercent.value ? null : percent

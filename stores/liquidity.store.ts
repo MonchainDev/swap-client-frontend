@@ -94,12 +94,16 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     if (type === 'INFINITY') {
       leftRangeTypedValue.value = true
       rightRangeTypedValue.value = true
+      form.value.minPrice = '0'
+      form.value.maxPrice = '∞'
       return
     }
 
     if (!currentPrice) {
       form.value.minPrice = type === 'MIN' ? '' : form.value.minPrice
       form.value.maxPrice = type === 'MAX' ? '' : form.value.maxPrice
+      leftRangeTypedValue.value = type === 'MIN' ? true : leftRangeTypedValue.value
+      rightRangeTypedValue.value = type === 'MAX' ? true : rightRangeTypedValue.value
       return
     }
 

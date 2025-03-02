@@ -43,10 +43,10 @@
     type: 'MIN'
   })
 
-  const { form, leftRangeTypedValue, rightRangeTypedValue } = storeToRefs(useLiquidityStore())
+  const { form, buttonRangePercent } = storeToRefs(useLiquidityStore())
 
   const isDisabledMinusAndPlus = computed(() => {
-    return typeof leftRangeTypedValue.value === 'boolean' || typeof rightRangeTypedValue.value === 'boolean'
+    return buttonRangePercent.value === 100 || form.value.minPrice === '' || form.value.maxPrice === ''
   })
 
   const formatText = computed(() => {
