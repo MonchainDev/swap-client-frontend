@@ -69,6 +69,11 @@
   //   }
   // )
 
+  /**
+   * This watcher is used to update the dependent amount when the independent amount changes
+   * IMPORTANT: It also use in component PopupAddLiquidity
+   * Refactor it in the future if i have time :D
+   */
   watch(
     () => dependentAmount.value,
     (value) => {
@@ -80,8 +85,12 @@
           form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(6) || ''
         }
       } else {
-        form.value.amountDeposit1 = ''
-        form.value.amountDeposit0 = ''
+        if (independentField.value === CurrencyField.CURRENCY_A) {
+          form.value.amountDeposit1 = ''
+        }
+        if (independentField.value === CurrencyField.CURRENCY_B) {
+          form.value.amountDeposit0 = ''
+        }
       }
     }
   )
