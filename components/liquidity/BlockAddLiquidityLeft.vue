@@ -38,13 +38,16 @@
 </template>
 
 <script lang="ts" setup>
+  import type { Token } from '@pancakeswap/swap-sdk-core'
   import Decimal from 'decimal.js'
+  import { WMON } from '~/constant/token'
   import { CurrencyField, type IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
 
-  const { form, independentField, typedValue, balance0, balance1, listTokenOfRange } = storeToRefs(useLiquidityStore())
+  const { form, independentField, typedValue, balance0, balance1, listTokenOfRange, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
   const { resetFiled } = useLiquidityStore()
   const { setOpenPopup } = useBaseStore()
+  const { currentNetwork } = storeToRefs(useBaseStore())
 
   interface IProps {
     isToken0Selected: boolean
@@ -56,7 +59,7 @@
     isToken1Selected: false
   })
 
-  const { dependentAmount, parsedAmounts } = useV3DerivedInfo()
+  const { dependentAmount, formattedAmounts } = useV3DerivedInfo()
 
   // watch(
   //   () => independentAmount.value,
@@ -69,19 +72,20 @@
   //   }
   // )
 
+  /**
+   * This watcher is used to update the dependent amount when the independent amount changes
+   * IMPORTANT: It also use in component PopupAddLiquidity
+   * Refactor it in the future if i have time :D
+   */
   watch(
     () => dependentAmount.value,
     (value) => {
       if (value && typedValue.value) {
-        if (independentField.value === CurrencyField.CURRENCY_A) {
-          form.value.amountDeposit1 = parsedAmounts.value[CurrencyField.CURRENCY_B]?.toSignificant(6) || ''
-        }
-        if (independentField.value === CurrencyField.CURRENCY_B) {
-          form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(6) || ''
-        }
+        form.value.amountDeposit0 = formattedAmounts.value[CurrencyField.CURRENCY_A]
+        form.value.amountDeposit1 = formattedAmounts.value[CurrencyField.CURRENCY_B]
       } else {
-        form.value.amountDeposit1 = ''
-        form.value.amountDeposit0 = ''
+        form.value.amountDeposit0 = formattedAmounts.value[CurrencyField.CURRENCY_A] ?? ''
+        form.value.amountDeposit1 = formattedAmounts.value[CurrencyField.CURRENCY_B] ?? ''
       }
     }
   )
@@ -94,11 +98,27 @@
 
   const handleSelectToken = (token: IToken) => {
     const isBase = typeCurrent.value === 'BASE'
+
+    const empty: IToken = { name: '', symbol: '', decimals: 0, icon_url: '', address: '' }
+
+    const isNative = token.address === ''
+    const wrapNative = WMON[currentNetwork.value.chainId as keyof typeof WMON]
+    const isWrapNative = token.address === wrapNative.address
+
+    const isWrappedNativeMatch = (currency: Native | Token | undefined, isNativeCheck: boolean, isWrapNativeCheck: boolean) => {
+      return (isNativeCheck && currency?.wrapped?.address === wrapNative.address) || (isWrapNativeCheck && currency?.isNative)
+    }
+
+    if (isWrappedNativeMatch(isBase ? quoteCurrency.value : baseCurrency.value, isNative, isWrapNative)) {
+      form.value.token0 = token
+      form.value.token1 = empty
+      return
+    }
+
     const [primary, secondary]: ['token0' | 'token1', 'token0' | 'token1'] = isBase ? ['token0', 'token1'] : ['token1', 'token0']
 
     form.value[primary] = token
-    form.value[secondary] =
-      token.address === form.value[secondary].address ? { name: '', symbol: '', decimals: 0, icon_url: '', address: '' } : form.value[secondary]
+    form.value[secondary] = token.address === form.value[secondary].address ? empty : form.value[secondary]
 
     listTokenOfRange.value[isBase ? 0 : 1] = token
     if (form.value[secondary].address) {

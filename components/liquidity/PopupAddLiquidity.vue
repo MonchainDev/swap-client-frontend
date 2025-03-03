@@ -167,7 +167,7 @@
 
   const invert = ref(false)
 
-  const { ticksAtLimit, dependentAmount, parsedAmounts, currencies, position: positionDetail } = useV3DerivedInfo()
+  const { ticksAtLimit, dependentAmount, formattedAmounts, currencies, position: positionDetail } = useV3DerivedInfo()
 
   const currencyA = computed(() => currencies.value[CurrencyField.CURRENCY_A] as unknown as IToken)
   const currencyB = computed(() => currencies.value[CurrencyField.CURRENCY_B] as unknown as IToken)
@@ -247,19 +247,20 @@
     }
   }
 
+  /**
+   * This watcher is used to update the dependent amount when the independent amount changes
+   * IMPORTANT: It also use in component BlockAddLiquidityLeft
+   * Refactor it in the future if i have time :D
+   */
   watch(
     () => dependentAmount.value,
     (value) => {
       if (value && typedValue.value) {
-        if (independentField.value === CurrencyField.CURRENCY_A) {
-          form.value.amountDeposit1 = parsedAmounts.value[CurrencyField.CURRENCY_B]?.toSignificant(6) || ''
-        }
-        if (independentField.value === CurrencyField.CURRENCY_B) {
-          form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(6) || ''
-        }
+        form.value.amountDeposit0 = formattedAmounts.value[CurrencyField.CURRENCY_A]
+        form.value.amountDeposit1 = formattedAmounts.value[CurrencyField.CURRENCY_B]
       } else {
-        form.value.amountDeposit1 = ''
-        form.value.amountDeposit0 = ''
+        form.value.amountDeposit0 = formattedAmounts.value[CurrencyField.CURRENCY_A] ?? ''
+        form.value.amountDeposit1 = formattedAmounts.value[CurrencyField.CURRENCY_B] ?? ''
       }
     }
   )
@@ -311,6 +312,7 @@
   })
 
   const route = useRoute('liquidity-tokenId')
+  const router = useRouter()
   const { showToastMsg } = useShowToastMsg()
 
   const handleAddLiquidity = async () => {
@@ -374,12 +376,14 @@
           showToastMsg('Transaction successful', 'success', txHash)
           emit('reload')
           if (props.showInput === false) {
+            // page create pool
             typedValue.value = ''
             form.value.amountDeposit0 = ''
             form.value.amountDeposit1 = ''
             independentField.value = CurrencyField.CURRENCY_A
             invert.value = false
             step.value = 'INPUT'
+            router.push('/liquidity/positions')
           }
         } else {
           showToastMsg('Transaction failed', 'error', txHash)

@@ -11,6 +11,7 @@
     </div>
     <div
       class="flex h-9 cursor-pointer items-center justify-center rounded-lg border border-solid border-hyperlink text-sm font-semibold text-hyperlink"
+      :class="{ 'bg-hyperlink text-white': buttonRangePercent === 100 }"
       @click="emit('select', 100)"
     >
       Full range

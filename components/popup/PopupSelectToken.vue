@@ -34,31 +34,52 @@
           </div>
         </template>
       </ElInput>
-      <template v-if="recentTokens.length">
-        <div class="grid gap-1" :class="{ 'grid-cols-[1fr_40px]': _props.isSelect }">
-          <ElScrollbar class="hidden-scroll">
-            <ul class="flex gap-4">
-              <li
-                v-for="item in recentTokens"
-                :key="item.address"
-                class="flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-solid border-gray-3 bg-white px-4"
-              >
-                <img
-                  :src="item.icon_url || ''"
-                  alt="logo token"
-                  class="size-5 rounded-full object-cover"
-                  @error="handleImageError($event)"
-                  @click="handleClickToken(item)"
-                />
-                <span class="flex-1 text-xs font-semibold" @click="handleClickToken(item)">{{ item.symbol }}</span>
-                <BaseIcon v-if="_props.isSelect" name="x-circle" size="14" class="cursor-pointer" @click="removeToken(item)" />
-              </li>
-            </ul>
-          </ElScrollbar>
-          <div v-if="_props.isSelect" class="reload flex items-center justify-end">
-            <BaseIcon name="reload" size="24" class="cursor-pointer" @click="removeAll" />
+      <template v-if="_props.isSelect">
+        <template v-if="tokenRecentFilter.length">
+          <div class="grid grid-cols-[1fr_40px] gap-1">
+            <ElScrollbar class="hidden-scroll">
+              <ul class="flex gap-4">
+                <li
+                  v-for="item in tokenRecentFilter"
+                  :key="item.address"
+                  class="flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-solid border-gray-3 bg-white px-4"
+                >
+                  <img
+                    :src="item.icon_url || ''"
+                    alt="logo token"
+                    class="size-5 rounded-full object-cover"
+                    @error="handleImageError($event)"
+                    @click="handleClickToken(item)"
+                  />
+                  <span class="flex-1 text-xs font-semibold" @click="handleClickToken(item)">{{ item.symbol }}</span>
+                  <BaseIcon name="x-circle" size="14" class="cursor-pointer" @click="removeToken(item)" />
+                </li>
+              </ul>
+            </ElScrollbar>
+            <div class="reload flex items-center justify-end">
+              <BaseIcon name="reload" size="24" class="cursor-pointer" @click="removeAll" />
+            </div>
           </div>
-        </div>
+        </template>
+      </template>
+      <template v-else>
+        <template v-if="recentTokens.length">
+          <div class="grid grid-cols-1 gap-1">
+            <ElScrollbar class="hidden-scroll">
+              <ul class="flex gap-4">
+                <li
+                  v-for="item in recentTokens"
+                  :key="item.address"
+                  class="flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-solid border-gray-3 bg-white px-4"
+                  @click="handleClickToken(item)"
+                >
+                  <img :src="item.icon_url || ''" alt="logo token" class="size-5 rounded-full object-cover" @error="handleImageError($event)" />
+                  <span class="flex-1 text-xs font-semibold">{{ item.symbol }}</span>
+                </li>
+              </ul>
+            </ElScrollbar>
+          </div>
+        </template>
       </template>
     </div>
     <div class="bg-[#FAFAFA]">
@@ -131,6 +152,10 @@
     })
   })
 
+  const tokenRecentFilter = computed(() => {
+    return listToken.value.filter((item) => tokenSelected.value.includes(item.address))
+  })
+
   const titlePopup = computed(() => {
     return _props.isSelect ? `Select tokens ${tokenSelected.value.length ? ': ' + tokenSelected.value.length : ''}` : 'Select a token'
   })
@@ -140,8 +165,6 @@
   }, 600)
 
   const handleClickToken = (item: IToken) => {
-    recentTokens.value = [item, ...recentTokens.value.filter((token) => token.address !== item.address)].slice(0, 7)
-
     if (_props.isSelect) {
       const index = tokenSelected.value.indexOf(item.address)
       if (index > -1) {
@@ -150,26 +173,21 @@
         tokenSelected.value.push(item.address)
       }
     } else {
+      recentTokens.value = [item, ...recentTokens.value.filter((token) => token.address !== item.address)].slice(0, 7)
       emit('select', { ...item, icon_url: item.icon_url ?? '' })
       setOpenPopup('popup-select-token', false)
     }
   }
 
   const removeToken = (item: IToken) => {
-    recentTokens.value = recentTokens.value.filter((token) => token.address !== item.address)
-    if (_props.isSelect) {
-      const index = tokenSelected.value.indexOf(item.address)
-      if (index > -1) {
-        tokenSelected.value.splice(index, 1)
-      }
+    const index = tokenSelected.value.indexOf(item.address)
+    if (index > -1) {
+      tokenSelected.value.splice(index, 1)
     }
   }
 
   const removeAll = () => {
-    recentTokens.value = []
-    if (_props.isSelect) {
-      tokenSelected.value = []
-    }
+    tokenSelected.value = []
   }
 
   const { handleImageError } = useErrorImage()
