@@ -1,5 +1,5 @@
-import { readContract } from '@wagmi/core'
-import { config } from '~/config/wagmi'
+import {readContract} from '@wagmi/core'
+import {config} from '~/config/wagmi'
 import TOKEN from '@/constant/abi/Token.json'
 
 export const useGetTokenInfo = async (tokenAddress: string) => {
@@ -14,7 +14,7 @@ export const useGetTokenInfo = async (tokenAddress: string) => {
     functionName: 'symbol'
   }) as string
   return {
-    decimals: 18,
+    decimals: Number(decimals),
     symbol,
     chainId: 16789,
   } as {
@@ -22,5 +22,14 @@ export const useGetTokenInfo = async (tokenAddress: string) => {
     symbol: string;
     chainId: number;
   }
+}
+
+export const useBalanceOf = async (tokenAddress: string, ownerAddress: string) => {
+  return await readContract(config, {
+    abi: TOKEN,
+    address: tokenAddress as `0x${string}`,
+    functionName: 'balanceOf',
+    args: [ownerAddress as `0x${string}`]
+  }) as bigint
 }
 

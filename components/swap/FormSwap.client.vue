@@ -103,6 +103,7 @@
 <script lang="ts" setup>
   import { useAccount, useBalance, useSignMessage } from '@wagmi/vue'
   import { DEFAULT_SLIPPAGE, NATIVE_TOKEN } from '~/constant'
+  import { getBestTrade } from '~/utils/getBestTrade'
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
   import HeaderFormSwap from './HeaderFormSwap.vue'
@@ -208,13 +209,13 @@
     }
 
     if (type === 'BASE') {
-      buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
+      // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
       const bestTrade = await getBestTrade({
         token0: token0.value.address,
         token1: token1.value.address,
         inputAmount: Number(sellAmount.value)
       })
-      buyAmount.value = bestTrade?.outputAmount.toFixed(3) + ''
+      buyAmount.value = bestTrade?.outputAmount.toExact()
       isFetchQuote.value = false
     } else {
       setTimeout(() => {
