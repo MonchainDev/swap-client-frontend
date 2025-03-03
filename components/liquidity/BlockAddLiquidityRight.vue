@@ -96,7 +96,7 @@
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import { ZOOM_LEVELS } from '~/constant/zoom-level'
-  import { Bound, type ZoomLevels } from '~/types'
+  import { Bound, CurrencyField, type ZoomLevels } from '~/types'
 
   import { Percent } from '@pancakeswap/swap-sdk-core'
   import { useAccount } from '@wagmi/vue'
@@ -135,7 +135,9 @@
     leftRangeTypedValue,
     rightRangeTypedValue,
     baseCurrency,
-    quoteCurrency
+    quoteCurrency,
+    independentField,
+    typedValue
   } = storeToRefs(useLiquidityStore())
   const { switchTokens, dispatchRangeTypedValue, refetchAllowance0, refetchAllowance1, resetFiled, refetchBalance0, refetchBalance1 } = useLiquidityStore()
 
@@ -221,6 +223,10 @@
       rightRangeTypedValue.value = (invertPrice.value ? cloneUpperPrice : cloneLowerPrice?.invert()) ?? undefined
     }
     switchTokens()
+    typedValue.value = ''
+    independentField.value = CurrencyField.CURRENCY_A
+    form.value.amountDeposit0 = ''
+    form.value.amountDeposit1 = ''
   }
 
   const handleClickRange = (percent: number, zoomLevel?: ZoomLevels) => {
