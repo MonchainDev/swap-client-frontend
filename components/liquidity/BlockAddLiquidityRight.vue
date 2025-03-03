@@ -319,6 +319,7 @@
 
   const { address } = useAccount()
   const { showToastMsg } = useShowToastMsg()
+  const router = useRouter()
 
   const handleCreatePool = async () => {
     try {
@@ -379,6 +380,7 @@
           refetchAllowance0()
           refetchAllowance1()
           showToastMsg('Transaction successful', 'success', txHash)
+          router.push('/liquidity/positions')
         } else {
           ElMessage.error('Transaction failed')
           showToastMsg('Transaction failed', 'error', txHash)

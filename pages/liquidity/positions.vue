@@ -13,10 +13,10 @@
       <div class="flex items-center gap-[50px]">
         <div class="flex gap-6 text-sm font-semibold text-gray-7">
           <NuxtLink to="/liquidity/pool">
-            <BaseTab v-model:model="tabActive" :list="[{ title: 'All Pools', value: 'ALL' }]" />
+            <span class="cursor-pointer pb-[10px] hover:text-hyperlink">All Pools</span>
           </NuxtLink>
           <NuxtLink to="/liquidity/positions">
-            <span class="tab-active cursor-pointer pb-[10px] hover:text-hyperlink">My Position</span>
+            <BaseTab v-model:model="tabActive" :list="[{ title: 'My Positions', value: 'POSITION' }]" />
           </NuxtLink>
         </div>
         <NuxtLink to="/liquidity/add">
@@ -27,44 +27,33 @@
         </NuxtLink>
       </div>
     </div>
-    <TableListPool :data="listPool" :loading="loading" />
+    <MyPosition />
   </div>
 </template>
 
 <script lang="ts" setup>
-  import TableListPool from '~/components/liquidity/TableListPool.vue'
+  import MyPosition from '~/components/liquidity/MyPosition.vue'
 
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
   })
-
-  const tabActive = ref<'ALL' | 'POSITION'>('ALL')
-
-  const { getAllPools } = useGetPool()
-
-  const listPool = ref<Record<string, unknown>[]>([])
-  const loading = ref(false)
-
-  const init = async () => {
-    try {
-      loading.value = true
-      const rs = await getAllPools()
-      listPool.value = rs.map((item) => {
-        return {
-          poolAddress: item,
-          apr: '',
-          tvl: '',
-          volume: '',
-          fee: ''
-        }
-      })
-    } catch (error) {
-      console.log('🚀 ~ init ~ error:', error)
-    } finally {
-      loading.value = false
-    }
-  }
-  init()
+  const tabActive = ref<'ALL' | 'POSITION'>('POSITION')
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+  .tab-active {
+    position: relative;
+    color: var(--color-hyperlink);
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 32px;
+      height: 4px;
+      border-radius: 2px;
+      background-color: #1573fe;
+    }
+  }
+</style>
