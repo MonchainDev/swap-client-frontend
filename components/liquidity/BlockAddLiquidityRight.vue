@@ -96,16 +96,16 @@
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import { ZOOM_LEVELS } from '~/constant/zoom-level'
-  import type { ZoomLevels } from '~/types'
+  import { Bound, type ZoomLevels } from '~/types'
 
   import { Percent } from '@pancakeswap/swap-sdk-core'
   import { useAccount } from '@wagmi/vue'
   import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
   import { BIPS_BASE } from '~/constant'
+  import { FeeAmount } from '~/constant/fee'
   import type { TYPE_SWAP } from '~/types/swap.type'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
-  import { FeeAmount } from '~/constant/fee'
 
   export type INPUT_PRICE = 'MIN' | 'MAX'
   interface IProps {
@@ -171,7 +171,7 @@
     buttonRangePercent.value = null
   }
 
-  const { price, invertPrice, tokenA, position, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange, noLiquidity } = useV3DerivedInfo()
+  const { price, invertPrice, tokenA, position, ticksAtLimit, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange, noLiquidity } = useV3DerivedInfo()
 
   watch(
     () => lowerPrice.value,
@@ -182,8 +182,8 @@
         form.value.minPrice = form.value.minPrice === '' ? '' : '0'
       } else {
         if (lowerPrice.value) {
-          console.log('🚀 ~ value lowerPrice change:', isSorted.value ? value?.toSignificant(5) : upperPrice.value?.invert().toSignificant(5))
           form.value.minPrice = isSorted.value ? value?.toSignificant(5) : upperPrice.value?.invert().toSignificant(5)
+          console.log('🚀 ~ value lowerPrice change:', form.value.minPrice)
         } else {
           form.value.minPrice = ''
         }
@@ -197,8 +197,8 @@
         form.value.maxPrice = form.value.maxPrice === '' || form.value.maxPrice === '0' ? form.value.maxPrice : '∞'
       } else {
         if (upperPrice.value) {
-          console.log('🚀 ~ value upperPrice change:', isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5))
           form.value.maxPrice = isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5)
+          console.log('🚀 ~ value upperPrice change:', form.value.maxPrice)
         } else {
           form.value.maxPrice = ''
         }
@@ -207,8 +207,20 @@
   )
 
   const handleChangeActiveRange = () => {
-    switchTokens()
     buttonRangePercent.value = null
+
+    if (!ticksAtLimit.value[Bound.LOWER] && !ticksAtLimit.value[Bound.UPPER]) {
+      /**
+       * CASE: Khi chon set price range
+       * Vi sau khi leftRangeTypedValue duoc gan 1 gia tri moi, thi upperPrice.value se bi thay doi
+       * nen can clone gia tri upperPrice.value va lowerPrice.value de su dung
+       */
+      const cloneUpperPrice = upperPrice.value
+      const cloneLowerPrice = lowerPrice.value
+      leftRangeTypedValue.value = (invertPrice.value ? lowerPrice.value : upperPrice.value?.invert()) ?? undefined
+      rightRangeTypedValue.value = (invertPrice.value ? cloneUpperPrice : cloneLowerPrice?.invert()) ?? undefined
+    }
+    switchTokens()
   }
 
   const handleClickRange = (percent: number, zoomLevel?: ZoomLevels) => {
