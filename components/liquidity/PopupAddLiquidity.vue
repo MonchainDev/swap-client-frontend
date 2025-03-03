@@ -312,6 +312,7 @@
   })
 
   const route = useRoute('liquidity-tokenId')
+  const router = useRouter()
   const { showToastMsg } = useShowToastMsg()
 
   const handleAddLiquidity = async () => {
@@ -375,12 +376,14 @@
           showToastMsg('Transaction successful', 'success', txHash)
           emit('reload')
           if (props.showInput === false) {
+            // page create pool
             typedValue.value = ''
             form.value.amountDeposit0 = ''
             form.value.amountDeposit1 = ''
             independentField.value = CurrencyField.CURRENCY_A
             invert.value = false
             step.value = 'INPUT'
+            router.push('/liquidity/positions')
           }
         } else {
           showToastMsg('Transaction failed', 'error', txHash)
