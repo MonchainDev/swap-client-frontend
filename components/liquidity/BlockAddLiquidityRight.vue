@@ -186,7 +186,7 @@
       } else {
         if (lowerPrice.value) {
           form.value.minPrice = isSorted.value ? value?.toSignificant(5) : upperPrice.value?.invert().toSignificant(5)
-          console.log('🚀 ~ value lowerPrice change:', form.value.minPrice)
+          // console.log('🚀 ~ value lowerPrice change:', form.value.minPrice)
         } else {
           form.value.minPrice = ''
         }
@@ -201,7 +201,7 @@
       } else {
         if (upperPrice.value) {
           form.value.maxPrice = isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5)
-          console.log('🚀 ~ value upperPrice change:', form.value.maxPrice)
+          // console.log('🚀 ~ value upperPrice change:', form.value.maxPrice)
         } else {
           form.value.maxPrice = ''
         }
@@ -212,8 +212,20 @@
   const handleChangeActiveRange = () => {
     buttonRangePercent.value = null
 
-    independentField.value = CurrencyField.CURRENCY_A
-    typedValue.value = formattedAmounts.value[CurrencyField.CURRENCY_B]
+    // console.log('before currencies', currencies.value)
+    // console.log('before', formattedAmounts.value)
+
+    // console.log('after change independentField', formattedAmounts.value)
+    // console.log('🚀 ~ after change ~ typedValue:', typedValue.value)
+
+    if (poolExits.value) {
+      typedValue.value = formattedAmounts.value[CurrencyField.CURRENCY_B]
+      independentField.value = CurrencyField.CURRENCY_A
+    } else {
+      form.value.amountDeposit0 = ''
+      form.value.amountDeposit1 = ''
+      typedValue.value = CurrencyField.CURRENCY_A
+    }
 
     if (!ticksAtLimit.value[Bound.LOWER] && !ticksAtLimit.value[Bound.UPPER]) {
       /**
@@ -229,6 +241,8 @@
     }
 
     switchTokens()
+    // console.log('currencies', currencies.value)
+    // console.log('after', formattedAmounts.value)
   }
 
   const handleClickRange = (percent: number, zoomLevel?: ZoomLevels) => {
