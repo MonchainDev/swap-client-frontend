@@ -9,7 +9,7 @@
       <LiquiditySelectToken type="BASE" :is-selected="isToken0Selected" :token="form.token0" @select-token="openPopupSelectToken('BASE')" />
       <LiquiditySelectToken type="QUOTE" :is-selected="isToken1Selected" :token="form.token1" @select-token="openPopupSelectToken('QUOTE')" />
     </div>
-    <ListFee />
+    <ListFee :is-token0-selected="isToken0Selected" :is-token1-selected="isToken1Selected" />
     <div class="mt-[34px]">
       <span class="text-lg font-semibold leading-7">Deposit Amount</span>
       <div class="mt-3 flex flex-col gap-4">
@@ -20,6 +20,7 @@
           :is-selected="isToken0Selected"
           :balance="balance0?.formatted"
           @change="handleChangeAmount"
+          @select-percent="handleSelectPercent"
         />
         <InputDepositLiquidity
           v-model:amount="form.amountDeposit1"
@@ -28,6 +29,7 @@
           :is-selected="isToken1Selected"
           :balance="balance1?.formatted"
           @change="handleChangeAmount"
+          @select-percent="handleSelectPercent"
         />
       </div>
     </div>
@@ -36,6 +38,7 @@
 </template>
 
 <script lang="ts" setup>
+  import Decimal from 'decimal.js'
   import { CurrencyField, type IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
 
@@ -53,31 +56,33 @@
     isToken1Selected: false
   })
 
-  const { independentAmount, dependentAmount, parsedAmounts } = useV3DerivedInfo()
+  const { dependentAmount, formattedAmounts } = useV3DerivedInfo()
 
-  watch(
-    () => independentAmount.value,
-    (value) => {
-      if (value) {
-        form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(5) || ''
-      } else {
-        form.value.amountDeposit0 = ''
-      }
-    }
-  )
+  // watch(
+  //   () => independentAmount.value,
+  //   (value) => {
+  //     if (value) {
+  //       form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(20) ?? ''
+  //     } else {
+  //       form.value.amountDeposit0 = ''
+  //     }
+  //   }
+  // )
 
+  /**
+   * This watcher is used to update the dependent amount when the independent amount changes
+   * IMPORTANT: It also use in component PopupAddLiquidity
+   * Refactor it in the future if i have time :D
+   */
   watch(
     () => dependentAmount.value,
     (value) => {
-      if (value) {
-        if (independentField.value === CurrencyField.CURRENCY_A) {
-          form.value.amountDeposit1 = parsedAmounts.value[CurrencyField.CURRENCY_B]?.toSignificant(5) || ''
-        }
-        if (independentField.value === CurrencyField.CURRENCY_B) {
-          form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(5) || ''
-        }
+      if (value && typedValue.value) {
+        form.value.amountDeposit0 = formattedAmounts.value[CurrencyField.CURRENCY_A]
+        form.value.amountDeposit1 = formattedAmounts.value[CurrencyField.CURRENCY_B]
       } else {
-        form.value.amountDeposit1 = ''
+        form.value.amountDeposit0 = formattedAmounts.value[CurrencyField.CURRENCY_A] ?? ''
+        form.value.amountDeposit1 = formattedAmounts.value[CurrencyField.CURRENCY_B] ?? ''
       }
     }
   )
@@ -105,13 +110,23 @@
   }
 
   const handleChangeAmount = (value: string, type: TYPE_SWAP) => {
+    const _value = !value || !Number(value) ? '' : value
     if (type === 'BASE') {
-      form.value.amountDeposit0 = value
+      form.value.amountDeposit0 = _value
     } else {
-      form.value.amountDeposit1 = value
+      form.value.amountDeposit1 = _value
     }
-    typedValue.value = value
+    typedValue.value = _value
     independentField.value = type === 'BASE' ? CurrencyField.CURRENCY_A : CurrencyField.CURRENCY_B
+  }
+
+  const handleSelectPercent = (index: number, type: TYPE_SWAP) => {
+    const percent = [1, 0.25, 0.5, 0.75][index]
+    const balance = type === 'BASE' ? balance0.value?.formatted : balance1.value?.formatted
+    if (balance) {
+      const result = new Decimal(balance).mul(percent).toSignificantDigits(6, Decimal.ROUND_DOWN).toString()
+      handleChangeAmount(result, type)
+    }
   }
 </script>
 

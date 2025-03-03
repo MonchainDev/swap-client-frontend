@@ -12,6 +12,7 @@
             :key="item"
             class="flex h-6 cursor-pointer items-center justify-center rounded-[4px] bg-[#f5f5f5]"
             :class="{ 'sm:hidden': index % 2 !== 0 }"
+            @click="emits('select-percent', index, type)"
           >
             <span class="text-sm text-gray-8">{{ index ? (100 / 4) * index + '%' : 'Max' }}</span>
           </div>
@@ -22,10 +23,10 @@
     <div class="flex min-h-10 items-center gap-2">
       <template v-if="isSelected">
         <div class="flex max-w-[150px] cursor-pointer items-center gap-[10px]" @click="emits('select-token', type)">
-          <img :src="token.icon_url || ''" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError($event)" />
+          <img :src="token && 'icon_url' in token ? token.icon_url : ''" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError($event)" />
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
-              <span class="font-medium">{{ token.symbol }}</span>
+              <span class="font-medium">{{ token?.symbol }}</span>
               <!-- <BaseIcon v-if="stepSwap === 'SELECT_TOKEN'" name="arrow" size="18" class="text-secondary -rotate-90" /> -->
             </div>
           </div>
@@ -61,6 +62,7 @@
 </template>
 
 <script lang="ts" setup>
+  import type { Currency } from '@pancakeswap/swap-sdk-core'
   import { useAccount } from '@wagmi/vue'
 
   import type { IToken } from '~/types'
@@ -68,7 +70,7 @@
 
   interface IProps {
     isSelected: boolean
-    token: IToken
+    token: IToken | Currency | undefined
     type: TYPE_SWAP
     balance: string | undefined
     stepSwap?: string
@@ -86,6 +88,7 @@
     'focus-input': [value: TYPE_SWAP]
     'select-token': [value: TYPE_SWAP]
     change: [value: string, type: TYPE_SWAP]
+    'select-percent': [value: number, type: TYPE_SWAP]
   }>()
 
   const amount = defineModel('amount', {
@@ -98,19 +101,23 @@
 
   const { outOfRange, invalidRange } = useV3DerivedInfo()
   const { startPriceTypedValue, form } = storeToRefs(useLiquidityStore())
+  const { poolExits } = usePools()
+  const route = useRoute()
 
   const isDisabled = computed(() => {
-    return outOfRange.value || invalidRange.value || startPriceTypedValue.value === '' || form.value.minPrice === '' || form.value.maxPrice === ''
+    const { minPrice, maxPrice } = form.value
+    const commonConditions = outOfRange.value || invalidRange.value || minPrice === '' || maxPrice === ''
+    return route.name === 'liquidity-tokenId' ? false : poolExits.value ? commonConditions : commonConditions || startPriceTypedValue.value === ''
   })
 
-  watch(
-    () => isDisabled.value,
-    (value) => {
-      if (value) {
-        amount.value = ''
-      }
-    }
-  )
+  // watch(
+  //   () => isDisabled.value,
+  //   (value) => {
+  //     if (value) {
+  //       amount.value = ''
+  //     }
+  //   }
+  // )
 
   const formattedBalance = computed(() => {
     return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
@@ -129,49 +136,9 @@
 
   const handleInput = useDebounce(() => {
     emits('change', amount.value, props.type)
-  }, 400)
+  }, 600)
 
   const { isConnected } = useAccount()
-
-  function formatNumberInput(value: string, _isSplit = true) {
-    if (!value) return ''
-    let text = ''
-    // const flag = false
-    text = value.replace(/[^\d.]/g, '')
-
-    // if (isSplit) {
-    //   const arrText: string[] = []
-
-    //   for (let index = 0; index < text.length; index++) {
-    //     if (flag) {
-    //       if (text[index] !== '.' && text[index] !== '-') {
-    //         arrText.push(text[index])
-    //       }
-    //     } else {
-    //       if (text[index] === '.') {
-    //         flag = true
-    //       }
-    //       arrText.push(text[index])
-    //     }
-    //   }
-    //   text = arrText.join('')
-
-    //   if (text.includes('.')) {
-    //     const naturalPart = text.toString().split('.')
-    //     naturalPart[0] = naturalPart[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    //     return naturalPart.join('.')
-    //   } else {
-    //     return text === '-' ? '-' : formatNumber(+text)
-    //   }
-    // }
-    return text
-  }
-
-  function parseNumberInput(value: string) {
-    if (!value) return ''
-    value = value.replace(/[^\d.-]/g, '')
-    return value.replace(/\$\s?|(,*)/g, '')
-  }
 </script>
 
 <style lang="scss" scoped>

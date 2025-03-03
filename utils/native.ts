@@ -1,13 +1,6 @@
 import type { Currency, Token } from '@monchain/swap-sdk-core'
 import { NativeCurrency } from '@monchain/swap-sdk-core'
-import type { ERC20Token } from '@monchain/swap-sdk-evm'
-import { NATIVE, WMON } from '~/constant/token'
-import { ChainId } from '~/types'
-
-export const WNATIVE = {
-  [ChainId.BSC_TESTNET]: WMON[ChainId.BSC_TESTNET],
-  [ChainId.MON_TESTNET]: WMON[ChainId.MON_TESTNET]
-} as Record<ChainId, ERC20Token>
+import { NATIVE, WNATIVE } from '~/constant/token'
 
 export class Native extends NativeCurrency {
   protected constructor({ chainId, decimals, name, symbol }: { chainId: number; decimals: number; symbol: string; name: string }) {
@@ -25,7 +18,7 @@ export class Native extends NativeCurrency {
     if (chainId in this.cache) {
       return this.cache[chainId]
     }
-    const { decimals, name, symbol } = NATIVE[chainId as keyof typeof WNATIVE]
+    const { decimals, name, symbol } = NATIVE[chainId as keyof typeof NATIVE]
 
     return (this.cache[chainId] = new Native({ chainId, decimals, symbol, name }))
   }

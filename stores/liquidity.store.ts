@@ -1,10 +1,13 @@
 import ABI_TOKEN from '@/constant/contract/contract-token.json'
 import type { Price } from '@monchain/swap-sdk-core'
 import { Token } from '@monchain/swap-sdk-core'
+import type { Position } from '@monchain/v3-sdk'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import { defineStore } from 'pinia'
 import { NATIVE_TOKEN } from '~/constant'
 import { LIST_ADDRESS_FEE } from '~/constant/contract'
+import { FeeAmount } from '~/constant/fee'
+import { ZOOM_LEVELS } from '~/constant/zoom-level'
 import { ChainId, CurrencyField, type IToken, type ZoomLevels } from '~/types'
 import type { IFormCreatePosition } from '~/types/position.type'
 
@@ -36,6 +39,8 @@ export const useLiquidityStore = defineStore('liquidity', () => {
   const startPriceTypedValue = ref('')
   const feeAmount = ref(0)
 
+  const existingPosition = ref<Position | null>(null)
+
   const leftRangeTypedValue = ref<Price<Token, Token> | boolean | undefined>(undefined)
   const rightRangeTypedValue = ref<Price<Token, Token> | boolean | undefined>(undefined)
 
@@ -44,6 +49,10 @@ export const useLiquidityStore = defineStore('liquidity', () => {
 
   // array of Set price range
   const listTokenOfRange = ref<IToken[]>([])
+
+  const zoomLevel = computed(() => {
+    return feeAmount.value ? ZOOM_LEVELS[feeAmount.value as FeeAmount] : ZOOM_LEVELS[FeeAmount.LOWEST]
+  })
 
   const baseCurrency = computed(() => {
     if (form.value.token0.symbol === NATIVE_TOKEN.symbol || form.value.token0.address === '') {
@@ -85,6 +94,16 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     if (type === 'INFINITY') {
       leftRangeTypedValue.value = true
       rightRangeTypedValue.value = true
+      form.value.minPrice = '0'
+      form.value.maxPrice = '∞'
+      return
+    }
+
+    if (!currentPrice) {
+      // form.value.minPrice = type === 'MIN' ? '' : form.value.minPrice
+      // form.value.maxPrice = type === 'MAX' ? '' : form.value.maxPrice
+      leftRangeTypedValue.value = type === 'MIN' ? true : leftRangeTypedValue.value
+      rightRangeTypedValue.value = type === 'MAX' ? true : rightRangeTypedValue.value
       return
     }
 
@@ -111,6 +130,10 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     startPriceTypedValue.value = ''
     independentField.value = CurrencyField.CURRENCY_A
     buttonRangePercent.value = null
+    form.value.amountDeposit0 = ''
+    form.value.amountDeposit1 = ''
+    form.value.minPrice = ''
+    form.value.maxPrice = ''
   }
 
   const { address } = useAccount()
@@ -172,6 +195,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
       amountDeposit0: '',
       amountDeposit1: ''
     }
+    existingPosition.value = null
   }
 
   return {
@@ -198,6 +222,8 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     listTokenOfRange,
     refetchBalance0,
     refetchBalance1,
-    resetStore
+    resetStore,
+    zoomLevel,
+    existingPosition
   }
 })

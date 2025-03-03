@@ -1,6 +1,6 @@
-import { FeeAmount } from '@monchain/v3-sdk'
-import type { INetwork, IToken, ZoomLevels } from '~/types'
+import { ChainId, type INetwork, type IToken, type ZoomLevels } from '~/types'
 import { ZOOM_LEVELS } from './zoom-level'
+import { FeeAmount } from './fee'
 
 const DEFAULT_SLIPPAGE = '1'
 const DECIMALS_NATIVE = 18
@@ -25,34 +25,40 @@ const LIST_NETWORK: INetwork[] = [
   {
     title: 'BNB Chain',
     logo: '/logo-bnb-chain.png',
-    value: 'BNB'
+    value: 'BNB',
+    chainId: ChainId.BSC_TESTNET
   },
   {
     title: 'Ethereum',
     logo: '/logo-ethereum-chain.png',
-    value: 'ETH'
+    value: 'ETH',
+    chainId: ChainId.SEPOLIA
   },
   {
     title: 'Polygon',
     logo: '/logo-polygon-chain.png',
-    value: 'MATIC'
+    value: 'MATIC',
+    chainId: ChainId.POLYGON
   },
   {
     title: 'Mon Chain',
     logo: '/logo-mon-chain.png',
-    value: 'MON'
+    value: 'MON',
+    chainId: ChainId.MON_TESTNET
   },
   {
     title: 'Linea Chain',
     logo: '/logo-liena-chain.png',
-    value: 'LINEA'
+    value: 'LINEA',
+    chainId: ChainId.LINEA
   }
 ]
 
 const DEFAULT_NETWORK: INetwork = {
   title: 'Mon Chain',
   logo: '/logo-mon-chain.png',
-  value: 'MON'
+  value: 'MON',
+  chainId: ChainId.MON_TESTNET
 }
 
 const QUICK_ACTION_CONFIGS: Record<FeeAmount | string, { [percentage: number]: ZoomLevels }> = {
@@ -149,6 +155,9 @@ const LIST_FEE_AMOUNT = [
 
 const BIPS_BASE = 10000n
 
+const FAST_INTERVAL = 10000
+const SLOW_INTERVAL = 60000
+
 export {
   DEFAULT_SLIPPAGE,
   DECIMALS_NATIVE,
@@ -158,5 +167,7 @@ export {
   DEFAULT_NETWORK,
   QUICK_ACTION_CONFIGS,
   LIST_FEE_AMOUNT,
-  BIPS_BASE
+  BIPS_BASE,
+  SLOW_INTERVAL,
+  FAST_INTERVAL
 }

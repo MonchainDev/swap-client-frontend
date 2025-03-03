@@ -8,8 +8,8 @@
 
 <script lang="ts" setup generic="T">
   interface IProps {
-    data: T[]
-    loading: boolean
+    data: T[] | undefined
+    loading?: boolean
   }
 
   const _props = withDefaults(defineProps<IProps>(), {

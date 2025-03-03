@@ -1,51 +1,48 @@
-import { ChainId } from '@monchain/chains'
 import first from 'lodash/first'
-import { type PublicClient, createPublicClient, fallback, http } from 'viem'
-import { mainnet } from 'viem/chains'
+import type { PublicClient } from 'viem'
+import { createPublicClient, fallback, http } from 'viem'
 
-import { CHAINS } from './config/chains'
-import { PUBLIC_NODES } from './config/nodes'
+import { CHAINS } from '~/config/chains'
+import { PUBLIC_NODES } from '~/config/nodes'
+import type { ChainId } from '~/types'
 
 export type CreatePublicClientParams = {
   transportSignal?: AbortSignal
 }
 
 export function createViemPublicClients({ transportSignal }: CreatePublicClientParams = {}) {
-  console.log(CHAINS);
-
-  const result: Record<ChainId, PublicClient> = {};
-
-  for (const cur of CHAINS) {
-    const nodes = PUBLIC_NODES[cur.id as ChainId] as string[];
-    console.info(" (viem.ts:18) nodes", cur.id, nodes);
-    if (!nodes) continue;
-
-    result[cur.id as ChainId] = createPublicClient({
-      chain: cur,
-      transport: fallback(
-          (PUBLIC_NODES[cur.id as ChainId] as string[]).map((url) =>
+  return CHAINS.reduce(
+    (prev, cur) => {
+      return {
+        ...prev,
+        [cur.id]: createPublicClient({
+          chain: cur,
+          transport: fallback(
+            //@ts-ignore
+            (PUBLIC_NODES[cur.id] as string[]).map((url) =>
               http(url, {
                 timeout: 10_000,
                 fetchOptions: {
-                  signal: transportSignal,
-                },
+                  signal: transportSignal
+                }
               })
+            ),
+            {
+              rank: false
+            }
           ),
-          {
-            rank: false,
-          }
-      ),
-      batch: {
-        multicall: {
-          batchSize: cur.id === ChainId.POLYGON_ZKEVM ? 128 : 1024 * 25,
-          wait: 16,
-        },
-      },
-      pollingInterval: 6_000,
-    });
-  }
-
-  return result;
+          batch: {
+            multicall: {
+              batchSize: 1024 * 25,
+              wait: 16
+            }
+          },
+          pollingInterval: 6_000
+        })
+      }
+    },
+    {} as Record<ChainId, PublicClient>
+  )
 }
 
 export const viemClients = createViemPublicClients()
@@ -56,42 +53,31 @@ type CreateViemPublicClientGetterParams = {
   viemClients?: Record<ChainId, PublicClient>
 } & CreatePublicClientParams
 
-export function createViemPublicClientGetter({
-  viemClients: viemClientsOverride,
-  ...restParams
-}: CreateViemPublicClientGetterParams = {}) {
+export function createViemPublicClientGetter({ viemClients: viemClientsOverride, ...restParams }: CreateViemPublicClientGetterParams = {}) {
   const clients = viemClientsOverride || createViemPublicClients(restParams)
 
   return function getClients({ chainId }: { chainId?: ChainId }): PublicClient {
-    const client = clients[chainId as ChainId]
-    console.info(" (viem.ts:67) client", client);
-    return client
+    return clients[chainId as ChainId]
   }
 }
-
-const PUBLIC_MAINNET = 'https://ethereum.publicnode.com'
 
 export const CLIENT_CONFIG = {
   batch: {
     multicall: {
       batchSize: 1024 * 200,
-      wait: 16,
-    },
+      wait: 16
+    }
   },
-  pollingInterval: 6_000,
+  pollingInterval: 6_000
 }
 
 export const publicClient = ({ chainId }: { chainId?: ChainId }) => {
   if (chainId && viemClients[chainId]) {
     return viemClients[chainId]
   }
-  let httpString: string | undefined
+  console.log('aa')
 
-  if (process.env.NODE_ENV === 'test' && chainId === mainnet.id) {
-    httpString = PUBLIC_MAINNET
-  } else {
-    httpString = chainId && first(PUBLIC_NODES[chainId]) ? first(PUBLIC_NODES[chainId]) : undefined
-  }
+  const httpString = chainId && first(PUBLIC_NODES[chainId]) ? first(PUBLIC_NODES[chainId]) : undefined
 
   const chain = CHAINS.find((c) => c.id === chainId)
   return createPublicClient({ chain, transport: http(httpString), ...CLIENT_CONFIG })

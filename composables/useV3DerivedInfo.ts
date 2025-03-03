@@ -1,12 +1,23 @@
 import type { Token } from '@monchain/swap-sdk-core'
 import { CurrencyAmount, Price } from '@monchain/swap-sdk-core'
-import { Position, type FeeAmount } from '@monchain/v3-sdk'
-import { encodeSqrtRatioX96, nearestUsableTick, Pool, priceToClosestTick, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
+import { encodeSqrtRatioX96, nearestUsableTick, Pool, Position, priceToClosestTick, TICK_SPACINGS, TickMath, type FeeAmount } from '@monchain/v3-sdk'
 import { BIG_INT_ZERO, Bound, CurrencyField } from '~/types'
 
 export default function useV3DerivedInfo() {
-  const { feeAmount, typedValue, startPriceTypedValue, leftRangeTypedValue, rightRangeTypedValue, independentField, baseCurrency, quoteCurrency } =
-    storeToRefs(useLiquidityStore())
+  const {
+    feeAmount,
+    typedValue,
+    startPriceTypedValue,
+    zoomLevel,
+    existingPosition,
+    leftRangeTypedValue,
+    rightRangeTypedValue,
+    independentField,
+    baseCurrency,
+    quoteCurrency
+  } = storeToRefs(useLiquidityStore())
+
+  const { dispatchRangeTypedValue } = useLiquidityStore()
 
   const dependentField = computed(() => {
     return independentField.value === CurrencyField.CURRENCY_A ? CurrencyField.CURRENCY_B : CurrencyField.CURRENCY_A
@@ -39,12 +50,14 @@ export default function useV3DerivedInfo() {
     }
     return undefined
   })
-  const noLiquidity = true
+
+  const { pool, poolExits } = usePools()
+  const noLiquidity = computed(() => !pool.value)
 
   const invertPrice = computed(() => Boolean(baseToken.value && token0.value && !baseToken.value.equals(token0.value)))
 
   const price = computed(() => {
-    if (noLiquidity) {
+    if (noLiquidity.value) {
       const parsedQuoteAmount = tryParseCurrencyAmount(startPriceTypedValue.value, invertPrice.value ? token0.value : token1.value)
       if (parsedQuoteAmount && token0 && token1) {
         const baseAmount = tryParseCurrencyAmount('1', invertPrice.value ? token1.value : token0.value)
@@ -56,9 +69,22 @@ export default function useV3DerivedInfo() {
       }
       return undefined
     }
-    // return price of pool exists
-    return undefined
+    // get the amount of quote currency
+    return pool.value && token0.value ? pool.value.priceOf(token0.value) : undefined
   })
+
+  // set min and max price default if pool exits
+  watch(
+    () => poolExits.value,
+    (value) => {
+      if (value) {
+        const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
+        if (currentPrice) {
+          dispatchRangeTypedValue('BOTH', currentPrice, zoomLevel.value)
+        }
+      }
+    }
+  )
 
   // check for invalid price input (converts to invalid ratio)
   const invalidPrice = computed(() => {
@@ -66,11 +92,9 @@ export default function useV3DerivedInfo() {
     return price && sqrtRatioX96 && !(sqrtRatioX96 >= TickMath.MIN_SQRT_RATIO && sqrtRatioX96 < TickMath.MAX_SQRT_RATIO)
   })
 
-  const pool = null
-
   // used for ratio calculation when pool not initialized
   const mockPool = computed(() => {
-    if (!pool && tokenA.value && tokenB.value && feeAmount.value && price.value && !invalidPrice.value) {
+    if (!pool.value && tokenA.value && tokenB.value && feeAmount.value && price.value && !invalidPrice.value) {
       const currentTick = priceToClosestTick(price.value)
       const currentSqrt = TickMath.getSqrtRatioAtTick(currentTick)
       return new Pool(tokenA.value, tokenB.value, feeAmount.value, currentSqrt, 0n, currentTick, [])
@@ -80,7 +104,7 @@ export default function useV3DerivedInfo() {
 
   // if pool exists use it, if not use the mock pool
   const poolForPosition = computed(() => {
-    return pool ?? mockPool.value
+    return (pool.value as Pool) ?? mockPool.value
   })
 
   // lower and upper limits in the tick space for `feeAmoun<Trans>
@@ -91,15 +115,13 @@ export default function useV3DerivedInfo() {
     }
   })
 
-  const existingPosition: Position | null = null as Position | null
-
   // parse typed range values and determine closest ticks
   // lower should always be a smaller tick
   const ticks = computed(() => {
     return {
       [Bound.LOWER]:
-        typeof existingPosition?.tickLower === 'number'
-          ? existingPosition.tickLower
+        typeof existingPosition.value?.tickLower === 'number'
+          ? existingPosition.value.tickLower
           : (invertPrice.value && typeof rightRangeTypedValue.value === 'boolean') || (!invertPrice.value && typeof leftRangeTypedValue.value === 'boolean')
             ? tickSpaceLimits.value[Bound.LOWER]
               ? tickSpaceLimits.value[Bound.LOWER]
@@ -108,8 +130,8 @@ export default function useV3DerivedInfo() {
               ? tryParseTick(feeAmount.value, rightRangeTypedValue.value as boolean | Price<Token, Token> | undefined)
               : tryParseTick(feeAmount.value, leftRangeTypedValue.value as boolean | Price<Token, Token> | undefined),
       [Bound.UPPER]:
-        typeof existingPosition?.tickUpper === 'number'
-          ? checkAndParseMaxTick(existingPosition.tickUpper)
+        typeof existingPosition.value?.tickUpper === 'number'
+          ? checkAndParseMaxTick(existingPosition.value.tickUpper)
           : (!invertPrice.value && typeof rightRangeTypedValue.value === 'boolean') || (invertPrice.value && typeof leftRangeTypedValue.value === 'boolean')
             ? tickSpaceLimits.value[Bound.UPPER]
               ? checkAndParseMaxTick(tickSpaceLimits.value[Bound.UPPER])
@@ -122,6 +144,12 @@ export default function useV3DerivedInfo() {
 
   const tickLower = computed(() => ticks.value[Bound.LOWER])
   const tickUpper = computed(() => ticks.value[Bound.UPPER])
+
+  // specifies whether the lower and upper ticks is at the extreme bounds
+  const ticksAtLimit = computed((): { [bound in Bound]?: boolean | undefined } => ({
+    [Bound.LOWER]: feeAmount.value ? tickLower.value === tickSpaceLimits.value[Bound.LOWER] : undefined,
+    [Bound.UPPER]: feeAmount.value ? tickUpper.value === tickSpaceLimits.value[Bound.UPPER] : undefined
+  }))
 
   // mark invalid range
   const invalidRange = computed(() => Boolean(typeof tickLower.value === 'number' && typeof tickUpper.value === 'number' && tickLower.value >= tickUpper.value))
@@ -195,6 +223,13 @@ export default function useV3DerivedInfo() {
     }
   })
 
+  const formattedAmounts = computed(() => {
+    return {
+      [independentField.value]: typedValue.value,
+      [dependentField.value]: parsedAmounts.value[dependentField.value]?.toSignificant(6) ?? ''
+    }
+  })
+
   // single deposit only if price is out of range
   const deposit0Disabled = computed(() =>
     Boolean(typeof tickUpper.value === 'number' && poolForPosition.value && poolForPosition.value.tickCurrent >= tickUpper.value)
@@ -218,10 +253,10 @@ export default function useV3DerivedInfo() {
 
     // mark as 0 if disabled because out of range
     const amount0 = !deposit0Disabled.value
-      ? parsedAmounts.value?.[tokenA.value.equals(poolForPosition.value.token0) ? CurrencyField.CURRENCY_A : CurrencyField.CURRENCY_B]?.quotient
+      ? parsedAmounts.value?.[tokenA.value.equals(poolForPosition.value?.token0) ? CurrencyField.CURRENCY_A : CurrencyField.CURRENCY_B]?.quotient
       : BIG_INT_ZERO
     const amount1 = !deposit1Disabled.value
-      ? parsedAmounts.value?.[tokenA.value.equals(poolForPosition.value.token0) ? CurrencyField.CURRENCY_B : CurrencyField.CURRENCY_A]?.quotient
+      ? parsedAmounts.value?.[tokenA.value.equals(poolForPosition.value?.token0) ? CurrencyField.CURRENCY_B : CurrencyField.CURRENCY_A]?.quotient
       : BIG_INT_ZERO
 
     if (amount0 !== undefined && amount1 !== undefined) {
@@ -269,6 +304,11 @@ export default function useV3DerivedInfo() {
     baseToken,
     outOfRange,
     pool,
-    position
+    position,
+    noLiquidity,
+    ticksAtLimit,
+    currencies,
+    dependentField,
+    formattedAmounts
   }
 }

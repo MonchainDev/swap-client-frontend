@@ -51,12 +51,13 @@
                   <img
                     v-for="(_i, index) in 3"
                     :key="index"
-                    :src="tokenListSelected[index].icon_url"
+                    :src="tokenListSelected[index].icon_url || ''"
                     alt="logo"
-                    class="border-sky-500 size-7 rounded border-[2px] border-solid border-white [&:not(:first-child)]:-ml-3"
+                    class="border-sky-500 size-6 rounded-full border-[2px] border-solid border-white [&:not(:first-child)]:-ml-3"
+                    @error="handleImageError($event)"
                   />
                   <div
-                    class="-ml-3 flex size-6 items-center justify-center rounded border-[2px] border-solid border-white bg-[#CCE0FF] text-xs font-bold text-hyperlink"
+                    class="-ml-3 flex size-6 items-center justify-center rounded-full border-[2px] border-solid border-white bg-[#CCE0FF] text-xs font-bold text-hyperlink"
                   >
                     +{{ tokenListSelected.length - 3 }}
                   </div>

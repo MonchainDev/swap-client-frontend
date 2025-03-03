@@ -19,3 +19,19 @@
     keywords: 'MonChain, crypto swap, decentralized exchange, DEX, trade crypto, DeFi, blockchain trading, Web3'
   })
 </script>
+
+<style lang="scss">
+  .toast-message {
+    padding: 16px;
+    border-radius: 8px;
+    z-index: 9999 !important;
+    .el-notification__group {
+      margin: 0dvb;
+    }
+    .el-icon.el-notification__closeBtn {
+      top: 16px;
+      font-size: 20px;
+      color: var(--color-primary);
+    }
+  }
+</style>
