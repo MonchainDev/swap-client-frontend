@@ -225,6 +225,13 @@ export default function useV3DerivedInfo() {
     }
   })
 
+  const formattedAmounts = computed(() => {
+    return {
+      [independentField.value]: typedValue.value,
+      [dependentField.value]: parsedAmounts.value[dependentField.value]?.toSignificant(6) ?? ''
+    }
+  })
+
   // single deposit only if price is out of range
   const deposit0Disabled = computed(() =>
     Boolean(typeof tickUpper.value === 'number' && poolForPosition.value && poolForPosition.value.tickCurrent >= tickUpper.value)
@@ -302,6 +309,8 @@ export default function useV3DerivedInfo() {
     position,
     noLiquidity,
     ticksAtLimit,
-    currencies
+    currencies,
+    dependentField,
+    formattedAmounts
   }
 }

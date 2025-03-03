@@ -56,7 +56,7 @@
     isToken1Selected: false
   })
 
-  const { dependentAmount, parsedAmounts } = useV3DerivedInfo()
+  const { dependentAmount, formattedAmounts } = useV3DerivedInfo()
 
   // watch(
   //   () => independentAmount.value,
@@ -78,19 +78,11 @@
     () => dependentAmount.value,
     (value) => {
       if (value && typedValue.value) {
-        if (independentField.value === CurrencyField.CURRENCY_A) {
-          form.value.amountDeposit1 = parsedAmounts.value[CurrencyField.CURRENCY_B]?.toSignificant(6) || ''
-        }
-        if (independentField.value === CurrencyField.CURRENCY_B) {
-          form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(6) || ''
-        }
+        form.value.amountDeposit0 = formattedAmounts.value[CurrencyField.CURRENCY_A]
+        form.value.amountDeposit1 = formattedAmounts.value[CurrencyField.CURRENCY_B]
       } else {
-        if (independentField.value === CurrencyField.CURRENCY_A) {
-          form.value.amountDeposit1 = ''
-        }
-        if (independentField.value === CurrencyField.CURRENCY_B) {
-          form.value.amountDeposit0 = ''
-        }
+        form.value.amountDeposit0 = formattedAmounts.value[CurrencyField.CURRENCY_A] ?? ''
+        form.value.amountDeposit1 = formattedAmounts.value[CurrencyField.CURRENCY_B] ?? ''
       }
     }
   )

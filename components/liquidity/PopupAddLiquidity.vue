@@ -167,7 +167,7 @@
 
   const invert = ref(false)
 
-  const { ticksAtLimit, dependentAmount, parsedAmounts, currencies, position: positionDetail } = useV3DerivedInfo()
+  const { ticksAtLimit, dependentAmount, formattedAmounts, currencies, position: positionDetail } = useV3DerivedInfo()
 
   const currencyA = computed(() => currencies.value[CurrencyField.CURRENCY_A] as unknown as IToken)
   const currencyB = computed(() => currencies.value[CurrencyField.CURRENCY_B] as unknown as IToken)
@@ -256,19 +256,11 @@
     () => dependentAmount.value,
     (value) => {
       if (value && typedValue.value) {
-        if (independentField.value === CurrencyField.CURRENCY_A) {
-          form.value.amountDeposit1 = parsedAmounts.value[CurrencyField.CURRENCY_B]?.toSignificant(6) || ''
-        }
-        if (independentField.value === CurrencyField.CURRENCY_B) {
-          form.value.amountDeposit0 = parsedAmounts.value[CurrencyField.CURRENCY_A]?.toSignificant(6) || ''
-        }
+        form.value.amountDeposit0 = formattedAmounts.value[CurrencyField.CURRENCY_A]
+        form.value.amountDeposit1 = formattedAmounts.value[CurrencyField.CURRENCY_B]
       } else {
-        if (independentField.value === CurrencyField.CURRENCY_A) {
-          form.value.amountDeposit1 = ''
-        }
-        if (independentField.value === CurrencyField.CURRENCY_B) {
-          form.value.amountDeposit0 = ''
-        }
+        form.value.amountDeposit0 = formattedAmounts.value[CurrencyField.CURRENCY_A] ?? ''
+        form.value.amountDeposit1 = formattedAmounts.value[CurrencyField.CURRENCY_B] ?? ''
       }
     }
   )

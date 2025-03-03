@@ -173,7 +173,8 @@
     buttonRangePercent.value = null
   }
 
-  const { price, invertPrice, tokenA, position, ticksAtLimit, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange, noLiquidity } = useV3DerivedInfo()
+  const { price, invertPrice, tokenA, position, ticksAtLimit, formattedAmounts, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange, noLiquidity } =
+    useV3DerivedInfo()
 
   watch(
     () => lowerPrice.value,
@@ -211,22 +212,23 @@
   const handleChangeActiveRange = () => {
     buttonRangePercent.value = null
 
+    independentField.value = CurrencyField.CURRENCY_A
+    typedValue.value = formattedAmounts.value[CurrencyField.CURRENCY_B]
+
     if (!ticksAtLimit.value[Bound.LOWER] && !ticksAtLimit.value[Bound.UPPER]) {
       /**
        * CASE: Khi chon set price range
        * Vi sau khi leftRangeTypedValue duoc gan 1 gia tri moi, thi upperPrice.value se bi thay doi
        * nen can clone gia tri upperPrice.value va lowerPrice.value de su dung
        */
+
       const cloneUpperPrice = upperPrice.value
       const cloneLowerPrice = lowerPrice.value
       leftRangeTypedValue.value = (invertPrice.value ? lowerPrice.value : upperPrice.value?.invert()) ?? undefined
       rightRangeTypedValue.value = (invertPrice.value ? cloneUpperPrice : cloneLowerPrice?.invert()) ?? undefined
     }
+
     switchTokens()
-    typedValue.value = ''
-    independentField.value = CurrencyField.CURRENCY_A
-    form.value.amountDeposit0 = ''
-    form.value.amountDeposit1 = ''
   }
 
   const handleClickRange = (percent: number, zoomLevel?: ZoomLevels) => {
