@@ -3,20 +3,32 @@
     <div class="flex justify-between">
       <span class="text-sm">Rate</span>
       <div class="flex flex-col items-end text-sm">
-        <span class="font-bold">1 {{ token0.symbol }} = {{ exchangeRate.base }} {{ token1.symbol }}</span>
-        <span class="text-gray-6">1 {{ token1.symbol }} = {{ exchangeRate.quote }} {{ token0.symbol }}</span>
+        <span class="font-bold">1 {{ form.token0.symbol }} = {{ exchangeRate.base }} {{ form.token1.symbol }}</span>
+        <span class="text-gray-6">1 {{ form.token1.symbol }} = {{ exchangeRate.quote }} {{ form.token0.symbol }}</span>
+      </div>
+    </div>
+    <div class="flex justify-between" v-if="form.minimumAmountOut != ''">
+      <span class="text-sm">Minimum receiver</span>
+      <div class="flex flex-col items-end text-sm">
+        <span class="font-bold"> {{ form.minimumAmountOut }} {{ form.token1.symbol }}</span>
+      </div>
+    </div>
+    <div class="flex justify-between" v-if="form.maximumAmountIn != ''">
+      <span class="text-sm">Maximum sold</span>
+      <div class="flex flex-col items-end text-sm">
+        <span class="font-bold"> {{ form.maximumAmountIn }} {{ form.token0.symbol }}</span>
       </div>
     </div>
     <div class="flex justify-between">
-      <span class="text-sm">Fee</span>
+      <span class="text-sm">Trading Fee</span>
       <ElPopover placement="top" width="270" trigger="hover" popper-class="popper-hover-fee" :teleported="false">
         <template #reference>
-          <span class="cursor-pointer border-b border-dashed border-gray-6 text-sm font-bold leading-4">$0.092</span>
+          <span class="cursor-pointer border-b border-dashed border-gray-6 text-sm font-bold leading-4">{{ form.tradingFee }} {{ form.token0.symbol }}</span>
         </template>
         <div class="flex flex-col gap-2 text-primary">
           <div class="flex items-center justify-between">
-            <span class="text-sm font-medium">Fee </span>
-            <span class="text-sm font-medium">$0.092 </span>
+            <span class="text-sm font-medium">Trading Fee </span>
+            <span class="text-sm font-medium"> {{ form.tradingFee }} {{ form.token0.symbol }}</span>
           </div>
           <div class="h-[1px] w-full bg-gray-3"></div>
           <div class="flex items-center justify-between">
@@ -29,6 +41,12 @@
           </div>
         </div>
       </ElPopover>
+    </div>
+    <div class="flex justify-between">
+      <span class="text-sm">Price Impact</span>
+      <div class="flex flex-col items-end text-sm">
+        <span class="font-bold"> {{ form.priceImpact }} %</span>
+      </div>
     </div>
     <template v-if="editSlippage">
       <div class="mt-5 border-t border-dashed border-gray-4 pt-5">
@@ -85,23 +103,16 @@
 </template>
 
 <script lang="ts" setup>
-  import type { IToken } from '~/types'
   import type { StepSwap } from './FormSwap.client.vue'
 
   interface IProps {
-    token0: IToken
-    token1: IToken
     stepSwap: StepSwap
-    sellAmount: string
-    buyAmount: string
   }
 
+  const { token0, token1, form } = storeToRefs(useSwapStore())
+
   const _props = withDefaults(defineProps<IProps>(), {
-    token0: () => ({}) as IToken,
-    token1: () => ({}) as IToken,
     stepSwap: 'SELECT_TOKEN',
-    sellAmount: '0',
-    buyAmount: '0'
   })
 
   const editSlippage = defineModel('editSlippage', {
@@ -117,8 +128,8 @@
 
   const exchangeRate = computed(() => {
     return {
-      base: (Number(_props.buyAmount) / Number(_props.sellAmount)).toFixed(2),
-      quote: (Number(_props.sellAmount) / Number(_props.buyAmount)).toFixed(4)
+      base: (Number(form.value.amountOut) / Number(form.value.amountIn)).toFixed(2),
+      quote: (Number(form.value.amountIn) / Number(form.value.amountOut)).toFixed(4)
     }
   })
 
