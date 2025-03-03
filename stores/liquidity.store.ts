@@ -55,7 +55,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
   })
 
   const baseCurrency = computed(() => {
-    if (form.value.token0.symbol === NATIVE_TOKEN.symbol || form.value.token0.address === '') {
+    if (form.value.token0.symbol === NATIVE_TOKEN.symbol && form.value.token0.address === '') {
       return Native.onChain(ChainId.MON_TESTNET)
     } else {
       return form.value.token0.symbol
