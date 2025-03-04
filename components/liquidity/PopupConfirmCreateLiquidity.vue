@@ -14,8 +14,8 @@
       </div>
     </div>
     <div class="mt-[30px] px-8">
-      <div class="rounded-lg border border-solid border-gray-2 bg-gray-1 pb-[18px]">
-        <div class="flex items-center justify-between gap-2 px-8 pt-4">
+      <div class="flex h-[215px] flex-col rounded-lg border border-solid border-gray-2 bg-gray-1 pt-4">
+        <div class="flex h-[49px] items-center justify-between gap-2 px-8">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <div class="flex flex-col">
@@ -29,7 +29,7 @@
           </div>
         </div>
         <div class="ml-8 h-[30px] w-5 border-r-2 border-dashed border-gray-6" />
-        <div class="flex items-center justify-between gap-2 px-8">
+        <div class="mb-[14px] flex h-[49px] items-center justify-between gap-2 px-8">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <div class="flex flex-col">
@@ -42,14 +42,14 @@
             <span class="text-sm font-semibold text-gray-6">$0</span>
           </div>
         </div>
-        <div class="mt-3 flex items-center justify-between border-t border-solid border-t-gray-3 px-8 pt-5">
+        <div class="flex flex-1 items-center justify-between border-t border-solid border-t-gray-3 px-8">
           <span>Fee Tier</span>
           <span class="font-semibold">{{ fee }}%</span>
         </div>
       </div>
     </div>
-    <div class="my-5 px-8">
-      <div class="mt-1 flex items-center gap-3">
+    <div class="mt-[22px] px-8">
+      <div class="flex items-center gap-3">
         <span class="text-lg font-semibold leading-7">View price range</span>
         <div class="flex cursor-pointer items-center gap-2" @click="handleClickViewPriceRange">
           <BaseIcon :name="sorted ? 'radio-fill' : 'radio'" size="24" />
@@ -61,7 +61,7 @@
           <span class="text-base">{{ currency1?.symbol }}</span>
         </div>
       </div>
-      <div class="mt-1 grid h-[186px] grid-cols-2 grid-rows-2 rounded-lg border border-solid border-gray-2 bg-gray-1">
+      <div class="mt-[23px] grid h-[190px] grid-cols-2 grid-rows-2 rounded-lg border border-solid border-gray-2 bg-gray-1">
         <div class="flex flex-col items-center justify-center border-r border-solid border-gray-2">
           <span class="text-sm font-semibold">Min price</span>
           <span class="text-[22px] font-semibold leading-7">{{ formattedPriceLower }}</span>
@@ -78,7 +78,7 @@
           <span class="text-xs text-gray-8">{{ subtitle }}</span>
         </div>
       </div>
-      <BaseButton :loading="loadingAdd" size="md" class="mt-[33px] w-full text-xl font-semibold" @click="handleAddLiquidity"> Confirm </BaseButton>
+      <BaseButton :loading="loadingAdd" size="md" class="mb-[34px] mt-6 w-full text-xl font-semibold" @click="handleAddLiquidity"> Confirm </BaseButton>
     </div>
   </BasePopup>
 </template>
@@ -86,7 +86,13 @@
 <script lang="ts" setup>
   import type { Currency } from '@pancakeswap/swap-sdk-core'
   import type { Position } from '@pancakeswap/v3-sdk'
+  import { useAccount } from '@wagmi/vue'
   import { Bound } from '~/types'
+  import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
+  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import { config } from '~/config/wagmi'
+  import { CONTRACT_ADDRESS } from '~/constant/contract'
+  import { hexToBigInt } from 'viem'
 
   interface IProps {
     position: Position | undefined
@@ -99,6 +105,10 @@
     baseCurrencyDefault: undefined,
     ticksAtLimit: () => ({ [Bound.LOWER]: false, [Bound.UPPER]: false })
   })
+
+  const emit = defineEmits<{
+    reload: [hash: string]
+  }>()
 
   const loadingAdd = ref(false)
 
@@ -155,8 +165,54 @@
     baseCurrency.value = useCloneDeep(quoteCurrency.value)
   }
 
+  const { address } = useAccount()
+  const { showToastMsg } = useShowToastMsg()
+
   const handleAddLiquidity = async () => {
-    //
+    try {
+      if (props.position) {
+        loadingAdd.value = true
+        const useNative = baseCurrency.value?.isNative ? baseCurrency.value : quoteCurrency.value?.isNative ? quoteCurrency.value : undefined
+        console.log('🚀 ~ handleAddLiquidity ~ useNative:', useNative)
+        console.log('🚀 ~ position ~ mintAmounts:', props.position.mintAmounts)
+        const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
+        const allowedSlippage = 50
+
+        const { calldata, value } = NonfungiblePositionManager.addCallParameters(props.position, {
+          slippageTolerance: basisPointsToPercent(allowedSlippage),
+          recipient: address.value!,
+          deadline: deadline.toString(),
+          useNative,
+          createPool: true
+        })
+        console.log('🚀 ~ handleCreatePool ~ value:', value)
+        console.log('🚀 ~ handleCreatePool ~ calldata:', calldata)
+        const txHash = await sendTransaction(config, {
+          to: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER as `0x${string}`,
+          data: calldata,
+          value: hexToBigInt(value)
+        })
+        console.log('🚀 ~ handleCreatePool ~ txHash:', txHash)
+        const { status } = await waitForTransactionReceipt(config, {
+          hash: txHash,
+          pollingInterval: 2000
+        })
+        if (status === 'success') {
+          emit('reload', txHash)
+        } else {
+          showToastMsg('Transaction failed', 'error', txHash)
+        }
+      }
+    } catch (error: unknown) {
+      console.error('🚀 ~ handleCreatePool ~ error:', error)
+      //@ts-ignore
+      const msg = error?.shortMessage || null
+      if (msg) {
+        ElMessage.error(msg)
+      }
+    } finally {
+      loadingAdd.value = false
+    }
   }
 </script>
 
