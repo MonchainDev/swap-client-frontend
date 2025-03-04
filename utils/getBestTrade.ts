@@ -36,6 +36,7 @@ interface SwapInput {
 
 export interface SwapOutput extends SmartRouterTrade<TradeType> {
   tradingFee: number
+  fee: number
   priceImpact: Percent
   slippage: Percent
   minimumAmountOut?: CurrencyAmount<Currency>
@@ -121,6 +122,7 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
   const slippagePercent = new Percent(Number(slippage.value))
   return {
     tradingFee: (Number(trade.swaps[0].route.pools[0].fee.toString()) / 10 ** 6) * inputAmount,
+    fee: Number(trade.swaps[0].route.pools[0].fee.toString()),
     priceImpact: trade.priceImpact,
     slippage: slippagePercent,
     minimumAmountOut: trade.minimumAmountOut(slippagePercent),

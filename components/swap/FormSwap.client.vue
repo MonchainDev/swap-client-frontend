@@ -237,6 +237,7 @@
       form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toExact()
       form.value.minimumAmountOut = ''
       form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
+      form.value.fee = _bestTrade.fee
     }
     isFetchQuote.value = false
   }
@@ -346,7 +347,7 @@
       const params = {
         tokenIn: form.value.token0.address,
         tokenOut: form.value.token1.address,
-        fee: 2500,
+        fee: bestTrade?.value.fee ?? form.value.fee,
         recipient: address.value,
         deadline,
         amountIn: BigInt(amountIn),
