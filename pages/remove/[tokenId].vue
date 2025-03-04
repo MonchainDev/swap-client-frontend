@@ -36,17 +36,17 @@
           <span
             v-for="item in percentList"
             :key="item"
-            class="h-fit cursor-pointer rounded-[4px] bg-gray-2 px-2 py-[2px] text-sm text-gray-8"
+            class="bg-gray-2 h-fit cursor-pointer rounded-[4px] px-2 py-[2px] text-sm text-gray-8"
             @click="percent = item"
           >
             {{ item }}%
           </span>
         </div>
       </div>
-      <div class="-ml-8 mt-4 h-[1px] w-[580px] bg-gray-2"></div>
+      <div class="bg-gray-2 -ml-8 mt-4 h-[1px] w-[580px]"></div>
       <div class="mt-[30px] flex flex-col gap-4">
         <h4 class="text-lg font-medium leading-7">You will receive</h4>
-        <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
+        <div class="bg-gray-1 flex h-[164px] flex-col rounded-lg">
           <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
             <div class="flex items-center gap-[10px]">
               <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
@@ -68,7 +68,7 @@
             </div>
           </div>
         </div>
-        <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
+        <div class="bg-gray-1 flex h-[164px] flex-col rounded-lg">
           <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
             <div class="flex items-center gap-[10px]">
               <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
@@ -107,7 +107,7 @@
   </div>
   <BasePopup name="popup-confirm-remove" width="540" title="Confirm removing liquidity">
     <div class="px-8 pb-6">
-      <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
+      <div class="bg-gray-1 flex h-[164px] flex-col rounded-lg">
         <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
@@ -133,14 +133,14 @@
 </template>
 
 <script lang="ts" setup>
-  import { CurrencyAmount, Percent } from '@pancakeswap/swap-sdk-core'
+  import { CurrencyAmount, Percent } from '@monchain/swap-sdk-core'
   import { useAccount } from '@wagmi/vue'
   import { hexToBigInt } from 'viem'
   import { BIPS_BASE } from '~/constant'
   import { CONTRACT_ADDRESS } from '~/constant/contract'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { config } from '~/config/wagmi'
-  // import { NonfungiblePositionManager } from '@pancakeswap/v3-sdk'
+  // import { NonfungiblePositionManager } from '@monchain/v3-sdk'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
 
   definePageMeta({

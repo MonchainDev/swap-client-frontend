@@ -1,5 +1,5 @@
-import type { Currency, Token } from '@pancakeswap/swap-sdk-core'
-import { NativeCurrency } from '@pancakeswap/swap-sdk-core'
+import type { Currency, Token } from '@monchain/swap-sdk-core'
+import { NativeCurrency } from '@monchain/swap-sdk-core'
 import { NATIVE, WNATIVE } from '~/constant/token'
 
 export class Native extends NativeCurrency {

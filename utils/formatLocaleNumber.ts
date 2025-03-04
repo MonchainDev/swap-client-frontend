@@ -1,4 +1,4 @@
-import type { Currency, CurrencyAmount, Price } from '@pancakeswap/sdk'
+import type { Currency, CurrencyAmount, Price } from '@monchain/sdk'
 
 interface FormatLocaleNumberArgs {
   number: CurrencyAmount<Currency> | Price<Currency, Currency> | number

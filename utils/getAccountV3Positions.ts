@@ -1,4 +1,4 @@
-import { nonfungiblePositionManagerABI } from '@pancakeswap/v3-sdk'
+import { nonfungiblePositionManagerABI } from '@monchain/v3-sdk'
 import { getContract as viemGetContract, type Abi, type Address, type GetContractReturnType, type PublicClient, type WalletClient } from 'viem'
 import { getAccountV3TokenIds } from './getAccountV3TokenIds'
 import { ChainId, type PositionDetail } from '~/types'
