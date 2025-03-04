@@ -1,5 +1,11 @@
 <template>
-  <BasePopup name="popup-add-liquidity" width="540" :title="title" @close="handleClose" @open="handleOpen">
+  <BasePopup name="popup-add-liquidity" width="540" @close="handleClose" @open="handleOpen">
+    <template #title>
+      <div class="flex items-center gap-2">
+        <BaseIcon v-if="props.showInput && step === 'CONFIRM'" name="arrow-down" size="24" class="rotate-90 cursor-pointer" @click="step = 'INPUT'" />
+        <div class="text-xl font-semibold">{{ title }}</div>
+      </div>
+    </template>
     <div class="flex items-center justify-between px-8">
       <div class="flex items-center gap-[10px]">
         <div class="flex">
@@ -13,9 +19,9 @@
         <span>Active</span>
       </div>
     </div>
-    <div class="mt-[30px] px-8 py-[18px]">
-      <div class="rounded-lg border border-solid border-gray-2 bg-gray-1 pb-[18px]">
-        <div class="flex items-center justify-between gap-2 px-8">
+    <div class="mt-[30px] px-8">
+      <div class="flex h-[215px] flex-col rounded-lg border border-solid border-gray-2 bg-gray-1 pt-4">
+        <div class="flex h-[49px] items-center justify-between gap-2 px-8">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <div class="flex flex-col">
@@ -24,12 +30,17 @@
             </div>
           </div>
           <div class="flex flex-col text-right">
-            <span class="text-[32px] font-semibold">{{ formattedValue0 }}</span>
+            <template v-if="props.showInput && step === 'CONFIRM'">
+              <span class="text-[32px] font-semibold leading-none">{{ formattedStep2Amount0 }}</span>
+            </template>
+            <template v-else>
+              <span class="text-[32px] font-semibold leading-none">{{ formattedValue0 }}</span>
+            </template>
             <span class="text-sm font-semibold text-gray-6">$0</span>
           </div>
         </div>
         <div class="ml-8 h-[30px] w-5 border-r-2 border-dashed border-gray-6" />
-        <div class="flex items-center justify-between gap-2 px-8">
+        <div class="mb-[14px] flex h-[49px] items-center justify-between gap-2 px-8">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <div class="flex flex-col">
@@ -38,19 +49,24 @@
             </div>
           </div>
           <div class="flex flex-col text-right">
-            <span class="text-[32px] font-semibold">{{ formattedValue1 }}</span>
+            <template v-if="props.showInput && step === 'CONFIRM'">
+              <span class="text-[32px] font-semibold leading-none">{{ formattedStep2Amount1 }}</span>
+            </template>
+            <template v-else>
+              <span class="text-[32px] font-semibold leading-none">{{ formattedValue1 }}</span>
+            </template>
             <span class="text-sm font-semibold text-gray-6">$0</span>
           </div>
         </div>
-        <div class="mt-3 flex items-center justify-between border-t border-solid border-t-gray-3 px-8 pt-5">
+        <div class="flex flex-1 items-center justify-between border-t border-solid border-t-gray-3 px-8">
           <span>Fee Tier</span>
-          <span class="font-semibold">{{ props.feeFormat }}</span>
+          <span class="font-semibold">{{ feeFormat }}</span>
         </div>
       </div>
     </div>
-    <div class="my-5 px-8">
-      <div class="mt-7 flex items-center gap-3">
-        <span class="text-lg font-semibold leading-7">Set price range</span>
+    <div class="mt-[22px] px-8">
+      <div class="flex items-center gap-3">
+        <span class="text-lg font-semibold leading-7">View price range</span>
         <div class="flex cursor-pointer items-center gap-2" @click="handleClickViewPriceRange">
           <BaseIcon :name="sorted ? 'radio-fill' : 'radio'" size="24" />
           <span class="text-base">{{ currency0?.symbol }}</span>
@@ -62,7 +78,7 @@
         </div>
       </div>
 
-      <div class="mt-6 grid h-[186px] grid-cols-2 grid-rows-2 rounded-lg border border-solid border-gray-2 bg-gray-1">
+      <div class="mt-[23px] grid h-[190px] grid-cols-2 grid-rows-2 rounded-lg border border-solid border-gray-2 bg-gray-1">
         <div class="flex flex-col items-center justify-center border-r border-solid border-gray-2">
           <span class="text-sm font-semibold">Min price</span>
           <span class="text-[22px] font-semibold leading-7">{{ formattedPriceLower }}</span>
@@ -99,8 +115,15 @@
           @select-percent="handleSelectPercent"
         />
       </div>
-      <GroupButtonLiquidity v-if="step === 'INPUT'" :loading0="loadingApprove0" :loading1="loadingApprove1" @approve="handleApprove" @add="step = 'CONFIRM'" />
-      <BaseButton v-if="step === 'CONFIRM'" :loading="loadingAdd" size="md" class="mt-[33px] w-full text-xl font-semibold" @click="handleAddLiquidity">
+      <GroupButtonLiquidity
+        v-if="step === 'INPUT'"
+        class="mb-[34px]"
+        :loading0="loadingApprove0"
+        :loading1="loadingApprove1"
+        @approve="handleApprove"
+        @add="step = 'CONFIRM'"
+      />
+      <BaseButton v-if="step === 'CONFIRM'" :loading="loadingAdd" size="md" class="mb-[34px] mt-6 w-full text-xl font-semibold" @click="handleAddLiquidity">
         Confirm
       </BaseButton>
     </div>
@@ -180,6 +203,13 @@
   })
   const formattedValue1 = computed(() => {
     return props.showInput ? props.valueLower : formattedCurrencyAmount(props.position?.amount1)
+  })
+
+  const formattedStep2Amount0 = computed(() => {
+    return formattedCurrencyAmount(positionDetail.value?.amount0)
+  })
+  const formattedStep2Amount1 = computed(() => {
+    return formattedCurrencyAmount(positionDetail.value?.amount1)
   })
 
   const baseCurrency = ref<Currency>()
