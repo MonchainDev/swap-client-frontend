@@ -1,5 +1,5 @@
-import type { Currency, CurrencyAmount, Price } from '@pancakeswap/sdk'
-import { Fraction } from '@pancakeswap/sdk'
+import type { Currency, CurrencyAmount, Price } from '@monchain/sdk'
+import { Fraction } from '@monchain/sdk'
 
 export function formatCurrencyAmount(amount: CurrencyAmount<Currency> | undefined, sigFigs: number, locale: string, fixedDecimals?: number): string {
   if (!amount) {

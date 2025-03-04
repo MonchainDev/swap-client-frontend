@@ -1,6 +1,6 @@
-import { CurrencyAmount, Percent, type Token } from '@pancakeswap/swap-sdk-core'
-import type { Pool } from '@pancakeswap/v3-sdk'
-import { Position } from '@pancakeswap/v3-sdk'
+import { CurrencyAmount, Percent, type Token } from '@monchain/swap-sdk-core'
+import type { Pool } from '@monchain/v3-sdk'
+import { Position } from '@monchain/v3-sdk'
 import { useAccount } from '@wagmi/vue'
 import type { PositionDetail } from '~/types'
 

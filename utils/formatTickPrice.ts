@@ -1,4 +1,4 @@
-import type { Price, Token } from '@pancakeswap/sdk'
+import type { Price, Token } from '@monchain/sdk'
 import { Bound } from '~/types'
 
 export function formatTickPrice(

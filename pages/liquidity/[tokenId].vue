@@ -163,9 +163,9 @@
 </template>
 
 <script lang="ts" setup>
-  import type { Currency, Price, Token } from '@pancakeswap/swap-sdk-core'
-  import type { FeeAmount, Pool } from '@pancakeswap/v3-sdk'
-  import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@pancakeswap/v3-sdk'
+  import type { Currency, Price, Token } from '@monchain/swap-sdk-core'
+  import type { FeeAmount, Pool } from '@monchain/v3-sdk'
+  import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { useAccount } from '@wagmi/vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
   import { Bound } from '~/types'

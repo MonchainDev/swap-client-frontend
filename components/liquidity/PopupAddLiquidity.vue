@@ -108,8 +108,8 @@
 </template>
 
 <script lang="ts" setup>
-  import { Percent, type Currency } from '@pancakeswap/swap-sdk-core'
-  import { type Position } from '@pancakeswap/v3-sdk'
+  import { Percent, type Currency } from '@monchain/swap-sdk-core'
+  import { type Position } from '@monchain/v3-sdk'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
