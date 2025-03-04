@@ -63,7 +63,7 @@
 
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
-  import type { StepSwap } from './FormSwap.vue'
+  import type { StepSwap } from './FormSwap.client.vue'
 
   interface IProps {
     isSelected: boolean

@@ -28,6 +28,7 @@ export function useApproveToken() {
   })
 
   const approveToken = async (tokenAddress: string, spenderAddress: string, amount = MAX_NUMBER_APPROVE, cb?: (status: TYPE_STATUS) => void) => {
+    console.info(" (useApproveToken.ts:31) amount", amount);
     try {
       // Step 1: Trigger transaction (writeContract doesn't return a Promise)
       writeContract({

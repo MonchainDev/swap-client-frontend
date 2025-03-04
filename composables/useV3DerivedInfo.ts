@@ -1,6 +1,6 @@
-import type { Token } from '@pancakeswap/swap-sdk-core'
-import { CurrencyAmount, Price } from '@pancakeswap/swap-sdk-core'
-import { encodeSqrtRatioX96, nearestUsableTick, Pool, Position, priceToClosestTick, TICK_SPACINGS, TickMath, type FeeAmount } from '@pancakeswap/v3-sdk'
+import type { Token } from '@monchain/swap-sdk-core'
+import { CurrencyAmount, Price } from '@monchain/swap-sdk-core'
+import { encodeSqrtRatioX96, nearestUsableTick, Pool, Position, priceToClosestTick, TICK_SPACINGS, TickMath, type FeeAmount } from '@monchain/v3-sdk'
 import { BIG_INT_ZERO, Bound, CurrencyField } from '~/types'
 
 export default function useV3DerivedInfo() {

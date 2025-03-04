@@ -14,7 +14,7 @@
       </div>
     </div>
     <div class="mt-[30px] px-8 py-[18px]">
-      <div class="rounded-lg border border-solid border-gray-2 bg-gray-1 pb-[18px]">
+      <div class="border-gray-2 bg-gray-1 rounded-lg border border-solid pb-[18px]">
         <div class="flex items-center justify-between gap-2 px-8">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
@@ -62,8 +62,8 @@
         </div>
       </div>
 
-      <div class="mt-6 grid h-[186px] grid-cols-2 grid-rows-2 rounded-lg border border-solid border-gray-2 bg-gray-1">
-        <div class="flex flex-col items-center justify-center border-r border-solid border-gray-2">
+      <div class="border-gray-2 bg-gray-1 mt-6 grid h-[186px] grid-cols-2 grid-rows-2 rounded-lg border border-solid">
+        <div class="border-gray-2 flex flex-col items-center justify-center border-r border-solid">
           <span class="text-sm font-semibold">Min price</span>
           <span class="text-[22px] font-semibold leading-7">{{ formattedPriceLower }}</span>
           <span class="text-xs text-gray-8">{{ subtitle }}</span>
@@ -73,7 +73,7 @@
           <span class="text-[22px] font-semibold leading-7">{{ formattedPriceUpper }}</span>
           <span class="text-xs text-gray-8">{{ subtitle }}</span>
         </div>
-        <div class="col-span-2 row-start-2 flex flex-col items-center justify-center divide-solid border-t border-gray-2">
+        <div class="border-gray-2 col-span-2 row-start-2 flex flex-col items-center justify-center divide-solid border-t">
           <span class="text-sm font-semibold">Current price</span>
           <span class="text-[22px] font-semibold leading-7">{{ formatPrice(price, 6, 'en-US') }}</span>
           <span class="text-xs text-gray-8">{{ subtitle }}</span>
@@ -108,8 +108,8 @@
 </template>
 
 <script lang="ts" setup>
-  import { Percent, type Currency } from '@pancakeswap/swap-sdk-core'
-  import { type Position } from '@pancakeswap/v3-sdk'
+  import { Percent, type Currency } from '@monchain/swap-sdk-core'
+  import { type Position } from '@monchain/v3-sdk'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'

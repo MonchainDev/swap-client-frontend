@@ -65,7 +65,7 @@
             </div>
             <span class="text-[48px] font-semibold">$0</span>
           </div>
-          <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
+          <div class="bg-gray-1 flex h-[164px] flex-col rounded-lg">
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
@@ -97,7 +97,7 @@
             <BaseButton type="linear" size="md" class="w-[170px] text-xl font-semibold uppercase">Collect</BaseButton>
           </div>
 
-          <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
+          <div class="bg-gray-1 flex h-[164px] flex-col rounded-lg">
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
@@ -163,9 +163,9 @@
 </template>
 
 <script lang="ts" setup>
-  import type { Currency, Price, Token } from '@pancakeswap/swap-sdk-core'
-  import type { FeeAmount, Pool } from '@pancakeswap/v3-sdk'
-  import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@pancakeswap/v3-sdk'
+  import type { Currency, Price, Token } from '@monchain/swap-sdk-core'
+  import type { FeeAmount, Pool } from '@monchain/v3-sdk'
+  import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { useAccount } from '@wagmi/vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
   import { Bound } from '~/types'

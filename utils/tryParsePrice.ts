@@ -1,4 +1,4 @@
-import { Price, type Token } from '@pancakeswap/swap-sdk-core'
+import { Price, type Token } from '@monchain/swap-sdk-core'
 
 export function tryParsePrice(baseToken?: Token, quoteToken?: Token, value?: string) {
   if (!baseToken || !quoteToken || !value) {
