@@ -24,7 +24,7 @@
       <p v-if="form.token0.symbol && form.token1.symbol" class="flex justify-between text-sm">
         <span> Current {{ form.token0.symbol }} Price:</span>
         <!-- <span>{{ startPriceTypedValue ? startPriceTypedValue : '-' }} {{ form.token1.symbol }}</span> -->
-        <span> {{ price ? (invertPrice ? price?.invert()?.toSignificant(5) : price?.toSignificant(5)) : '-' }} {{ form.token1.symbol }} </span>
+        <span> {{ price ? (invertPrice ? price?.invert()?.toSignificant(6) : price?.toSignificant(6)) : '-' }} {{ form.token1.symbol }} </span>
       </p>
     </div>
     <div class="mt-7 flex items-center gap-3" :class="{ '!mt-0': poolExits }">
@@ -43,7 +43,7 @@
     </div>
     <p v-if="poolExits" class="mt-2 flex justify-between text-sm">
       <span> Current {{ form.token0.symbol }} Price:</span>
-      <span> {{ price ? (invertPrice ? price?.invert()?.toSignificant(5) : price?.toSignificant(5)) : '-' }} {{ form.token1.symbol }} </span>
+      <span> {{ price ? (invertPrice ? price?.invert()?.toSignificant(6) : price?.toSignificant(6)) : '-' }} {{ form.token1.symbol }} </span>
     </p>
     <!-- 
     <div class="mt-5">
@@ -177,7 +177,7 @@
         form.value.minPrice = form.value.minPrice === '' ? '' : '0'
       } else {
         if (lowerPrice.value) {
-          form.value.minPrice = isSorted.value ? value?.toSignificant(5) : upperPrice.value?.invert().toSignificant(5)
+          form.value.minPrice = isSorted.value ? value?.toSignificant(6) : upperPrice.value?.invert().toSignificant(6)
           // console.log('🚀 ~ value lowerPrice change:', form.value.minPrice)
         } else {
           form.value.minPrice = ''
@@ -192,7 +192,7 @@
         form.value.maxPrice = form.value.maxPrice === '' || form.value.maxPrice === '0' ? form.value.maxPrice : '∞'
       } else {
         if (upperPrice.value) {
-          form.value.maxPrice = isSorted.value ? value?.toSignificant(5) : lowerPrice.value?.invert().toSignificant(5)
+          form.value.maxPrice = isSorted.value ? value?.toSignificant(6) : lowerPrice.value?.invert().toSignificant(6)
           // console.log('🚀 ~ value upperPrice change:', form.value.maxPrice)
         } else {
           form.value.maxPrice = ''
