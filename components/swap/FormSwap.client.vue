@@ -101,20 +101,21 @@
 </template>
 
 <script lang="ts" setup>
-import {useAccount, useSignMessage} from '@wagmi/vue'
-import {DEFAULT_SLIPPAGE} from '~/constant'
-import {getBestTrade} from '~/utils/getBestTrade'
-import type {IToken} from '~/types'
-import type {TYPE_SWAP} from '~/types/swap.type'
-import HeaderFormSwap from './HeaderFormSwap.vue'
-import {CONTRACT_ADDRESS, MAX_NUMBER_APPROVE} from "~/constant/contract";
-import Decimal from "decimal.js";
-import {type Currency, TradeType} from "@monchain/swap-sdk-core";
-import {SwapRouter} from "@monchain/v3-sdk";
-import type {SmartRouterTrade} from "@monchain/smart-router";
-import { useExactInputSingle} from "~/composables/useSwap";
+  import ROUTER_V3_ABI from '@/constant/abi/swapRouter.json'
+  import type { SmartRouterTrade } from '@monchain/smart-router'
+  import { TradeType } from '@monchain/swap-sdk-core'
+  import { waitForTransactionReceipt, writeContract } from '@wagmi/core'
+  import { useAccount } from '@wagmi/vue'
+  import Decimal from 'decimal.js'
+  import { config } from '~/config/wagmi'
+  import { DEFAULT_SLIPPAGE } from '~/constant'
+  import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
+  import type { IToken } from '~/types'
+  import type { TYPE_SWAP } from '~/types/swap.type'
+  import { getBestTrade, type SwapOutput } from '~/utils/getBestTrade'
+  import HeaderFormSwap from './HeaderFormSwap.vue'
 
-export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
+  export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
 
   interface IProps {
     title?: string
@@ -127,15 +128,16 @@ export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
 
-  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, allowance0, balance0, balance1, form, refetchAllowance0 } = storeToRefs(useSwapStore())
+  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, allowance0, balance0, balance1, form } = storeToRefs(useSwapStore())
 
   const isEditSlippage = ref(false)
   const stepSwap = ref<StepSwap>('SELECT_TOKEN')
   // const buyAmount = ref('')
   // const sellAmount = ref('')
 
-  const trades = ref<SmartRouterTrade<TradeType>>()
+  // const trades = ref<SmartRouterTrade<TradeType>>()
 
+  const bestTrade = ref<SwapOutput | undefined>(undefined)
 
   const isFetchQuote = ref(false)
 
@@ -209,30 +211,32 @@ export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
 
     if (type === 'BASE') {
       // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
-      const bestTrade = await getBestTrade({
+      const _bestTrade = await getBestTrade({
         token0: form.value.token0.address,
         token1: form.value.token1.address,
         inputAmount: Number(form.value.amountIn),
         type: TradeType.EXACT_INPUT
       })
-      form.value.amountOut = bestTrade.outputAmount.toExact()
-      form.value.tradingFee = bestTrade.tradingFee
-      form.value.minimumAmountOut = bestTrade.minimumAmountOut?.toExact()
+      bestTrade.value = _bestTrade
+      form.value.amountOut = bestTrade.value.outputAmount.toExact()
+      form.value.tradingFee = bestTrade.value.tradingFee
+      form.value.minimumAmountOut = bestTrade.value.minimumAmountOut?.toExact()
       form.value.maximumAmountIn = ''
-      form.value.priceImpact = bestTrade.priceImpact.toFixed()
+      form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
       isFetchQuote.value = false
     } else {
-      const bestTrade = await getBestTrade({
+      const _bestTrade = await getBestTrade({
         token0: form.value.token0.address,
         token1: form.value.token1.address,
         inputAmount: Number(form.value.amountIn),
         type: TradeType.EXACT_OUTPUT
       })
-      form.value.amountIn = bestTrade.inputAmount.toExact()
-      form.value.tradingFee = bestTrade.tradingFee
-      form.value.maximumAmountIn = bestTrade?.maximumAmountIn?.toExact()
+      bestTrade.value = _bestTrade
+      form.value.amountIn = bestTrade.value.inputAmount.toExact()
+      form.value.tradingFee = bestTrade.value.tradingFee
+      form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toExact()
       form.value.minimumAmountOut = ''
-      form.value.priceImpact = bestTrade.priceImpact.toFixed()
+      form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
     }
     isFetchQuote.value = false
   }
@@ -282,28 +286,33 @@ export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
     try {
       // if (isDisabledButton.value) return
       console.info('toiw day r ne')
-      console.info(" (FormSwap.client.vue:284) ", stepSwap.value);
+      console.info(' (FormSwap.client.vue:284) ', stepSwap.value)
       // step 1: next step 2
       if (stepSwap.value === 'SELECT_TOKEN') {
-        console.info("STEP 1 ");
+        console.info('STEP 1 ')
         stepSwap.value = 'CONFIRM_SWAP'
         return
       }
       // step 2: approve
       if (token0IsToken.value) {
-        if (isNeedAllowance0) {
-          console.info(" (FormSwap.client.vue:295) isNeedAllowance0", isNeedAllowance0);
-          console.info("STEP 2 ");
-          await approveToken(form.value.token0.address as string, CONTRACT_ADDRESS.SWAP_ROUTER_V3, balance0.value?.formatted ?? MAX_NUMBER_APPROVE, (status) => {
+        if (isNeedAllowance0.value) {
+          console.info(' (FormSwap.client.vue:295) isNeedAllowance0', isNeedAllowance0)
+          console.info('STEP 2 ')
+          await approveToken(form.value.token0.address as string, CONTRACT_ADDRESS.SWAP_ROUTER_V3, MAX_NUMBER_APPROVE, (status) => {
             if (status === 'SUCCESS') {
-              refetchAllowance0()
+              console.log('Approve success')
+              swap()
             }
             isConfirmApprove.value = false
           })
+        } else {
+          // step 3: swap
+          console.info('STEP 3 ')
+          await swap()
         }
       } else {
         // step 3: swap
-        console.info("STEP 3 ");
+        console.info('STEP 3 ')
         await swap()
       }
     } catch (error) {
@@ -314,44 +323,58 @@ export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
   const { approveToken } = useApproveToken()
 
   const isNeedAllowance0 = computed(() => {
-    console.info(" (FormSwap.client.vue:314) allowance0", allowance0);
+    console.info(' (FormSwap.client.vue:314) allowance0', allowance0)
     const allowance = new Decimal(allowance0.value?.toString() || '0').div(10 ** +form.value.token0.decimals)
-    console.info(" (FormSwap.client.vue:314) allowance0", allowance0);
+    console.info(' (FormSwap.client.vue:314) allowance0', allowance0)
     return allowance0.value === BigInt(0) || allowance.lessThan(form.value.amountIn || 0)
   })
 
-  const { signMessageAsync } = useSignMessage()
+  // const { signMessageAsync } = useSignMessage()
+
+  // const { exactInputSingle } = useExactInputSingle()
+  const { showToastMsg } = useShowToastMsg()
   const swap = async () => {
     try {
       isConfirmApprove.value = false
-      isConfirmSwap.value = true
-      const msg = `Swap ${form.value.amountIn} ${form.value.token0.symbol} ⇒ ${form.value.amountOut} ${form.value.token1.symbol}`
-      console.info(" (FormSwap.client.vue:319) msg bat dau sig messsage", msg);
-      await signMessageAsync({
-        message: msg
-      })
-      console.info(" (FormSwap.client.vue:319) sign xong r ne");
-      isConfirmSwap.value = false
-      showNotify('PENDING', msg)
-      isSwapping.value = true
 
-      useExactInputSingle({
+      isSwapping.value = true
+      console.log('🚀 ~ swap ~ bestTrade:', bestTrade.value)
+      const amountOutMin = new Decimal(form.value.minimumAmountOut || 0).mul(10 ** +form.value.token1.decimals).toString()
+      const amountIn = new Decimal(form.value.amountIn || 0).mul(10 ** +form.value.token0.decimals).toString()
+      const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
+
+      const params = {
         tokenIn: form.value.token0.address,
         tokenOut: form.value.token1.address,
-        fee: form.value.fee,
-        amountIn: BigInt(Number(form.value.amountIn)),
-        priceLimit: 0n,
-        amountOutMin: BigInt(Number(form.value.minimumAmountOut)),
-        deadline: Date.now() + 60 * 60 * 1000,
-        recipient: address.value! as `0x${string}`,
+        fee: 2500,
+        recipient: address.value,
+        deadline,
+        amountIn: BigInt(amountIn),
+        amountOutMinimum: BigInt(amountOutMin),
+        sqrtPriceLimitX96: BigInt(0)
+      }
+
+      const hash = await writeContract(config, {
+        address: CONTRACT_ADDRESS.SWAP_ROUTER_V3 as `0x${string}`,
+        abi: ROUTER_V3_ABI,
+        functionName: 'exactInputSingle',
+        args: [params]
       })
 
-      setTimeout(() => {
-        showNotify('SUCCESS', msg)
-        isSwapping.value = false
-      }, 5000)
+      const { status } = await waitForTransactionReceipt(config, {
+        hash,
+        pollingInterval: 2000
+      })
+      if (status === 'success') {
+        showToastMsg('Transaction receipt', 'success', hash)
+      } else {
+        showToastMsg('Transaction failed', 'error', hash)
+      }
+      isSwapping.value = false
+      stepSwap.value = 'SELECT_TOKEN'
     } catch (error) {
-      console.info(" (FormSwap.client.vue:319) sign sao sao sao saii  xong r ne");
+      console.log('🚀 ~ swap ~ error:', error)
+      console.info(' (FormSwap.client.vue:319) sign sao sao sao saii  xong r ne')
       isConfirmSwap.value = false
       isSwapping.value = false
       el1?.close()
@@ -365,7 +388,11 @@ export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
         message: () =>
           h('div', { class: 'flex items-center gap-3' }, [
             h('div', { class: 'flex relative w-[54px]' }, [
-              h('img', { src: form.value.token0.icon_url ? form.value.token0.icon_url : '/token-default.png', alt: form.value.token0.symbol, class: 'size-9 rounded-lg' }),
+              h('img', {
+                src: form.value.token0.icon_url ? form.value.token0.icon_url : '/token-default.png',
+                alt: form.value.token0.symbol,
+                class: 'size-9 rounded-lg'
+              }),
               h('img', {
                 src: form.value.token1.icon_url ? form.value.token1.icon_url : '/token-default.png',
                 alt: form.value.token1.symbol,

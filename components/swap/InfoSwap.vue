@@ -7,13 +7,13 @@
         <span class="text-gray-6">1 {{ form.token1.symbol }} = {{ exchangeRate.quote }} {{ form.token0.symbol }}</span>
       </div>
     </div>
-    <div class="flex justify-between" v-if="form.minimumAmountOut != ''">
+    <div v-if="form.minimumAmountOut != ''" class="flex justify-between">
       <span class="text-sm">Minimum receiver</span>
       <div class="flex flex-col items-end text-sm">
         <span class="font-bold"> {{ form.minimumAmountOut }} {{ form.token1.symbol }}</span>
       </div>
     </div>
-    <div class="flex justify-between" v-if="form.maximumAmountIn != ''">
+    <div v-if="form.maximumAmountIn != ''" class="flex justify-between">
       <span class="text-sm">Maximum sold</span>
       <div class="flex flex-col items-end text-sm">
         <span class="font-bold"> {{ form.maximumAmountIn }} {{ form.token0.symbol }}</span>
@@ -23,7 +23,7 @@
       <span class="text-sm">Trading Fee</span>
       <ElPopover placement="top" width="270" trigger="hover" popper-class="popper-hover-fee" :teleported="false">
         <template #reference>
-          <span class="cursor-pointer border-b border-dashed border-gray-6 text-sm font-bold leading-4">{{ form.tradingFee }} {{ form.token0.symbol }}</span>
+          <span class="cursor-pointer border-b border-dashed border-gray-6 text-sm font-bold leading-4">{{ formatTradingFee }} {{ form.token0.symbol }}</span>
         </template>
         <div class="flex flex-col gap-2 text-primary">
           <div class="flex items-center justify-between">
@@ -104,6 +104,7 @@
 
 <script lang="ts" setup>
   import type { StepSwap } from './FormSwap.client.vue'
+  import Decimal from 'decimal.js'
 
   interface IProps {
     stepSwap: StepSwap
@@ -112,7 +113,7 @@
   const { token0, token1, form } = storeToRefs(useSwapStore())
 
   const _props = withDefaults(defineProps<IProps>(), {
-    stepSwap: 'SELECT_TOKEN',
+    stepSwap: 'SELECT_TOKEN'
   })
 
   const editSlippage = defineModel('editSlippage', {
@@ -124,6 +125,10 @@
 
   const isErrorSlippage = computed(() => {
     return Number(settingSlippage.value) < 0 || Number(settingSlippage.value) > 100
+  })
+
+  const formatTradingFee = computed(() => {
+    return new Decimal(form.value.tradingFee).div(10 ** Number(form.value.token0.decimals || 0)).toFixed(4)
   })
 
   const exchangeRate = computed(() => {
