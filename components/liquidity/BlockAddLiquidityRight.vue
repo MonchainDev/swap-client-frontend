@@ -88,8 +88,8 @@
     :value-upper="form.amountDeposit1"
     :fee-format="formatFee"
     :show-input="false"
-    @confirm="handleCreatePool"
   />
+  <PopupConfirmCreateLiquidity :position :base-currency-default="baseCurrency" :ticks-at-limit="ticksAtLimit" />
 </template>
 
 <script lang="ts" setup>
