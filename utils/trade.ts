@@ -1,5 +1,5 @@
-import type {
-  InsufficientInputAmountError,
+import {
+  type InsufficientInputAmountError,
   CurrencyAmount,
   Fraction,
   Percent,

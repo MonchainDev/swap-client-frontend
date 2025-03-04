@@ -346,7 +346,7 @@
       const params = {
         tokenIn: form.value.token0.address,
         tokenOut: form.value.token1.address,
-        fee: bestTrade?.value.fee ?? form.value.fee,
+        fee: bestTrade?.value?.fee ?? form.value.fee,
         recipient: address.value,
         deadline,
         amountIn: BigInt(amountIn),

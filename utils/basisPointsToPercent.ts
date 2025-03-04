@@ -1,4 +1,4 @@
-import { Percent } from '@pancakeswap/swap-sdk-core'
+import { Percent } from '@monchain/swap-sdk-core'
 import { BIPS_BASE } from '~/constant'
 
 const basisPointsToPercent = useMemoize((num: number): Percent => {
