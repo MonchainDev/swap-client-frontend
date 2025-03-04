@@ -21,18 +21,21 @@ import {
   polygonZkEvmTestnet,
   scrollSepolia,
   sepolia,
-  zkSync,
+  zkSync
 } from 'wagmi/chains'
-import {defineChain} from "viem";
+import { defineChain } from 'viem'
 
 export const CHAIN_QUERY_NAME = chainNames
 
-const CHAIN_QUERY_NAME_TO_ID = Object.entries(CHAIN_QUERY_NAME).reduce((acc, [chainId, chainName]) => {
-  return {
-    [(chainName as string).toLowerCase()]: chainId as unknown as ChainId,
-    ...acc,
-  }
-}, {} as Record<string, ChainId>)
+const CHAIN_QUERY_NAME_TO_ID = Object.entries(CHAIN_QUERY_NAME).reduce(
+  (acc, [chainId, chainName]) => {
+    return {
+      [(chainName as string).toLowerCase()]: chainId as unknown as ChainId,
+      ...acc
+    }
+  },
+  {} as Record<string, ChainId>
+)
 
 export const getChainId = memoize((chainName: string) => {
   if (!chainName) return undefined
@@ -45,13 +48,13 @@ const bsc = {
     ...bsc_.rpcUrls,
     public: {
       ...bsc_.rpcUrls,
-      http: ['https://bsc-dataseed.binance.org/'],
+      http: ['https://bsc-dataseed.binance.org/']
     },
     default: {
       ...bsc_.rpcUrls.default,
-      http: ['https://bsc-dataseed.binance.org/'],
-    },
-  },
+      http: ['https://bsc-dataseed.binance.org/']
+    }
+  }
 } satisfies Chain
 
 /**
@@ -72,7 +75,7 @@ export const L2_CHAIN_IDS: ChainId[] = [
   ChainId.OPBNB,
   ChainId.OPBNB_TESTNET,
   ChainId.ARBITRUM_SEPOLIA,
-  ChainId.BASE_SEPOLIA,
+  ChainId.BASE_SEPOLIA
 ]
 
 export const monTestnet = /*#__PURE__*/ defineChain({
@@ -81,26 +84,26 @@ export const monTestnet = /*#__PURE__*/ defineChain({
   nativeCurrency: {
     name: 'Testnet MON Chain',
     symbol: 'MON',
-    decimals: 18,
+    decimals: 18
   },
   rpcUrls: {
     default: {
-      http: ['https:rpc-testnet.monchain.info'],
-    },
+      http: ['https:rpc-testnet.monchain.info']
+    }
   },
   blockExplorers: {
     default: {
       name: 'Monad Testnet explorer',
-      url: 'https://explorer.monchain.info/',
-    },
+      url: 'https://explorer.monchain.info/'
+    }
   },
   contracts: {
     multicall3: {
       address: '0xD8b028ac0aF22FdC2B0992960BcE9911668636ab',
-      blockCreated: 31208,
-    },
+      blockCreated: 31208
+    }
   },
-  testnet: true,
+  testnet: true
 })
 
 export const CHAINS: [Chain, ...Chain[]] = [
@@ -124,5 +127,5 @@ export const CHAINS: [Chain, ...Chain[]] = [
   opBNBTestnet,
   scrollSepolia,
   monadTestnet,
-  monTestnet,
+  monTestnet
 ]

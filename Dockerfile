@@ -9,7 +9,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies with clean install for a minimal setup
-RUN npm ci
+RUN npm i --force
 
 # Copy the rest of the application code
 COPY . .

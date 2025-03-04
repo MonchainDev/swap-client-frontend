@@ -1,30 +1,18 @@
-import { readContract } from '@wagmi/core'
-import { config } from '~/config/wagmi'
 import ABI_MON_FACTORY from '@/constant/abi/MonFactory.json'
-import { CONTRACT_ADDRESS } from '~/constant/contract'
-import { FEE_ALLOWANCE } from '~/utils/constanst'
+import { type Currency, Percent } from '@monchain/sdk'
+import { type Pool, PoolType, type QuoteProvider, type QuoterConfig, RouteType, SmartRouter, type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
 import type { TradeType } from '@monchain/swap-sdk-core'
 import { CurrencyAmount, Token } from '@monchain/swap-sdk-core'
 import type { FeeAmount } from '@monchain/v3-sdk'
-import { getOutputAmount, Pool as V3PoolSDK, Route as V3Route, TICK_SPACINGS, TickMath, Trade as V3Trade } from '@monchain/v3-sdk'
+import { TICK_SPACINGS, TickMath, Pool as V3PoolSDK, Route as V3Route, Trade as V3Trade } from '@monchain/v3-sdk'
+import { readContract } from '@wagmi/core'
 import invariant from 'tiny-invariant'
-import { ChainId, type Currency, Percent } from '@monchain/sdk'
-import {
-  type Pool,
-  PoolType,
-  type QuoteProvider,
-  type QuoterConfig,
-  RouteType,
-  SmartRouter,
-  type SmartRouterTrade,
-  type V3Pool,
-  getAmountDistribution,
-  type RouteWithoutQuote
-} from '@monchain/smart-router'
 import type { Address } from 'viem'
-import { useGetTokenInfo } from '~/composables/useToken'
 import { useGetPoolLiquidity, useGetPoolSlot } from '~/composables/usePool'
-import { createViemPublicClientGetter } from './viem'
+import { useGetTokenInfo } from '~/composables/useToken'
+import { config } from '~/config/wagmi'
+import { CONTRACT_ADDRESS } from '~/constant/contract'
+import { FEE_ALLOWANCE } from '~/utils/constanst'
 import { Trade } from './trade'
 
 interface SwapInput {
@@ -93,7 +81,7 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
   //     console.info(" (getBestTrade.ts:101) percents", percents);
 
   // Khởi tạo mảng kết quả
-  const routesWithoutQuote: RouteWithoutQuote[] = []
+  // const routesWithoutQuote: RouteWithoutQuote[] = []
 
   // // Vòng lặp for thay thế reduce
   //   for (let i = 0; i < amounts.length; i++) {
@@ -248,14 +236,14 @@ type TradeInput = {
   abortController?: AbortController
 }
 
-const messageAbortControllers = new Map<number, AbortController>()
+// const messageAbortControllers = new Map<number, AbortController>()
 
-type Input = {
-  currencyAmountIn: CurrencyAmount<Currency>
-  currencyOut: Currency
-  pools: Pool[]
-  gasPriceWei?: number
-}
+// type Input = {
+//   currencyAmountIn: CurrencyAmount<Currency>
+//   currencyOut: Currency
+//   pools: Pool[]
+//   gasPriceWei?: number
+// }
 
 // export const tradeFunc= async ({currencyAmountIn, currencyOut, pools, gasPriceWei}: Input) => {
 //   const abortController = new AbortController();

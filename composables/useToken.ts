@@ -1,6 +1,6 @@
 import { readContract } from '@wagmi/core'
 import { config } from '~/config/wagmi'
-import TOKEN from '@/constant/abi/Token.json'
+import TOKEN from '@/constant/abi/token.json'
 
 export const useGetTokenInfo = async (tokenAddress: string) => {
   /**

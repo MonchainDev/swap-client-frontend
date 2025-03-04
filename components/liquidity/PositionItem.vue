@@ -1,6 +1,6 @@
 <template>
   <div
-    class="border-gray-2 hover:bg-gray-2 grid cursor-pointer grid-cols-[3fr,1fr,1fr,3fr,3fr,2fr] border-b border-solid py-6"
+    class="grid cursor-pointer grid-cols-[3fr,1fr,1fr,3fr,3fr,2fr] border-b border-solid border-gray-2 py-6 hover:bg-gray-2"
     @click="router.push(`/liquidity/${props.position.tokenId}`)"
   >
     <div class="flex items-center gap-[10px]">
@@ -17,7 +17,7 @@
       </div>
     </div>
     <div class="flex items-center justify-center">
-      <span class="bg-gray-2 rounded px-2 py-1 text-sm">{{ fee }}</span>
+      <span class="rounded bg-gray-2 px-2 py-1 text-sm">{{ fee }}</span>
     </div>
     <div></div>
     <div class="flex flex-col justify-center text-sm">

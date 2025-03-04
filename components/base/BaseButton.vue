@@ -84,21 +84,24 @@
       opacity: 0.8;
     }
   }
-  .disabled {
-    opacity: 0.8;
-    cursor: not-allowed;
-    pointer-events: none;
-    color: var(--color-gray-6);
-    &:hover {
-      opacity: 0.4;
-    }
-  }
+
   .loading {
     pointer-events: none;
     opacity: 0.8;
   }
 
-  .btn-linear.disabled {
-    background: var(--color-gray-4);
+  .btn.disabled {
+    background: var(--color-gray-4) !important;
+    // opacity: 0.8;
+    cursor: not-allowed;
+    pointer-events: none;
+    color: var(--color-gray-6) !important;
+
+    * {
+      color: var(--color-gray-6) !important;
+    }
+    &:hover {
+      opacity: 0.4;
+    }
   }
 </style>

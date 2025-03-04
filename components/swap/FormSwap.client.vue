@@ -102,7 +102,6 @@
 
 <script lang="ts" setup>
   import ROUTER_V3_ABI from '@/constant/abi/swapRouter.json'
-  import type { SmartRouterTrade } from '@monchain/smart-router'
   import { TradeType } from '@monchain/swap-sdk-core'
   import { waitForTransactionReceipt, writeContract } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
@@ -347,7 +346,7 @@
       const params = {
         tokenIn: form.value.token0.address,
         tokenOut: form.value.token1.address,
-        fee: bestTrade?.value.fee ?? form.value.fee,
+        fee: bestTrade?.value?.fee ?? form.value.fee,
         recipient: address.value,
         deadline,
         amountIn: BigInt(amountIn),
@@ -382,53 +381,7 @@
     }
   }
 
-  let el1: ReturnType<typeof ElNotification> | null = null
-  const showNotify = (type: 'PENDING' | 'SUCCESS', msg: string) => {
-    if (type === 'PENDING') {
-      el1 = ElNotification({
-        message: () =>
-          h('div', { class: 'flex items-center gap-3' }, [
-            h('div', { class: 'flex relative w-[54px]' }, [
-              h('img', {
-                src: form.value.token0.icon_url ? form.value.token0.icon_url : '/token-default.png',
-                alt: form.value.token0.symbol,
-                class: 'size-9 rounded-lg'
-              }),
-              h('img', {
-                src: form.value.token1.icon_url ? form.value.token1.icon_url : '/token-default.png',
-                alt: form.value.token1.symbol,
-                class: 'size-9 rounded-lg absolute top-1/2 -translate-y-1/2 left-[18px]'
-              })
-            ]),
-            h('div', { class: 'flex flex-col flex-1' }, [
-              h('span', { class: 'text-sm text-primary font-medium' }, 'Swapping'),
-              h('span', { class: 'text-xs text-gray-8' }, ` ${msg}`)
-            ])
-          ]),
-        duration: 0,
-        customClass: 'notify-swap',
-        showClose: false,
-        offset: 30
-      })
-    } else {
-      setTimeout(() => {
-        el1?.close()
-      }, 2000)
-      ElNotification({
-        message: () =>
-          h('div', { class: 'flex items-center gap-3' }, [
-            h('img', { src: '/tick-success.png', alt: 'tick', class: 'size-10 ' }),
-            h('div', { class: 'flex flex-col flex-1' }, [
-              h('span', { class: 'text-sm text-[#049C6B] font-medium' }, 'Swapping successfully'),
-              h('span', { class: 'text-xs text-gray-8 pr-5' }, ` ${msg}`)
-            ])
-          ]),
-        duration: 5000,
-        customClass: 'notify-swap',
-        offset: 30
-      })
-    }
-  }
+  const el1: ReturnType<typeof ElNotification> | null = null
 
   const { handleImageError } = useErrorImage()
 </script>

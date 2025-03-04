@@ -1,11 +1,10 @@
 import { FeeAmount } from '@monchain/v3-sdk'
-import type { Address } from 'viem'
 
 export const FEE_ALLOWANCE = [FeeAmount.LOWEST, FeeAmount.LOW, FeeAmount.MEDIUM, FeeAmount.HIGH]
 
 export const FACTORY_ADDRESS = '0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73'
 
-const FACTORY_ADDRESS_ETH = '0x1097053Fd2ea711dad45caCcc45EfF7548fCB362'
+const _FACTORY_ADDRESS_ETH = '0x1097053Fd2ea711dad45caCcc45EfF7548fCB362'
 
 /**
  * Enumeration of supported blockchain network chain IDs.

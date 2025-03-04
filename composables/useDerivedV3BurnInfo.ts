@@ -2,7 +2,7 @@ import { CurrencyAmount, Percent, type Token } from '@monchain/swap-sdk-core'
 import type { Pool } from '@monchain/v3-sdk'
 import { Position } from '@monchain/v3-sdk'
 import { useAccount } from '@wagmi/vue'
-import type { PositionDetail } from '~/types'
+import { ChainId, type PositionDetail } from '~/types'
 
 export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | undefined>, percent: Ref<string>, asWNATIVE: Ref<boolean>) {
   const { address: account, chainId } = useAccount()
@@ -16,8 +16,8 @@ export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | unde
 
   watchEffect(async () => {
     if (position.value) {
-      token0.value = await getTokenByChainId(position.value.token0 as string, chainId.value!)
-      token1.value = await getTokenByChainId(position.value.token1 as string, chainId.value!)
+      token0.value = await getTokenByChainId(position.value.token0 as string, chainId.value! || ChainId.MON_TESTNET)
+      token1.value = await getTokenByChainId(position.value.token1 as string, chainId.value! || ChainId.MON_TESTNET)
       feeAmount.value = position.value.fee ?? 0
     }
   })

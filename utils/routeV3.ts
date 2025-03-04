@@ -1,7 +1,7 @@
 import invariant from 'tiny-invariant'
 
 import { Price } from '@monchain/sdk'
-import type {V3Pool} from "@monchain/smart-router";
+import type { V3Pool } from '@monchain/smart-router'
 import { type Currency as TokenCurrency } from '@monchain/sdk'
 
 /**
@@ -55,46 +55,46 @@ export class RouteV3<TInput extends TokenCurrency, TOutput extends TokenCurrency
   public get midPrice(): Price<TInput, TOutput> {
     if (this._midPrice !== null) return this._midPrice
 
-    const token0Price0 = this.token0Price(this.pools[0]); // TODO: lay tu pool0
-    const token1Price0 = this.token1Price(this.pools[0]); // TODO:
+    const token0Price0 = this.token0Price(this.pools[0]) // TODO: lay tu pool0
+    const token1Price0 = this.token1Price(this.pools[0]) // TODO:
 
     const { price } = this.pools.slice(1).reduce(
       ({ nextInput, price }, pool) => {
-        const token0Price = this.token0Price(pool); // TODO: lay tu pool0
-        const token1Price = this.token1Price(pool); // TODO:
+        const token0Price = this.token0Price(pool) // TODO: lay tu pool0
+        const token1Price = this.token1Price(pool) // TODO:
         return nextInput.equals(pool.token0)
           ? {
               nextInput: pool.token1,
-              price: price.multiply(token0Price),
+              price: price.multiply(token0Price)
             }
           : {
               nextInput: pool.token0,
-              price: price.multiply(token1Price),
+              price: price.multiply(token1Price)
             }
       },
 
       this.pools[0].token0.equals(this.input.wrapped)
         ? {
             nextInput: this.pools[0].token1,
-            price: token0Price0,
+            price: token0Price0
           }
         : {
             nextInput: this.pools[0].token0,
-            price: token1Price0,
+            price: token1Price0
           }
     )
 
     return (this._midPrice = new Price(this.input, this.output, price.denominator, price.numerator))
   }
 
-    public token0Price(pool: V3Pool): Price<TokenCurrency, TokenCurrency> {
-        return new Price(pool.token0, pool.token1, Q192, pool.sqrtRatioX96 * pool.sqrtRatioX96)
-    }
+  public token0Price(pool: V3Pool): Price<TokenCurrency, TokenCurrency> {
+    return new Price(pool.token0, pool.token1, Q192, pool.sqrtRatioX96 * pool.sqrtRatioX96)
+  }
 
-    /**
-     * Returns the current mid price of the pool in terms of token1, i.e. the ratio of token0 over token1
-     */
-    public token1Price(pool: V3Pool): Price<TokenCurrency, TokenCurrency> {
-        return new Price(pool.token1, pool.token0, pool.sqrtRatioX96 * pool.sqrtRatioX96, Q192)
-    }
+  /**
+   * Returns the current mid price of the pool in terms of token1, i.e. the ratio of token0 over token1
+   */
+  public token1Price(pool: V3Pool): Price<TokenCurrency, TokenCurrency> {
+    return new Price(pool.token1, pool.token0, pool.sqrtRatioX96 * pool.sqrtRatioX96, Q192)
+  }
 }

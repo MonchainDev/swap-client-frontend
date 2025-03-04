@@ -38,15 +38,22 @@
           </div>
         </div>
         <div class="flex gap-2">
-          <BaseButton type="outline" size="md" class="flex w-[95px] items-center justify-center !gap-0 !bg-white text-xl" @click="handleClickAddLiquidity">
+          <BaseButton
+            type="outline"
+            :disabled="!isConnected"
+            size="md"
+            class="flex w-[95px] items-center justify-center !gap-0 !bg-white text-xl"
+            @click="handleClickAddLiquidity"
+          >
             <BaseIcon name="plus" size="20" class="text-hyperlink" />
             <span class="text-hyperlink">Add</span>
           </BaseButton>
-          <NuxtLink :to="`/remove/${tokenId}`">
-            <BaseButton type="outline" size="md" class="w-[120px] !bg-white text-xl">
+
+          <BaseButton :disabled="!isConnected" type="outline" size="md" class="w-[120px] !bg-white text-xl">
+            <NuxtLink :to="`/remove/${tokenId}`">
               <span class="text-hyperlink">Remove</span>
-            </BaseButton>
-          </NuxtLink>
+            </NuxtLink>
+          </BaseButton>
         </div>
       </div>
     </div>
@@ -65,7 +72,7 @@
             </div>
             <span class="text-[48px] font-semibold">$0</span>
           </div>
-          <div class="bg-gray-1 flex h-[164px] flex-col rounded-lg">
+          <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
@@ -94,10 +101,10 @@
               <span class="text-2xl font-semibold leading-7">Unclaimed fees</span>
               <span class="text-[48px] font-semibold text-hyperlink">$0</span>
             </div>
-            <BaseButton type="linear" size="md" class="w-[170px] text-xl font-semibold uppercase">Collect</BaseButton>
+            <BaseButton :disabled="!isConnected" type="linear" size="md" class="w-[170px] text-xl font-semibold uppercase">Collect</BaseButton>
           </div>
 
-          <div class="bg-gray-1 flex h-[164px] flex-col rounded-lg">
+          <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
@@ -168,7 +175,7 @@
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { useAccount } from '@wagmi/vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
-  import { Bound } from '~/types'
+  import { Bound, ChainId } from '~/types'
 
   const route = useRoute('liquidity-tokenId')
   const { setOpenPopup } = useBaseStore()
@@ -176,7 +183,7 @@
   const tokenId = computed(() => {
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
   })
-  const { chainId } = useAccount()
+  const { chainId, isConnected } = useAccount()
   const { feeAmount, form, existingPosition } = storeToRefs(useLiquidityStore())
 
   const { isLoading, position: _position, refetch } = useV3PositionsFromTokenId(tokenId.value)
@@ -202,8 +209,8 @@
 
   watchEffect(async () => {
     if (_position.value) {
-      token0.value = await getTokenByChainId(token0Address.value as string, chainId.value!)
-      token1.value = await getTokenByChainId(token1Address.value as string, chainId.value!)
+      token0.value = await getTokenByChainId(token0Address.value as string, chainId.value || ChainId.MON_TESTNET)
+      token1.value = await getTokenByChainId(token1Address.value as string, chainId.value || ChainId.MON_TESTNET)
 
       feeAmount.value = fee.value ?? 0
     }

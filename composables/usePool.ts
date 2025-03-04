@@ -15,7 +15,7 @@ export const useGetPoolSlot = async (poolAddress: string) => {
     observationCardinality: slot0[3],
     observationCardinalityNext: slot0[4],
     feeProtocol: slot0[5],
-    unlocked: slot0[6]  
+    unlocked: slot0[6]
   }
 }
 

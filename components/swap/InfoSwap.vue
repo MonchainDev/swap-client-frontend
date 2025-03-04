@@ -103,14 +103,14 @@
 </template>
 
 <script lang="ts" setup>
-  import type { StepSwap } from './FormSwap.client.vue'
   import Decimal from 'decimal.js'
+  import type { StepSwap } from './FormSwap.client.vue'
 
   interface IProps {
     stepSwap: StepSwap
   }
 
-  const { token0, token1, form } = storeToRefs(useSwapStore())
+  const { form } = storeToRefs(useSwapStore())
 
   const _props = withDefaults(defineProps<IProps>(), {
     stepSwap: 'SELECT_TOKEN'
