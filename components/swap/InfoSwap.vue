@@ -8,7 +8,7 @@
       </div>
     </div>
     <div v-if="form.minimumAmountOut != ''" class="flex justify-between">
-      <span class="text-sm">Minimum receiver</span>
+      <span class="text-sm">Minimum received</span>
       <div class="flex flex-col items-end text-sm">
         <span class="font-bold"> {{ form.minimumAmountOut }} {{ form.token1.symbol }}</span>
       </div>
@@ -45,7 +45,7 @@
     <div class="flex justify-between">
       <span class="text-sm">Price Impact</span>
       <div class="flex flex-col items-end text-sm">
-        <span class="font-bold"> {{ form.priceImpact }} %</span>
+        <span class="font-bold"> {{ form.priceImpact }}%</span>
       </div>
     </div>
     <template v-if="editSlippage">
