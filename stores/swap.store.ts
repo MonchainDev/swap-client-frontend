@@ -59,7 +59,7 @@ export const useSwapStore = defineStore('swap', () => {
   )
 
   const token0 = computed(() => {
-    if (form.value.token0.symbol === NATIVE_TOKEN.symbol || form.value.token0.address === '') {
+    if (form.value.token0.symbol === NATIVE_TOKEN.symbol && form.value.token0.address === '') {
       return Native.onChain(ChainId.MON_TESTNET)
     } else {
       return form.value.token0.symbol
@@ -108,6 +108,36 @@ export const useSwapStore = defineStore('swap', () => {
     }))
   )
 
+  const resetStore = () => {
+    form.value = {
+      token0: {
+        address: '',
+        decimals: 0,
+        icon_url: '',
+        name: '',
+        symbol: ''
+      },
+      token1: {
+        address: '',
+        decimals: 0,
+        icon_url: '',
+        name: '',
+        symbol: ''
+      },
+      amountIn: '',
+      amountOut: '',
+      chainId: chainId.value,
+      minimumAmountOut: '',
+      maximumAmountIn: '',
+      priceImpact: '',
+      fee: 0,
+      tradingFee: 0
+    }
+    isConfirmApprove.value = false
+    isConfirmSwap.value = false
+    isSwapping.value = false
+  }
+
   return {
     slippage,
     balance0,
@@ -123,6 +153,7 @@ export const useSwapStore = defineStore('swap', () => {
     activeSlippageAuto,
     form,
     refetchAllowance0,
-    refetchAllowance1
+    refetchAllowance1,
+    resetStore
   }
 })

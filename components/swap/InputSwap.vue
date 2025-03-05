@@ -9,6 +9,7 @@
             :key="item"
             class="flex h-[22px] cursor-pointer items-center justify-center rounded-[4px] bg-white"
             :class="{ 'sm:hidden': index % 2 !== 0 }"
+            @click="handleSelectPercent(index)"
           >
             <span class="text-sm text-gray-8">{{ index ? (100 / 4) * index + '%' : 'Max' }}</span>
           </div>
@@ -64,6 +65,7 @@
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
   import type { StepSwap } from './FormSwap.client.vue'
+  import Decimal from 'decimal.js'
 
   interface IProps {
     isSelected: boolean
@@ -113,6 +115,15 @@
   const handleInput = useDebounce(() => {
     emits('change', amount.value, props.type)
   }, 400)
+
+  const handleSelectPercent = (index: number) => {
+    const percent = [1, 0.25, 0.5, 0.75][index]
+    const balance = props.balance
+    if (balance) {
+      const result = new Decimal(balance).mul(percent).toSignificantDigits(6, Decimal.ROUND_DOWN).toString()
+      emits('change', result, props.type)
+    }
+  }
 
   const { isConnected } = useAccount()
 </script>

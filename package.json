@@ -49,6 +49,7 @@
     "@tanstack/vue-query": "^5.66.0",
     "@vueuse/nuxt": "^12.7.0",
     "@wagmi/vue": "^0.1.8",
+    "axios": "^1.8.1",
     "d3": "^7.9.0",
     "decimal.js": "^10.4.3",
     "nuxt": "3.13.0",
