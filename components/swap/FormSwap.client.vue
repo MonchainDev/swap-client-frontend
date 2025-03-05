@@ -200,48 +200,52 @@
   }
 
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
-    if (!isToken0Selected.value || !isToken1Selected.value) return
-    isFetchQuote.value = true
-    if (!amount) {
-      isFetchQuote.value = false
-      form.value.amountOut = ''
-      form.value.amountIn = ''
-      isEditSlippage.value = false
-      slippage.value = DEFAULT_SLIPPAGE
-      return
-    }
+    try {
+      if (!isToken0Selected.value || !isToken1Selected.value) return
+      isFetchQuote.value = true
+      if (!amount) {
+        isFetchQuote.value = false
+        form.value.amountOut = ''
+        form.value.amountIn = ''
+        isEditSlippage.value = false
+        slippage.value = DEFAULT_SLIPPAGE
+        return
+      }
 
-    if (type === 'BASE') {
-      // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
-      const _bestTrade = await getBestTrade({
-        token0: form.value.token0.address,
-        token1: form.value.token1.address,
-        inputAmount: Number(form.value.amountIn),
-        type: TradeType.EXACT_INPUT
-      })
-      bestTrade.value = _bestTrade
-      form.value.amountOut = bestTrade.value.outputAmount.toExact()
-      form.value.tradingFee = bestTrade.value.tradingFee
-      form.value.minimumAmountOut = bestTrade.value.minimumAmountOut?.toExact()
-      form.value.maximumAmountIn = ''
-      form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
+      if (type === 'BASE') {
+        // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
+        const _bestTrade = await getBestTrade({
+          token0: form.value.token0.address,
+          token1: form.value.token1.address,
+          inputAmount: Number(form.value.amountIn),
+          type: TradeType.EXACT_INPUT
+        })
+        bestTrade.value = _bestTrade
+        form.value.amountOut = bestTrade.value.outputAmount.toExact()
+        form.value.tradingFee = bestTrade.value.tradingFee
+        form.value.minimumAmountOut = bestTrade.value.minimumAmountOut?.toExact()
+        form.value.maximumAmountIn = ''
+        form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
+        isFetchQuote.value = false
+      } else {
+        const _bestTrade = await getBestTrade({
+          token0: form.value.token0.address,
+          token1: form.value.token1.address,
+          inputAmount: Number(form.value.amountIn),
+          type: TradeType.EXACT_OUTPUT
+        })
+        bestTrade.value = _bestTrade
+        form.value.amountIn = bestTrade.value.inputAmount.toExact()
+        form.value.tradingFee = bestTrade.value.tradingFee
+        form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toExact()
+        form.value.minimumAmountOut = ''
+        form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
+        form.value.fee = _bestTrade.fee
+      }
       isFetchQuote.value = false
-    } else {
-      const _bestTrade = await getBestTrade({
-        token0: form.value.token0.address,
-        token1: form.value.token1.address,
-        inputAmount: Number(form.value.amountIn),
-        type: TradeType.EXACT_OUTPUT
-      })
-      bestTrade.value = _bestTrade
-      form.value.amountIn = bestTrade.value.inputAmount.toExact()
-      form.value.tradingFee = bestTrade.value.tradingFee
-      form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toExact()
-      form.value.minimumAmountOut = ''
-      form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
-      form.value.fee = _bestTrade.fee
+    } catch (_error) {
+      isFetchQuote.value = false
     }
-    isFetchQuote.value = false
   }
 
   const handleSelectToken = (token: IToken) => {
