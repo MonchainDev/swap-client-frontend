@@ -82,6 +82,9 @@
     "webpack-retry-chunk-load-plugin": "^3.1.1",
     "wrangler": "^3.103.0"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.6.1"
+  },
   "lint-staged": {
     "*.scss": [
       "npm run format"

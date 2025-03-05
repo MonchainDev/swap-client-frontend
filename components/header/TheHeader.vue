@@ -9,7 +9,7 @@
         <div class="ml-[68px] flex items-center gap-8 sm:hidden">
           <NuxtLink active-class="active-menu" to="/" class="text-center text-base font-medium leading-6 hover:text-primary">Swap</NuxtLink>
           <!-- <NuxtLink active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Swap</NuxtLink> -->
-          <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Cross chain</div>
+          <!-- <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Cross chain</div> -->
           <NuxtLink active-class="active-menu" to="/liquidity/pool" class="text-center text-base font-medium leading-6 hover:text-primary"
             >Farm/ Liquidity</NuxtLink
           >
