@@ -147,6 +147,7 @@
     return stepSwap.value === 'SELECT_TOKEN' ? _props.title : 'Confirm swap'
   })
 
+  const noRoute = computed(() => !(((bestTrade.value && bestTrade.value?.routes.length) ?? 0) > 0))
   /*
    * Message button
    * case 1: Select a token
@@ -164,9 +165,11 @@
       return 'Select a token'
     } else if (isFetchQuote.value) {
       return 'Finalizing quote...'
+    } else if (!isFetchQuote.value && noRoute.value && isToken0Selected.value && isToken1Selected.value && (form.value.amountIn || form.value.amountOut)) {
+      return 'Insufficient liquidity for this trade'
     } else if (isToken0Selected.value && isToken1Selected.value && form.value.amountOut && form.value.amountIn) {
       if (stepSwap.value === 'SELECT_TOKEN') {
-        return `Swap ${form.value.amountIn} ${form.value.token0.symbol} ⇒ ${form.value.amountOut} ${form.value.token1.symbol}`
+        return `Swap ${bestTrade.value?.inputAmount.toSignificant(6)} ${form.value.token0.symbol} ⇒ ${bestTrade.value?.outputAmount.toSignificant(6)} ${form.value.token1.symbol}`
       } else {
         if (isSwapping.value) {
           return 'SWAPPING! PLEASE WAIT..'
@@ -180,7 +183,7 @@
   })
 
   const isDisabledButton = computed(() => {
-    return !isToken0Selected.value || !isToken1Selected.value || !form.value.amountOut || !form.value.amountOut || isFetchQuote.value
+    return !isToken0Selected.value || !isToken1Selected.value || !form.value.amountOut || !form.value.amountOut || isFetchQuote.value || noRoute.value
   })
 
   const handleSwapOrder = () => {
