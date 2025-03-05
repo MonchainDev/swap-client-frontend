@@ -6,7 +6,7 @@
   import Swap from './swap.vue'
 
   definePageMeta({
-    middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
+    middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware', 'reset-form-swap-middleware']
   })
 </script>
 
