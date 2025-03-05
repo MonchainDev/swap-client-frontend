@@ -134,7 +134,7 @@
   const exchangeRate = computed(() => {
     return {
       base: (Number(form.value.amountOut) / Number(form.value.amountIn)).toFixed(2),
-      quote: (Number(form.value.amountIn) / Number(form.value.amountOut)).toFixed(4)
+      quote: (Number(form.value.amountIn) / Number(form.value.amountOut)).toFixed(6)
     }
   })
 

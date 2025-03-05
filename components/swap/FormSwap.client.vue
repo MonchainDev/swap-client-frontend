@@ -200,6 +200,7 @@
   }
 
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
+    console.log('🚀 ~ handleInput ~ amount:', amount)
     try {
       if (!isToken0Selected.value || !isToken1Selected.value) return
       isFetchQuote.value = true
@@ -213,6 +214,9 @@
       }
 
       if (type === 'BASE') {
+        form.value.amountIn = amount
+        console.log('🚀 ~ handleInput ~ form.value.amountIn:', form.value.amountIn)
+
         // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
         const _bestTrade = await getBestTrade({
           token0: form.value.token0.address,
@@ -221,13 +225,14 @@
           type: TradeType.EXACT_INPUT
         })
         bestTrade.value = _bestTrade
-        form.value.amountOut = bestTrade.value.outputAmount.toExact()
+        form.value.amountOut = bestTrade.value.outputAmount.toSignificant(6)
         form.value.tradingFee = bestTrade.value.tradingFee
-        form.value.minimumAmountOut = bestTrade.value.minimumAmountOut?.toExact()
+        form.value.minimumAmountOut = bestTrade.value.minimumAmountOut?.toSignificant(6)
         form.value.maximumAmountIn = ''
         form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
         isFetchQuote.value = false
       } else {
+        form.value.amountOut = amount
         const _bestTrade = await getBestTrade({
           token0: form.value.token0.address,
           token1: form.value.token1.address,
@@ -235,9 +240,9 @@
           type: TradeType.EXACT_OUTPUT
         })
         bestTrade.value = _bestTrade
-        form.value.amountIn = bestTrade.value.inputAmount.toExact()
+        form.value.amountIn = bestTrade.value.inputAmount.toSignificant(6)
         form.value.tradingFee = bestTrade.value.tradingFee
-        form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toExact()
+        form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toSignificant(6)
         form.value.minimumAmountOut = ''
         form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
         form.value.fee = _bestTrade.fee
