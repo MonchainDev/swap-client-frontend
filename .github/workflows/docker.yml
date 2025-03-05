@@ -29,3 +29,4 @@ jobs:
           docker build -t aniadev9/monchain-swap-client:$TAG .
           docker push aniadev9/monchain-swap-client:$TAG
           docker tag aniadev9/monchain-swap-client:${TAG} aniadev9/monchain-swap-client:latest
+          docker push aniadev9/monchain-swap-client:latest
