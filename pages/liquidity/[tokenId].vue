@@ -108,20 +108,20 @@
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-                <span class="text-[22px] font-semibold leading-7">{{ unwrappedToken(positionValueUpper?.currency)?.symbol }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ feeValueUpper?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
-                <span class="text-[22px] font-semibold leading-7">0</span>
+                <span class="text-[22px] font-semibold leading-7">{{ feeValueUpper ? formatCurrencyAmount(feeValueUpper, 4, 'en-US') : '-' }}</span>
                 <span class="text-sm text-gray-6">$0</span>
               </div>
             </div>
             <div class="flex h-1/2 items-center justify-between px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-                <span class="text-[22px] font-semibold leading-7">{{ unwrappedToken(positionValueLower?.currency)?.symbol }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ feeValueLower?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
-                <span class="text-[22px] font-semibold leading-7">0</span>
+                <span class="text-[22px] font-semibold leading-7">{{ feeValueLower ? formatCurrencyAmount(feeValueLower, 4, 'en-US') : '-' }}</span>
                 <span class="text-sm text-gray-6">$0</span>
               </div>
             </div>
@@ -183,7 +183,7 @@
   const tokenId = computed(() => {
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
   })
-  const { chainId, isConnected } = useAccount()
+  const { chainId, isConnected, address: account } = useAccount()
   const { feeAmount, form, existingPosition } = storeToRefs(useLiquidityStore())
 
   const { isLoading, position: _position, refetch } = useV3PositionsFromTokenId(tokenId.value)
@@ -216,6 +216,8 @@
     }
   })
 
+  const inverted = computed(() => (token1.value && base.value ? base.value.equals(token1.value) : undefined))
+
   // if pool has aNATIVE, set token0 or 1 to NATIVE
   watchEffect(() => {
     if (unwrapToken0.value && unwrapToken1.value) {
@@ -242,6 +244,21 @@
   const currency1 = computed(() => (token1.value ? unwrappedToken(token1.value) : undefined))
 
   const { pool } = usePools()
+
+  const receiveWNATIVE = ref(false)
+  const { feeValue0, feeValue1, owner } = useV3PositionFees(pool as Ref<Pool>, tokenId, receiveWNATIVE.value)
+
+  const feeValueUpper = computed(() => (inverted.value ? feeValue0.value : feeValue1.value))
+  const feeValueLower = computed(() => (inverted.value ? feeValue1.value : feeValue0.value))
+  const _isOwner = computed(() => account.value === owner.value)
+
+  // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
+  // const currency0ForFeeCollectionPurposes = computed(() =>
+  //   pool.value ? (receiveWNATIVE.value ? pool.value.token0 : unwrappedToken(pool.value.token0)) : undefined
+  // )
+  // const currency1ForFeeCollectionPurposes = computed(() =>
+  //   pool.value ? (receiveWNATIVE.value ? pool.value.token1 : unwrappedToken(pool.value.token1)) : undefined
+  // )
 
   const position = computed(() => {
     if (pool.value && typeof liquidity.value === 'bigint' && typeof tickLower.value === 'number' && typeof tickUpper.value === 'number') {
@@ -295,8 +312,6 @@
     }
     return ''
   })
-
-  const inverted = computed(() => (token1.value && base.value ? base.value.equals(token1.value) : undefined))
 
   const currencyQuote = computed(() => (inverted.value ? currency0.value : currency1.value))
   const currencyBase = computed(() => (inverted.value ? currency1.value : currency0.value))

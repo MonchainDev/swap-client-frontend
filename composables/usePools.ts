@@ -1,6 +1,5 @@
 import type { BigintIsh, Currency, Token } from '@monchain/swap-sdk-core'
-import type { FeeAmount } from '@monchain/v3-sdk'
-import { Pool } from '@monchain/v3-sdk'
+import { Pool, type FeeAmount } from '@monchain/v3-sdk'
 import { useAccount, useReadContract } from '@wagmi/vue'
 import type { Address } from 'viem'
 import v3PoolStateABI from '~/constant/abi/v3PoolStateABI.json'
