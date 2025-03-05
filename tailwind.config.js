@@ -15,6 +15,7 @@ export default {
       'gray-6': 'var(--color-gray-6)',
       'gray-7': 'var(--color-gray-7)',
       'gray-8': 'var(--color-gray-8)',
+      'success': 'var(--color-success)',
       warning: 'var(--color-warning)',
       white: '#fff',
       error: 'var(--color-error)',
