@@ -43,6 +43,8 @@ export interface SwapOutput extends SmartRouterTrade<TradeType> {
 //   amount: CurrencyAmount<Currency>;
 // }
 
+const BASE_FEE_PERCENT = 10 ** 6;
+
 export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapInput): Promise<SwapOutput> => {
   const listPool: V3Pool[] = []
   const token0Info = await useGetTokenInfo(token0)
@@ -50,11 +52,6 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
   inputAmount = inputAmount * ((10 ** token0Info.decimals) as number)
   const token0Currency = new Token(token0Info.chainId, token0 as `0x${string}`, token0Info.decimals, token0Info.symbol)
   const token1Currency = new Token(token1Info.chainId, token1 as `0x${string}`, token1Info.decimals, token1Info.symbol)
-  // if (token0Currency.sortsBefore(token1Currency)) {
-  //   ;[token0Currency, token1Currency] = [token1Currency, token0Currency]
-  // }
-
-  // const balances : bigint[][] = [];
   const balances: { [key: string]: { [key: string]: bigint } } = {}
 
   for (const fee of FEE_ALLOWANCE) {
@@ -99,93 +96,65 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
     listPool.push(v3Pool)
   }
 
-  const trade = await makeV3Trade(listPool, token0Currency, token1Currency, CurrencyAmount.fromRawAmount(token0Currency, BigInt(inputAmount)), type)
-
-  const distributionPercent = 5;
   const currencyAmountIn = CurrencyAmount.fromRawAmount(token0Currency, inputAmount)
-  const [percents, amounts] = getAmountDistribution(currencyAmountIn, distributionPercent)
-
-  const tradeList: Trade<Currency, Token, TradeType.EXACT_INPUT>[][] = []
-  const tradeMap : { [key: number]: Trade<Currency, Token, TradeType.EXACT_INPUT>[] } = {
-    100: [],
-    500: [],
-    2500: [],
-    10000: []
-
-  }
-  for (let i = 0; i < amounts.length; i++) {
-    const curAmount = amounts[i];
-    const curPercent = percents[i];
-
-    const newTrades = await Trade.bestTradeExactIn(listPool, curAmount, token1Currency, {
-      maxNumResults: 4,
-      maxHops: 1
-    })
-    tradeList.push(newTrades)
-    for (let i = 0; i < newTrades.length; i++) {
-      const trade = newTrades[i]
-      const fee = trade.swaps[0].route.pools[0].fee;
-      tradeMap[fee].push(trade)
-    }
-  }
-
-  let totalInputAmount = 0n;
-  let totalOutputAmount = 0n;
-  for (let i = 0; i < 4; i++ ) {
-    const fee = FEE_ALLOWANCE[0];
-    const tradesInFee = tradeMap[fee]
-    let maxOutputInFee = 0n;
-    let inputInFee = 0n;
-    for (let j = 0; j < amounts.length; j++) {
-      console.info(`🚀 ~ getBestTrade ~ i: ${i} - j: ${j}`, amounts)
-      const trade = tradesInFee[j]
-      const pool = trade.swaps[0].route.pools[0].address
-      const balanceToken1InPoolI = balances[token1][pool]
-      if (trade.outputAmount.numerator < balanceToken1InPoolI || trade.outputAmount.numerator > maxOutputInFee) {
-        maxOutputInFee = trade.outputAmount.numerator
-        inputInFee = trade.inputAmount.numerator
-        if (totalInputAmount + inputInFee === currencyAmountIn.numerator) {
-          console.info("🚀 breakkkk -----------------")
-          totalInputAmount = totalInputAmount + inputInFee
-          totalOutputAmount = totalOutputAmount + maxOutputInFee
-          break
-        }
-      }
-    }
-    totalInputAmount = totalInputAmount + inputInFee
-    totalOutputAmount = totalOutputAmount + maxOutputInFee
-  }
-  console.info("🚀 ~ getBestTrade ~ bestTrades: totalOutputAmount: ", Number(totalOutputAmount) / (10 ** token1Currency.decimals))
-
   const bestTrades = await Trade.bestTradeExactIn(listPool, CurrencyAmount.fromRawAmount(token0Currency, inputAmount), token1Currency)
-  console.info("🚀 ~ getBestTrade ~ bestTrades: output: ", bestTrades)
-  console.info("🚀 ~ getBestTrade ~ bestTrades: output: ", bestTrades[0].outputAmount.toExact())
 
+  let remainAmountIn = currencyAmountIn;
+  let totalOutputA: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0n);
+  let tradingFee = 0;
+  let priceImpact: Percent = new Percent(0, 100)
+  const newTradeList: Trade<Currency, Token, TradeType.EXACT_INPUT>[] = []
+  for (let i = 0; i < bestTrades.length; i++) {
+    const bestTrade = bestTrades[i]
+    const fee = bestTrade.swaps[0].route.pools[0].fee;
+    const maxInput = CurrencyAmount.fromRawAmount(token0Currency, Number(balances[token0][bestTrade.swaps[0].route.pools[0].address]) * 0.9)
+    let recalInputAmount = remainAmountIn;
+    if (remainAmountIn.greaterThan(maxInput)) {
+      recalInputAmount = maxInput
+    }
+    const bestTradeInAmount = await Trade.bestTradeExactIn(bestTrade.swaps[0].route.pools, recalInputAmount, token1Currency)
+    totalOutputA = totalOutputA.add(bestTradeInAmount[0].outputAmount)
+    priceImpact = priceImpact.add(bestTradeInAmount[0].priceImpact)
+    newTradeList.push(...bestTradeInAmount)
+    remainAmountIn = remainAmountIn.subtract(recalInputAmount)
+    tradingFee += Number(fee.toString()) / BASE_FEE_PERCENT * Number(recalInputAmount.toExact())
+    if (remainAmountIn.numerator <= 0) {
+      break
+    }
+  }
+
+  if (remainAmountIn.numerator > 0) {
+    console.error("Khoong du tien", remainAmountIn)
+  }
+
+  console.info("🚀 ~ getBestTrade ~ newTradeList: ", newTradeList)
+  console.info("🚀 ~ getBestTrade ~ totalOutputA: ", totalOutputA.toExact())
 
   // const bestTrades = await findBestPool(token0Currency, token1Currency, inputAmount, 3,5, listPool)
   // console.info(" (getBestTrade.ts:103) bestTrades", newTrade);
   const { slippage } = storeToRefs(useSwapStore())
   console.info(' (getBestTrade.ts:133) slippage', slippage.value)
   const slippagePercent = new Percent(Number(slippage.value))
+  const minimumAmountOut = totalOutputA.multiply(1 - Number(slippage.value)/100)
   return {
-    tradingFee: (Number(trade.swaps[0].route.pools[0].fee.toString()) / 10 ** 6) * inputAmount,
-    fee: Number(trade.swaps[0].route.pools[0].fee.toString()),
-    priceImpact: trade.priceImpact,
+    tradingFee: tradingFee,
+    fee: 0,
+    priceImpact: priceImpact,
     slippage: slippagePercent,
-    minimumAmountOut: trade.minimumAmountOut(slippagePercent),
-    maximumAmountIn: trade.maximumAmountIn(slippagePercent),
+    minimumAmountOut: minimumAmountOut,
+    maximumAmountIn: CurrencyAmount.fromRawAmount(token0Currency, 0),
     tradeType: type,
-    inputAmount: trade.inputAmount,
-    outputAmount: trade.outputAmount,
+    inputAmount: currencyAmountIn,
+    outputAmount: totalOutputA,
     routes: [
-      {
-        type: PoolType.V3,
-        pools: listPool,
-        path: trade.swaps[0].route.tokenPath,
-        percent: 100,
-        inputAmount: trade.inputAmount,
-        outputAmount: trade.outputAmount
-      }
+      // {
+      //   type: PoolType.V3,
+      //   pools: listPool,
+      //   path: trade.swaps[0].route.tokenPath,
+      //   percent: 100,
+      //   inputAmount: trade.inputAmount,
+      //   outputAmount: trade.outputAmount
+      // }
     ],
     gasEstimate: BigInt(1000000)
   }
@@ -257,9 +226,6 @@ export function parseProtocolFees(feeProtocol: number | string) {
   const token1ProtocolFee = packed >> 16
   return [new Percent(token0ProtocolFee, FEE_BASE), new Percent(token1ProtocolFee, FEE_BASE)]
 }
-
-const convertV3PoolToSDKPool = ({ token0, token1, fee, sqrtRatioX96, liquidity, tick, ticks }: V3Pool) =>
-  new V3PoolSDK(token0.wrapped, token1.wrapped, fee, sqrtRatioX96, liquidity, tick, ticks)
 
 export function warningSeverity(priceImpact: Percent | undefined | null): 0 | 1 | 2 | 3 | 4 {
   if (!priceImpact) return 0
@@ -361,28 +327,4 @@ export const bestTradeFromSmartRouter = ({
     nativeCurrencyUsdPrice,
     signal: abortController?.signal
   })
-}
-
-const makeV3Trade = async (pools: V3Pool[], tokenIn: Currency, tokenOut: Currency, amount: CurrencyAmount<Currency>, tradeType: TradeType) => {
-  const v3Pools = pools.map(convertV3PoolToSDKPool)
-  return await V3Trade.fromRoute(new V3Route(v3Pools, tokenIn, tokenOut), amount, tradeType)
-  // console.info(" (getBestTrade.ts:312) v3Trade", v3Trade);
-  // return {
-  //   tradeType,
-  //   inputAmount: v3Trade.inputAmount,
-  //   outputAmount: v3Trade.outputAmount,
-  //   routes: [
-  //     {
-  //       type: RouteType.V3,
-  //       pools,
-  //       path: v3Trade.swaps[0].route.tokenPath,
-  //       percent: 100,
-  //       inputAmount: v3Trade.inputAmount,
-  //       outputAmount: v3Trade.outputAmount,
-  //     },
-  //   ],
-  //   gasEstimate: 0n,
-  //   gasEstimateInUSD: CurrencyAmount.fromRawAmount(tokenIn, 0),
-  //   blockNumber: 0,
-  // }
 }
