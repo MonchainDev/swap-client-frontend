@@ -23,36 +23,42 @@
       </template>
     </ElTableColumn>
     <ElTableColumn label="APR">
-      <!-- <div class="text-sm text-[#049C6B]">Up to 54.34% <span class="text-gray-6"> 44.88%</span></div> -->
+      <template #default="{ row }">
+        <div class="text-sm text-[#049C6B]">
+          Up to {{ row.feeApr }}% <span class="text-gray-6"> {{ row.rewardApr }}%</span>
+        </div>
+      </template>
     </ElTableColumn>
     <ElTableColumn label="TVL" align="right">
-      <!-- <span class="text-sm">$ 5,631,395.2</span> -->
+      <template #default="{ row }">
+        <span class="text-sm">${{ formatNumberAbbreviation(row.tvl) }}</span>
+      </template>
     </ElTableColumn>
     <ElTableColumn label="Volume 24h" align="right">
-      <!-- <template #default="{ row }">
-          <span class="text-sm">${{ formatNumberAbbreviation(row.volume1Day.value) }}</span>
-        </template> -->
+      <template #default="{ row }">
+        <span class="text-sm">${{ formatNumberAbbreviation(row.volume24h) }}</span>
+      </template>
     </ElTableColumn>
     <ElTableColumn label="" align="center" width="50">
-      <!-- <ElPopover placement="right" :show-arrow="false" :width="200" trigger="hover" popper-class="popper-menu-pool">
-          <template #reference>
-            <BaseIcon name="three-dot" size="24" class="cursor-pointer" />
-          </template>
-          <ul class="flex flex-col gap-4">
-            <li class="flex items-center gap-2">
-              <BaseIcon name="info" size="24" />
-              <span>View pool details</span>
-            </li>
-            <li class="flex items-center gap-2">
-              <BaseIcon name="wallet-1" size="24" />
-              <span>Connect wallet</span>
-            </li>
-            <li class="flex items-center gap-2">
-              <BaseIcon name="article" size="24" />
-              <span>View Info page</span>
-            </li>
-          </ul>
-        </ElPopover> -->
+      <ElPopover placement="right" :show-arrow="false" :width="200" trigger="hover" popper-class="popper-menu-pool">
+        <template #reference>
+          <BaseIcon name="three-dot" size="24" class="cursor-pointer" />
+        </template>
+        <ul class="flex flex-col gap-4">
+          <li class="flex items-center gap-2">
+            <BaseIcon name="info" size="24" />
+            <span>View pool details</span>
+          </li>
+          <!-- <li class="flex items-center gap-2">
+            <BaseIcon name="wallet-1" size="24" />
+            <span>Connect wallet</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <BaseIcon name="article" size="24" />
+            <span>View Info page</span>
+          </li> -->
+        </ul>
+      </ElPopover>
     </ElTableColumn>
   </BaseTable>
 </template>
@@ -75,7 +81,7 @@
     return LIST_NETWORK.find((item) => item.value === networkName)
   }
 
-  const _formatNumberAbbreviation = (value: number) => {
+  const formatNumberAbbreviation = (value: number) => {
     if (!value) return '0'
 
     const number = Number(value)

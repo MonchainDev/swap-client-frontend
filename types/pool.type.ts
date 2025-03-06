@@ -1,25 +1,26 @@
 export interface IPool {
-  id: string
   poolAddress: string
   tokenBase: string
-  baseSymbol: string
   tokenQuote: string
+  baseSymbol: string
   quoteSymbol: string
-  baseDecimals: number
-  quoteDecimals: number
-  network: string
-  liquidity: number
   fee: number
+  network: string
   tickLower: number
   priceLower: number
   tickUpper: number
   priceUpper: number
-  tokenId: number
-  feeGrowthInside0LastX128: number
-  feeGrowthInside1LastX128: number
+  tokenId: string
+  baseDecimals: number
+  quoteDecimals: number
   poolStatus: string
   createdBy: string
-  createdAt: number
-  updatedAt: number
-  inChange: string
+  currentTick: number
+  baseQtty: number
+  quoteQtty: number
+  tvl: number
+  volume24h: number
+  feeApr: number
+  rewardApr: number
+  liquidity: number
 }

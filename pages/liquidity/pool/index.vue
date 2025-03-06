@@ -108,7 +108,7 @@
           </div>
         </div>
       </div>
-      <TableListPool :data="data?.content" :loading="status === 'pending'" />
+      <TableListPool :data="formattedData" :loading="status === 'pending'" />
     </div>
   </div>
   <PopupSelectToken v-model:token-selected="tokenSelected" :show-network="false" is-select />
@@ -159,9 +159,44 @@
     return params.toString()
   })
 
-  const { data, status } = useFetch<IResponse<IPool[]>>(() => `/api/pool/list?${queryString.value}`, {
+  const { data, status } = useFetch<IResponse<string[]>>(() => `/api/pool/list?${queryString.value}`, {
     immediate: true,
     key: queryString.value
+  })
+
+  const formattedData = computed((): IPool[] => {
+    if (data.value?.content.length) {
+      //@ts-ignore
+      return data.value.content.map((data) => {
+        return {
+          poolAddress: data[0],
+          tokenBase: data[1],
+          tokenQuote: data[2],
+          baseSymbol: data[3],
+          quoteSymbol: data[4],
+          fee: data[5],
+          network: data[6],
+          tickLower: data[7],
+          priceLower: data[8],
+          tickUpper: data[9],
+          priceUpper: data[10],
+          tokenId: data[11],
+          baseDecimals: data[12],
+          quoteDecimals: data[13],
+          poolStatus: data[14],
+          createdBy: data[15],
+          currentTick: data[16],
+          baseQtty: data[17],
+          quoteQtty: data[18],
+          tvl: data[19],
+          volume24h: data[20],
+          feeApr: data[21],
+          rewardApr: data[22],
+          liquidity: data[23]
+        }
+      })
+    }
+    return []
   })
 </script>
 
