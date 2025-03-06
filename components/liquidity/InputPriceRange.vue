@@ -45,10 +45,6 @@
 
   const { form, buttonRangePercent } = storeToRefs(useLiquidityStore())
 
-  const isDisabledMinusAndPlus = computed(() => {
-    return buttonRangePercent.value === 100 || form.value.minPrice === '' || form.value.maxPrice === ''
-  })
-
   const formatText = computed(() => {
     return props.type === 'MIN' ? 'Min price' : 'Max price'
   })
@@ -73,6 +69,10 @@
   const handleInput = useDebounce(() => {
     emits('change', amount.value, props.type)
   }, 400)
+
+  const isDisabledMinusAndPlus = computed(() => {
+    return buttonRangePercent.value === 0 || amount.value === ''
+  })
 </script>
 
 <style lang="scss" scoped>
