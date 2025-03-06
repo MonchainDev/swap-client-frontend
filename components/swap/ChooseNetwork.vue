@@ -27,7 +27,11 @@
         </ElInput>
         <ul class="space-y-4">
           <li v-for="item in listNetwork" :key="item.value">
-            <div class="flex cursor-pointer items-center justify-between gap-3" @click="handleSelectNetwork(item)">
+            <div
+              class="flex cursor-pointer items-center justify-between gap-3"
+              :class="{ 'pointer-events-none opacity-50': item.disabled }"
+              @click="handleSelectNetwork(item)"
+            >
               <div class="flex items-center gap-3">
                 <img :src="item.logo" alt="logo" class="size-9 rounded-lg" />
                 <span class="text-sm font-semibold text-primary sm:font-normal">{{ item.title }}</span>

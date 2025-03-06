@@ -117,7 +117,7 @@
 <script lang="ts" setup>
   import TableListPool from '~/components/liquidity/TableListPool.vue'
   import { LIST_NETWORK } from '~/constant'
-  import type { IPool } from '~/types/pool.type'
+  import type { IPool, IPoolOrigin } from '~/types/pool.type'
   import type { IResponse } from '~/types/response.type'
 
   definePageMeta({
@@ -159,7 +159,7 @@
     return params.toString()
   })
 
-  const { data, status } = useFetch<IResponse<string[]>>(() => `/api/pool/list?${queryString.value}`, {
+  const { data, status } = useFetch<IResponse<IPoolOrigin[]>>(() => `/api/pool/list?${queryString.value}`, {
     immediate: true,
     key: queryString.value
   })
@@ -169,30 +169,30 @@
       //@ts-ignore
       return data.value.content.map((data) => {
         return {
-          poolAddress: data[0],
-          tokenBase: data[1],
-          tokenQuote: data[2],
-          baseSymbol: data[3],
-          quoteSymbol: data[4],
-          fee: data[5],
-          network: data[6],
-          tickLower: data[7],
-          priceLower: data[8],
-          tickUpper: data[9],
-          priceUpper: data[10],
-          tokenId: data[11],
-          baseDecimals: data[12],
-          quoteDecimals: data[13],
-          poolStatus: data[14],
-          createdBy: data[15],
-          currentTick: data[16],
-          baseQtty: data[17],
-          quoteQtty: data[18],
-          tvl: data[19],
-          volume24h: data[20],
-          feeApr: data[21],
-          rewardApr: data[22],
-          liquidity: data[23]
+          poolAddress: data.pooladdress,
+          tokenBase: data.tokenbase,
+          tokenQuote: data.tokenquote,
+          baseSymbol: data.basesymbol,
+          quoteSymbol: data.quotesymbol,
+          fee: data.fee,
+          network: data.network,
+          tickLower: data.ticklower,
+          priceLower: data.pricelower,
+          tickUpper: data.tickupper,
+          priceUpper: data.priceupper,
+          tokenId: data.tokenid,
+          baseDecimals: data.basedecimals,
+          quoteDecimals: data.quotedecimals,
+          poolStatus: data.poolstatus,
+          createdBy: data.createdby,
+          currentTick: data.currenttick,
+          baseQtty: data.baseqtty,
+          quoteQtty: data.quoteqtty,
+          tvl: data.tvl,
+          volume24h: data.volume24h,
+          feeApr: data.feeapr,
+          rewardApr: data.rewardapr,
+          liquidity: data.liquidity
         }
       })
     }

@@ -2,7 +2,7 @@
   <BaseTable :data="props.data" :loading="loading" class="table-pool mt-9">
     <ElTableColumn label="Pools" width="320" prop="poolAddress">
       <template #default="{ row }">
-        <div class="flex gap-[10px]">
+        <NuxtLink :to="{ name: 'liquidity-pool-network-address', params: { network: row.network, address: row.poolAddress } }" class="flex gap-[10px]">
           <div class="flex">
             <img src="/token-default.png" alt="logo" class="size-9" />
             <img src="/token-default.png" alt="logo" class="-ml-[18px] size-9" />
@@ -14,7 +14,7 @@
               <span class="text-xs text-gray-8">{{ getNetwork(row.network)?.title }}</span>
             </div>
           </div>
-        </div>
+        </NuxtLink>
       </template>
     </ElTableColumn>
     <ElTableColumn label="Fee tier" align="center" width="100">
@@ -48,18 +48,16 @@
           <ul class="flex flex-col gap-4">
             <li class="flex items-center gap-2">
               <BaseIcon name="info" size="24" />
-              <NuxtLink :to="{ name: 'liquidity-pool-network-address', params: { network: row.network, address: row.poolAddress } }"
-                >View pool details</NuxtLink
-              >
+              <NuxtLink :to="{ name: 'liquidity-pool-network-address', params: { network: row.network, address: row.poolAddress } }">
+                View pool details
+              </NuxtLink>
             </li>
-            <!-- <li class="flex items-center gap-2">
-            <BaseIcon name="wallet-1" size="24" />
-            <span>Connect wallet</span>
-          </li>
-          <li class="flex items-center gap-2">
-            <BaseIcon name="article" size="24" />
-            <span>View Info page</span>
-          </li> -->
+            <li class="flex items-center gap-2">
+              <BaseIcon name="article" size="24" />
+              <NuxtLink :to="{ name: 'info-address', params: { address: row.poolAddress } }">
+                <span>View Info page</span>
+              </NuxtLink>
+            </li>
           </ul>
         </ElPopover>
       </template>

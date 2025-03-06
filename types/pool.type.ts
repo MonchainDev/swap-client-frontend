@@ -24,3 +24,31 @@ export interface IPool {
   rewardApr: number
   liquidity: number
 }
+
+export interface IPoolOrigin {
+  tokenbase: string
+  currenttick: number
+  rewardapr: number
+  ticklower: number
+  liquidity: number
+  basesymbol: string
+  tokenquote: string
+  feeapr: number
+  priceupper: number
+  quotedecimals: number
+  poolstatus: string
+  fee: number
+  basedecimals: number
+  pricelower: number
+  network: string
+  pooladdress: string
+  createdby: string
+  baseqtty: number
+  tvl: number
+  volume24h: number
+  tickupper: number
+  tokenid: number
+  createdat: number
+  quoteqtty: number
+  quotesymbol: string
+}

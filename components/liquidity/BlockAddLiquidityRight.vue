@@ -159,9 +159,19 @@
 
   const handleChangePriceRange = (type: INPUT_PRICE, amount: string) => {
     if (type === 'MIN') {
-      buttonRangePercent.value = amount !== '0' ? null : buttonRangePercent.value
+      if (buttonRangePercent.value === 100) {
+        buttonRangePercent.value = amount !== '0' ? null : buttonRangePercent.value
+      } else {
+        buttonRangePercent.value = null
+      }
       dispatchRangeTypedValue('MIN', +form.value.minPrice!)
     } else {
+      if (buttonRangePercent.value === 100) {
+        buttonRangePercent.value = amount !== '∞' ? null : buttonRangePercent.value
+      } else {
+        buttonRangePercent.value = null
+      }
+
       buttonRangePercent.value = amount !== '∞' ? null : buttonRangePercent.value
       dispatchRangeTypedValue('MAX', +form.value.maxPrice!)
     }
