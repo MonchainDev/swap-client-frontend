@@ -429,8 +429,6 @@ export class Trade<TInput extends TokenCurrency, TOutput extends TokenCurrency, 
           tradeComparator
         )
       } else if (maxHops > 1 && pools.length > 1) {
-        console.info(' (trade.ts:456) maxHops', maxHops)
-        console.info(' (trade.ts:456) pools', pools)
         const poolsExcludingThisPool = pools.slice(0, i).concat(pools.slice(i + 1, pools.length))
 
         // otherwise, consider all the other paths that lead from this token as long as we have not exceeded maxHops
