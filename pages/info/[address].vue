@@ -1,12 +1,11 @@
 <template>
   <div class="mx-auto mb-[42px] mt-[30px] max-w-[1024px]">
     <BlockHeaderLiquid />
-    <BlockMyPosition class="mt-20" />
-    <BlockPairInfo class="mt-[67px]" />
+    <BlockPairInfo class="mt-[37px]" :show-header="false" />
     <TableTxPoolDetail />
   </div>
 </template>
 
 <script lang="ts" setup></script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped></style>
