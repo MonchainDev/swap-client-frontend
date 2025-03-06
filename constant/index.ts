@@ -26,31 +26,36 @@ const LIST_NETWORK: INetwork[] = [
     title: 'BNB Chain',
     logo: '/logo-bnb-chain.png',
     value: 'BNB',
-    chainId: ChainId.BSC_TESTNET
+    chainId: ChainId.BSC_TESTNET,
+    disabled: true
   },
   {
     title: 'Ethereum',
     logo: '/logo-ethereum-chain.png',
     value: 'ETH',
-    chainId: ChainId.SEPOLIA
+    chainId: ChainId.SEPOLIA,
+    disabled: true
   },
   {
     title: 'Polygon',
     logo: '/logo-polygon-chain.png',
     value: 'MATIC',
-    chainId: ChainId.POLYGON
+    chainId: ChainId.POLYGON,
+    disabled: true
   },
   {
     title: 'Mon Chain',
     logo: '/logo-mon-chain.png',
     value: 'MON',
-    chainId: ChainId.MON_TESTNET
+    chainId: ChainId.MON_TESTNET,
+    disabled: false
   },
   {
     title: 'Linea Chain',
     logo: '/logo-liena-chain.png',
     value: 'LINEA',
-    chainId: ChainId.LINEA
+    chainId: ChainId.LINEA,
+    disabled: true
   }
 ]
 

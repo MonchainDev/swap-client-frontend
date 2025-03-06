@@ -18,6 +18,7 @@ export interface INetwork {
   logo: string
   value: string
   chainId: ChainId
+  disabled?: boolean
 }
 
 export enum ChainId {
