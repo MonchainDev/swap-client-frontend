@@ -3,7 +3,7 @@
     <div class="grid grid-cols-2 gap-10">
       <div class="flex items-center justify-between">
         <div class="flex gap-4">
-          <NuxtLink to="/liquidity/pool" class="flex size-10 items-center justify-center rounded-lg border border-solid border-gray-3 bg-white">
+          <NuxtLink to="/liquidity/positions" class="flex size-10 items-center justify-center rounded-lg border border-solid border-gray-3 bg-white">
             <BaseIcon name="arrow-down" size="24" class="rotate-90" />
           </NuxtLink>
           <div class="flex flex-col gap-3">

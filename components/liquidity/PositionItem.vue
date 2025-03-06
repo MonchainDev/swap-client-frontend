@@ -1,6 +1,6 @@
 <template>
   <div
-    class="grid cursor-pointer grid-cols-[3fr,1fr,1fr,3fr,3fr,2fr] border-b border-solid border-gray-2 py-6 hover:bg-gray-2"
+    class="grid cursor-pointer grid-cols-[3fr,2fr,2fr,3fr,3fr,2fr] border-b border-solid border-gray-2 py-6 hover:bg-gray-2"
     @click="router.push(`/liquidity/${props.position.tokenId}`)"
   >
     <div class="flex items-center gap-[10px]">
@@ -9,7 +9,7 @@
         <img src="/token-default.png" alt="token" class="-ml-4 size-9 rounded-full border border-solid border-white" />
       </div>
       <div class="flex flex-col">
-        <div class="line-clamp-1 text-base font-semibold">{{ currency0?.symbol }}/{{ currency1?.symbol }}</div>
+        <div class="line-clamp-1 text-base font-semibold">{{ props.position?.baseSymbol }}/{{ props.position.quoteSymbol }}</div>
         <div class="flex items-center space-x-1">
           <img :src="networkSelected?.logo" :alt="networkSelected?.title" class="size-[14px]" />
           <span class="text-xs text-gray-8">{{ networkSelected?.title }} | #{{ props.position.tokenId }}</span>
@@ -19,39 +19,46 @@
     <div class="flex items-center justify-center">
       <span class="rounded bg-gray-2 px-2 py-1 text-sm">{{ fee }}</span>
     </div>
-    <div></div>
+    <div class="flex flex-col items-center gap-1 text-sm">
+      <span class="font-semibold text-success">{{ props.position.feeApr ? Number(props.position.feeApr).toFixed(2) : 0 }}%</span>
+      <span class="text-gray-6">{{ props.position.rewardApr }}%</span>
+    </div>
     <div class="flex flex-col justify-center text-sm">
-      <span>Min: {{ minAmount }} {{ base?.symbol }}/{{ quote?.symbol }}</span>
-      <span>Max: {{ maxAmount }} {{ base?.symbol }}/{{ quote?.symbol }}</span>
+      <!-- <span>Min: {{ calculatePositionAmounts.baseAmount }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span> -->
+      <!-- <span>Max: {{ calculatePositionAmounts.quoteAmount }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span> -->
     </div>
     <div class="flex flex-col text-sm">
-      <span>≈ $0</span>
+      <!-- <span>≈ $0</span>
       <span>({{ displayTokenReserve(_position?.amount0) }} /</span>
-      <span>{{ displayTokenReserve(_position?.amount1) }})</span>
+      <span>{{ displayTokenReserve(_position?.amount1) }})</span> -->
     </div>
+    <div class="flex items-center justify-center text-center text-sm" :class="classStatus">{{ capitalizeFirstLetter(props.position.poolStatus) }}</div>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import type { CurrencyAmount, Token } from '@monchain/swap-sdk-core'
+  // import type { CurrencyAmount, Token } from '@monchain/swap-sdk-core'
   import { LIST_NETWORK } from '~/constant'
-  import { Bound, type PositionDetail } from '~/types'
+  // import { Bound } from '~/types'
+  import type { IPool } from '~/types/pool.type'
 
   interface IProps {
-    position: PositionDetail
+    // position: PositionDetail
+    position: IPool
   }
 
   const props = withDefaults(defineProps<IProps>(), {
-    position: () => ({}) as PositionDetail
+    // position: () => ({}) as PositionDetail
+    position: () => ({}) as IPool
   })
 
   const router = useRouter()
 
-  const { currency0, currency1, position: _position, tickAtLimit, base, priceLower, priceUpper, quote } = useExtraV3PositionInfo(props.position)
+  // const { currency0, currency1, position: _position, tickAtLimit, base, priceLower, priceUpper, quote } = useExtraV3PositionInfo(props.position)
 
   const networkSelected = computed(() => {
     if (props.position) {
-      return LIST_NETWORK.find((item) => item.chainId === props.position.chainId)
+      return LIST_NETWORK.find((item) => item.value === props.position.network)
     }
     return undefined
   })
@@ -63,21 +70,73 @@
     return ''
   })
 
-  const minAmount = computed(() => {
-    return formatTickPrice(priceLower.value, tickAtLimit.value ?? {}, Bound.LOWER, 'en-US')
-  })
+  // const minAmount = computed(() => {
+  //   return formatTickPrice(props.position.priceLower, {}, Bound.LOWER, 'en-US')
+  // })
 
-  const maxAmount = computed(() => {
-    return formatTickPrice(priceUpper.value, tickAtLimit.value ?? {}, Bound.UPPER, 'en-US')
-  })
+  // const maxAmount = computed(() => {
+  //   return formatTickPrice(priceUpper.value, tickAtLimit.value ?? {}, Bound.UPPER, 'en-US')
+  // })
 
-  const displayTokenReserve = (amount?: CurrencyAmount<Token>) => {
-    const minimumFractionDigits = Math.min(amount?.currency.decimals ?? 0, 6)
-    const quantity = amount && !amount.equalTo(0) ? amount.toFixed(minimumFractionDigits) : '0'
-    const symbol = amount?.currency.symbol ?? '-'
+  // const displayTokenReserve = (amount?: CurrencyAmount<Token>) => {
+  //   const minimumFractionDigits = Math.min(amount?.currency.decimals ?? 0, 6)
+  //   const quantity = amount && !amount.equalTo(0) ? amount.toFixed(minimumFractionDigits) : '0'
+  //   const symbol = amount?.currency.symbol ?? '-'
 
-    return `${formatNumber(quantity)} ${symbol}`
+  //   return `${formatNumber(quantity)} ${symbol}`
+  // }
+
+  // const calculatePositionAmounts = computed(() => {
+  //   const position = props.position
+  //   const sqrt = Math.sqrt
+  //   const pow = Math.pow
+
+  //   // Trích xuất dữ liệu
+  //   const { priceLower, priceUpper, currentTick, liquidity } = position
+
+  //   // Tính căn bậc hai của giá
+  //   const sqrtPriceLower = sqrt(priceLower)
+  //   const sqrtPriceUpper = sqrt(priceUpper)
+  //   const sqrtPriceCurrent = sqrt(pow(1.0001, currentTick))
+
+  //   // Tính Base Amount
+  //   let baseAmount = 0
+  //   if (currentTick < position.tickUpper) {
+  //     baseAmount = (liquidity * (sqrtPriceUpper - sqrtPriceCurrent)) / (sqrtPriceUpper * sqrtPriceCurrent)
+  //   }
+
+  //   // Tính Quote Amount
+  //   let quoteAmount = 0
+  //   if (currentTick > position.tickLower) {
+  //     quoteAmount = liquidity * (sqrtPriceCurrent - sqrtPriceLower)
+  //   }
+
+  //   return {
+  //     baseAmount,
+  //     quoteAmount
+  //   }
+  // })
+
+  const enum TabValue {
+    ALL = 'ALL',
+    ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
+    CLOSE = 'CLOSE'
   }
+
+  function capitalizeFirstLetter(string: string) {
+    if (!string) return ''
+    return string.charAt(0).toUpperCase() + string.slice(1).toLocaleLowerCase()
+  }
+
+  const classStatus = computed(() => {
+    const status = props.position.poolStatus
+    return {
+      'text-error': status === TabValue.CLOSE,
+      'text-success': status === TabValue.ACTIVE,
+      'text-warning': status === TabValue.INACTIVE
+    }
+  })
 </script>
 
 <style lang="scss"></style>
