@@ -157,13 +157,16 @@
     return !startPriceTypedValue.value && !poolExits.value
   })
 
-  const handleChangePriceRange = (type: INPUT_PRICE) => {
+  const handleChangePriceRange = (type: INPUT_PRICE, amount: string) => {
+    console.log('🚀 ~ handleChangePriceRange ~ amount:', amount)
+
     if (type === 'MIN') {
+      buttonRangePercent.value = form.value.minPrice !== amount ? null : buttonRangePercent.value
       dispatchRangeTypedValue('MIN', +form.value.minPrice!)
     } else {
+      buttonRangePercent.value = form.value.maxPrice !== amount ? null : buttonRangePercent.value
       dispatchRangeTypedValue('MAX', +form.value.maxPrice!)
     }
-    buttonRangePercent.value = null
   }
 
   const { price, invertPrice, tokenA, position, ticksAtLimit, formattedAmounts, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange } = useV3DerivedInfo()

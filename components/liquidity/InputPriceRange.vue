@@ -9,7 +9,7 @@
         :formatter="(value: string) => formatNumberInput(value)"
         :parser="(value: string) => parseNumberInput(value)"
         @input="handleInput"
-        @blur="emits('blur', props.type)"
+        @blur="emits('blur', props.type, amount)"
       />
       <span class="text-xs text-gray-8">{{ textSuffix }}</span>
     </div>
@@ -65,7 +65,7 @@
 
   const emits = defineEmits<{
     change: [value: string, type: INPUT_PRICE]
-    blur: [type: INPUT_PRICE]
+    blur: [type: INPUT_PRICE, amount: string]
     increase: []
     decrease: []
   }>()
