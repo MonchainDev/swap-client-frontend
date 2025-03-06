@@ -88,7 +88,7 @@ export const monTestnet = /*#__PURE__*/ defineChain({
   },
   rpcUrls: {
     default: {
-      http: ['https:rpc-testnet.monchain.info']
+      http: ['https://rpc-testnet.monchain.info']
     }
   },
   blockExplorers: {
