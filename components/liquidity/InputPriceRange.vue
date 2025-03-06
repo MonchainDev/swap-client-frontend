@@ -71,7 +71,7 @@
   }, 400)
 
   const isDisabledMinusAndPlus = computed(() => {
-    return buttonRangePercent.value === 0 || amount.value === ''
+    return buttonRangePercent.value === 100 || amount.value === ''
   })
 </script>
 

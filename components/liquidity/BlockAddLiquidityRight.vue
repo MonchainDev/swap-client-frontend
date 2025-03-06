@@ -158,13 +158,11 @@
   })
 
   const handleChangePriceRange = (type: INPUT_PRICE, amount: string) => {
-    console.log('🚀 ~ handleChangePriceRange ~ amount:', amount)
-
     if (type === 'MIN') {
-      buttonRangePercent.value = form.value.minPrice !== amount ? null : buttonRangePercent.value
+      buttonRangePercent.value = amount !== '0' ? null : buttonRangePercent.value
       dispatchRangeTypedValue('MIN', +form.value.minPrice!)
     } else {
-      buttonRangePercent.value = form.value.maxPrice !== amount ? null : buttonRangePercent.value
+      buttonRangePercent.value = amount !== '∞' ? null : buttonRangePercent.value
       dispatchRangeTypedValue('MAX', +form.value.maxPrice!)
     }
   }
