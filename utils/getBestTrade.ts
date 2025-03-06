@@ -3,6 +3,7 @@ import ABI_ERC20 from '@/constant/abi/token.json'
 import { type Currency, Percent } from '@monchain/sdk'
 import { PoolType, type Route, type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
 import { CurrencyAmount, Token, type TradeType } from '@monchain/swap-sdk-core'
+import { PancakeSwapUniversalRouter, type PancakeSwapOptions } from '@monchain/universal-router-sdk'
 import { type FeeAmount } from '@monchain/v3-sdk'
 import { TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
 import { readContract } from '@wagmi/core'
@@ -15,6 +16,7 @@ import { CONTRACT_ADDRESS } from '~/constant/contract'
 import { FEE_ALLOWANCE } from '~/utils/constanst'
 import { Trade } from './trade'
 import { monTestnet } from './config/chains'
+import { useAccount } from '@wagmi/vue'
 
 // TODO: thay chain theo network
 const publicClient = createPublicClient({
@@ -163,7 +165,8 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
   const minimumAmountOut = totalOutputA.multiply(100 - Number(slippage.value)).divide(100)
   const gasEstimate = await publicClient.getGasPrice()
   console.info("🚀 ~ getBestTrade ~ gasEstimate:", gasEstimate)
-  return {
+  
+  const res = {
     tradingFee: tradingFee,
     fee: 0, // todo: không dùng fee này nữa
     priceImpact: new Percent(priceImpact.numerator, priceImpact.denominator),
@@ -176,9 +179,31 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
     routes: routeOuts,
     gasEstimate: gasEstimate,
   }
+  console.info('🚀 ~ getBestTrade ~ res', res)
+  // const { address } = useAccount()
+  const swapOption = swapOptions({
+    recipient: '0x4298706288f08E37B41096e888B00100Bd99e060', // todo: ví người nhận tiền
+    fee:{
+      fee: new Percent(500n, 10000n), //
+      recipient: '0x31fB83Dc60D27C9C4a58a361bc9c48e0Bcfe902B' // todo:  ví người nhận fee
+    },
+  })
+  console.info('🚀 ~ getBestTrade ~ swapOption', swapOption)
+  const { calldata, value } = PancakeSwapUniversalRouter.swapERC20CallParameters(res, swapOption)
+  console.info('🚀 ~ getBestTrade ~ calldata', calldata, value)
+  return res
 
   } catch (error) {
       return Promise.reject(error)
+  }
+}
+
+const swapOptions = (options: Partial<PancakeSwapOptions>): PancakeSwapOptions => {
+  let slippageTolerance = new Percent(5, 100)
+  if (options.fee) slippageTolerance = slippageTolerance.add(options.fee.fee)
+  return {
+    slippageTolerance,
+    ...options,
   }
 }
 
