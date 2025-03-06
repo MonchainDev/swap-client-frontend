@@ -8,7 +8,7 @@
       </div>
     </div>
     <div v-if="form.minimumAmountOut != ''" class="flex justify-between">
-      <span class="text-sm">Minimum receiver</span>
+      <span class="text-sm">Minimum received</span>
       <div class="flex flex-col items-end text-sm">
         <span class="font-bold"> {{ form.minimumAmountOut }} {{ form.token1.symbol }}</span>
       </div>
@@ -28,7 +28,7 @@
         <div class="flex flex-col gap-2 text-primary">
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium">Trading Fee </span>
-            <span class="text-sm font-medium"> {{ form.tradingFee }} {{ form.token0.symbol }}</span>
+            <span class="text-sm font-medium"> {{ formatTradingFee }} {{ form.token0.symbol }}</span>
           </div>
           <div class="h-[1px] w-full bg-gray-3"></div>
           <div class="flex items-center justify-between">
@@ -45,7 +45,7 @@
     <div class="flex justify-between">
       <span class="text-sm">Price Impact</span>
       <div class="flex flex-col items-end text-sm">
-        <span class="font-bold"> {{ form.priceImpact }} %</span>
+        <span class="font-bold"> {{ form.priceImpact }}%</span>
       </div>
     </div>
     <template v-if="editSlippage">
@@ -134,7 +134,7 @@
   const exchangeRate = computed(() => {
     return {
       base: (Number(form.value.amountOut) / Number(form.value.amountIn)).toFixed(2),
-      quote: (Number(form.value.amountIn) / Number(form.value.amountOut)).toFixed(4)
+      quote: (Number(form.value.amountIn) / Number(form.value.amountOut)).toFixed(6)
     }
   })
 

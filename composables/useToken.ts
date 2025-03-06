@@ -19,7 +19,7 @@ export const useGetTokenInfo = async (tokenAddress: string) => {
   return {
     decimals: Number(decimals),
     symbol,
-    chainId: 16789
+    chainId: 16789 // todo: get current chain id
   } as {
     decimals: number
     symbol: string

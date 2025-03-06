@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts" setup>
-  import type { Token } from '@pancakeswap/swap-sdk-core'
+  import type { Token } from '@monchain/swap-sdk-core'
   import Decimal from 'decimal.js'
   import { WMON } from '~/constant/token'
   import { CurrencyField, type IToken } from '~/types'
@@ -120,10 +120,8 @@
     form.value[primary] = token
     form.value[secondary] = token.address === form.value[secondary].address ? empty : form.value[secondary]
 
-    listTokenOfRange.value[isBase ? 0 : 1] = token
-    if (form.value[secondary].address) {
-      listTokenOfRange.value[isBase ? 1 : 0] = form.value[secondary]
-    }
+    listTokenOfRange.value = [form.value.token0, form.value.token1]
+
     // reset form to 0 after select token
     resetFiled()
   }

@@ -9,7 +9,7 @@
         :formatter="(value: string) => formatNumberInput(value)"
         :parser="(value: string) => parseNumberInput(value)"
         @input="handleInput"
-        @blur="emits('blur', props.type)"
+        @blur="emits('blur', props.type, amount)"
       />
       <span class="text-xs text-gray-8">{{ textSuffix }}</span>
     </div>
@@ -45,10 +45,6 @@
 
   const { form, buttonRangePercent } = storeToRefs(useLiquidityStore())
 
-  const isDisabledMinusAndPlus = computed(() => {
-    return buttonRangePercent.value === 100 || form.value.minPrice === '' || form.value.maxPrice === ''
-  })
-
   const formatText = computed(() => {
     return props.type === 'MIN' ? 'Min price' : 'Max price'
   })
@@ -65,7 +61,7 @@
 
   const emits = defineEmits<{
     change: [value: string, type: INPUT_PRICE]
-    blur: [type: INPUT_PRICE]
+    blur: [type: INPUT_PRICE, amount: string]
     increase: []
     decrease: []
   }>()
@@ -73,6 +69,10 @@
   const handleInput = useDebounce(() => {
     emits('change', amount.value, props.type)
   }, 400)
+
+  const isDisabledMinusAndPlus = computed(() => {
+    return buttonRangePercent.value === 100 || amount.value === ''
+  })
 </script>
 
 <style lang="scss" scoped>

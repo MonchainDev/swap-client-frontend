@@ -51,7 +51,7 @@ export default function useV3DerivedInfo() {
     return undefined
   })
 
-  const { pool, poolExits } = usePools()
+  const { pool } = usePools()
   const noLiquidity = computed(() => !pool.value)
 
   const invertPrice = computed(() => Boolean(baseToken.value && token0.value && !baseToken.value.equals(token0.value)))
@@ -75,13 +75,15 @@ export default function useV3DerivedInfo() {
 
   // set min and max price default if pool exits
   watch(
-    () => poolExits.value,
+    () => pool.value?.fee,
     (value) => {
       if (value) {
         const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
         if (currentPrice) {
           dispatchRangeTypedValue('BOTH', currentPrice, zoomLevel.value)
         }
+      } else {
+        pool.value = undefined
       }
     }
   )

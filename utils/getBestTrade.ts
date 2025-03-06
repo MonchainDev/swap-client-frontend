@@ -1,19 +1,32 @@
 import ABI_MON_FACTORY from '@/constant/abi/MonFactory.json'
 import ABI_ERC20 from '@/constant/abi/token.json'
 import { type Currency, Percent } from '@monchain/sdk'
-import { getAmountDistribution, type Pool, PoolType, type QuoteProvider, type QuoterConfig, SmartRouter, type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
-import { CurrencyAmount, Token, TradeType } from '@monchain/swap-sdk-core'
-import { FeeAmount } from '@monchain/v3-sdk'
-import { TICK_SPACINGS, TickMath, Pool as V3PoolSDK, Route as V3Route, Trade as V3Trade } from '@monchain/v3-sdk'
+import { PoolType, type Route, type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
+import { CurrencyAmount, Token, type TradeType } from '@monchain/swap-sdk-core'
+import { type FeeAmount } from '@monchain/v3-sdk'
+import { TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
 import { readContract } from '@wagmi/core'
 import invariant from 'tiny-invariant'
-import type { Address } from 'viem'
+import { createPublicClient, http, type Address } from 'viem'
 import { useGetPoolLiquidity, useGetPoolSlot } from '~/composables/usePool'
 import { useGetTokenInfo } from '~/composables/useToken'
 import { config } from '~/config/wagmi'
 import { CONTRACT_ADDRESS } from '~/constant/contract'
 import { FEE_ALLOWANCE } from '~/utils/constanst'
 import { Trade } from './trade'
+import { monTestnet } from './config/chains'
+
+// TODO: thay chain theo network
+const publicClient = createPublicClient({
+  chain: monTestnet,
+  transport: http('https://rpc-testnet.monchain.info'),
+  batch: {
+    multicall: {
+      batchSize: 1024 * 200,
+    },
+  },
+})
+
 
 interface SwapInput {
   token0: string
@@ -31,28 +44,18 @@ export interface SwapOutput extends SmartRouterTrade<TradeType> {
   maximumAmountIn?: CurrencyAmount<Currency>
 }
 
-// export interface BaseRoute {
-//   type: RouteType;
-//   pools: V3Pool[];
-//   path: Currency[];
-//   input: Currency;
-//   output: Currency;
-// }
-// export interface RouteWithoutQuote extends BaseRoute {
-//   percent: number;
-//   amount: CurrencyAmount<Currency>;
-// }
-
-const BASE_FEE_PERCENT = 10 ** 6;
+const BASE_FEE_PERCENT = 10 ** 6
 
 export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapInput): Promise<SwapOutput> => {
-  const listPool: V3Pool[] = []
+    try {
+    const listPool: V3Pool[] = []
   const token0Info = await useGetTokenInfo(token0)
   const token1Info = await useGetTokenInfo(token1)
   inputAmount = inputAmount * ((10 ** token0Info.decimals) as number)
   const token0Currency = new Token(token0Info.chainId, token0 as `0x${string}`, token0Info.decimals, token0Info.symbol)
   const token1Currency = new Token(token1Info.chainId, token1 as `0x${string}`, token1Info.decimals, token1Info.symbol)
   const balances: { [key: string]: { [key: string]: bigint } } = {}
+
 
   for (const fee of FEE_ALLOWANCE) {
     const pool = (await readContract(config, {
@@ -96,67 +99,86 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
     listPool.push(v3Pool)
   }
 
+  // TODO:
+  if (listPool.length === 0) {
+    throw new Error('No pool found')
+  }
+
   const currencyAmountIn = CurrencyAmount.fromRawAmount(token0Currency, inputAmount)
   const bestTrades = await Trade.bestTradeExactIn(listPool, CurrencyAmount.fromRawAmount(token0Currency, inputAmount), token1Currency)
 
   let remainAmountIn = currencyAmountIn;
   let totalOutputA: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0n);
   let tradingFee = 0;
-  let priceImpact: Percent = new Percent(0, 100)
+  const routeOuts: Route[] = []
   const newTradeList: Trade<Currency, Token, TradeType.EXACT_INPUT>[] = []
+  let spotOutputAmount: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0)
   for (let i = 0; i < bestTrades.length; i++) {
     const bestTrade = bestTrades[i]
     const fee = bestTrade.swaps[0].route.pools[0].fee;
-    const maxInput = CurrencyAmount.fromRawAmount(token0Currency, Number(balances[token0][bestTrade.swaps[0].route.pools[0].address]) * 0.9)
+    console.info(bestTrade.swaps[0].route.pools[0].address, fee.toString())
+    const balance0 = Number(balances[token0][bestTrade.swaps[0].route.pools[0].address]) * 0.9
+    const maxInput = CurrencyAmount.fromRawAmount(token0Currency, balance0)
     let recalInputAmount = remainAmountIn;
     if (remainAmountIn.greaterThan(maxInput)) {
       recalInputAmount = maxInput
     }
     const bestTradeInAmount = await Trade.bestTradeExactIn(bestTrade.swaps[0].route.pools, recalInputAmount, token1Currency)
     totalOutputA = totalOutputA.add(bestTradeInAmount[0].outputAmount)
-    priceImpact = priceImpact.add(bestTradeInAmount[0].priceImpact)
+    // priceImpact = priceImpact.add(bestTradeInAmount[0].priceImpact)
     newTradeList.push(...bestTradeInAmount)
     remainAmountIn = remainAmountIn.subtract(recalInputAmount)
-    tradingFee += Number(fee.toString()) / BASE_FEE_PERCENT * Number(recalInputAmount.toExact())
+    tradingFee += Number(fee.toString()) / BASE_FEE_PERCENT * Number(recalInputAmount.numerator)
+    const percent = Number(recalInputAmount.toExact()) / Number(currencyAmountIn.toExact()) * 100
+
+    // cal price impact
+    const midPrice = bestTradeInAmount[0].swaps[0].route.midPrice
+    spotOutputAmount = spotOutputAmount.add(midPrice.quote(recalInputAmount))
+
+    routeOuts.push( {
+      type: PoolType.V3,
+      pools: bestTradeInAmount[0].swaps[0].route.pools,
+      path: bestTradeInAmount[0].swaps[0].route.tokenPath,
+      percent: percent,
+      inputAmount: bestTradeInAmount[0].inputAmount,
+      outputAmount: bestTradeInAmount[0].outputAmount,
+    })
+      
     if (remainAmountIn.numerator <= 0) {
       break
     }
   }
 
   if (remainAmountIn.numerator > 0) {
+    // TODO: throw error
     console.error("Khoong du tien", remainAmountIn)
+    throw new Error('No pool found')
   }
 
-  console.info("🚀 ~ getBestTrade ~ newTradeList: ", newTradeList)
-  console.info("🚀 ~ getBestTrade ~ totalOutputA: ", totalOutputA.toExact())
+  const priceImpact = spotOutputAmount.subtract(totalOutputA).divide(spotOutputAmount) 
 
-  // const bestTrades = await findBestPool(token0Currency, token1Currency, inputAmount, 3,5, listPool)
-  // console.info(" (getBestTrade.ts:103) bestTrades", newTrade);
   const { slippage } = storeToRefs(useSwapStore())
   console.info(' (getBestTrade.ts:133) slippage', slippage.value)
   const slippagePercent = new Percent(Number(slippage.value))
-  const minimumAmountOut = totalOutputA.multiply(1 - Number(slippage.value)/100)
+  const minimumAmountOut = totalOutputA.multiply(100 - Number(slippage.value)).divide(100)
+  const gasEstimate = await publicClient.getGasPrice()
+  console.info("🚀 ~ getBestTrade ~ gasEstimate:", gasEstimate)
   return {
     tradingFee: tradingFee,
-    fee: 0,
-    priceImpact: priceImpact,
+    fee: 0, // todo: không dùng fee này nữa
+    priceImpact: new Percent(priceImpact.numerator, priceImpact.denominator),
     slippage: slippagePercent,
     minimumAmountOut: minimumAmountOut,
     maximumAmountIn: CurrencyAmount.fromRawAmount(token0Currency, 0),
     tradeType: type,
     inputAmount: currencyAmountIn,
     outputAmount: totalOutputA,
-    routes: [
-      // {
-      //   type: PoolType.V3,
-      //   pools: listPool,
-      //   path: trade.swaps[0].route.tokenPath,
-      //   percent: 100,
-      //   inputAmount: trade.inputAmount,
-      //   outputAmount: trade.outputAmount
-      // }
-    ],
-    gasEstimate: BigInt(1000000)
+    routes: routeOuts,
+    gasEstimate: gasEstimate,
+  }
+
+  } catch (error) {
+      return Promise.reject(error)
   }
 }
 
@@ -245,86 +267,3 @@ export const PRICE_IMPACT_WITHOUT_FEE_CONFIRM_MIN: Percent = new Percent(1000n, 
 // for non expert mode disable swaps above this
 export const BLOCKED_PRICE_IMPACT_NON_EXPERT: Percent = new Percent(1500n, BIPS_BASE)
 
-type TradeInput = {
-  currencyAAmount: CurrencyAmount<Currency>
-  currencyB: Currency
-  tradeType: TradeType
-  gasPrice: bigint
-  pools?: Pool[]
-  onChainQuoteProvider: QuoteProvider<QuoterConfig>
-  maxHops?: number
-  maxSplits?: number
-  blockNumber?: number
-  poolTypes?: PoolType[]
-  quoteCurrencyUsdPrice?: number
-  nativeCurrencyUsdPrice?: number
-  abortController?: AbortController
-}
-
-// const messageAbortControllers = new Map<number, AbortController>()
-
-// type Input = {
-//   currencyAmountIn: CurrencyAmount<Currency>
-//   currencyOut: Currency
-//   pools: Pool[]
-//   gasPriceWei?: number
-// }
-
-// export const tradeFunc= async ({currencyAmountIn, currencyOut, pools, gasPriceWei}: Input) => {
-//   const abortController = new AbortController();
-//   const onChainProvider = createViemPublicClientGetter({ transportSignal: abortController.signal })
-//
-//   const onChainQuoteProvider = SmartRouter.createQuoteProvider({ onChainProvider, gasLimit: 541380075 })
-//
-//   let gasPrice;
-//   if (gasPriceWei) {
-//     gasPrice = BigInt(gasPriceWei);
-//   } else {
-//     gasPrice = BigInt((await onChainProvider({ chainId: ChainId.MON_TESTNET }).getGasPrice()).toString())
-//   }
-//
-//   return await bestTradeFromSmartRouter({
-//     currencyAAmount: currencyAmountIn,
-//     currencyB: currencyOut,
-//     tradeType: TradeType.EXACT_INPUT,
-//     pools: pools,
-//     gasPrice: gasPrice,
-//     onChainQuoteProvider: onChainQuoteProvider,
-//     maxHops: 1,
-//     maxSplits: 0,
-//     poolTypes: [PoolType.V3],
-//     abortController: abortController
-//
-//   });
-// }
-
-export const bestTradeFromSmartRouter = ({
-  currencyAAmount,
-  currencyB,
-  tradeType,
-  gasPrice,
-  pools,
-  onChainQuoteProvider,
-  maxHops,
-  maxSplits,
-  blockNumber,
-  poolTypes,
-  quoteCurrencyUsdPrice,
-  nativeCurrencyUsdPrice,
-  abortController
-}: TradeInput) => {
-  console.info(' (getBestTrade.ts:293) onChainQuoteProvider', onChainQuoteProvider)
-  return SmartRouter.getBestTrade(currencyAAmount, currencyB, tradeType, {
-    gasPriceWei: gasPrice,
-    poolProvider: SmartRouter.createStaticPoolProvider(pools),
-    quoteProvider: onChainQuoteProvider,
-    maxHops,
-    maxSplits,
-    blockNumber: blockNumber ? Number(blockNumber) : undefined,
-    allowedPoolTypes: poolTypes,
-    quoterOptimization: false,
-    quoteCurrencyUsdPrice,
-    nativeCurrencyUsdPrice,
-    signal: abortController?.signal
-  })
-}
