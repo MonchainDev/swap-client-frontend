@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto mt-[30px] max-w-[1024px]">
+  <div class="mx-auto mb-[42px] mt-[30px] max-w-[1024px]">
     <div class="flex items-center justify-between">
       <div class="flex items-center justify-between">
         <div class="flex gap-4">
@@ -91,6 +91,7 @@
         <BaseTab v-model:model="tabActive" :list="listTab" />
       </div>
     </div>
+    <TableTxPoolDetail />
   </div>
 </template>
 
