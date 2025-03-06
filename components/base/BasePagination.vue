@@ -1,5 +1,5 @@
 <template>
-  <div class="base-pagination py-3 sm:py-0">
+  <div v-if="props.total > 0" class="base-pagination py-3 sm:py-0">
     <div class="flex items-center justify-end">
       <!-- <div v-if="isDesktop" class="text-sm text-[#667085]">
         Show

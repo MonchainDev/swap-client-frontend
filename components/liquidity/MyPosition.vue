@@ -89,11 +89,16 @@
         </div>
       </template>
     </div>
-    <template v-if="!isConnected">
+    <template v-if="isConnected">
       <div v-loading="status === 'pending'" class="min-h-[100px]">
         <template v-if="status === 'success'">
-          <PositionItem v-for="item in formattedData" :key="item.tokenId.toString()" :position="item" />
-          <BasePagination v-model:page="query.page" :total="query.total" class="mt-5 px-6" />
+          <template v-if="query.total > 0">
+            <PositionItem v-for="item in formattedData" :key="item.tokenId.toString()" :position="item" />
+            <BasePagination v-model:page="query.page" :total="query.total" class="mt-5 px-6" />
+          </template>
+          <template v-else>
+            <div class="mx-auto flex h-[60px] items-center justify-center text-sm text-[#909399]">No Data</div>
+          </template>
         </template>
       </div>
     </template>

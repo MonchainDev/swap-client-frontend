@@ -24,13 +24,13 @@
       <span class="text-gray-6">{{ props.position.rewardApr }}%</span>
     </div>
     <div class="flex flex-col justify-center text-sm">
-      <!-- <span>Min: {{ calculatePositionAmounts.baseAmount }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span> -->
-      <!-- <span>Max: {{ calculatePositionAmounts.quoteAmount }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span> -->
+      <span>Min: {{ min }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
+      <span>Max: {{ max }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
     </div>
     <div class="flex flex-col text-sm">
-      <!-- <span>≈ $0</span>
-      <span>({{ displayTokenReserve(_position?.amount0) }} /</span>
-      <span>{{ displayTokenReserve(_position?.amount1) }})</span> -->
+      <span>≈ $0</span>
+      <span>({{ displayTokenReserve(props.position.quoteQtty, props.position.quoteDecimals, props.position.quoteSymbol) }} /</span>
+      <span>{{ displayTokenReserve(props.position.baseQtty, props.position.baseDecimals, props.position.baseSymbol) }})</span>
     </div>
     <div class="flex items-center justify-center text-center text-sm" :class="classStatus">{{ capitalizeFirstLetter(props.position.poolStatus) }}</div>
   </div>
@@ -117,6 +117,11 @@
   //   }
   // })
 
+  const displayTokenReserve = (amount: number, decimals: number, symbol: string) => {
+    // = (quoteQtty/10^quotedecimals) TokenA/(baseQtty/10^baseDecimals) TokenB
+    return `${formatNumber((amount / Math.pow(10, decimals)).toFixed(2))} ${symbol}`
+  }
+
   const enum TabValue {
     ALL = 'ALL',
     ACTIVE = 'ACTIVE',
@@ -136,6 +141,17 @@
       'text-success': status === TabValue.ACTIVE,
       'text-warning': status === TabValue.INACTIVE
     }
+  })
+
+  const min = computed(() => {
+    // priceLower*quotedecimals/basedecimals
+    const { priceLower, baseDecimals, quoteDecimals } = props.position
+    return props.position.priceLower ? formatNumber(((priceLower * quoteDecimals) / baseDecimals).toFixed(2)) : 0
+  })
+
+  const max = computed(() => {
+    const { priceUpper, baseDecimals, quoteDecimals } = props.position
+    return priceUpper ? formatNumber(((priceUpper * quoteDecimals) / baseDecimals).toFixed(2)) : 0
   })
 </script>
 
