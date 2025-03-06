@@ -93,6 +93,7 @@
       <div v-loading="status === 'pending'" class="min-h-[100px]">
         <template v-if="status === 'success'">
           <PositionItem v-for="item in formattedData" :key="item.tokenId.toString()" :position="item" />
+          <BasePagination v-model:page="query.page" :total="query.total" class="mt-5 px-6" />
         </template>
       </div>
     </template>
