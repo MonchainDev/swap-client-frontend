@@ -196,6 +196,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
       amountDeposit1: ''
     }
     existingPosition.value = null
+    listTokenOfRange.value = []
   }
 
   return {
