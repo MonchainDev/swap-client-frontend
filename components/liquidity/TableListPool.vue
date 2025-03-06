@@ -40,16 +40,19 @@
       </template>
     </ElTableColumn>
     <ElTableColumn label="" align="center" width="50">
-      <ElPopover placement="right" :show-arrow="false" :width="200" trigger="hover" popper-class="popper-menu-pool">
-        <template #reference>
-          <BaseIcon name="three-dot" size="24" class="cursor-pointer" />
-        </template>
-        <ul class="flex flex-col gap-4">
-          <li class="flex items-center gap-2">
-            <BaseIcon name="info" size="24" />
-            <span>View pool details</span>
-          </li>
-          <!-- <li class="flex items-center gap-2">
+      <template #default="{ row }">
+        <ElPopover placement="right" :show-arrow="false" :width="200" trigger="hover" popper-class="popper-menu-pool">
+          <template #reference>
+            <BaseIcon name="three-dot" size="24" class="cursor-pointer" />
+          </template>
+          <ul class="flex flex-col gap-4">
+            <li class="flex items-center gap-2">
+              <BaseIcon name="info" size="24" />
+              <NuxtLink :to="{ name: 'liquidity-pool-network-address', params: { network: row.network, address: row.poolAddress } }"
+                >View pool details</NuxtLink
+              >
+            </li>
+            <!-- <li class="flex items-center gap-2">
             <BaseIcon name="wallet-1" size="24" />
             <span>Connect wallet</span>
           </li>
@@ -57,8 +60,9 @@
             <BaseIcon name="article" size="24" />
             <span>View Info page</span>
           </li> -->
-        </ul>
-      </ElPopover>
+          </ul>
+        </ElPopover>
+      </template>
     </ElTableColumn>
   </BaseTable>
 </template>
@@ -79,32 +83,6 @@
 
   const getNetwork = (networkName: string) => {
     return LIST_NETWORK.find((item) => item.value === networkName)
-  }
-
-  const formatNumberAbbreviation = (value: number) => {
-    if (!value) return '0'
-
-    const number = Number(value)
-    const SI_SYMBOL = ['', 'K', 'M', 'B', 'T', 'P', 'E']
-
-    // Tìm chỉ số của 1000 gần nhất
-    const tier = (Math.log10(Math.abs(number)) / 3) | 0
-
-    // Nếu không có chỉ số nào, trả về chuỗi ban đầu
-    if (tier === 0) return value
-
-    // Tính giá trị đại diện của số
-    const suffix = SI_SYMBOL[tier]
-
-    // Chuyển đổi số về dạng số nguyên để loại bỏ số thập phân
-    const scale = Math.pow(10, tier * 3)
-    const scaledNumber = number / scale
-
-    // Định dạng số với một chữ số thập phân
-    const formattedNumber = scaledNumber.toFixed(2)
-
-    // Trả về chuỗi đã chuyển đổi
-    return formattedNumber + suffix
   }
 </script>
 
