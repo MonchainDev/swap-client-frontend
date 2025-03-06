@@ -3,7 +3,6 @@ import ABI_ERC20 from '@/constant/abi/token.json'
 import { type Currency, Percent } from '@monchain/sdk'
 import { PoolType, type Route, type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
 import { CurrencyAmount, Token, type TradeType } from '@monchain/swap-sdk-core'
-import { PancakeSwapUniversalRouter, type PancakeSwapOptions } from '@monchain/universal-router-sdk'
 import { type FeeAmount } from '@monchain/v3-sdk'
 import { TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
 import { readContract } from '@wagmi/core'
@@ -16,7 +15,6 @@ import { CONTRACT_ADDRESS } from '~/constant/contract'
 import { FEE_ALLOWANCE } from '~/utils/constanst'
 import { Trade } from './trade'
 import { monTestnet } from './config/chains'
-import { useAccount } from '@wagmi/vue'
 
 // TODO: thay chain theo network
 const publicClient = createPublicClient({
@@ -53,12 +51,12 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
     const listPool: V3Pool[] = []
   const token0Info = await useGetTokenInfo(token0)
   const token1Info = await useGetTokenInfo(token1)
-  inputAmount = inputAmount * ((10 ** token0Info.decimals) as number)
   const token0Currency = new Token(token0Info.chainId, token0 as `0x${string}`, token0Info.decimals, token0Info.symbol)
   const token1Currency = new Token(token1Info.chainId, token1 as `0x${string}`, token1Info.decimals, token1Info.symbol)
   const balances: { [key: string]: { [key: string]: bigint } } = {}
 
 
+  let totalOutputMaximum = CurrencyAmount.fromRawAmount(token1Currency, 0n);
   for (const fee of FEE_ALLOWANCE) {
     const pool = (await readContract(config, {
       abi: ABI_MON_FACTORY,
@@ -91,6 +89,8 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
       args: [pool as `$0x${string}` as Address]
     })) as bigint
 
+    totalOutputMaximum = totalOutputMaximum.add(CurrencyAmount.fromRawAmount(token1Currency, balanceToken1))
+
     if (!balances[token0]) balances[token0] = {}
     if (!balances[token1]) balances[token1] = {}
 
@@ -110,24 +110,32 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
   const bestTrades = await Trade.bestTradeExactIn(listPool, CurrencyAmount.fromRawAmount(token0Currency, inputAmount), token1Currency)
 
   let remainAmountIn = currencyAmountIn;
-  let totalOutputA: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0n);
+  let totalOutputA: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0n)
+
   let tradingFee = 0;
   const routeOuts: Route[] = []
   const newTradeList: Trade<Currency, Token, TradeType.EXACT_INPUT>[] = []
   let spotOutputAmount: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0)
+
   for (let i = 0; i < bestTrades.length; i++) {
     const bestTrade = bestTrades[i]
     const fee = bestTrade.swaps[0].route.pools[0].fee;
     console.info(bestTrade.swaps[0].route.pools[0].address, fee.toString())
-    const balance0 = Number(balances[token0][bestTrade.swaps[0].route.pools[0].address]) * 0.9
+
+    const balance0 = Math.floor(Number(balances[token0][bestTrade.swaps[0].route.pools[0].address]) * 0.9)
+    const balance1 = Math.floor(Number(balances[token1][bestTrade.swaps[0].route.pools[0].address]) * 0.9)
     const maxInput = CurrencyAmount.fromRawAmount(token0Currency, balance0)
     let recalInputAmount = remainAmountIn;
     if (remainAmountIn.greaterThan(maxInput)) {
       recalInputAmount = maxInput
     }
     const bestTradeInAmount = await Trade.bestTradeExactIn(bestTrade.swaps[0].route.pools, recalInputAmount, token1Currency)
+
+    if (bestTradeInAmount[0].outputAmount.greaterThan(balance1)) {
+      continue
+    }
+
     totalOutputA = totalOutputA.add(bestTradeInAmount[0].outputAmount)
-    // priceImpact = priceImpact.add(bestTradeInAmount[0].priceImpact)
     newTradeList.push(...bestTradeInAmount)
     remainAmountIn = remainAmountIn.subtract(recalInputAmount)
     tradingFee += Number(fee.toString()) / BASE_FEE_PERCENT * Number(recalInputAmount.numerator)
@@ -146,17 +154,19 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
       outputAmount: bestTradeInAmount[0].outputAmount,
     })
       
-    if (remainAmountIn.numerator <= 0) {
+    console.info('🚀 ~ getBestTrade ~ remainAmountIn', remainAmountIn)
+    if (remainAmountIn.lessThan(0) || remainAmountIn.equalTo(0)) {
       break
     }
   }
 
-  if (remainAmountIn.numerator > 0) {
+  if (remainAmountIn.greaterThan(0)) {
     // TODO: throw error
     console.error("Khoong du tien", remainAmountIn)
-    throw new Error('No pool found')
+    throw new Error('Insufficient liquidity for this trade')
   }
 
+  // TODO: thay giá trị totalOutputA = giá current ban đầu nhân với inputAmount của từng pool
   const priceImpact = spotOutputAmount.subtract(totalOutputA).divide(spotOutputAmount) 
 
   const { slippage } = storeToRefs(useSwapStore())
@@ -180,30 +190,10 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
     gasEstimate: gasEstimate,
   }
   console.info('🚀 ~ getBestTrade ~ res', res)
-  // const { address } = useAccount()
-  const swapOption = swapOptions({
-    recipient: '0x4298706288f08E37B41096e888B00100Bd99e060', // todo: ví người nhận tiền
-    fee:{
-      fee: new Percent(500n, 10000n), //
-      recipient: '0x31fB83Dc60D27C9C4a58a361bc9c48e0Bcfe902B' // todo:  ví người nhận fee
-    },
-  })
-  console.info('🚀 ~ getBestTrade ~ swapOption', swapOption)
-  const { calldata, value } = PancakeSwapUniversalRouter.swapERC20CallParameters(res, swapOption)
-  console.info('🚀 ~ getBestTrade ~ calldata', calldata, value)
   return res
 
   } catch (error) {
       return Promise.reject(error)
-  }
-}
-
-const swapOptions = (options: Partial<PancakeSwapOptions>): PancakeSwapOptions => {
-  let slippageTolerance = new Percent(5, 100)
-  if (options.fee) slippageTolerance = slippageTolerance.add(options.fee.fee)
-  return {
-    slippageTolerance,
-    ...options,
   }
 }
 
