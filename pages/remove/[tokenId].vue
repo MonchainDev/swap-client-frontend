@@ -75,7 +75,7 @@
               <span class="text-xl font-semibold leading-7">{{ liquidityValue0?.currency.symbol }} Fee Earned</span>
             </div>
             <div class="flex flex-col gap-1 text-right">
-              <span class="text-[22px] font-semibold leading-7"></span>
+              <span class="text-[22px] font-semibold leading-7">{{ formattedFee0 }}</span>
               <span class="text-sm text-gray-6">$0</span>
             </div>
           </div>
@@ -85,13 +85,13 @@
               <span class="text-xl font-semibold leading-7">{{ liquidityValue1?.currency.symbol }} Fee Earned</span>
             </div>
             <div class="flex flex-col gap-1 text-right">
-              <span class="text-[22px] font-semibold leading-7"></span>
+              <span class="text-[22px] font-semibold leading-7">{{ formattedFee1 }}</span>
               <span class="text-sm text-gray-6">$0</span>
             </div>
           </div>
         </div>
       </div>
-      <div class="mt-[30px] flex items-center gap-4">
+      <div v-if="showCollectAsWNative" class="mt-[30px] flex items-center gap-4">
         <ElSwitch v-model="receiveNative" />
         <span class="text-base">Collect as WMON</span>
       </div>
@@ -142,6 +142,7 @@
   import { config } from '~/config/wagmi'
   // import { NonfungiblePositionManager } from '@monchain/v3-sdk'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
+  import { WNATIVE } from '~/constant/token'
 
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
@@ -174,14 +175,30 @@
     liquidityValue1,
     outOfRange,
     position: positionSDK,
-    textBtn
+    textBtn,
+    feeValue0,
+    feeValue1
   } = useDerivedV3BurnInfo(position, percent, receiveNative)
+
+  const formattedFee0 = computed(() => formattedCurrencyAmount(feeValue0.value))
+  const formattedFee1 = computed(() => formattedCurrencyAmount(feeValue1.value))
 
   const formattedValue0 = computed(() => {
     return formattedCurrencyAmount(liquidityValue0.value)
   })
   const formattedValue1 = computed(() => {
     return formattedCurrencyAmount(liquidityValue1.value)
+  })
+
+  const showCollectAsWNative = computed(() => {
+    return Boolean(
+      liquidityValue0.value?.currency &&
+        liquidityValue1.value?.currency &&
+        (liquidityValue0.value?.currency.isNative ||
+          liquidityValue1.value?.currency.isNative ||
+          WNATIVE[liquidityValue0.value?.currency.chainId as keyof typeof WNATIVE]?.equals(liquidityValue0.value?.currency.wrapped) ||
+          WNATIVE[liquidityValue1.value?.currency.chainId as keyof typeof WNATIVE]?.equals(liquidityValue1.value?.currency.wrapped))
+    )
   })
 
   const basisPointsToPercent = useMemoize((num: number): Percent => {
@@ -208,9 +225,6 @@
       const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
       const allowedSlippage = 50
 
-      const feeValue0 = null
-      const feeValue1 = null
-
       // we fall back to expecting 0 fees in case the fetch fails, which is safe in the
       // vast majority of cases
       const { calldata, value } = NonfungiblePositionManager.removeCallParameters(positionSDK.value, {
@@ -219,8 +233,8 @@
         slippageTolerance: basisPointsToPercent(allowedSlippage),
         deadline: deadline.toString(),
         collectOptions: {
-          expectedCurrencyOwed0: feeValue0 ?? CurrencyAmount.fromRawAmount(liquidityValue0.value.currency, 0),
-          expectedCurrencyOwed1: feeValue1 ?? CurrencyAmount.fromRawAmount(liquidityValue1.value.currency, 0),
+          expectedCurrencyOwed0: feeValue0.value ?? CurrencyAmount.fromRawAmount(liquidityValue0.value.currency, 0),
+          expectedCurrencyOwed1: feeValue1.value ?? CurrencyAmount.fromRawAmount(liquidityValue1.value.currency, 0),
           recipient: account.value
         }
       })
@@ -244,7 +258,7 @@
 
       if (status === 'success') {
         percent.value = ''
-        showToastMsg('Transaction successful', 'success', txHash)
+        showToastMsg('Transaction receipt', 'success', txHash)
         setOpenPopup('popup-confirm-remove', false)
         router.push({ name: 'liquidity-tokenId', params: { tokenId: route.params.tokenId } })
       } else {
