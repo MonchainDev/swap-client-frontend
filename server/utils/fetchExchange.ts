@@ -18,5 +18,6 @@ export const fetchExchange = async <T>(url: string, method: Method, opt?: NitroF
     },
     data: opt?.body
   })
+  console.log('🚀 ~ data:', data.data)
   return data.data as T
 }

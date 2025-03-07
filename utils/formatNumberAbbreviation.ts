@@ -2,7 +2,7 @@ const formatNumberAbbreviation = (value: number) => {
   if (!value) return '0'
 
   const number = Number(value)
-  const SI_SYMBOL = ['', 'K', 'M', 'B', 'T', 'P', 'E', 'Z', 'Y']
+  const SI_SYMBOL = ['', 'K', 'M', 'B', 'T', 'P', 'E', 'Z', 'Y', 'R', 'W']
 
   // Tìm chỉ số của 1000 gần nhất
   const tier = (Math.log10(Math.abs(number)) / 3) | 0
@@ -11,7 +11,7 @@ const formatNumberAbbreviation = (value: number) => {
   if (tier === 0) return value
 
   // Tính giá trị đại diện của số
-  const suffix = SI_SYMBOL[tier]
+  const suffix = SI_SYMBOL[tier] ?? ''
 
   // Chuyển đổi số về dạng số nguyên để loại bỏ số thập phân
   const scale = Math.pow(10, tier * 3)

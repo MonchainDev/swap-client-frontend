@@ -10,19 +10,19 @@
             <img src="/token-default.png" alt="token " class="size-[25px] rounded-full border border-solid border-white" />
             <img src="/token-default.png" alt="token " class="-ml-4 size-[25px] rounded-full border border-solid border-white" />
           </div>
-          <span>ATOM + USDC</span>
+          <span>{{ pool.baseSymbol }} + {{ pool.quoteSymbol }}</span>
         </div>
       </div>
     </div>
     <div class="flex gap-10">
       <div class="flex flex-col gap-[6px]">
         <span class="text-sm">Fee tier</span>
-        <span class="text-xl font-semibold">1%</span>
+        <span class="text-xl font-semibold">{{ pool.fee / 10000 }}%</span>
       </div>
       <div class="flex flex-col gap-[6px]">
         <span class="text-sm">Network</span>
         <div class="flex items-center gap-[10px] text-xl font-semibold">
-          <img src="/logo-mon-chain.png" alt="logo" class="size-5 rounded-full" />
+          <img src="/logo-mon-chain.png" alt="logo" class="size-5" />
           <span>Mon chain</span>
         </div>
       </div>
@@ -31,12 +31,22 @@
           <BaseIcon name="calculator" size="18" />
           <span>APR</span>
         </div>
-        <span class="text-xl"> <span class="font-semibold text-[#049C6B]">Up to 54.34% </span>44.88%</span>
+        <span class="text-xl"> <span class="font-semibold text-[#049C6B]">0% </span>0%</span>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+  import type { IPool } from '~/types/pool.type'
+
+  interface IProps {
+    pool: IPool
+  }
+
+  const _props = withDefaults(defineProps<IProps>(), {
+    pool: () => ({}) as IPool
+  })
+</script>
 
 <style lang="scss" scoped></style>
