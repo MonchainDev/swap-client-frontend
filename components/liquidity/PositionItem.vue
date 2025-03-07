@@ -19,9 +19,9 @@
     <div class="flex items-center justify-center">
       <span class="rounded bg-gray-2 px-2 py-1 text-sm">{{ fee }}</span>
     </div>
-    <div class="flex flex-col items-center gap-1 text-sm">
-      <span class="font-semibold text-success">{{ props.position.feeApr ? Number(props.position.feeApr).toFixed(2) : 0 }}%</span>
-      <span class="text-gray-6">{{ props.position.rewardApr }}%</span>
+    <div class="flex flex-col items-center justify-center gap-1 text-sm">
+      <span class="font-semibold text-success"></span>
+      <!-- <span class="text-gray-6">{{ props.position.rewardApr }}%</span> -->
     </div>
     <div class="flex flex-col justify-center text-sm">
       <span>Min: {{ min }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
@@ -29,10 +29,10 @@
     </div>
     <div class="flex flex-col text-sm">
       <span>≈ $0</span>
-      <span>({{ displayTokenReserve(props.position.quoteQtty, props.position.quoteDecimals, props.position.quoteSymbol) }} /</span>
-      <span>{{ displayTokenReserve(props.position.baseQtty, props.position.baseDecimals, props.position.baseSymbol) }})</span>
+      <span>({{ displayTokenReserve(0, props.position.quoteDecimals, props.position.quoteSymbol) }} /</span>
+      <span>{{ displayTokenReserve(0, props.position.baseDecimals, props.position.baseSymbol) }})</span>
     </div>
-    <div class="flex items-center justify-center text-center text-sm" :class="classStatus">{{ capitalizeFirstLetter(props.position.poolStatus) }}</div>
+    <!-- <div class="flex items-center justify-center text-center text-sm" :class="classStatus"></div> -->
   </div>
 </template>
 
@@ -40,16 +40,16 @@
   // import type { CurrencyAmount, Token } from '@monchain/swap-sdk-core'
   import { LIST_NETWORK } from '~/constant'
   // import { Bound } from '~/types'
-  import type { IPool } from '~/types/pool.type'
+  import type { IPosition } from '~/types/position.type'
 
   interface IProps {
     // position: PositionDetail
-    position: IPool
+    position: IPosition
   }
 
   const props = withDefaults(defineProps<IProps>(), {
     // position: () => ({}) as PositionDetail
-    position: () => ({}) as IPool
+    position: () => ({}) as IPosition
   })
 
   const router = useRouter()
@@ -122,26 +122,26 @@
     return `${formatNumber((amount / Math.pow(10, decimals)).toFixed(2))} ${symbol}`
   }
 
-  const enum TabValue {
-    ALL = 'ALL',
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE',
-    CLOSE = 'CLOSE'
-  }
+  // const enum TabValue {
+  //   ALL = 'ALL',
+  //   ACTIVE = 'ACTIVE',
+  //   INACTIVE = 'INACTIVE',
+  //   CLOSE = 'CLOSE'
+  // }
 
-  function capitalizeFirstLetter(string: string) {
+  function _capitalizeFirstLetter(string: string) {
     if (!string) return ''
     return string.charAt(0).toUpperCase() + string.slice(1).toLocaleLowerCase()
   }
 
-  const classStatus = computed(() => {
-    const status = props.position.poolStatus
-    return {
-      'text-error': status === TabValue.CLOSE,
-      'text-success': status === TabValue.ACTIVE,
-      'text-warning': status === TabValue.INACTIVE
-    }
-  })
+  // const classStatus = computed(() => {
+  //   const status = props.position.poolStatus
+  //   return {
+  //     'text-error': status === TabValue.CLOSE,
+  //     'text-success': status === TabValue.ACTIVE,
+  //     'text-warning': status === TabValue.INACTIVE
+  //   }
+  // })
 
   const min = computed(() => {
     // priceLower*quotedecimals/basedecimals
