@@ -1,8 +1,9 @@
+import { Decimal } from 'decimal.js';
 import ABI_MON_FACTORY from '@/constant/abi/MonFactory.json'
 import ABI_ERC20 from '@/constant/abi/token.json'
-import { type Currency, Percent } from '@monchain/sdk'
+import { Percent } from '@monchain/sdk'
 import { PoolType, type Route, type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
-import { CurrencyAmount, Token, type TradeType } from '@monchain/swap-sdk-core'
+import { type Currency, CurrencyAmount, Token, TradeType } from '@monchain/swap-sdk-core'
 import { type FeeAmount } from '@monchain/v3-sdk'
 import { TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
 import { readContract } from '@wagmi/core'
@@ -106,92 +107,196 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
     throw new Error('No pool found')
   }
 
-  const currencyAmountIn = CurrencyAmount.fromRawAmount(token0Currency, inputAmount)
-  const bestTrades = await Trade.bestTradeExactIn(listPool, CurrencyAmount.fromRawAmount(token0Currency, inputAmount), token1Currency)
-
-  let remainAmountIn = currencyAmountIn;
-  let totalOutputA: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0n)
-
   let tradingFee = 0;
   const routeOuts: Route[] = []
-  const newTradeList: Trade<Currency, Token, TradeType.EXACT_INPUT>[] = []
-  let spotOutputAmount: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0)
-
-  for (let i = 0; i < bestTrades.length; i++) {
-    const bestTrade = bestTrades[i]
-    const fee = bestTrade.swaps[0].route.pools[0].fee;
-    console.info(bestTrade.swaps[0].route.pools[0].address, fee.toString())
-
-    const balance0 = Math.floor(Number(balances[token0][bestTrade.swaps[0].route.pools[0].address]) * 0.9)
-    const balance1 = Math.floor(Number(balances[token1][bestTrade.swaps[0].route.pools[0].address]) * 0.9)
-    const maxInput = CurrencyAmount.fromRawAmount(token0Currency, balance0)
-    let recalInputAmount = remainAmountIn;
-    if (remainAmountIn.greaterThan(maxInput)) {
-      recalInputAmount = maxInput
-    }
-    const bestTradeInAmount = await Trade.bestTradeExactIn(bestTrade.swaps[0].route.pools, recalInputAmount, token1Currency)
-
-    if (bestTradeInAmount[0].outputAmount.greaterThan(balance1)) {
-      continue
-    }
-
-    totalOutputA = totalOutputA.add(bestTradeInAmount[0].outputAmount)
-    newTradeList.push(...bestTradeInAmount)
-    remainAmountIn = remainAmountIn.subtract(recalInputAmount)
-    tradingFee += Number(fee.toString()) / BASE_FEE_PERCENT * Number(recalInputAmount.numerator)
-    const percent = Number(recalInputAmount.toExact()) / Number(currencyAmountIn.toExact()) * 100
-
-    // cal price impact
-    const midPrice = bestTradeInAmount[0].swaps[0].route.midPrice
-    spotOutputAmount = spotOutputAmount.add(midPrice.quote(recalInputAmount))
-
-    routeOuts.push( {
-      type: PoolType.V3,
-      pools: bestTradeInAmount[0].swaps[0].route.pools,
-      path: bestTradeInAmount[0].swaps[0].route.tokenPath,
-      percent: percent,
-      inputAmount: bestTradeInAmount[0].inputAmount,
-      outputAmount: bestTradeInAmount[0].outputAmount,
-    })
-      
-    console.info('🚀 ~ getBestTrade ~ remainAmountIn', remainAmountIn)
-    if (remainAmountIn.lessThan(0) || remainAmountIn.equalTo(0)) {
-      break
-    }
-  }
-
-  if (remainAmountIn.greaterThan(0)) {
-    // TODO: throw error
-    console.error("Khoong du tien", remainAmountIn)
-    throw new Error('Insufficient liquidity for this trade')
-  }
-
-  // TODO: thay giá trị totalOutputA = giá current ban đầu nhân với inputAmount của từng pool
-  const priceImpact = spotOutputAmount.subtract(totalOutputA).divide(spotOutputAmount) 
-
-  const { slippage } = storeToRefs(useSwapStore())
-  console.info(' (getBestTrade.ts:133) slippage', slippage.value)
-  const slippagePercent = new Percent(Number(slippage.value))
-  const minimumAmountOut = totalOutputA.multiply(100 - Number(slippage.value)).divide(100)
-  const gasEstimate = await publicClient.getGasPrice()
-  console.info("🚀 ~ getBestTrade ~ gasEstimate:", gasEstimate)
+  const newTradeList: Trade<Currency, Token, TradeType>[] = []
   
-  const res = {
-    tradingFee: tradingFee,
-    fee: 0, // todo: không dùng fee này nữa
-    priceImpact: new Percent(priceImpact.numerator, priceImpact.denominator),
-    slippage: slippagePercent,
-    minimumAmountOut: minimumAmountOut,
-    maximumAmountIn: CurrencyAmount.fromRawAmount(token0Currency, 0),
-    tradeType: type,
-    inputAmount: currencyAmountIn,
-    outputAmount: totalOutputA,
-    routes: routeOuts,
-    gasEstimate: gasEstimate,
-  }
-  console.info('🚀 ~ getBestTrade ~ res', res)
-  return res
+  const { slippage } = storeToRefs(useSwapStore())
+  const slippageValue = Number(slippage.value)
+    
+  const gasEstimate = await publicClient.getGasPrice()
 
+  const slippagePercent = new Percent(Number(slippage.value))
+
+  let priceImpact: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0)
+  
+  // const zeroToOne = token0Currency.sortsBefore(token1Currency)
+
+  if (type === TradeType.EXACT_INPUT) {
+    const currencyAmount = CurrencyAmount.fromRawAmount(token0Currency, inputAmount)
+    const bestTrades = await Trade.bestTradeExactIn(listPool, currencyAmount, token1Currency)
+
+    let remainAmountIn = currencyAmount;
+    let totalOutputA: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0n)
+    let spotOutputAmount: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0)
+
+    for (let i = 0; i < bestTrades.length; i++) {
+
+      const bestTrade = bestTrades[i]
+      const pool = bestTrade.swaps[0].route.pools[0]
+      const liquidity = pool.liquidity
+
+      const balanceToken0 = Math.floor(Number(balances[token0][bestTrade.swaps[0].route.pools[0].address]))
+
+      // Tính số token output trước khi swap với giá hiện tại
+      const currentPrice = new Decimal(pool.sqrtRatioX96.toString()).div(2 ** 96).pow(2)
+      const minPrice = currentPrice.mul(1 - slippageValue / 100)
+      const maxInputLiquidity = Math.floor(Number(liquidity) * ( (1 / minPrice.sqrt().toNumber()) - (1 / currentPrice.sqrt().toNumber()) ))
+      const maxInputForPool = balanceToken0
+          
+      const fee = bestTrade.swaps[0].route.pools[0].fee;
+      console.info(bestTrade.swaps[0].route.pools[0].address, fee.toString())
+
+      const balance1 = Math.floor(Number(balances[token1][bestTrade.swaps[0].route.pools[0].address]))
+      const maxInput = CurrencyAmount.fromRawAmount(token0Currency, maxInputForPool)
+      
+      let recalInputAmount = remainAmountIn;
+      if (remainAmountIn.greaterThan(maxInput)) {
+        recalInputAmount = maxInput
+      }
+      const bestTradeInAmount = await Trade.bestTradeExactIn(bestTrade.swaps[0].route.pools, recalInputAmount, token1Currency)
+
+      if (bestTradeInAmount[0].outputAmount.greaterThan(balance1)) {
+        continue
+      }
+
+      totalOutputA = totalOutputA.add(bestTradeInAmount[0].outputAmount)
+      newTradeList.push(...bestTradeInAmount)
+      remainAmountIn = remainAmountIn.subtract(recalInputAmount)
+
+      tradingFee += Number(fee.toString()) / BASE_FEE_PERCENT * Number(recalInputAmount.numerator)
+      const percent = Number(recalInputAmount.toExact()) / Number(currencyAmount.toExact()) * 100
+
+      // cal price impact
+      const midPrice = bestTradeInAmount[0].swaps[0].route.midPrice
+      spotOutputAmount = spotOutputAmount.add(midPrice.quote(recalInputAmount))
+
+      routeOuts.push( {
+        type: PoolType.V3,
+        pools: bestTradeInAmount[0].swaps[0].route.pools,
+        path: bestTradeInAmount[0].swaps[0].route.tokenPath,
+        percent: percent,
+        inputAmount: bestTradeInAmount[0].inputAmount,
+        outputAmount: bestTradeInAmount[0].outputAmount,
+      })
+        
+      if (remainAmountIn.lessThan(0) || remainAmountIn.equalTo(0)) {
+        break
+      }
+    }
+
+    if (remainAmountIn.greaterThan(0)) {
+      // TODO: throw error
+      throw new Error('Insufficient liquidity for this trade')
+    }
+
+    priceImpact = spotOutputAmount.subtract(totalOutputA).divide(spotOutputAmount) 
+    const minimumAmountOut = totalOutputA.multiply(100 - Number(slippage.value)).divide(100)
+  
+    const res = {
+      tradingFee: tradingFee,
+      fee: 0, // todo: không dùng fee này nữa
+      priceImpact: new Percent(priceImpact.numerator, priceImpact.denominator),
+      slippage: slippagePercent,
+      minimumAmountOut: minimumAmountOut,
+      maximumAmountIn: CurrencyAmount.fromRawAmount(token0Currency, 0),
+      tradeType: type,
+      inputAmount: currencyAmount,
+      outputAmount: totalOutputA,
+      routes: routeOuts,
+      gasEstimate: gasEstimate,
+    }
+    return res
+
+  } else {
+
+    const currencyAmount = CurrencyAmount.fromRawAmount(token1Currency, inputAmount)
+    const bestTrades = await Trade.bestTradeExactOut(listPool, token0Currency, currencyAmount)
+    console.info('🚀 ~ getBestTrade ~ bestTradesOut', bestTrades)
+
+    let remainOutputAmount = currencyAmount;
+    let totalInputA: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token0Currency, 0n)
+    let spotInputAmount:  CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token0Currency, 0)
+
+    for (let i = 0; i < bestTrades.length; i++) {
+      const bestTrade = bestTrades[i]
+      const pool = bestTrade.swaps[0].route.pools[0]
+
+      const liquidity = pool.liquidity
+
+      const balance1 = Math.floor(Number(balances[token1][bestTrade.swaps[0].route.pools[0].address]))
+      console.info("🚀 ~ getBestTrade ~ balance1:", balance1)
+
+      // Tính số token output trước khi swap với giá hiện tại
+      const currentPrice = new Decimal(pool.sqrtRatioX96.toString()).div(2 ** 96).pow(2)
+      const maxPrice = currentPrice.mul(1 + slippageValue / 100)
+      const maxOutputLiquidity = Math.floor(Number(liquidity) * ( maxPrice.sqrt().toNumber() - currentPrice.sqrt().toNumber()))
+      const maxOutputForPool = balance1
+      console.info("🚀 ~ getBestTrade ~ maxOutputForPool:", maxOutputForPool)
+          
+      const fee = bestTrade.swaps[0].route.pools[0].fee;
+ 
+      const maxOutput = CurrencyAmount.fromRawAmount(token0Currency, maxOutputForPool)
+      let recalOutputAmount = remainOutputAmount;
+      if (remainOutputAmount.greaterThan(maxOutput)) {
+        recalOutputAmount = maxOutput
+      }
+
+      const bestTradeInAmount = await Trade.bestTradeExactOut(bestTrade.swaps[0].route.pools, token0Currency, recalOutputAmount)
+
+      totalInputA = totalInputA.add(bestTradeInAmount[0].inputAmount)
+      newTradeList.push(...bestTradeInAmount)
+      remainOutputAmount = remainOutputAmount.subtract(recalOutputAmount)
+      tradingFee += Number(fee.toString()) / BASE_FEE_PERCENT * Number(recalOutputAmount.numerator)
+      const percent = Number(recalOutputAmount.toExact()) / Number(currencyAmount.toExact()) * 100
+
+      // cal price impact
+      const midPrice = bestTradeInAmount[0].swaps[0].route.midPrice
+      console.info("🚀 ~ getBestTrade ~ recalOutputAmount:", recalOutputAmount.wrapped)
+      // spotInputAmount = spotInputAmount.add(midPrice.quoteCurrency(recalOutputAmount))
+      spotInputAmount = spotInputAmount.add(midPrice.invert().quote(recalOutputAmount))
+
+      routeOuts.push( {
+        type: PoolType.V3,
+        pools: bestTradeInAmount[0].swaps[0].route.pools,
+        path: bestTradeInAmount[0].swaps[0].route.tokenPath,
+        percent: percent,
+        inputAmount: bestTradeInAmount[0].inputAmount,
+        outputAmount: bestTradeInAmount[0].outputAmount,
+      })
+        
+      console.info('🚀 ~ getBestTrade ~ remainAmountIn', remainOutputAmount)
+      if (remainOutputAmount.lessThan(0) || remainOutputAmount.equalTo(0)) {
+        break
+      }
+    }
+
+    priceImpact = spotInputAmount.subtract(totalInputA).divide(spotInputAmount) 
+
+    if (remainOutputAmount.greaterThan(0)) {
+      // TODO: throw error
+      throw new Error('Insufficient liquidity for this trade')
+    }
+
+    const maximumAmountIn = totalInputA.multiply(100 + Number(slippage.value)).divide(100)
+
+    const res = {
+      tradingFee: tradingFee,
+      fee: 0, // todo: không dùng fee này nữa
+      priceImpact: new Percent(priceImpact.numerator, priceImpact.denominator),
+      slippage: slippagePercent,
+      minimumAmountOut: CurrencyAmount.fromRawAmount(token0Currency, 0),
+      maximumAmountIn: maximumAmountIn,
+      tradeType: type,
+      inputAmount: totalInputA,
+      outputAmount: currencyAmount,
+      routes: routeOuts,
+      gasEstimate: gasEstimate,
+    }
+    console.info('🚀 ~ getBestTrade ~ res', res)
+    return res
+
+  }
   } catch (error) {
       return Promise.reject(error)
   }
@@ -199,8 +304,8 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
 
 // v3
 const makeV3Pool = (
-  token0: Token,
-  token1: Token,
+  tokenIn: Token,
+  tokenOut: Token,
   liquidityNum: bigint,
   feeAmount: FeeAmount,
   sqrtRatioX96: bigint,
@@ -210,10 +315,18 @@ const makeV3Pool = (
   const liquidity = BigInt(liquidityNum)
   const [token0ProtocolFee, token1ProtocolFee] = parseProtocolFees(feeProtocol)
 
+  let token0 = tokenIn
+  let token1 = tokenOut
+  // sort token address to ensure that the pool is uniquely identified by the token0/token1 address pair
+  if (!tokenIn.sortsBefore(tokenOut)) {
+    token0 = tokenOut
+    token1 = tokenIn
+  }
+
   return {
     type: PoolType.V3,
-    token0,
-    token1,
+    token0: token0,
+    token1: token1,
     fee: feeAmount,
     liquidity,
     sqrtRatioX96,
@@ -281,4 +394,3 @@ export const ALLOWED_PRICE_IMPACT_HIGH: Percent = new Percent(500n, BIPS_BASE) /
 export const PRICE_IMPACT_WITHOUT_FEE_CONFIRM_MIN: Percent = new Percent(1000n, BIPS_BASE) // 10%
 // for non expert mode disable swaps above this
 export const BLOCKED_PRICE_IMPACT_NON_EXPERT: Percent = new Percent(1500n, BIPS_BASE)
-

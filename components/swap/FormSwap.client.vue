@@ -220,8 +220,10 @@ import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
 
       if (type === 'BASE') {
         form.value.amountIn = amount
+        form.value.amountOut = ''
         console.log('🚀 ~ handleInput ~ form.value.amountIn:', form.value.amountIn)
         const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
+        console.log('🚀 ~ handleInput ~ inputAmount', inputAmount)
         // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
         const _bestTrade = await getBestTrade({
           token0: form.value.token0.address,
@@ -238,10 +240,12 @@ import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
         isFetchQuote.value = false
       } else {
         form.value.amountOut = amount
+        form.value.amountIn = ''
+        const inputAmount = Number(form.value.amountOut) * ((10 ** Number(form.value.token1.decimals)) as number)
         const _bestTrade = await getBestTrade({
           token0: form.value.token0.address,
           token1: form.value.token1.address,
-          inputAmount: Number(form.value.amountIn),
+          inputAmount: inputAmount,
           type: TradeType.EXACT_OUTPUT
         })
         bestTrade.value = _bestTrade
@@ -308,19 +312,35 @@ import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
     for (const route of trade.routes) {
       const tokenIn = route.path[0].wrapped.address
       const tokenOut = route.path[1].wrapped.address
+      const liquidity = (route.pools[0] as V3Pool).liquidity.toString()
+      const sqrtRatioX96 = (route.pools[0] as V3Pool).sqrtRatioX96
+      const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
+
+      const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
+      let nextPrice: Decimal = new Decimal(0)
+      if (zeroToOne) {
+        // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
+        nextPrice = new Decimal(liquidity).div(
+          (new Decimal(liquidity).div(currentPrice.sqrt())).add(trade.inputAmount.numerator.toString())).pow(2)
+      } else {
+        // √(Pnew) = (Δy / L) + √(Pcurrent)
+        nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(
+          new Decimal(liquidity)
+        ).add(currentPrice.sqrt()).pow(2)
+      }
+      const sqrtPriceLimitX96 = (nextPrice.sqrt().mul(2 ** 96)).toNumber()
+
       const fee = (route.pools[0] as V3Pool).fee
       const recipient = address.value
       const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
-      const amountIn = route.inputAmount.numerator
-      const amountOutMinimum = Math.floor(Number(route.outputAmount.numerator) * (100 - Number(slippage.value)) /(100))
-      const currentSqrtPriceX96 = (route.pools[0] as V3Pool).sqrtRatioX96
-      const sqrtPriceLimitX96 = BigInt(
-        (currentSqrtPriceX96 * BigInt(Math.floor((1 - Number(slippage.value)/100) * 1e6))) / BigInt(1e6)
-      );
-      const params = [tokenIn, tokenOut, fee, recipient, deadline, amountIn, amountOutMinimum, sqrtPriceLimitX96]
+      const amount = bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? route.inputAmount.numerator : route.outputAmount.numerator
+      const amountLimit = bestTrade.value?.tradeType === TradeType.EXACT_INPUT 
+        ? Math.floor(Number(route.outputAmount.numerator) * (100 - Number(slippage.value)) /(100))
+        : Math.floor(Number(route.inputAmount.numerator) * (100 + Number(slippage.value)) /(100))
+      const params = [tokenIn, tokenOut, fee, recipient, deadline, amount, amountLimit, sqrtPriceLimitX96]
       const encodedData = encodeFunctionData({
         abi: swapRouterABI,
-        functionName: 'exactInputSingle',
+        functionName: bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? 'exactInputSingle' : 'exactOutputSingle',
         args: [params],
       });
 
