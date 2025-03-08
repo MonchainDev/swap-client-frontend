@@ -54,7 +54,7 @@
             </li>
             <li class="flex items-center gap-2">
               <BaseIcon name="article" size="24" />
-              <NuxtLink :to="{ name: 'info-address', params: { address: row.poolAddress } }">
+              <NuxtLink :to="{ name: 'info-network-address', params: { network: row.network, address: row.poolAddress } }">
                 <span>View Info page</span>
               </NuxtLink>
             </li>

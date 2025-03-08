@@ -113,7 +113,7 @@
   import { useAccount } from '@wagmi/vue'
   import { LIST_NETWORK } from '~/constant'
   import type { ITab } from '~/types/component.type'
-  import type { IPool, IPoolOrigin } from '~/types/pool.type'
+  import type { IPosition, IPositionOrigin } from '~/types/position.type'
   import type { IResponse } from '~/types/response.type'
   const enum TabValue {
     ALL = 'ALL',
@@ -192,18 +192,18 @@
   // const { data, isPending } = useAccountV3Positions(chainIds)
 
   const queryString = computed(() => {
-    const poolStatus = tabActive.value === TabValue.ALL ? '' : tabActive.value
+    // const poolStatus = tabActive.value === TabValue.ALL ? '' : tabActive.value
     const params = new URLSearchParams()
     networkListSelected.value.forEach((network) => params.append('networks', network.value))
-    tokenListSelected.value.forEach((token) => params.append('tokens', token.symbol))
-    params.append('poolStatus', poolStatus)
+    tokenListSelected.value.forEach((token) => params.append('tokens', token.symbol === 'MON' ? 'WMON' : token.symbol))
+    // params.append('poolStatus', poolStatus)
     params.append('page', query.value.page.toString())
     params.append('pageSize', query.value.pageSize.toString())
-    params.append('address', address.value ?? '')
+    params.append('createdBy', address.value?.toLowerCase() ?? '')
     return params.toString()
   })
 
-  const { data, status } = await useFetch<IResponse<IPoolOrigin[]>>(() => `/api/pool/list?${queryString.value}`, {
+  const { data, status } = await useFetch<IResponse<IPositionOrigin[]>>(() => `/api/position/list?${queryString.value}`, {
     key: queryString.value,
     immediate: true,
     onResponse: ({ response }) => {
@@ -211,7 +211,7 @@
     }
   })
 
-  const formattedData = computed((): IPool[] => {
+  const formattedData = computed((): IPosition[] => {
     if (data.value?.content.length) {
       //@ts-ignore
       return data.value.content.map((data) => {
@@ -230,16 +230,9 @@
           tokenId: data.tokenid,
           baseDecimals: data.basedecimals,
           quoteDecimals: data.quotedecimals,
-          poolStatus: data.poolstatus,
           createdBy: data.createdby,
-          currentTick: data.currenttick,
-          baseQtty: data.baseqtty,
-          quoteQtty: data.quoteqtty,
-          tvl: data.tvl,
-          volume24h: data.volume24h,
-          feeApr: data.feeapr,
-          rewardApr: data.rewardapr,
-          liquidity: data.liquidity
+          createdAt: data.createdat,
+          updatedAt: data.updatedat
         }
       })
     }

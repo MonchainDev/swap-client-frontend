@@ -44,6 +44,10 @@
   ]
 
   const tabActive = ref<TabValue>(TabValue.ALL)
+
+  const { address: poolAddress, network } = useRoute('info-network-address').params
+
+  const { data: _data } = useFetch(`/api/transaction/list`, { query: { network: network?.toUpperCase(), poolAddress } })
 </script>
 
 <style lang="scss" scoped>

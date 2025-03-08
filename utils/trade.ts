@@ -1,19 +1,5 @@
-import type {
-  Token,
-  InsufficientReservesError,
-  InsufficientInputAmountError,
-  Currency as TokenCurrency,
-  Currency
-} from '@monchain/sdk';
-import {
-  CurrencyAmount,
-  Fraction,
-  Percent,
-  Price,
-  sortedInsert,
-  TradeType
-} from '@monchain/sdk';
-
+import type { Token, InsufficientReservesError, InsufficientInputAmountError, Currency as TokenCurrency, Currency } from '@monchain/sdk'
+import { CurrencyAmount, Fraction, Percent, Price, sortedInsert, TradeType } from '@monchain/sdk'
 
 import type { FeeAmount } from '@monchain/v3-sdk'
 import { LiquidityMath, Pool as PoolOld, SwapMath, TICK_SPACINGS, TickListDataProvider, TickMath } from '@monchain/v3-sdk'
@@ -638,7 +624,6 @@ export class Trade<TInput extends TokenCurrency, TOutput extends TokenCurrency, 
     ]
   }
 
-
   /**
    * similar to the above method but instead targets a fixed output amount
    * given a list of pools, and a fixed amount out, returns the top `maxNumResults` trades that go from an input token
@@ -663,7 +648,7 @@ export class Trade<TInput extends TokenCurrency, TOutput extends TokenCurrency, 
     // used in recursion.
     currentPools: V3Pool[] = [],
     nextAmountOut: CurrencyAmount<Currency> = currencyAmountOut,
-    bestTrades: Trade<TInput, TOutput, TradeType>[] = [],
+    bestTrades: Trade<TInput, TOutput, TradeType>[] = []
   ): Promise<Trade<TInput, TOutput, TradeType>[]> {
     invariant(pools.length > 0, 'POOLS')
     invariant(maxHops > 0, 'MAX_HOPS')
@@ -699,7 +684,7 @@ export class Trade<TInput extends TokenCurrency, TOutput extends TokenCurrency, 
           // ),
           await Trade.fromRoute(new RouteV3([pool, ...currentPools], currencyIn, currencyAmountOut.currency), currencyAmountOut, TradeType.EXACT_OUTPUT),
           maxNumResults,
-          tradeComparator,
+          tradeComparator
         )
       } else if (maxHops > 1 && pools.length > 1) {
         const poolsExcludingThisPool = pools.slice(0, i).concat(pools.slice(i + 1, pools.length))
@@ -711,11 +696,11 @@ export class Trade<TInput extends TokenCurrency, TOutput extends TokenCurrency, 
           currencyAmountOut,
           {
             maxNumResults,
-            maxHops: maxHops - 1,
+            maxHops: maxHops - 1
           },
           [pool, ...currentPools],
           amountIn,
-          bestTrades,
+          bestTrades
         )
       }
     }

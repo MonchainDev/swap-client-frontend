@@ -49,6 +49,8 @@ export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | unde
   })
   const { pool } = usePools()
 
+  const { feeValue0, feeValue1 } = useV3PositionFees(pool as Ref<Pool>, ref(position.value?.tokenId), asWNATIVE.value)
+
   const positionSDK = computed(() =>
     position.value &&
     pool.value &&
@@ -102,6 +104,8 @@ export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | unde
     outOfRange,
     textBtn,
     discountedAmount0,
-    discountedAmount1
+    discountedAmount1,
+    feeValue0,
+    feeValue1
   }
 }

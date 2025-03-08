@@ -101,21 +101,21 @@
 </template>
 
 <script lang="ts" setup>
-  import { Percent, TradeType, type Currency } from '@monchain/swap-sdk-core'
-  import { sendTransaction, waitForTransactionReceipt, writeContract } from '@wagmi/core'
-  import swapRouterABI from '~/constant/abi/swapRouter.json'
+  import { type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
+  import { TradeType } from '@monchain/swap-sdk-core'
+  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
+  import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
   import { config } from '~/config/wagmi'
   import { DEFAULT_SLIPPAGE } from '~/constant'
+  import swapRouterABI from '~/constant/abi/swapRouter.json'
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
   import { getBestTrade, type SwapOutput } from '~/utils/getBestTrade'
   import HeaderFormSwap from './HeaderFormSwap.vue'
-import {type SmartRouterTrade, SwapRouter, type SwapOptions, type V3Pool } from '@monchain/smart-router'
-import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
-// import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
+  // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
 
   export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
 
@@ -170,7 +170,10 @@ import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
       return 'Select a token'
     } else if (isFetchQuote.value) {
       return 'Finalizing quote...'
-    } else if (!isFetchQuote.value && noRoute.value && isToken0Selected.value && isToken1Selected.value && (form.value.amountIn || form.value.amountOut) || notEnoughLiquidity.value) {
+    } else if (
+      (!isFetchQuote.value && noRoute.value && isToken0Selected.value && isToken1Selected.value && (form.value.amountIn || form.value.amountOut)) ||
+      notEnoughLiquidity.value
+    ) {
       return 'Insufficient liquidity for this trade'
     } else if (isToken0Selected.value && isToken1Selected.value && form.value.amountOut && form.value.amountIn) {
       if (stepSwap.value === 'SELECT_TOKEN') {
@@ -188,7 +191,15 @@ import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
   })
 
   const isDisabledButton = computed(() => {
-    return !isToken0Selected.value || !isToken1Selected.value || !form.value.amountOut || !form.value.amountOut || isFetchQuote.value || noRoute.value || notEnoughLiquidity.value
+    return (
+      !isToken0Selected.value ||
+      !isToken1Selected.value ||
+      !form.value.amountOut ||
+      !form.value.amountOut ||
+      isFetchQuote.value ||
+      noRoute.value ||
+      notEnoughLiquidity.value
+    )
   })
 
   const handleSwapOrder = () => {
@@ -305,10 +316,10 @@ import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
 
   const token0IsToken = computed(() => form.value.token0.address !== '')
 
-   const useExactInputMulticall = async (swapOut: SwapOutput) => {
+  const useExactInputMulticall = async (swapOut: SwapOutput) => {
     const trade = swapOut as SmartRouterTrade<TradeType>
     const datas: Hex[] = []
-    
+
     for (const route of trade.routes) {
       const tokenIn = route.path[0].wrapped.address
       const tokenOut = route.path[1].wrapped.address
@@ -320,60 +331,60 @@ import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
       let nextPrice: Decimal = new Decimal(0)
       if (zeroToOne) {
         // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
-        nextPrice = new Decimal(liquidity).div(
-          (new Decimal(liquidity).div(currentPrice.sqrt())).add(trade.inputAmount.numerator.toString())).pow(2)
+        nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
       } else {
         // √(Pnew) = (Δy / L) + √(Pcurrent)
-        nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(
-          new Decimal(liquidity)
-        ).add(currentPrice.sqrt()).pow(2)
+        nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
       }
-      const sqrtPriceLimitX96 = (nextPrice.sqrt().mul(2 ** 96)).toNumber()
+      const sqrtPriceLimitX96 = nextPrice
+        .sqrt()
+        .mul(2 ** 96)
+        .toNumber()
 
       const fee = (route.pools[0] as V3Pool).fee
       const recipient = address.value
       const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
       const amount = bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? route.inputAmount.numerator : route.outputAmount.numerator
-      const amountLimit = bestTrade.value?.tradeType === TradeType.EXACT_INPUT 
-        ? Math.floor(Number(route.outputAmount.numerator) * (100 - Number(slippage.value)) /(100))
-        : Math.floor(Number(route.inputAmount.numerator) * (100 + Number(slippage.value)) /(100))
+      const amountLimit =
+        bestTrade.value?.tradeType === TradeType.EXACT_INPUT
+          ? Math.floor((Number(route.outputAmount.numerator) * (100 - Number(slippage.value))) / 100)
+          : Math.floor((Number(route.inputAmount.numerator) * (100 + Number(slippage.value))) / 100)
       const params = [tokenIn, tokenOut, fee, recipient, deadline, amount, amountLimit, sqrtPriceLimitX96]
       const encodedData = encodeFunctionData({
         abi: swapRouterABI,
         functionName: bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? 'exactInputSingle' : 'exactOutputSingle',
-        args: [params],
-      });
+        args: [params]
+      })
 
       datas.push(encodedData)
     }
-  
+
     const calldata = encodeFunctionData({
-        abi: swapRouterABI,
-        functionName: 'multicall',
-        args: [datas],
-      });
-  
-      const txHash = await sendTransaction(config, {
-          to: CONTRACT_ADDRESS.SWAP_ROUTER_V3 as `0x${string}`,
-          data: calldata,
-          value: hexToBigInt('0x0'),
-      })
-  
-      const { status } = await waitForTransactionReceipt(config, {
-          hash: txHash,
-  
-          pollingInterval: 2000
-      })
-  
-      if (status === 'success') {
-        const { showToastMsg } = useShowToastMsg()
-        showToastMsg('Swap successful', 'success', txHash)
-        console.info('Transaction successful', 'success', txHash)
-      } else {
-          ElMessage.error('Transaction failed')
-          console.info('Transaction failed', 'error', txHash)
-      }
-  
+      abi: swapRouterABI,
+      functionName: 'multicall',
+      args: [datas]
+    })
+
+    const txHash = await sendTransaction(config, {
+      to: CONTRACT_ADDRESS.SWAP_ROUTER_V3 as `0x${string}`,
+      data: calldata,
+      value: hexToBigInt('0x0')
+    })
+
+    const { status } = await waitForTransactionReceipt(config, {
+      hash: txHash,
+
+      pollingInterval: 2000
+    })
+
+    if (status === 'success') {
+      const { showToastMsg } = useShowToastMsg()
+      showToastMsg('Swap successful', 'success', txHash)
+      console.info('Transaction successful', 'success', txHash)
+    } else {
+      ElMessage.error('Transaction failed')
+      console.info('Transaction failed', 'error', txHash)
+    }
   }
 
   const handleSwap = async () => {
@@ -433,7 +444,6 @@ import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
       el1?.close()
     }
   }
-
 
   const el1: ReturnType<typeof ElNotification> | null = null
 

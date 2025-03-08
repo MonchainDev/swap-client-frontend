@@ -29,8 +29,8 @@
         <div class="mt-6 flex flex-col gap-1">
           <span class="font-semibold">Total farming earning</span>
           <div class="flex items-end gap-1">
-            <span class="text-linear text-[32px] font-semibold leading-none">$120.0</span>
-            <span class="text-xs text-gray-7">1,500.2 ORB</span>
+            <span class="text-linear text-[32px] font-semibold leading-none">$0</span>
+            <span class="text-xs text-gray-7">0</span>
           </div>
         </div>
         <BaseButton class="mt-6 flex w-full items-center" size="sm">

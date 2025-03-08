@@ -1,35 +1,32 @@
-import type { Hash, Hex } from 'viem';
+import type { Hash, Hex } from 'viem'
 import { encodeFunctionData, encodePacked, toHex } from 'viem'
-import type { BigintIsh, Currency, Percent, Token} from '@monchain/sdk';
+import type { BigintIsh, Currency, Percent, Token } from '@monchain/sdk'
 import { CurrencyAmount, TradeType, validateAndParseAddress } from '@monchain/sdk'
 
 import invariant from 'tiny-invariant'
 import swapRouterABI from '~/constant/abi/swapRouter.json'
 import ABI_Multicall from '~/constant/abi/multicall.json'
-import { Payments, SelfPermit, type MethodParameters, type PermitOptions } from '@monchain/v3-sdk';
-import type { V3Pool } from '@monchain/smart-router';
+import { Payments, SelfPermit, type MethodParameters, type PermitOptions } from '@monchain/v3-sdk'
+import type { V3Pool } from '@monchain/smart-router'
 
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
-
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export abstract class Multicall {
-    public static ABI = ABI_Multicall
-  
-    /**
-     * Cannot be constructed.
-     */
-    private constructor() {}
-  
-    public static encodeMulticall(calldatas: `0x${string}` | `0x${string}`[]): `0x${string}` {
-      if (!Array.isArray(calldatas)) {
-        calldatas = [calldatas]
-      }
-  
-      return calldatas.length === 1
-        ? calldatas[0]
-        : encodeFunctionData({ abi: Multicall.ABI, functionName: 'multicall', args: [calldatas] })
+  public static ABI = ABI_Multicall
+
+  /**
+   * Cannot be constructed.
+   */
+  private constructor() {}
+
+  public static encodeMulticall(calldatas: `0x${string}` | `0x${string}`[]): `0x${string}` {
+    if (!Array.isArray(calldatas)) {
+      calldatas = [calldatas]
     }
+
+    return calldatas.length === 1 ? calldatas[0] : encodeFunctionData({ abi: Multicall.ABI, functionName: 'multicall', args: [calldatas] })
   }
-  
+}
 
 /**
  * Options for producing the arguments to send calls to the router.
@@ -69,6 +66,7 @@ export interface SwapOptions {
 /**
  * Represents the Pancake V3 SwapRouter, and has static methods for helping execute trades.
  */
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export abstract class SwapRouter {
   // public static INTERFACE: Interface = new Interface(ISwapRouter)
   public static ABI = swapRouterABI
@@ -85,7 +83,7 @@ export abstract class SwapRouter {
    */
   public static swapCallParameters(
     trades: Trade<Currency, Currency, TradeType> | Trade<Currency, Currency, TradeType>[],
-    options: SwapOptions,
+    options: SwapOptions
   ): MethodParameters {
     if (!Array.isArray(trades)) {
       trades = [trades]
@@ -98,11 +96,11 @@ export abstract class SwapRouter {
     // All trades should have the same starting and ending token.
     invariant(
       trades.every((trade) => trade.inputAmount.currency.wrapped.equals(tokenIn)),
-      'TOKEN_IN_DIFF',
+      'TOKEN_IN_DIFF'
     )
     invariant(
       trades.every((trade) => trade.outputAmount.currency.wrapped.equals(tokenOut)),
-      'TOKEN_OUT_DIFF',
+      'TOKEN_OUT_DIFF'
     )
 
     const calldatas: Hex[] = []
@@ -110,10 +108,7 @@ export abstract class SwapRouter {
     const ZERO_IN: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(trades[0].inputAmount.currency, 0)
     const ZERO_OUT: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(trades[0].outputAmount.currency, 0)
 
-    const totalAmountOut: CurrencyAmount<Currency> = trades.reduce(
-      (sum, trade) => sum.add(trade.minimumAmountOut(options.slippageTolerance)),
-      ZERO_OUT,
-    )
+    const totalAmountOut: CurrencyAmount<Currency> = trades.reduce((sum, trade) => sum.add(trade.minimumAmountOut(options.slippageTolerance)), ZERO_OUT)
 
     // flag for whether a refund needs to happen
     const mustRefund = sampleTrade.inputAmount.currency.isNative && sampleTrade.tradeType === TradeType.EXACT_OUTPUT
@@ -153,14 +148,14 @@ export abstract class SwapRouter {
               deadline,
               amountIn,
               amountOutMinimum: amountOut,
-              sqrtPriceLimitX96: BigInt(options.sqrtPriceLimitX96 ?? 0),
+              sqrtPriceLimitX96: BigInt(options.sqrtPriceLimitX96 ?? 0)
             }
             calldatas.push(
               encodeFunctionData({
                 abi: SwapRouter.ABI,
                 functionName: 'exactInputSingle',
-                args: [exactInputSingleParams],
-              }),
+                args: [exactInputSingleParams]
+              })
             )
           } else {
             const exactOutputSingleParams = {
@@ -171,15 +166,15 @@ export abstract class SwapRouter {
               deadline,
               amountOut,
               amountInMaximum: amountIn,
-              sqrtPriceLimitX96: BigInt(options.sqrtPriceLimitX96 ?? 0),
+              sqrtPriceLimitX96: BigInt(options.sqrtPriceLimitX96 ?? 0)
             }
 
             calldatas.push(
               encodeFunctionData({
                 abi: SwapRouter.ABI,
                 functionName: 'exactOutputSingle',
-                args: [exactOutputSingleParams],
-              }),
+                args: [exactOutputSingleParams]
+              })
             )
           }
         } else {
@@ -193,24 +188,20 @@ export abstract class SwapRouter {
               recipient: routerMustCustody ? ADDRESS_ZERO : recipient,
               deadline,
               amountIn,
-              amountOutMinimum: amountOut,
+              amountOutMinimum: amountOut
             }
 
-            calldatas.push(
-              encodeFunctionData({ abi: SwapRouter.ABI, functionName: 'exactInput', args: [exactInputParams] }),
-            )
+            calldatas.push(encodeFunctionData({ abi: SwapRouter.ABI, functionName: 'exactInput', args: [exactInputParams] }))
           } else {
             const exactOutputParams = {
               path,
               recipient: routerMustCustody ? ADDRESS_ZERO : recipient,
               deadline,
               amountOut,
-              amountInMaximum: amountIn,
+              amountInMaximum: amountIn
             }
 
-            calldatas.push(
-              encodeFunctionData({ abi: SwapRouter.ABI, functionName: 'exactOutput', args: [exactOutputParams] }),
-            )
+            calldatas.push(encodeFunctionData({ abi: SwapRouter.ABI, functionName: 'exactOutput', args: [exactOutputParams] }))
           }
         }
       }
@@ -222,14 +213,7 @@ export abstract class SwapRouter {
         if (outputIsNative) {
           calldatas.push(Payments.encodeUnwrapWETH9(totalAmountOut.quotient, recipient, options.fee))
         } else {
-          calldatas.push(
-            Payments.encodeSweepToken(
-              sampleTrade.outputAmount.currency.wrapped,
-              totalAmountOut.quotient,
-              recipient,
-              options.fee,
-            ),
-          )
+          calldatas.push(Payments.encodeSweepToken(sampleTrade.outputAmount.currency.wrapped, totalAmountOut.quotient, recipient, options.fee))
         }
       } else {
         calldatas.push(Payments.encodeUnwrapWETH9(totalAmountOut.quotient, recipient))
@@ -243,7 +227,7 @@ export abstract class SwapRouter {
 
     return {
       calldata: Multicall.encodeMulticall(calldatas),
-      value: toHex(totalValue.quotient),
+      value: toHex(totalValue.quotient)
     }
   }
 }
@@ -260,25 +244,24 @@ export function encodeRouteToPath(route: RouteV3<Currency, Currency>, exactOutpu
     (
       { inputToken, path, types }: { inputToken: Token; path: (string | number)[]; types: string[] },
       pool: V3Pool,
-      index,
+      index
     ): { inputToken: Token; path: (string | number)[]; types: string[] } => {
       const outputToken: Token = pool.token0.equals(inputToken) ? pool.token1.wrapped : pool.token0.wrapped
       if (index === 0) {
         return {
           inputToken: outputToken,
           types: ['address', 'uint24', 'address'],
-          path: [inputToken.address, pool.fee, outputToken.address],
+          path: [inputToken.address, pool.fee, outputToken.address]
         }
       }
       return {
         inputToken: outputToken,
         types: [...types, 'uint24', 'address'],
-        path: [...path, pool.fee, outputToken.address],
+        path: [...path, pool.fee, outputToken.address]
       }
     },
-    { inputToken: firstInputToken, path: [], types: [] },
+    { inputToken: firstInputToken, path: [], types: [] }
   )
 
   return exactOutput ? encodePacked(types.reverse(), path.reverse()) : encodePacked(types, path)
 }
-

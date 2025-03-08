@@ -88,32 +88,30 @@ export function useExactInputSingle() {
 
 //
 export const useExactInputMulticall = async (trades: SmartRouterTrade<TradeType> | SmartRouterTrade<TradeType>[], options: SwapOptions) => {
-    const { calldata, value } = SwapRouter.swapCallParameters(trades, options)
+  const { calldata, value } = SwapRouter.swapCallParameters(trades, options)
 
-    console.log('🚀 ~ handleCreatePool ~ value:', value)
-    console.log('🚀 ~ handleCreatePool ~ calldata:', calldata)
+  console.log('🚀 ~ handleCreatePool ~ value:', value)
+  console.log('🚀 ~ handleCreatePool ~ calldata:', calldata)
 
-    const txHash = await sendTransaction(config, {
-        to: CONTRACT_ADDRESS.SWAP_ROUTER_V3 as `0x${string}`,
-        data: calldata,
-        value: hexToBigInt(value)
-    })
-    console.log('🚀 ~ handleCreatePool ~ txHash:', txHash)
+  const txHash = await sendTransaction(config, {
+    to: CONTRACT_ADDRESS.SWAP_ROUTER_V3 as `0x${string}`,
+    data: calldata,
+    value: hexToBigInt(value)
+  })
+  console.log('🚀 ~ handleCreatePool ~ txHash:', txHash)
 
-    const { status } = await waitForTransactionReceipt(config, {
-        hash: txHash,
+  const { status } = await waitForTransactionReceipt(config, {
+    hash: txHash,
 
-        pollingInterval: 2000
-    })
+    pollingInterval: 2000
+  })
 
-    if (status === 'success') {
-
-      const { showToastMsg } = useShowToastMsg()
-      showToastMsg('Swap successful', 'success', txHash)
-        console.info('Transaction successful', 'success', txHash)
-    } else {
-        ElMessage.error('Transaction failed')
-        console.info('Transaction failed', 'error', txHash)
-    }
-
+  if (status === 'success') {
+    const { showToastMsg } = useShowToastMsg()
+    showToastMsg('Swap successful', 'success', txHash)
+    console.info('Transaction successful', 'success', txHash)
+  } else {
+    ElMessage.error('Transaction failed')
+    console.info('Transaction failed', 'error', txHash)
+  }
 }
