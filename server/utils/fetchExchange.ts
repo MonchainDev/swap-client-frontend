@@ -1,8 +1,7 @@
-import type { Method } from 'axios'
+import type { AxiosRequestConfig, Method } from 'axios'
 import axios from 'axios'
-import type { NitroFetchOptions, NitroFetchRequest } from 'nitropack'
 
-export const fetchExchange = async <T>(url: string, method: Method, opt?: NitroFetchOptions<NitroFetchRequest>): Promise<T> => {
+export const fetchExchange = async <T>(url: string, method: Method, opt?: AxiosRequestConfig): Promise<T> => {
   const config = useRuntimeConfig()
   const baseURL = config.BASE_URL_EXCHANGE_API
 
@@ -14,9 +13,9 @@ export const fetchExchange = async <T>(url: string, method: Method, opt?: NitroF
     method,
     url: url,
     params: {
-      ...opt?.query
+      ...opt?.params
     },
-    data: opt?.body
+    data: opt?.data
   })
   console.log('🚀 ~ data:', data.data)
   return data.data as T
