@@ -31,7 +31,9 @@
           <BaseIcon name="calculator" size="18" />
           <span>APR</span>
         </div>
-        <span class="text-xl"> <span class="font-semibold text-[#049C6B]">0% </span>0%</span>
+        <span class="text-xl">
+          <span class="font-semibold text-[#049C6B]">{{ pool.feeApr }}% </span>{{ pool.rewardApr }}%</span
+        >
       </div>
     </div>
   </div>
