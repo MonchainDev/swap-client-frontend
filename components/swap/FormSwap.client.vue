@@ -101,18 +101,21 @@
 </template>
 
 <script lang="ts" setup>
-  import ROUTER_V3_ABI from '@/constant/abi/swapRouter.json'
+  import { type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
   import { TradeType } from '@monchain/swap-sdk-core'
-  import { waitForTransactionReceipt, writeContract } from '@wagmi/core'
+  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
+  import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
   import { config } from '~/config/wagmi'
   import { DEFAULT_SLIPPAGE } from '~/constant'
+  import swapRouterABI from '~/constant/abi/swapRouter.json'
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
   import { getBestTrade, type SwapOutput } from '~/utils/getBestTrade'
   import HeaderFormSwap from './HeaderFormSwap.vue'
+  // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
 
   export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
 
@@ -148,6 +151,8 @@
   })
 
   const noRoute = computed(() => !(((bestTrade.value && bestTrade.value?.routes.length) ?? 0) > 0))
+  const notEnoughLiquidity = ref(false)
+
   /*
    * Message button
    * case 1: Select a token
@@ -165,7 +170,10 @@
       return 'Select a token'
     } else if (isFetchQuote.value) {
       return 'Finalizing quote...'
-    } else if (!isFetchQuote.value && noRoute.value && isToken0Selected.value && isToken1Selected.value && (form.value.amountIn || form.value.amountOut)) {
+    } else if (
+      (!isFetchQuote.value && noRoute.value && isToken0Selected.value && isToken1Selected.value && (form.value.amountIn || form.value.amountOut)) ||
+      notEnoughLiquidity.value
+    ) {
       return 'Insufficient liquidity for this trade'
     } else if (isToken0Selected.value && isToken1Selected.value && form.value.amountOut && form.value.amountIn) {
       if (stepSwap.value === 'SELECT_TOKEN') {
@@ -183,7 +191,15 @@
   })
 
   const isDisabledButton = computed(() => {
-    return !isToken0Selected.value || !isToken1Selected.value || !form.value.amountOut || !form.value.amountOut || isFetchQuote.value || noRoute.value
+    return (
+      !isToken0Selected.value ||
+      !isToken1Selected.value ||
+      !form.value.amountOut ||
+      !form.value.amountOut ||
+      isFetchQuote.value ||
+      noRoute.value ||
+      notEnoughLiquidity.value
+    )
   })
 
   const handleSwapOrder = () => {
@@ -200,8 +216,8 @@
   }
 
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
-    console.log('🚀 ~ handleInput ~ amount:', amount)
     try {
+      notEnoughLiquidity.value = false
       if (!isToken0Selected.value || !isToken1Selected.value) return
       isFetchQuote.value = true
       if (!amount) {
@@ -215,13 +231,15 @@
 
       if (type === 'BASE') {
         form.value.amountIn = amount
+        form.value.amountOut = ''
         console.log('🚀 ~ handleInput ~ form.value.amountIn:', form.value.amountIn)
-
+        const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
+        console.log('🚀 ~ handleInput ~ inputAmount', inputAmount)
         // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
         const _bestTrade = await getBestTrade({
           token0: form.value.token0.address,
           token1: form.value.token1.address,
-          inputAmount: Number(form.value.amountIn),
+          inputAmount: inputAmount,
           type: TradeType.EXACT_INPUT
         })
         bestTrade.value = _bestTrade
@@ -233,10 +251,12 @@
         isFetchQuote.value = false
       } else {
         form.value.amountOut = amount
+        form.value.amountIn = ''
+        const inputAmount = Number(form.value.amountOut) * ((10 ** Number(form.value.token1.decimals)) as number)
         const _bestTrade = await getBestTrade({
           token0: form.value.token0.address,
           token1: form.value.token1.address,
-          inputAmount: Number(form.value.amountIn),
+          inputAmount: inputAmount,
           type: TradeType.EXACT_OUTPUT
         })
         bestTrade.value = _bestTrade
@@ -249,7 +269,9 @@
       }
       isFetchQuote.value = false
     } catch (_error) {
+      console.error('🚀 ~ handleInput ~ _error:', _error)
       isFetchQuote.value = false
+      notEnoughLiquidity.value = true
     }
   }
 
@@ -294,25 +316,90 @@
 
   const token0IsToken = computed(() => form.value.token0.address !== '')
 
+  const useExactInputMulticall = async (swapOut: SwapOutput) => {
+    const trade = swapOut as SmartRouterTrade<TradeType>
+    const datas: Hex[] = []
+
+    for (const route of trade.routes) {
+      const tokenIn = route.path[0].wrapped.address
+      const tokenOut = route.path[1].wrapped.address
+      const liquidity = (route.pools[0] as V3Pool).liquidity.toString()
+      const sqrtRatioX96 = (route.pools[0] as V3Pool).sqrtRatioX96
+      const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
+
+      const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
+      let nextPrice: Decimal = new Decimal(0)
+      if (zeroToOne) {
+        // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
+        nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
+      } else {
+        // √(Pnew) = (Δy / L) + √(Pcurrent)
+        nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
+      }
+      const sqrtPriceLimitX96 = nextPrice
+        .sqrt()
+        .mul(2 ** 96)
+        .toNumber()
+
+      const fee = (route.pools[0] as V3Pool).fee
+      const recipient = address.value
+      const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
+      const amount = bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? route.inputAmount.numerator : route.outputAmount.numerator
+      const amountLimit =
+        bestTrade.value?.tradeType === TradeType.EXACT_INPUT
+          ? Math.floor((Number(route.outputAmount.numerator) * (100 - Number(slippage.value))) / 100)
+          : Math.floor((Number(route.inputAmount.numerator) * (100 + Number(slippage.value))) / 100)
+      const params = [tokenIn, tokenOut, fee, recipient, deadline, amount, amountLimit, sqrtPriceLimitX96]
+      const encodedData = encodeFunctionData({
+        abi: swapRouterABI,
+        functionName: bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? 'exactInputSingle' : 'exactOutputSingle',
+        args: [params]
+      })
+
+      datas.push(encodedData)
+    }
+
+    const calldata = encodeFunctionData({
+      abi: swapRouterABI,
+      functionName: 'multicall',
+      args: [datas]
+    })
+
+    const txHash = await sendTransaction(config, {
+      to: CONTRACT_ADDRESS.SWAP_ROUTER_V3 as `0x${string}`,
+      data: calldata,
+      value: hexToBigInt('0x0')
+    })
+
+    const { status } = await waitForTransactionReceipt(config, {
+      hash: txHash,
+
+      pollingInterval: 2000
+    })
+
+    if (status === 'success') {
+      const { showToastMsg } = useShowToastMsg()
+      showToastMsg('Swap successful', 'success', txHash)
+      console.info('Transaction successful', 'success', txHash)
+    } else {
+      ElMessage.error('Transaction failed')
+      console.info('Transaction failed', 'error', txHash)
+    }
+  }
+
   const handleSwap = async () => {
     try {
       // if (isDisabledButton.value) return
-      console.info('toiw day r ne')
-      console.info(' (FormSwap.client.vue:284) ', stepSwap.value)
       // step 1: next step 2
       if (stepSwap.value === 'SELECT_TOKEN') {
-        console.info('STEP 1 ')
         stepSwap.value = 'CONFIRM_SWAP'
         return
       }
       // step 2: approve
       if (token0IsToken.value) {
         if (isNeedAllowance0.value) {
-          console.info(' (FormSwap.client.vue:295) isNeedAllowance0', isNeedAllowance0)
-          console.info('STEP 2 ')
           await approveToken(form.value.token0.address as string, CONTRACT_ADDRESS.SWAP_ROUTER_V3, MAX_NUMBER_APPROVE, (status) => {
             if (status === 'SUCCESS') {
-              console.log('Approve success')
               swap()
             }
             isConfirmApprove.value = false
@@ -335,55 +422,20 @@
   const { approveToken } = useApproveToken()
 
   const isNeedAllowance0 = computed(() => {
-    console.info(' (FormSwap.client.vue:314) allowance0', allowance0)
     const allowance = new Decimal(allowance0.value?.toString() || '0').div(10 ** +form.value.token0.decimals)
-    console.info(' (FormSwap.client.vue:314) allowance0', allowance0)
     return allowance0.value === BigInt(0) || allowance.lessThan(form.value.amountIn || 0)
   })
 
-  // const { signMessageAsync } = useSignMessage()
-
-  // const { exactInputSingle } = useExactInputSingle()
-  const { showToastMsg } = useShowToastMsg()
   const swap = async () => {
     try {
       isConfirmApprove.value = false
-
       isSwapping.value = true
-      console.log('🚀 ~ swap ~ bestTrade:', bestTrade.value)
-      const amountOutMin = new Decimal(form.value.minimumAmountOut || 0).mul(10 ** +form.value.token1.decimals).toString()
-      const amountIn = new Decimal(form.value.amountIn || 0).mul(10 ** +form.value.token0.decimals).toString()
-      const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
-
-      const params = {
-        tokenIn: form.value.token0.address,
-        tokenOut: form.value.token1.address,
-        fee: bestTrade?.value?.fee ?? form.value.fee,
-        recipient: address.value,
-        deadline,
-        amountIn: BigInt(amountIn),
-        amountOutMinimum: BigInt(amountOutMin),
-        sqrtPriceLimitX96: BigInt(0)
-      }
-
-      const hash = await writeContract(config, {
-        address: CONTRACT_ADDRESS.SWAP_ROUTER_V3 as `0x${string}`,
-        abi: ROUTER_V3_ABI,
-        functionName: 'exactInputSingle',
-        args: [params]
-      })
-
-      const { status } = await waitForTransactionReceipt(config, {
-        hash,
-        pollingInterval: 2000
-      })
-      if (status === 'success') {
-        showToastMsg('Transaction receipt', 'success', hash)
-      } else {
-        showToastMsg('Transaction failed', 'error', hash)
-      }
+      await useExactInputMulticall(bestTrade.value as SwapOutput)
       isSwapping.value = false
       stepSwap.value = 'SELECT_TOKEN'
+      form.value.amountIn = ''
+      form.value.amountOut = ''
+      form.value.tradingFee = 0
     } catch (error) {
       console.log('🚀 ~ swap ~ error:', error)
       console.info(' (FormSwap.client.vue:319) sign sao sao sao saii  xong r ne')

@@ -1,13 +1,5 @@
-import {
-  type InsufficientInputAmountError,
-  CurrencyAmount,
-  Fraction,
-  Percent,
-  Price,
-  sortedInsert,
-  TradeType,
-  type Currency as TokenCurrency
-} from '@monchain/sdk'
+import type { Token, InsufficientReservesError, InsufficientInputAmountError, Currency as TokenCurrency, Currency } from '@monchain/sdk'
+import { CurrencyAmount, Fraction, Percent, Price, sortedInsert, TradeType } from '@monchain/sdk'
 
 import type { FeeAmount } from '@monchain/v3-sdk'
 import { LiquidityMath, Pool as PoolOld, SwapMath, TICK_SPACINGS, TickListDataProvider, TickMath } from '@monchain/v3-sdk'
@@ -394,8 +386,8 @@ export class Trade<TInput extends TokenCurrency, TOutput extends TokenCurrency, 
     // used in recursion.
     currentPools: V3Pool[] = [],
     nextAmountIn: CurrencyAmount<TokenCurrency> = currencyAmountIn,
-    bestTrades: Trade<TInput, TOutput, TradeType.EXACT_INPUT>[] = []
-  ): Promise<Trade<TInput, TOutput, TradeType.EXACT_INPUT>[]> {
+    bestTrades: Trade<TInput, TOutput, TradeType>[] = []
+  ): Promise<Trade<TInput, TOutput, TradeType>[]> {
     invariant(pools.length > 0, 'POOLS')
     invariant(maxHops > 0, 'MAX_HOPS')
     invariant(currencyAmountIn === nextAmountIn || currentPools.length > 0, 'INVALID_RECURSION')
@@ -429,8 +421,6 @@ export class Trade<TInput extends TokenCurrency, TOutput extends TokenCurrency, 
           tradeComparator
         )
       } else if (maxHops > 1 && pools.length > 1) {
-        console.info(' (trade.ts:456) maxHops', maxHops)
-        console.info(' (trade.ts:456) pools', pools)
         const poolsExcludingThisPool = pools.slice(0, i).concat(pools.slice(i + 1, pools.length))
 
         // otherwise, consider all the other paths that lead from this token as long as we have not exceeded maxHops
@@ -632,5 +622,89 @@ export class Trade<TInput extends TokenCurrency, TOutput extends TokenCurrency, 
         address: pool.address
       } as V3Pool
     ]
+  }
+
+  /**
+   * similar to the above method but instead targets a fixed output amount
+   * given a list of pools, and a fixed amount out, returns the top `maxNumResults` trades that go from an input token
+   * to an output token amount, making at most `maxHops` hops
+   * note this does not consider aggregation, as routes are linear. it's possible a better route exists by splitting
+   * the amount in among multiple routes.
+   * @param pools the pools to consider in finding the best trade
+   * @param currencyIn the currency to spend
+   * @param currencyAmountOut the desired currency amount out
+   * @param nextAmountOut the exact amount of currency out
+   * @param maxNumResults maximum number of results to return
+   * @param maxHops maximum number of hops a returned trade can make, e.g. 1 hop goes through a single pool
+   * @param currentPools used in recursion; the current list of pools
+   * @param bestTrades used in recursion; the current list of best trades
+   * @returns The exact out trade
+   */
+  public static async bestTradeExactOut<TInput extends TokenCurrency, TOutput extends TokenCurrency>(
+    pools: V3Pool[],
+    currencyIn: TInput,
+    currencyAmountOut: CurrencyAmount<TOutput>,
+    { maxNumResults = 3, maxHops = 3 }: BestTradeOptions = {},
+    // used in recursion.
+    currentPools: V3Pool[] = [],
+    nextAmountOut: CurrencyAmount<Currency> = currencyAmountOut,
+    bestTrades: Trade<TInput, TOutput, TradeType>[] = []
+  ): Promise<Trade<TInput, TOutput, TradeType>[]> {
+    invariant(pools.length > 0, 'POOLS')
+    invariant(maxHops > 0, 'MAX_HOPS')
+    invariant(currencyAmountOut === nextAmountOut || currentPools.length > 0, 'INVALID_RECURSION')
+
+    const amountOut = nextAmountOut.wrapped
+    const tokenIn = currencyIn.wrapped
+    for (let i = 0; i < pools.length; i++) {
+      const pool = pools[i]
+      // pool irrelevant
+      if (!pool.token0.equals(amountOut.currency) && !pool.token1.equals(amountOut.currency)) continue
+
+      let amountIn: CurrencyAmount<Token>
+      try {
+        const [result] = await this.getInputAmount(pool, amountOut)
+
+        amountIn = result.wrapped
+      } catch (error) {
+        // not enough liquidity in this pool
+        if ((error as InsufficientReservesError).isInsufficientReservesError) {
+          continue
+        }
+        throw error
+      }
+      // we have arrived at the input token, so this is the first trade of one of the paths
+      if (amountIn.currency.equals(tokenIn)) {
+        sortedInsert(
+          bestTrades,
+          // await Trade.fromRoute(
+          //   new Route([pool, ...currentPools], currencyIn, currencyAmountOut.currency),
+          //   currencyAmountOut,
+          //   TradeType.EXACT_OUTPUT,
+          // ),
+          await Trade.fromRoute(new RouteV3([pool, ...currentPools], currencyIn, currencyAmountOut.currency), currencyAmountOut, TradeType.EXACT_OUTPUT),
+          maxNumResults,
+          tradeComparator
+        )
+      } else if (maxHops > 1 && pools.length > 1) {
+        const poolsExcludingThisPool = pools.slice(0, i).concat(pools.slice(i + 1, pools.length))
+
+        // otherwise, consider all the other paths that arrive at this token as long as we have not exceeded maxHops
+        await Trade.bestTradeExactOut(
+          poolsExcludingThisPool,
+          currencyIn,
+          currencyAmountOut,
+          {
+            maxNumResults,
+            maxHops: maxHops - 1
+          },
+          [pool, ...currentPools],
+          amountIn,
+          bestTrades
+        )
+      }
+    }
+
+    return bestTrades
   }
 }
