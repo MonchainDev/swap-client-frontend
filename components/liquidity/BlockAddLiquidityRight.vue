@@ -91,7 +91,14 @@
     :usd-lower="priceUsdLower"
     :show-input="false"
   />
-  <PopupConfirmCreateLiquidity :position :base-currency-default="baseCurrency" :ticks-at-limit="ticksAtLimit" @reload="reloadData" />
+  <PopupConfirmCreateLiquidity
+    :position
+    :base-currency-default="baseCurrency"
+    :usd-upper="priceUsdUpper"
+    :usd-lower="priceUsdLower"
+    :ticks-at-limit="ticksAtLimit"
+    @reload="reloadData"
+  />
 </template>
 
 <script lang="ts" setup>
