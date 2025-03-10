@@ -29,7 +29,7 @@
           v-model="percent"
           placeholder="0%"
           class="input-percent"
-          :formatter="(value: string) => formatNumberInput(value)"
+          :formatter="(value: string) => formatNumberInput(value, true)"
           :parser="(value: string) => parseNumberInput(value)"
         />
         <div class="flex gap-2">
@@ -98,8 +98,8 @@
       <BaseButton
         size="md"
         class="mt-6 w-full text-xl font-semibold uppercase"
-        :type="!percent ? 'outline' : 'linear'"
-        :disabled="!percent"
+        :type="disabledButton ? 'outline' : 'linear'"
+        :disabled="disabledButton"
         @click="setOpenPopup('popup-confirm-remove')"
         >{{ textBtn }}</BaseButton
       >
@@ -169,13 +169,16 @@
 
   const loading = computed(() => !positionSDK.value)
 
+  const disabledButton = computed(() => !percent.value || !parseFloat(percent.value) || parseFloat(percent.value) > 100)
+  const textBtn = computed(() => {
+    return !account.value ? 'Connect wallet' : disabledButton.value ? 'Enter a percent' : 'Remove'
+  })
   const {
     liquidityPercentage,
     liquidityValue0,
     liquidityValue1,
     outOfRange,
     position: positionSDK,
-    textBtn,
     feeValue0,
     feeValue1
   } = useDerivedV3BurnInfo(position, percent, receiveNative)
