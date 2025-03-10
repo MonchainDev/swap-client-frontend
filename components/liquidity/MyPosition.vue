@@ -232,7 +232,11 @@
           quoteDecimals: data.quotedecimals,
           createdBy: data.createdby,
           createdAt: data.createdat,
-          updatedAt: data.updatedat
+          updatedAt: data.updatedat,
+          feeApr: data.feeapr,
+          rewardApr: data.rewardapr,
+          baseQuantity: data.baseqtty,
+          quoteQuantity: data.quoteqtty
         }
       })
     }

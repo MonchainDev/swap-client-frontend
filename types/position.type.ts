@@ -23,6 +23,8 @@ export interface IPositionOrigin {
   fee: number
   tickupper: number
   updatedat: number
+  feeapr: number
+  rewardapr: number
   basedecimals: number
   quotesymbol: string
   tokenid: number
@@ -30,17 +32,23 @@ export interface IPositionOrigin {
   createdby: string
   pricelower: number
   pooladdress: string
+  quoteqtty: number
+  baseqtty: number
 }
 
 export interface IPosition {
   quoteDecimals: number
   tokenQuote: string
+  quoteQuantity: number
   baseSymbol: string
   network: string
   tokenBase: string
+  baseQuantity: number
   createdAt: number
   priceUpper: number
   fee: number
+  feeApr: number
+  rewardApr: number
   tickUpper: number
   updatedAt: number
   baseDecimals: number

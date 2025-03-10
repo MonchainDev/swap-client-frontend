@@ -4,11 +4,11 @@
       <span class="text-2xl font-semibold leading-7">Pair info</span>
       <div class="flex items-center gap-1">
         <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
-        <span>1 {{ pool.baseSymbol }} = 0 {{ pool.quoteSymbol }}</span>
+        <span>1 {{ pool.baseSymbol }} = {{ formatNumber(price0) }} {{ pool.quoteSymbol }}</span>
       </div>
       <div class="flex items-center gap-1">
         <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
-        <span> 1 {{ pool.quoteSymbol }} = 0 {{ pool.baseSymbol }}</span>
+        <span> 1 {{ pool.quoteSymbol }} = {{ formatNumber(price1) }} {{ pool.baseSymbol }}</span>
       </div>
     </div>
     <div class="grid h-[421px] grid-cols-[374px_1fr] gap-6">
@@ -53,7 +53,7 @@
           <div class="flex flex-col gap-[6px]">
             <span class="text-sm">Fee 24h</span>
             <div class="flex items-center gap-3">
-              <span class="text-xl font-semibold">$0</span>
+              <span class="text-xl font-semibold">${{ formatNumber(fee24h) }}</span>
               <span class="flex items-center gap-1 rounded-[10px] bg-[#FFECEF] px-2 py-[2px]">
                 <BaseIcon name="arrow-fill" size="12" class="text-error" />
                 <span class="text-sm font-semibold text-error">0%</span>
@@ -70,6 +70,7 @@
 </template>
 
 <script lang="ts" setup>
+  import Decimal from 'decimal.js'
   import type { ITab } from '~/types/component.type'
   import type { IPool } from '~/types/pool.type'
   const enum TabValue {
@@ -111,6 +112,30 @@
   ]
 
   const tabActive = ref<TabValue>(TabValue.VOLUME)
+
+  const fee24h = computed(() => {
+    const volume = new Decimal(props.pool.volume24h)
+    const fee = new Decimal(props.pool.fee).div(10000).toString()
+    return (
+      volume
+        .mul(fee)
+        .div(10 ** 6)
+        .toString() ?? '0'
+    )
+  })
+
+  const currentPrice = computed(() => {
+    const sqrtX96 = new Decimal(2).pow(96).toString()
+    return props.pool.currentPrice ? new Decimal(new Decimal(props.pool.currentPrice).div(sqrtX96)).pow(2).toString() : '0'
+  })
+
+  const price0 = computed(() => {
+    return new Decimal(currentPrice.value).mul(props.pool.quoteDecimals).div(props.pool.baseDecimals).toSignificantDigits(6).toString()
+  })
+
+  const price1 = computed(() => {
+    return parseFloat(price0.value) > 0 ? new Decimal(1).div(price0.value).toSignificantDigits(6).toString() : '0'
+  })
 </script>
 
 <style lang="scss" scoped></style>
