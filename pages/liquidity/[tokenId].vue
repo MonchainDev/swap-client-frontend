@@ -130,7 +130,7 @@
       </div>
       <div class="flex flex-col gap-4 px-8 pb-10 pt-6">
         <span class="text-2xl font-semibold leading-7">Price range {{ currencyQuote?.symbol }}/{{ currencyBase?.symbol }}</span>
-        <div class="flex gap-10">
+        <div class="flex items-center gap-10">
           <div class="flex flex-col gap-1">
             <span class="text-xs text-gray-8">Min</span>
             <span class="text-base font-semibold">{{ minAmount }}</span>
@@ -139,6 +139,7 @@
             <span class="text-xs text-gray-8">Max</span>
             <span class="text-base font-semibold">{{ maxAmount }} </span>
           </div>
+          <ChartLine />
           <div class="flex flex-col gap-1">
             <span class="text-xs text-gray-8">Current price</span>
             <span class="text-base font-semibold">{{ currentPrice }}</span>
@@ -174,6 +175,7 @@
   import type { FeeAmount, Pool } from '@monchain/v3-sdk'
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { useAccount } from '@wagmi/vue'
+  import ChartLine from '~/components/chart/ChartLine.vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
   import { Bound, ChainId } from '~/types'
 
