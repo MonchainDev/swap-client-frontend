@@ -255,7 +255,7 @@
       buttonRangePercent.value = percent === buttonRangePercent.value ? null : percent
       let _zoomLevel: ZoomLevels = { ...zoomLevel! }
       if (!buttonRangePercent.value) {
-        _zoomLevel = ZOOM_LEVELS[FeeAmount.MEDIUM]
+        _zoomLevel = ZOOM_LEVELS[feeAmount.value as FeeAmount]
       }
 
       if (currentPrice) {
