@@ -55,7 +55,7 @@
           @focus="emits('focus-input', type)"
           @input="handleInput"
         />
-        <span class="text-sm font-semibold text-gray-6">≈ {{ amountUsd }}</span>
+        <span class="text-sm font-semibold text-gray-6">≈ ${{ priceUsd }}</span>
       </div>
     </div>
   </div>
@@ -64,6 +64,7 @@
 <script lang="ts" setup>
   import type { Currency } from '@monchain/swap-sdk-core'
   import { useAccount } from '@wagmi/vue'
+  import Decimal from 'decimal.js'
 
   import type { IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
@@ -100,9 +101,17 @@
   const { handleImageError } = useErrorImage()
 
   const { outOfRange, invalidRange } = useV3DerivedInfo()
-  const { startPriceTypedValue, form } = storeToRefs(useLiquidityStore())
+  const { startPriceTypedValue, form, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
   const { poolExits } = usePools()
   const route = useRoute()
+
+  const priceUsd = computed(() => {
+    if (!parseFloat(amount.value)) return '0'
+    if (props.type === 'BASE') {
+      return new Decimal(amount.value).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
+    }
+    return new Decimal(amount.value).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+  })
 
   const isDisabled = computed(() => {
     const { minPrice, maxPrice } = form.value
@@ -121,11 +130,6 @@
 
   const formattedBalance = computed(() => {
     return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
-  })
-
-  const amountUsd = computed(() => {
-    const random = Math.random()
-    return amount.value ? (random > 0.01 ? '$' + random.toFixed(2) : '<$0.01') : '$0'
   })
 
   const handleClick = () => {
