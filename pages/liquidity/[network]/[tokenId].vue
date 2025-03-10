@@ -50,7 +50,7 @@
           </BaseButton>
 
           <BaseButton :disabled="!isConnected" type="outline" size="md" class="w-[120px] !bg-white text-xl">
-            <NuxtLink :to="`/remove/${tokenId}`">
+            <NuxtLink :to="{ name: 'remove-network-tokenId', params: { network: route.params.network, tokenId: route.params.tokenId } }">
               <span class="text-hyperlink">Remove</span>
             </NuxtLink>
           </BaseButton>
@@ -67,10 +67,10 @@
               <span class="flex items-center gap-1 text-sm">
                 <span>APR</span>
                 <BaseIcon name="calculator" size="16" class="text-gray-4" />
-                <span class="text-[#049C6B]">0% </span>
+                <span class="text-[#049C6B]">{{ positionDetail?.feeApr }}% </span>
               </span>
             </div>
-            <span class="text-[48px] font-semibold">$0</span>
+            <span class="text-[48px] font-semibold">${{ Number(priceUsdBase) + Number(priceUsdQuote) }}</span>
           </div>
           <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
@@ -99,7 +99,7 @@
           <div class="flex justify-between">
             <div class="flex flex-col">
               <span class="text-2xl font-semibold leading-7">Unclaimed fees</span>
-              <span class="text-[48px] font-semibold text-hyperlink">$0</span>
+              <span class="text-[48px] font-semibold text-hyperlink">${{ Number(priceUsdFeeLower) + Number(priceUsdFeeUpper) }}</span>
             </div>
             <BaseButton :disabled="!isConnected" type="linear" size="md" class="w-[170px] text-xl font-semibold uppercase">Collect</BaseButton>
           </div>
@@ -181,8 +181,9 @@
   import ChartLine from '~/components/chart/ChartLine.vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
   import { Bound, ChainId } from '~/types'
+  import type { IPosition } from '~/types/position.type'
 
-  const route = useRoute('liquidity-tokenId')
+  const route = useRoute('liquidity-network-tokenId')
   const { setOpenPopup } = useBaseStore()
 
   const tokenId = computed(() => {
@@ -192,6 +193,8 @@
   const { feeAmount, form, existingPosition, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
 
   const { isLoading, position: _position, refetch } = useV3PositionsFromTokenId(tokenId.value)
+
+  const { data: positionDetail } = useFetch<IPosition>(`/api/position/get/${tokenId.value?.toString()}`, { query: { network: route.params.network } })
 
   const liquidity = computed(() => _position.value?.liquidity)
   const tickLower = computed(() => _position.value?.tickLower)

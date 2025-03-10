@@ -2,7 +2,10 @@
   <div v-loading="loading" class="mx-auto max-w-[1024px] pb-6" :class="{ 'pt-10': loading, 'mt-10': !loading }">
     <div class="flex items-center justify-between">
       <div class="flex gap-4">
-        <NuxtLink :to="`/liquidity/${tokenId}`" class="flex size-10 items-center justify-center rounded-lg border border-solid border-gray-3 bg-white">
+        <NuxtLink
+          :to="{ name: 'liquidity-network-tokenId', params: { tokenId: route.params.tokenId, network: route.params.network } }"
+          class="flex size-10 items-center justify-center rounded-lg border border-solid border-gray-3 bg-white"
+        >
           <BaseIcon name="arrow-down" size="24" class="rotate-90" />
         </NuxtLink>
         <div class="flex flex-col gap-3">
@@ -149,7 +152,7 @@
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
   })
 
-  const route = useRoute('remove-tokenId')
+  const route = useRoute('remove-network-tokenId')
   const router = useRouter()
 
   const percent = ref('')
@@ -293,7 +296,7 @@
         percent.value = ''
         showToastMsg('Transaction receipt', 'success', txHash)
         setOpenPopup('popup-confirm-remove', false)
-        router.push({ name: 'liquidity-tokenId', params: { tokenId: route.params.tokenId } })
+        router.push({ name: 'liquidity-network-tokenId', params: { tokenId: route.params.tokenId, network: route.params.network } })
       } else {
         showToastMsg('Transaction failed', 'error', txHash)
       }

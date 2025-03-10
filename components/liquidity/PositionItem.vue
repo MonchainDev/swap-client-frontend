@@ -1,7 +1,7 @@
 <template>
   <div
     class="grid cursor-pointer grid-cols-[3fr,136px,136px,3fr,3fr,2fr] border-b border-solid border-gray-2 py-6 hover:bg-gray-2"
-    @click="router.push(`/liquidity/${props.position.tokenId}`)"
+    @click="router.push({ name: 'liquidity-network-tokenId', params: { network: props.position.network, tokenId: props.position.tokenId } })"
   >
     <div class="flex items-center gap-[10px] pl-6">
       <div class="flex">

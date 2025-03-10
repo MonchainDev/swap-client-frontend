@@ -361,7 +361,7 @@
     return new Percent(BigInt(num), BIPS_BASE)
   })
 
-  const route = useRoute('liquidity-tokenId')
+  const route = useRoute('liquidity-network-tokenId')
   const router = useRouter()
   const { showToastMsg } = useShowToastMsg()
 

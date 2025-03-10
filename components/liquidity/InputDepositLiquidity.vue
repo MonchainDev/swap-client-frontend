@@ -116,7 +116,7 @@
   const isDisabled = computed(() => {
     const { minPrice, maxPrice } = form.value
     const commonConditions = outOfRange.value || invalidRange.value || minPrice === '' || maxPrice === ''
-    return route.name === 'liquidity-tokenId' ? false : poolExits.value ? commonConditions : commonConditions || startPriceTypedValue.value === ''
+    return route.name === 'liquidity-network-tokenId' ? false : poolExits.value ? commonConditions : commonConditions || startPriceTypedValue.value === ''
   })
 
   // watch(
