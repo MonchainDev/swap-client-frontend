@@ -54,7 +54,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedValue0 }}</span>
-              <span class="text-sm text-gray-6">$0</span>
+              <span class="text-sm text-gray-6">${{ priceUsd0 }}</span>
             </div>
           </div>
           <div class="flex h-1/2 items-center justify-between px-8">
@@ -64,7 +64,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedValue1 }}</span>
-              <span class="text-sm text-gray-6">$0</span>
+              <span class="text-sm text-gray-6">${{ priceUsd1 }}</span>
             </div>
           </div>
         </div>
@@ -76,7 +76,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedFee0 }}</span>
-              <span class="text-sm text-gray-6">$0</span>
+              <span class="text-sm text-gray-6">${{ priceUsdFee0 }}</span>
             </div>
           </div>
           <div class="flex h-1/2 items-center justify-between px-8">
@@ -86,7 +86,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedFee1 }}</span>
-              <span class="text-sm text-gray-6">$0</span>
+              <span class="text-sm text-gray-6">${{ priceUsdFee1 }}</span>
             </div>
           </div>
         </div>
@@ -143,6 +143,7 @@
   // import { NonfungiblePositionManager } from '@monchain/v3-sdk'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
   import { WNATIVE } from '~/constant/token'
+  import Decimal from 'decimal.js'
 
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
@@ -157,6 +158,7 @@
 
   const { chainId, address: account } = useAccount()
   const { setOpenPopup } = useBaseStore()
+  const { exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
 
   const tokenId = computed(() => {
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
@@ -191,6 +193,34 @@
   })
   const formattedValue1 = computed(() => {
     return formattedCurrencyAmount(liquidityValue1.value)
+  })
+
+  const priceUsd0 = computed(() => {
+    if (liquidityValue0.value) {
+      return new Decimal(liquidityValue0.value.toExact()).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
+  })
+
+  const priceUsd1 = computed(() => {
+    if (liquidityValue1.value) {
+      return new Decimal(liquidityValue1.value.toExact()).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
+  })
+
+  const priceUsdFee0 = computed(() => {
+    if (feeValue0.value) {
+      return new Decimal(feeValue0.value.toExact()).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
+  })
+
+  const priceUsdFee1 = computed(() => {
+    if (feeValue1.value) {
+      return new Decimal(feeValue1.value.toExact()).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
   })
 
   const showCollectAsWNative = computed(() => {

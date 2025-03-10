@@ -80,7 +80,7 @@
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">{{ formattedValueUpper }}</span>
-                <span class="text-sm text-gray-6">$0</span>
+                <span class="text-sm text-gray-6">${{ priceUsdBase }}</span>
               </div>
             </div>
             <div class="flex h-1/2 items-center justify-between px-8">
@@ -90,7 +90,7 @@
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">{{ formattedValueLower }}</span>
-                <span class="text-sm text-gray-6">$0</span>
+                <span class="text-sm text-gray-6">${{ priceUsdQuote }}</span>
               </div>
             </div>
           </div>
@@ -111,8 +111,8 @@
                 <span class="text-[22px] font-semibold leading-7">{{ feeValueUpper?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
-                <span class="text-[22px] font-semibold leading-7">{{ feeValueUpper ? formatCurrencyAmount(feeValueUpper, 4, 'en-US') : '-' }}</span>
-                <span class="text-sm text-gray-6">$0</span>
+                <span class="text-[22px] font-semibold leading-7">{{ formattedFeeUpper }}</span>
+                <span class="text-sm text-gray-6">${{ priceUsdFeeUpper }}</span>
               </div>
             </div>
             <div class="flex h-1/2 items-center justify-between px-8">
@@ -121,8 +121,8 @@
                 <span class="text-[22px] font-semibold leading-7">{{ feeValueLower?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
-                <span class="text-[22px] font-semibold leading-7">{{ feeValueLower ? formatCurrencyAmount(feeValueLower, 4, 'en-US') : '-' }}</span>
-                <span class="text-sm text-gray-6">$0</span>
+                <span class="text-[22px] font-semibold leading-7">{{ formattedFeeLower }}</span>
+                <span class="text-sm text-gray-6">${{ priceUsdFeeLower }}</span>
               </div>
             </div>
           </div>
@@ -166,6 +166,8 @@
     :value-lower="formattedValueLower"
     :value-upper="formattedValueUpper"
     :fee-format="formatFee"
+    :usd-lower="priceUsdQuote"
+    :usd-upper="priceUsdBase"
     @reload="refetch"
   />
 </template>
@@ -175,6 +177,7 @@
   import type { FeeAmount, Pool } from '@monchain/v3-sdk'
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { useAccount } from '@wagmi/vue'
+  import Decimal from 'decimal.js'
   import ChartLine from '~/components/chart/ChartLine.vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
   import { Bound, ChainId } from '~/types'
@@ -186,7 +189,7 @@
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
   })
   const { chainId, isConnected, address: account } = useAccount()
-  const { feeAmount, form, existingPosition } = storeToRefs(useLiquidityStore())
+  const { feeAmount, form, existingPosition, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
 
   const { isLoading, position: _position, refetch } = useV3PositionsFromTokenId(tokenId.value)
 
@@ -326,6 +329,46 @@
   })
   const formattedValueLower = computed(() => {
     return formattedCurrencyAmount(positionValueLower.value)
+  })
+
+  const formattedFeeUpper = computed(() => {
+    return formatCurrencyAmount(feeValueUpper.value, 4, 'en-US')
+  })
+
+  const formattedFeeLower = computed(() => {
+    return formatCurrencyAmount(feeValueLower.value, 4, 'en-US')
+  })
+
+  const priceUsdBase = computed(() => {
+    if (!formattedValueUpper.value) return '0'
+    if (currencyBase.value && exchangeRateBaseCurrency.value) {
+      return new Decimal(formattedValueUpper.value.replaceAll(',', '')).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
+  })
+
+  const priceUsdQuote = computed(() => {
+    if (!formattedValueLower.value) return '0'
+    if (currencyQuote.value && exchangeRateQuoteCurrency.value) {
+      return new Decimal(formattedValueLower.value.replaceAll(',', '')).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
+  })
+
+  const priceUsdFeeUpper = computed(() => {
+    if (!feeValueUpper.value) return '0'
+    if (currencyBase.value && exchangeRateBaseCurrency.value) {
+      return new Decimal(feeValueUpper.value.toExact()).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
+  })
+
+  const priceUsdFeeLower = computed(() => {
+    if (!feeValueLower.value) return '0'
+    if (currencyQuote.value && exchangeRateQuoteCurrency.value) {
+      return new Decimal(feeValueLower.value.toExact()).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
   })
 
   const handleClickAddLiquidity = () => {
