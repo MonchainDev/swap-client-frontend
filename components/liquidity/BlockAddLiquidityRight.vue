@@ -87,9 +87,18 @@
     :value-lower="form.amountDeposit0"
     :value-upper="form.amountDeposit1"
     :fee-format="formatFee"
+    :usd-upper="priceUsdUpper"
+    :usd-lower="priceUsdLower"
     :show-input="false"
   />
-  <PopupConfirmCreateLiquidity :position :base-currency-default="baseCurrency" :ticks-at-limit="ticksAtLimit" @reload="reloadData" />
+  <PopupConfirmCreateLiquidity
+    :position
+    :base-currency-default="baseCurrency"
+    :usd-upper="priceUsdUpper"
+    :usd-lower="priceUsdLower"
+    :ticks-at-limit="ticksAtLimit"
+    @reload="reloadData"
+  />
 </template>
 
 <script lang="ts" setup>
@@ -99,6 +108,7 @@
 
   import { FeeAmount } from '~/constant/fee'
   import type { TYPE_SWAP } from '~/types/swap.type'
+  import Decimal from 'decimal.js'
 
   export type INPUT_PRICE = 'MIN' | 'MAX'
   interface IProps {
@@ -130,7 +140,9 @@
     baseCurrency,
     quoteCurrency,
     independentField,
-    typedValue
+    typedValue,
+    exchangeRateBaseCurrency,
+    exchangeRateQuoteCurrency
   } = storeToRefs(useLiquidityStore())
   const { switchTokens, dispatchRangeTypedValue, refetchAllowance0, refetchAllowance1, resetFiled, refetchBalance0, refetchBalance1 } = useLiquidityStore()
 
@@ -155,6 +167,22 @@
 
   const isDisabledPriceRange = computed(() => {
     return !startPriceTypedValue.value && !poolExits.value
+  })
+
+  const priceUsdUpper = computed(() => {
+    if (!parseFloat(form.value.amountDeposit0) || !parseFloat(form.value.amountDeposit1)) return '0'
+    return new Decimal(isSorted.value ? form.value.amountDeposit0 : form.value.amountDeposit1)
+      .mul(isSorted.value ? exchangeRateBaseCurrency.value : exchangeRateQuoteCurrency.value)
+      .toSignificantDigits(6)
+      .toString()
+  })
+
+  const priceUsdLower = computed(() => {
+    if (!parseFloat(form.value.amountDeposit1) || !parseFloat(form.value.amountDeposit0)) return '0'
+    return new Decimal(isSorted.value ? form.value.amountDeposit1 : form.value.amountDeposit0)
+      .mul(isSorted.value ? exchangeRateQuoteCurrency.value : exchangeRateBaseCurrency.value)
+      .toSignificantDigits(6)
+      .toString()
   })
 
   const handleChangePriceRange = (type: INPUT_PRICE, amount: string) => {
@@ -255,7 +283,7 @@
       buttonRangePercent.value = percent === buttonRangePercent.value ? null : percent
       let _zoomLevel: ZoomLevels = { ...zoomLevel! }
       if (!buttonRangePercent.value) {
-        _zoomLevel = ZOOM_LEVELS[FeeAmount.MEDIUM]
+        _zoomLevel = ZOOM_LEVELS[feeAmount.value as FeeAmount]
       }
 
       if (currentPrice) {

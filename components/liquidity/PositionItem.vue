@@ -1,7 +1,7 @@
 <template>
   <div
-    class="grid cursor-pointer grid-cols-[3fr,2fr,2fr,3fr,3fr,2fr] border-b border-solid border-gray-2 py-6 hover:bg-gray-2"
-    @click="router.push(`/liquidity/${props.position.tokenId}`)"
+    class="grid cursor-pointer grid-cols-[3fr,136px,136px,3fr,3fr,2fr] border-b border-solid border-gray-2 py-6 hover:bg-gray-2"
+    @click="router.push({ name: 'liquidity-network-tokenId', params: { network: props.position.network, tokenId: props.position.tokenId } })"
   >
     <div class="flex items-center gap-[10px] pl-6">
       <div class="flex">
@@ -19,9 +19,9 @@
     <div class="flex items-center justify-center">
       <span class="rounded bg-gray-2 px-2 py-1 text-sm">{{ fee }}</span>
     </div>
-    <div class="flex flex-col items-center justify-center gap-1 text-sm">
-      <span class="font-semibold text-success"></span>
-      <!-- <span class="text-gray-6">{{ props.position.rewardApr }}%</span> -->
+    <div class="flex flex-col items-center justify-center gap-1 px-1 text-sm">
+      <div class="break-all font-semibold text-success">{{ (props.position.feeApr || 0).toFixed(2) }}%</div>
+      <div class="text-gray-6">{{ props.position.rewardApr }}%</div>
     </div>
     <div class="flex flex-col justify-center text-sm">
       <span>Min: {{ min }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
@@ -29,8 +29,8 @@
     </div>
     <div class="flex flex-col text-sm">
       <span>≈ $0</span>
-      <span>({{ displayTokenReserve(0, props.position.quoteDecimals, props.position.quoteSymbol) }} /</span>
-      <span>{{ displayTokenReserve(0, props.position.baseDecimals, props.position.baseSymbol) }})</span>
+      <span>({{ displayTokenReserve(props.position.quoteQuantity, props.position.quoteDecimals, props.position.quoteSymbol) }} /</span>
+      <span>{{ displayTokenReserve(props.position.baseQuantity, props.position.baseDecimals, props.position.baseSymbol) }})</span>
     </div>
     <!-- <div class="flex items-center justify-center text-center text-sm" :class="classStatus"></div> -->
   </div>

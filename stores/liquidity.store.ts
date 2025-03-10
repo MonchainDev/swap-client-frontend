@@ -2,13 +2,15 @@ import ABI_TOKEN from '@/constant/contract/contract-token.json'
 import type { Price } from '@monchain/swap-sdk-core'
 import { Token } from '@monchain/swap-sdk-core'
 import type { Position } from '@monchain/v3-sdk'
+import { useQuery } from '@tanstack/vue-query'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
+import Decimal from 'decimal.js'
 import { defineStore } from 'pinia'
 import { NATIVE_TOKEN } from '~/constant'
 import { LIST_ADDRESS_FEE } from '~/constant/contract'
 import { FeeAmount } from '~/constant/fee'
 import { ZOOM_LEVELS } from '~/constant/zoom-level'
-import { ChainId, CurrencyField, type IToken, type ZoomLevels } from '~/types'
+import { ChainId, CurrencyField, type IExchangeRate, type IToken, type ZoomLevels } from '~/types'
 import type { IFormCreatePosition } from '~/types/position.type'
 
 export const useLiquidityStore = defineStore('liquidity', () => {
@@ -199,6 +201,46 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     listTokenOfRange.value = []
   }
 
+  const fetchExchangeRate = async () => {
+    const params = new URLSearchParams()
+    if (baseCurrency.value && quoteCurrency.value) {
+      params.append('currencies', baseCurrency.value.symbol)
+      params.append('currencies', quoteCurrency.value.symbol)
+      const data = await $fetch<IExchangeRate[]>(`/api/exchange-rate/all?${params.toString()}`)
+      return data
+    }
+  }
+
+  const { data: exchangeRate } = useQuery({
+    queryKey: computed(() => ['exchangeRate', baseCurrency.value?.symbol, quoteCurrency.value?.symbol]),
+    queryFn: fetchExchangeRate,
+    enabled: computed(() => !!(baseCurrency.value?.symbol && quoteCurrency.value?.symbol))
+  })
+
+  const exchangeRateBaseCurrency = computed(() => {
+    if (exchangeRate.value?.length) {
+      const rateList = exchangeRate.value.filter((item) => item.symbol === baseCurrency.value?.symbol)
+      if (rateList.length) {
+        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
+      }
+      return '0'
+    }
+    return '0'
+  })
+
+  const exchangeRateQuoteCurrency = computed(() => {
+    if (exchangeRate.value?.length) {
+      const rateList = exchangeRate.value.filter((item) => item.symbol === quoteCurrency.value?.symbol)
+      if (rateList.length) {
+        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
+      }
+      return '0'
+    }
+    return '0'
+  })
+
   return {
     form,
     currentStep,
@@ -225,6 +267,8 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     refetchBalance1,
     resetStore,
     zoomLevel,
-    existingPosition
+    existingPosition,
+    exchangeRateBaseCurrency,
+    exchangeRateQuoteCurrency
   }
 })

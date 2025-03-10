@@ -32,11 +32,12 @@
           <div class="flex flex-col text-right">
             <template v-if="props.showInput && step === 'CONFIRM'">
               <span class="text-[32px] font-semibold leading-none">{{ formattedStep2Amount0 }}</span>
+              <span class="text-sm font-semibold text-gray-6">${{ priceUsdBase }}</span>
             </template>
             <template v-else>
               <span class="text-[32px] font-semibold leading-none">{{ formattedValue0 }}</span>
+              <span class="text-sm font-semibold text-gray-6">${{ props.usdUpper }}</span>
             </template>
-            <span class="text-sm font-semibold text-gray-6">$0</span>
           </div>
         </div>
         <div class="ml-8 h-[30px] w-5 border-r-2 border-dashed border-gray-6" />
@@ -51,11 +52,12 @@
           <div class="flex flex-col text-right">
             <template v-if="props.showInput && step === 'CONFIRM'">
               <span class="text-[32px] font-semibold leading-none">{{ formattedStep2Amount1 }}</span>
+              <span class="text-sm font-semibold text-gray-6">${{ priceUsdQuote }}</span>
             </template>
             <template v-else>
               <span class="text-[32px] font-semibold leading-none">{{ formattedValue1 }}</span>
+              <span class="text-sm font-semibold text-gray-6">${{ props.usdLower }}</span>
             </template>
-            <span class="text-sm font-semibold text-gray-6">$0</span>
           </div>
         </div>
         <div class="flex flex-1 items-center justify-between border-t border-solid border-t-gray-3 px-8">
@@ -152,6 +154,8 @@
     feeFormat: string
     position: Position | undefined
     showInput?: boolean
+    usdUpper?: string
+    usdLower?: string
   }
 
   const props = withDefaults(defineProps<IProps>(), {
@@ -161,7 +165,9 @@
     currencyQuote: undefined,
     feeFormat: '',
     position: undefined,
-    showInput: true
+    showInput: true,
+    usdUpper: '',
+    usdLower: ''
   })
 
   const emit = defineEmits<{
@@ -174,7 +180,7 @@
   const loadingAdd = ref(false)
   const step = ref<'INPUT' | 'CONFIRM'>('INPUT')
 
-  const { form, balance0, balance1, typedValue, independentField } = storeToRefs(useLiquidityStore())
+  const { form, balance0, balance1, typedValue, independentField, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
   const { refetchAllowance0, refetchAllowance1, refetchBalance0, refetchBalance1 } = useLiquidityStore()
   const { setOpenPopup } = useBaseStore()
 
@@ -238,6 +244,20 @@
   })
   const formattedPriceUpper = computed(() => {
     return formatTickPrice(priceUpper.value, ticksAtLimit.value, Bound.UPPER, 'en-US')
+  })
+
+  const priceUsdBase = computed(() => {
+    if (form.value.amountDeposit0) {
+      return new Decimal(form.value.amountDeposit0).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
+  })
+
+  const priceUsdQuote = computed(() => {
+    if (form.value.amountDeposit1) {
+      return new Decimal(form.value.amountDeposit1).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
   })
 
   watchEffect(() => {
@@ -341,7 +361,7 @@
     return new Percent(BigInt(num), BIPS_BASE)
   })
 
-  const route = useRoute('liquidity-tokenId')
+  const route = useRoute('liquidity-network-tokenId')
   const router = useRouter()
   const { showToastMsg } = useShowToastMsg()
 

@@ -88,7 +88,7 @@
   const isShowEnterAmount = computed(() => {
     const { amountDeposit0, amountDeposit1 } = form.value
     const missingAmounts = !amountDeposit0 || !amountDeposit1
-    if (route.name === 'liquidity-tokenId') {
+    if (route.name === 'liquidity-network-tokenId') {
       return missingAmounts
     } else {
       return poolExits.value ? isInvalidPair.value && missingAmounts : !isInvalidPair.value && (missingAmounts || !startPriceTypedValue.value)
@@ -133,7 +133,7 @@
   })
 
   const isDisabledAdd = computed(() => {
-    if (route.name === 'liquidity-tokenId') {
+    if (route.name === 'liquidity-network-tokenId') {
       return !parseFloat(form.value.amountDeposit0) || !parseFloat(form.value.amountDeposit1)
     }
     return !parseFloat(form.value.amountDeposit0) || !parseFloat(form.value.amountDeposit1) || form.value.minPrice === '' || form.value.maxPrice === ''

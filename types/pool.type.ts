@@ -23,6 +23,7 @@ export interface IPool {
   feeApr: number
   rewardApr: number
   liquidity: number
+  currentPrice: number
 }
 
 export interface IPoolOrigin {

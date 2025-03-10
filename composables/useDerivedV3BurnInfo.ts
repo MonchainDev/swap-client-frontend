@@ -5,7 +5,7 @@ import { useAccount } from '@wagmi/vue'
 import { ChainId, type PositionDetail } from '~/types'
 
 export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | undefined>, percent: Ref<string>, asWNATIVE: Ref<boolean>) {
-  const { address: account, chainId } = useAccount()
+  const { chainId } = useAccount()
 
   const { form, feeAmount } = storeToRefs(useLiquidityStore())
 
@@ -45,7 +45,7 @@ export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | unde
   })
 
   const liquidityPercentage = computed(() => {
-    return percent.value === null || percent.value === undefined ? undefined : new Percent(percent.value, 100)
+    return percent.value === null || percent.value === undefined ? undefined : new Percent(Math.floor(+percent.value), 100)
   })
   const { pool } = usePools()
 
@@ -91,10 +91,6 @@ export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | unde
     pool.value && position.value ? pool.value.tickCurrent < position.value.tickLower || pool.value.tickCurrent >= position.value.tickUpper : false
   )
 
-  const textBtn = computed(() => {
-    return !account.value ? 'Connect wallet' : !percent.value ? 'Enter a percent' : 'Remove'
-  })
-
   return {
     position: positionSDK,
     liquidityPercentage,
@@ -102,7 +98,6 @@ export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | unde
     liquidityValue0,
     liquidityValue1,
     outOfRange,
-    textBtn,
     discountedAmount0,
     discountedAmount1,
     feeValue0,

@@ -81,3 +81,17 @@ export type PositionDetail = {
   farmingMultiplier: number
   farmingLiquidity: bigint
 }
+
+export interface IExchangeRate {
+  id: string
+  tokenId: number
+  name: string
+  symbol: string
+  slug: string
+  inPage: number
+  createdAt: number
+  updatedAt: number
+  exchangeRate: number
+  priceUsd: number
+  lastUpdatedRate: number
+}

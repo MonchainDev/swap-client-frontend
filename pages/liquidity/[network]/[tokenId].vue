@@ -50,7 +50,7 @@
           </BaseButton>
 
           <BaseButton :disabled="!isConnected" type="outline" size="md" class="w-[120px] !bg-white text-xl">
-            <NuxtLink :to="`/remove/${tokenId}`">
+            <NuxtLink :to="{ name: 'remove-network-tokenId', params: { network: route.params.network, tokenId: route.params.tokenId } }">
               <span class="text-hyperlink">Remove</span>
             </NuxtLink>
           </BaseButton>
@@ -67,10 +67,10 @@
               <span class="flex items-center gap-1 text-sm">
                 <span>APR</span>
                 <BaseIcon name="calculator" size="16" class="text-gray-4" />
-                <span class="text-[#049C6B]">0% </span>
+                <span class="text-[#049C6B]">{{ positionDetail?.feeApr }}% </span>
               </span>
             </div>
-            <span class="text-[48px] font-semibold">$0</span>
+            <span class="text-[48px] font-semibold">${{ Number(priceUsdBase) + Number(priceUsdQuote) }}</span>
           </div>
           <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
@@ -80,7 +80,7 @@
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">{{ formattedValueUpper }}</span>
-                <span class="text-sm text-gray-6">$0</span>
+                <span class="text-sm text-gray-6">${{ priceUsdBase }}</span>
               </div>
             </div>
             <div class="flex h-1/2 items-center justify-between px-8">
@@ -90,7 +90,7 @@
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">{{ formattedValueLower }}</span>
-                <span class="text-sm text-gray-6">$0</span>
+                <span class="text-sm text-gray-6">${{ priceUsdQuote }}</span>
               </div>
             </div>
           </div>
@@ -99,7 +99,7 @@
           <div class="flex justify-between">
             <div class="flex flex-col">
               <span class="text-2xl font-semibold leading-7">Unclaimed fees</span>
-              <span class="text-[48px] font-semibold text-hyperlink">$0</span>
+              <span class="text-[48px] font-semibold text-hyperlink">${{ Number(priceUsdFeeLower) + Number(priceUsdFeeUpper) }}</span>
             </div>
             <BaseButton :disabled="!isConnected" type="linear" size="md" class="w-[170px] text-xl font-semibold uppercase">Collect</BaseButton>
           </div>
@@ -111,8 +111,8 @@
                 <span class="text-[22px] font-semibold leading-7">{{ feeValueUpper?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
-                <span class="text-[22px] font-semibold leading-7">{{ feeValueUpper ? formatCurrencyAmount(feeValueUpper, 4, 'en-US') : '-' }}</span>
-                <span class="text-sm text-gray-6">$0</span>
+                <span class="text-[22px] font-semibold leading-7">{{ formattedFeeUpper }}</span>
+                <span class="text-sm text-gray-6">${{ priceUsdFeeUpper }}</span>
               </div>
             </div>
             <div class="flex h-1/2 items-center justify-between px-8">
@@ -121,8 +121,8 @@
                 <span class="text-[22px] font-semibold leading-7">{{ feeValueLower?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
-                <span class="text-[22px] font-semibold leading-7">{{ feeValueLower ? formatCurrencyAmount(feeValueLower, 4, 'en-US') : '-' }}</span>
-                <span class="text-sm text-gray-6">$0</span>
+                <span class="text-[22px] font-semibold leading-7">{{ formattedFeeLower }}</span>
+                <span class="text-sm text-gray-6">${{ priceUsdFeeLower }}</span>
               </div>
             </div>
           </div>
@@ -130,7 +130,7 @@
       </div>
       <div class="flex flex-col gap-4 px-8 pb-10 pt-6">
         <span class="text-2xl font-semibold leading-7">Price range {{ currencyQuote?.symbol }}/{{ currencyBase?.symbol }}</span>
-        <div class="flex gap-10">
+        <div class="flex items-center gap-10">
           <div class="flex flex-col gap-1">
             <span class="text-xs text-gray-8">Min</span>
             <span class="text-base font-semibold">{{ minAmount }}</span>
@@ -139,6 +139,7 @@
             <span class="text-xs text-gray-8">Max</span>
             <span class="text-base font-semibold">{{ maxAmount }} </span>
           </div>
+          <ChartLine />
           <div class="flex flex-col gap-1">
             <span class="text-xs text-gray-8">Current price</span>
             <span class="text-base font-semibold">{{ currentPrice }}</span>
@@ -165,6 +166,8 @@
     :value-lower="formattedValueLower"
     :value-upper="formattedValueUpper"
     :fee-format="formatFee"
+    :usd-lower="priceUsdQuote"
+    :usd-upper="priceUsdBase"
     @reload="refetch"
   />
 </template>
@@ -174,19 +177,24 @@
   import type { FeeAmount, Pool } from '@monchain/v3-sdk'
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { useAccount } from '@wagmi/vue'
+  import Decimal from 'decimal.js'
+  import ChartLine from '~/components/chart/ChartLine.vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
   import { Bound, ChainId } from '~/types'
+  import type { IPosition } from '~/types/position.type'
 
-  const route = useRoute('liquidity-tokenId')
+  const route = useRoute('liquidity-network-tokenId')
   const { setOpenPopup } = useBaseStore()
 
   const tokenId = computed(() => {
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
   })
   const { chainId, isConnected, address: account } = useAccount()
-  const { feeAmount, form, existingPosition } = storeToRefs(useLiquidityStore())
+  const { feeAmount, form, existingPosition, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
 
   const { isLoading, position: _position, refetch } = useV3PositionsFromTokenId(tokenId.value)
+
+  const { data: positionDetail } = useFetch<IPosition>(`/api/position/get/${tokenId.value?.toString()}`, { query: { network: route.params.network } })
 
   const liquidity = computed(() => _position.value?.liquidity)
   const tickLower = computed(() => _position.value?.tickLower)
@@ -324,6 +332,46 @@
   })
   const formattedValueLower = computed(() => {
     return formattedCurrencyAmount(positionValueLower.value)
+  })
+
+  const formattedFeeUpper = computed(() => {
+    return formatCurrencyAmount(feeValueUpper.value, 4, 'en-US')
+  })
+
+  const formattedFeeLower = computed(() => {
+    return formatCurrencyAmount(feeValueLower.value, 4, 'en-US')
+  })
+
+  const priceUsdBase = computed(() => {
+    if (!formattedValueUpper.value) return '0'
+    if (currencyBase.value && exchangeRateBaseCurrency.value) {
+      return new Decimal(formattedValueUpper.value.replaceAll(',', '')).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
+  })
+
+  const priceUsdQuote = computed(() => {
+    if (!formattedValueLower.value) return '0'
+    if (currencyQuote.value && exchangeRateQuoteCurrency.value) {
+      return new Decimal(formattedValueLower.value.replaceAll(',', '')).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
+  })
+
+  const priceUsdFeeUpper = computed(() => {
+    if (!feeValueUpper.value) return '0'
+    if (currencyBase.value && exchangeRateBaseCurrency.value) {
+      return new Decimal(feeValueUpper.value.toExact()).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
+  })
+
+  const priceUsdFeeLower = computed(() => {
+    if (!feeValueLower.value) return '0'
+    if (currencyQuote.value && exchangeRateQuoteCurrency.value) {
+      return new Decimal(feeValueLower.value.toExact()).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
   })
 
   const handleClickAddLiquidity = () => {

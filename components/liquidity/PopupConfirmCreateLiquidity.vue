@@ -25,7 +25,7 @@
           </div>
           <div class="flex flex-col text-right">
             <span class="text-[32px] font-semibold leading-none">{{ formattedValue0 }}</span>
-            <span class="text-sm font-semibold text-gray-6">$0</span>
+            <span class="text-sm font-semibold text-gray-6">${{ props.usdUpper }}</span>
           </div>
         </div>
         <div class="ml-8 h-[30px] w-5 border-r-2 border-dashed border-gray-6" />
@@ -39,7 +39,7 @@
           </div>
           <div class="flex flex-col text-right">
             <span class="text-[32px] font-semibold leading-none">{{ formattedValue1 }}</span>
-            <span class="text-sm font-semibold text-gray-6">$0</span>
+            <span class="text-sm font-semibold text-gray-6">${{ props.usdLower }}</span>
           </div>
         </div>
         <div class="flex flex-1 items-center justify-between border-t border-solid border-t-gray-3 px-8">
@@ -98,12 +98,16 @@
     position: Position | undefined
     baseCurrencyDefault: Currency | undefined
     ticksAtLimit: { [bound: string]: boolean | undefined }
+    usdUpper?: string
+    usdLower?: string
   }
 
   const props = withDefaults(defineProps<IProps>(), {
     position: undefined,
     baseCurrencyDefault: undefined,
-    ticksAtLimit: () => ({ [Bound.LOWER]: false, [Bound.UPPER]: false })
+    ticksAtLimit: () => ({ [Bound.LOWER]: false, [Bound.UPPER]: false }),
+    usdUpper: '',
+    usdLower: ''
   })
 
   const emit = defineEmits<{
