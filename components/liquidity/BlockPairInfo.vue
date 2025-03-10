@@ -11,7 +11,7 @@
         <span> 1 {{ pool.quoteSymbol }} = {{ formatNumber(price1) }} {{ pool.baseSymbol }}</span>
       </div>
     </div>
-    <div class="grid h-[421px] grid-cols-[374px_1fr] gap-6">
+    <div class="grid min-h-[421px] grid-cols-[374px_1fr] gap-6">
       <div class="rounded-lg bg-white px-6 py-4 shadow-md">
         <div class="flex flex-col gap-[6px]">
           <span class="text-sm">Total Tokens locked (TVL)</span>
@@ -64,6 +64,9 @@
       </div>
       <div class="rounded-lg bg-white px-6 py-4 shadow-md">
         <BaseTab v-model:model="tabActive" :list="listTab" />
+        <div class="mt-7">
+          <component :is="component" />
+        </div>
       </div>
     </div>
   </div>
@@ -73,6 +76,10 @@
   import Decimal from 'decimal.js'
   import type { ITab } from '~/types/component.type'
   import type { IPool } from '~/types/pool.type'
+  import ChartLiquidity from '../chart/ChartLiquidity.vue'
+  import ChartVolume from '../chart/ChartVolume.vue'
+  import ChartFee from '../chart/ChartFee.vue'
+  import ChartTvl from '../chart/ChartTvl.vue'
   const enum TabValue {
     VOLUME = 'VOLUME',
     LIQUIDITY = 'LIQUIDITY',
@@ -112,6 +119,20 @@
   ]
 
   const tabActive = ref<TabValue>(TabValue.VOLUME)
+
+  const component = computed(() => {
+    switch (tabActive.value) {
+      case TabValue.LIQUIDITY:
+        return ChartLiquidity
+      case TabValue.FEE:
+        return ChartFee
+      case TabValue.TVL:
+        return ChartTvl
+
+      default:
+        return ChartVolume
+    }
+  })
 
   const fee24h = computed(() => {
     const volume = new Decimal(props.pool.volume24h)
