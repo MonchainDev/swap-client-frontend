@@ -34,6 +34,8 @@ export interface IPositionOrigin {
   pooladdress: string
   quoteqtty: number
   baseqtty: number
+  pooltype: null | 'FARM'
+  positionstatus: string
 }
 
 export interface IPosition {
@@ -58,4 +60,6 @@ export interface IPosition {
   createdBy: string
   priceLower: number
   poolAddress: string
+  poolType: null | 'FARM'
+  positionStatus: string
 }

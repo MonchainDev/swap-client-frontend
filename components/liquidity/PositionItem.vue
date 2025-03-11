@@ -1,6 +1,6 @@
 <template>
   <div
-    class="grid cursor-pointer grid-cols-[3fr,136px,136px,3fr,3fr,2fr] border-b border-solid border-gray-2 py-6 hover:bg-gray-2"
+    class="grid cursor-pointer grid-cols-[3fr,136px,136px,3fr,3fr,150px] border-b border-solid border-gray-2 py-6 hover:bg-gray-2"
     @click="router.push({ name: 'liquidity-network-tokenId', params: { network: props.position.network, tokenId: props.position.tokenId } })"
   >
     <div class="flex items-center gap-[10px] pl-6">
@@ -27,12 +27,29 @@
       <span>Min: {{ min }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
       <span>Max: {{ max }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
     </div>
-    <div class="flex flex-col text-sm">
+    <div class="flex flex-col justify-center text-sm">
       <span>≈ $0</span>
       <span>({{ displayTokenReserve(props.position.quoteQuantity, props.position.quoteDecimals, props.position.quoteSymbol) }} /</span>
       <span>{{ displayTokenReserve(props.position.baseQuantity, props.position.baseDecimals, props.position.baseSymbol) }})</span>
     </div>
-    <!-- <div class="flex items-center justify-center text-center text-sm" :class="classStatus"></div> -->
+    <div class="flex items-center justify-center text-center">
+      <div class="flex flex-col items-center gap-2">
+        <div class="flex items-center gap-2 text-sm">
+          <span v-if="props.position.poolType === 'FARM'" class="flex items-center gap-1 font-semibold text-success">
+            <BaseIcon name="loading" size="16" class="text-success" />
+            <span>Farming</span>
+          </span>
+          <span :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
+        </div>
+        <div v-if="showUnStake || showStake" class="flex gap-2">
+          <template v-if="showUnStake">
+            <span class="flex h-6 items-center justify-center rounded border border-solid border-hyperlink px-[10px] text-sm text-hyperlink">Unstake</span>
+            <span class="flex h-6 items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white">Harvest</span>
+          </template>
+          <span v-if="showStake" class="flex h-6 items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white">Stake</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -122,26 +139,26 @@
     return `${formatNumber((amount / Math.pow(10, decimals)).toFixed(2))} ${symbol}`
   }
 
-  // const enum TabValue {
-  //   ALL = 'ALL',
-  //   ACTIVE = 'ACTIVE',
-  //   INACTIVE = 'INACTIVE',
-  //   CLOSE = 'CLOSE'
-  // }
+  const enum TabValue {
+    ALL = 'ALL',
+    ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
+    CLOSE = 'CLOSE'
+  }
 
-  function _capitalizeFirstLetter(string: string) {
+  function capitalizeFirstLetter(string: string) {
     if (!string) return ''
     return string.charAt(0).toUpperCase() + string.slice(1).toLocaleLowerCase()
   }
 
-  // const classStatus = computed(() => {
-  //   const status = props.position.poolStatus
-  //   return {
-  //     'text-error': status === TabValue.CLOSE,
-  //     'text-success': status === TabValue.ACTIVE,
-  //     'text-warning': status === TabValue.INACTIVE
-  //   }
-  // })
+  const classStatus = computed(() => {
+    const status = props.position.positionStatus
+    return {
+      'text-error': status === TabValue.CLOSE,
+      'text-success': status === TabValue.ACTIVE,
+      'text-warning': status === TabValue.INACTIVE
+    }
+  })
 
   const min = computed(() => {
     // priceLower*quotedecimals/basedecimals
@@ -152,6 +169,14 @@
   const max = computed(() => {
     const { priceUpper, baseDecimals, quoteDecimals } = props.position
     return priceUpper ? formatNumber(((priceUpper * quoteDecimals) / baseDecimals).toFixed(2)) : 0
+  })
+
+  const showStake = computed(() => {
+    return props.position.poolType === 'FARM' && !(Number(props.position.rewardApr ?? 0) > 0)
+  })
+
+  const showUnStake = computed(() => {
+    return props.position.poolType === 'FARM' && Number(props.position.rewardApr ?? 0) > 0
   })
 </script>
 

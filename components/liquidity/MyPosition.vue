@@ -82,7 +82,7 @@
       </div>
     </div>
 
-    <div class="mt-9 grid h-11 grid-cols-[3fr,2fr,2fr,3fr,3fr,2fr] bg-[#FAFAFA]">
+    <div class="mt-9 grid h-11 grid-cols-[3fr,136px,136px,3fr,3fr,150px] bg-[#FAFAFA]">
       <template v-for="item in listHeader" :key="item.title">
         <div class="flex items-center first:pl-6" :class="{ 'justify-center': item.align === 'center', 'justify-end': item.align === 'right' }">
           <span class="text-sm font-semibold text-gray-6">{{ item.title }}</span>
@@ -236,7 +236,9 @@
           feeApr: data.feeapr,
           rewardApr: data.rewardapr,
           baseQuantity: data.baseqtty,
-          quoteQuantity: data.quoteqtty
+          quoteQuantity: data.quoteqtty,
+          poolType: data.pooltype,
+          positionStatus: data.positionstatus
         }
       })
     }
