@@ -219,7 +219,7 @@
     return params.toString()
   })
 
-  const { data, status } = await useFetch<IResponse<IPositionOrigin[]>>(() => `/api/position/list?${queryString.value}`, {
+  const { data, status } = await useLazyFetch<IResponse<IPositionOrigin[]>>(() => `/api/position/list?${queryString.value}`, {
     key: queryString.value,
     immediate: true,
     onResponse: ({ response }) => {
@@ -233,6 +233,8 @@
   })
 
   const formattedData = computed((): IPosition[] => {
+    console.log(data.value)
+
     if (data.value?.content.length) {
       //@ts-ignore
       return data.value.content.map((data) => {

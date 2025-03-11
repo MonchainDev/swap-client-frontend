@@ -35,10 +35,10 @@
     <div class="flex items-center justify-center text-center">
       <div class="flex flex-col items-center gap-2">
         <div class="flex items-center gap-2 text-sm">
-          <span v-if="props.position.poolType === 'FARM'" class="flex items-center gap-1 font-semibold text-success">
+          <!-- <span v-if="props.position.poolType === 'FARM'" class="flex items-center gap-1 font-semibold text-success">
             <BaseIcon name="loading" size="16" class="text-success" />
             <span>Farming</span>
-          </span>
+          </span> -->
           <span :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
         </div>
         <div v-if="showUnStake || showStake" class="flex gap-2">
@@ -211,15 +211,15 @@
       } else {
         showToastMsg('Transaction failed', 'error', hash)
       }
+      loadingHarvest.value = false
     } catch (error) {
+      loadingHarvest.value = false
       console.error('handleClickHarvest ~ error', error)
       //@ts-ignore
       const msg = error?.shortMessage || null
       if (msg) {
         showToastMsg(msg, 'error')
       }
-    } finally {
-      loadingHarvest.value = false
     }
   }
 
@@ -244,15 +244,15 @@
       } else {
         showToastMsg('Transaction failed', 'error', hash)
       }
+      loadingStake.value = false
     } catch (error) {
+      loadingStake.value = false
       console.error('handleStake ~ error', error)
       //@ts-ignore
       const msg = error?.shortMessage || null
       if (msg) {
         showToastMsg(msg, 'error')
       }
-    } finally {
-      loadingStake.value = false
     }
   }
 </script>
