@@ -27,7 +27,7 @@ const LIST_NETWORK: INetwork[] = [
     logo: '/logo-bnb-chain.png',
     value: 'BNB',
     chainId: ChainId.BSC_TESTNET,
-    disabled: true
+    disabled: false
   },
   {
     title: 'Ethereum',
