@@ -1,17 +1,15 @@
 <template>
-  <div class="flex w-full flex-col bg-white">
-    <PageLoading v-if="loading" />
-    <template v-else>
-      <TheHeader />
-      <div class="flex flex-1 flex-col bg-[#F5F5F5]">
-        <main>
-          <slot />
-        </main>
-      </div>
-      <TheFooter />
-      <TheHeaderMobile />
-      <PopupConnectWallet />
-    </template>
+  <div class="relative flex w-full flex-col bg-white">
+    <PageLoading v-if="loading" class="z-10" />
+    <TheHeader />
+    <div class="flex flex-1 flex-col bg-[#F5F5F5]">
+      <main>
+        <slot />
+      </main>
+    </div>
+    <TheFooter />
+    <TheHeaderMobile />
+    <PopupConnectWallet />
   </div>
 </template>
 
