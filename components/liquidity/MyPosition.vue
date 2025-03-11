@@ -97,6 +97,7 @@
               v-for="item in formattedData"
               :key="item.tokenId.toString()"
               :position="item"
+              :list-exchange-rate="listExchangeRate"
               @unstake="
                 (pos) => {
                   positionCurrent = pos
@@ -127,6 +128,7 @@
   import type { IPosition, IPositionOrigin } from '~/types/position.type'
   import type { IResponse } from '~/types/response.type'
   import PopupUnStake from './PopupUnStake.vue'
+  import type { IExchangeRate } from '~/types'
   const enum TabValue {
     ALL = 'ALL',
     ACTIVE = 'ACTIVE',
@@ -221,6 +223,11 @@
     immediate: true,
     onResponse: ({ response }) => {
       query.value.total = response._data.totalElements ?? 0
+      if (response._data?.content.length) {
+        const list: string[] = response._data?.content.map((item: IPositionOrigin) => item.basesymbol && item.quotesymbol)
+        const listUnique = Array.from(new Set(list))
+        fetchExchangeRate(listUnique)
+      }
     }
   })
 
@@ -257,6 +264,16 @@
     }
     return []
   })
+
+  const listExchangeRate = ref<IExchangeRate[]>([])
+  const fetchExchangeRate = async (currencies: string[]) => {
+    const params = new URLSearchParams()
+    if (currencies.length) {
+      currencies.forEach((currency) => params.append('currencies', currency))
+      const response = await useFetch<IExchangeRate[]>(`/api/exchange-rate/all?${params.toString()}`)
+      listExchangeRate.value = response.data.value ?? []
+    }
+  }
 </script>
 
 <style lang="scss"></style>

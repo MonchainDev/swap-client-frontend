@@ -28,7 +28,7 @@
       <span>Max: {{ max }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
     </div>
     <div class="flex flex-col justify-center text-sm">
-      <span>≈ $0</span>
+      <span>≈ ${{ priceUdtTotal }}</span>
       <span>({{ displayTokenReserve(props.position.quoteQuantity, props.position.quoteDecimals, props.position.quoteSymbol) }} /</span>
       <span>{{ displayTokenReserve(props.position.baseQuantity, props.position.baseDecimals, props.position.baseSymbol) }})</span>
     </div>
@@ -75,15 +75,19 @@
   import { config } from '~/config/wagmi'
   import { CONTRACT_ADDRESS } from '~/constant/contract'
   import { useAccount } from '@wagmi/vue'
+  import type { IExchangeRate } from '~/types'
+  import Decimal from 'decimal.js'
 
   interface IProps {
     // position: PositionDetail
     position: IPosition
+    listExchangeRate: IExchangeRate[]
   }
 
   const props = withDefaults(defineProps<IProps>(), {
     // position: () => ({}) as PositionDetail
-    position: () => ({}) as IPosition
+    position: () => ({}) as IPosition,
+    listExchangeRate: () => []
   })
 
   const emit = defineEmits<{
@@ -107,53 +111,6 @@
     }
     return ''
   })
-
-  // const minAmount = computed(() => {
-  //   return formatTickPrice(props.position.priceLower, {}, Bound.LOWER, 'en-US')
-  // })
-
-  // const maxAmount = computed(() => {
-  //   return formatTickPrice(priceUpper.value, tickAtLimit.value ?? {}, Bound.UPPER, 'en-US')
-  // })
-
-  // const displayTokenReserve = (amount?: CurrencyAmount<Token>) => {
-  //   const minimumFractionDigits = Math.min(amount?.currency.decimals ?? 0, 6)
-  //   const quantity = amount && !amount.equalTo(0) ? amount.toFixed(minimumFractionDigits) : '0'
-  //   const symbol = amount?.currency.symbol ?? '-'
-
-  //   return `${formatNumber(quantity)} ${symbol}`
-  // }
-
-  // const calculatePositionAmounts = computed(() => {
-  //   const position = props.position
-  //   const sqrt = Math.sqrt
-  //   const pow = Math.pow
-
-  //   // Trích xuất dữ liệu
-  //   const { priceLower, priceUpper, currentTick, liquidity } = position
-
-  //   // Tính căn bậc hai của giá
-  //   const sqrtPriceLower = sqrt(priceLower)
-  //   const sqrtPriceUpper = sqrt(priceUpper)
-  //   const sqrtPriceCurrent = sqrt(pow(1.0001, currentTick))
-
-  //   // Tính Base Amount
-  //   let baseAmount = 0
-  //   if (currentTick < position.tickUpper) {
-  //     baseAmount = (liquidity * (sqrtPriceUpper - sqrtPriceCurrent)) / (sqrtPriceUpper * sqrtPriceCurrent)
-  //   }
-
-  //   // Tính Quote Amount
-  //   let quoteAmount = 0
-  //   if (currentTick > position.tickLower) {
-  //     quoteAmount = liquidity * (sqrtPriceCurrent - sqrtPriceLower)
-  //   }
-
-  //   return {
-  //     baseAmount,
-  //     quoteAmount
-  //   }
-  // })
 
   const displayTokenReserve = (amount: number, decimals: number, symbol: string) => {
     // = (quoteQtty/10^quotedecimals) TokenA/(baseQtty/10^baseDecimals) TokenB
@@ -198,6 +155,34 @@
 
   const showUnStake = computed(() => {
     return props.position.poolType === 'FARM' && Number(props.position.rewardApr ?? 0) > 0
+  })
+
+  const exchangeRateBaseCurrency = computed(() => {
+    if (props.listExchangeRate.length) {
+      const rateList = props.listExchangeRate.filter((item) => item.symbol === props.position.baseSymbol)
+      if (rateList.length) {
+        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
+      }
+      return '0'
+    }
+    return '0'
+  })
+
+  const exchangeRateQuoteCurrency = computed(() => {
+    if (props.listExchangeRate.length) {
+      const rateList = props.listExchangeRate.filter((item) => item.symbol === props.position.quoteSymbol)
+      if (rateList.length) {
+        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
+      }
+      return '0'
+    }
+    return '0'
+  })
+
+  const priceUdtTotal = computed(() => {
+    return new Decimal(exchangeRateBaseCurrency.value).plus(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
   })
 
   const { showToastMsg } = useShowToastMsg()
