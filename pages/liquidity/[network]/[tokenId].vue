@@ -40,7 +40,7 @@
         <div class="flex gap-2">
           <BaseButton
             type="outline"
-            :disabled="!isConnected"
+            :disabled="!isConnected || !isOwner"
             size="md"
             class="flex w-[95px] items-center justify-center !gap-0 !bg-white text-xl"
             @click="handleClickAddLiquidity"
@@ -49,7 +49,7 @@
             <span class="text-hyperlink">Add</span>
           </BaseButton>
 
-          <BaseButton :disabled="!isConnected" type="outline" size="md" class="w-[120px] !bg-white text-xl">
+          <BaseButton :disabled="!isConnected || !isOwner" type="outline" size="md" class="w-[120px] !bg-white text-xl">
             <NuxtLink :to="{ name: 'remove-network-tokenId', params: { network: route.params.network, tokenId: route.params.tokenId } }">
               <span class="text-hyperlink">Remove</span>
             </NuxtLink>
@@ -101,7 +101,7 @@
               <span class="text-2xl font-semibold leading-7">Unclaimed fees</span>
               <span class="text-[48px] font-semibold text-hyperlink">${{ Number(priceUsdFeeLower) + Number(priceUsdFeeUpper) }}</span>
             </div>
-            <BaseButton :disabled="!isConnected" type="linear" size="md" class="w-[170px] text-xl font-semibold uppercase">Collect</BaseButton>
+            <BaseButton :disabled="!isConnected || !isOwner" type="linear" size="md" class="w-[170px] text-xl font-semibold uppercase">Collect</BaseButton>
           </div>
 
           <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
@@ -258,7 +258,7 @@
 
   const feeValueUpper = computed(() => (inverted.value ? feeValue0.value : feeValue1.value))
   const feeValueLower = computed(() => (inverted.value ? feeValue1.value : feeValue0.value))
-  const _isOwner = computed(() => account.value === owner.value)
+  const isOwner = computed(() => account.value === owner.value)
 
   // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
   // const currency0ForFeeCollectionPurposes = computed(() =>
