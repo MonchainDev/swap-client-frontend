@@ -40,7 +40,7 @@
         <div class="flex gap-2">
           <BaseButton
             type="outline"
-            :disabled="!isConnected"
+            :disabled="!isConnected || !isOwner"
             size="md"
             class="flex w-[95px] items-center justify-center !gap-0 !bg-white text-xl"
             @click="handleClickAddLiquidity"
@@ -49,7 +49,7 @@
             <span class="text-hyperlink">Add</span>
           </BaseButton>
 
-          <BaseButton :disabled="!isConnected" type="outline" size="md" class="w-[120px] !bg-white text-xl">
+          <BaseButton :disabled="!isConnected || !isOwner" type="outline" size="md" class="w-[120px] !bg-white text-xl">
             <NuxtLink :to="{ name: 'remove-network-tokenId', params: { network: route.params.network, tokenId: route.params.tokenId } }">
               <span class="text-hyperlink">Remove</span>
             </NuxtLink>
@@ -99,9 +99,17 @@
           <div class="flex justify-between">
             <div class="flex flex-col">
               <span class="text-2xl font-semibold leading-7">Unclaimed fees</span>
-              <span class="text-[48px] font-semibold text-hyperlink">${{ Number(priceUsdFeeLower) + Number(priceUsdFeeUpper) }}</span>
+              <span class="line-clamp-1 text-[48px] font-semibold text-hyperlink">${{ Number(priceUsdFeeLower) + Number(priceUsdFeeUpper) }}</span>
             </div>
-            <BaseButton :disabled="!isConnected" type="linear" size="md" class="w-[170px] text-xl font-semibold uppercase">Collect</BaseButton>
+            <BaseButton
+              :disabled="disabledCollect"
+              :loading="loadingCollect"
+              type="linear"
+              size="md"
+              class="w-[170px] text-xl font-semibold uppercase"
+              @click="handleCollect"
+              >Collect</BaseButton
+            >
           </div>
 
           <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
@@ -173,7 +181,7 @@
 </template>
 
 <script lang="ts" setup>
-  import type { Currency, Price, Token } from '@monchain/swap-sdk-core'
+  import { type Currency, type Price, type Token } from '@monchain/swap-sdk-core'
   import type { FeeAmount, Pool } from '@monchain/v3-sdk'
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { useAccount } from '@wagmi/vue'
@@ -258,7 +266,7 @@
 
   const feeValueUpper = computed(() => (inverted.value ? feeValue0.value : feeValue1.value))
   const feeValueLower = computed(() => (inverted.value ? feeValue1.value : feeValue0.value))
-  const _isOwner = computed(() => account.value === owner.value)
+  const isOwner = computed(() => account.value === owner.value)
 
   // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
   // const currency0ForFeeCollectionPurposes = computed(() =>
@@ -380,6 +388,23 @@
     // form.value.token1 = { ...token1.value, icon_url: '', name: token1.value?.name || '' } as unknown as IToken
     // feeAmount.value = fee.value ?? 0
     setOpenPopup('popup-add-liquidity')
+  }
+
+  const disabledCollect = computed(() => {
+    return !isConnected.value || !isOwner.value || (feeValue0.value?.equalTo(0) && feeValue1.value?.equalTo(0))
+  })
+
+  const { collectFee, loading: loadingCollect } = useCollectFee()
+
+  const handleCollect = async () => {
+    if (feeValue0.value && feeValue1.value) {
+      const options: Omit<CollectOptions, 'tokenId'> = {
+        recipient: account.value as `0x${string}`,
+        expectedCurrencyOwed0: feeValue0.value,
+        expectedCurrencyOwed1: feeValue1.value
+      }
+      collectFee(tokenId.value, options)
+    }
   }
 </script>
 
