@@ -22,21 +22,7 @@ export const useBridgeStore = defineStore('bridge', () => {
   const { address, chainId } = useAccount()
 
   const form = ref<IFormBridge>({
-    // token0: {
-    //   address: '',
-    //   decimals: 0,
-    //   icon_url: '',
-    //   name: '',
-    //   symbol: ''
-    // },
-    // token1: {
-    //   address: '',
-    //   decimals: 0,
-    //   icon_url: '',
-    //   name: '',
-    //   symbol: ''
-    // },
-    token2: {
+    token: {
       address: '',
       decimals: 0,
       icon_url: '',
@@ -45,107 +31,39 @@ export const useBridgeStore = defineStore('bridge', () => {
     },
     amount: '',
     chainId: chainId.value,
-    minimumAmountOut: '',
-    maximumAmountIn: '',
     priceImpact: '',
     fee: 0,
     tradingFee: 0
   })
 
-  // const { data: balance0, refetch: _refetchBalance0 } = useBalance(
-  //   computed(() => ({
-  //     address: address.value,
-  //     token: form.value.token0.address as MaybeRef<`0x${string}`>,
-  //     watch: true
-  //   }))
-  // )
-
-  // const { data: balance1, refetch: _refetchBalance1 } = useBalance(
-  //   computed(() => ({
-  //     address: address.value,
-  //     token: form.value.token1.address as MaybeRef<`0x${string}`>,
-  //     watch: true
-  //   }))
-  // )
-
-  const { data: balance2, refetch: _refetchBalance2 } = useBalance(
+  const { data: balance, refetch: _refetchBalance } = useBalance(
     computed(() => ({
       address: address.value,
-      token: form.value.token2.address as MaybeRef<`0x${string}`>,
+      token: form.value.token.address as MaybeRef<`0x${string}`>,
       watch: true
     }))
   )
 
-  // const token0 = computed(() => {
-  //   if (form.value.token0.symbol === NATIVE_TOKEN.symbol && form.value.token0.address === '') {
-  //     return Native.onChain(ChainId.MON_TESTNET)
-  //   } else {
-  //     return form.value.token0.symbol
-  //       ? new Token(
-  //           ChainId.MON_TESTNET,
-  //           form.value.token0.address as `0x${string}`,
-  //           +form.value.token0.decimals,
-  //           form.value.token0.symbol,
-  //           form.value.token0.name
-  //         )
-  //       : undefined
-  //   }
-  // })
-
-  // const token1 = computed(() => {
-  //   if (form.value.token1.symbol === NATIVE_TOKEN.symbol && form.value.token1.address === '') {
-  //     return Native.onChain(ChainId.MON_TESTNET)
-  //   } else {
-  //     return form.value.token1.symbol
-  //       ? new Token(
-  //           ChainId.MON_TESTNET,
-  //           form.value.token1.address as `0x${string}`,
-  //           +form.value.token1.decimals,
-  //           form.value.token1.symbol,
-  //           form.value.token1.name
-  //         )
-  //       : undefined
-  //   }
-  // })
-
-  const token2 = computed(() => {
-    if (form.value.token2.symbol === NATIVE_TOKEN.symbol && form.value.token2.address === '') {
+  const token = computed(() => {
+    if (form.value.token.symbol === NATIVE_TOKEN.symbol && form.value.token.address === '') {
       return Native.onChain(ChainId.MON_TESTNET)
     } else {
-      return form.value.token2.symbol
+      return form.value.token.symbol
         ? new Token(
             ChainId.MON_TESTNET,
-            form.value.token2.address as `0x${string}`,
-            +form.value.token2.decimals,
-            form.value.token2.symbol,
-            form.value.token2.name
+            form.value.token.address as `0x${string}`,
+            +form.value.token.decimals,
+            form.value.token.symbol,
+            form.value.token.name
           )
         : undefined
     }
   })
 
-  // const { data: allowance1, refetch: refetchAllowance1 } = useReadContract(
-  //   computed(() => ({
-  //     abi: ABI_TOKEN,
-  //     address: token1.value?.wrapped.address,
-  //     functionName: 'allowance',
-  //     args: [address.value, CONTRACT_ADDRESS.SWAP_ROUTER_V3]
-  //   }))
-  // )
-
-  // const { data: allowance0, refetch: refetchAllowance0 } = useReadContract(
-  //   computed(() => ({
-  //     abi: ABI_TOKEN,
-  //     address: token0.value?.wrapped.address,
-  //     functionName: 'allowance',
-  //     args: [address.value, CONTRACT_ADDRESS.SWAP_ROUTER_V3]
-  //   }))
-  // )
-
-  const { data: allowance2, refetch: refetchAllowance2 } = useReadContract(
+  const { data: allowance, refetch: refetchAllowance } = useReadContract(
     computed(() => ({
       abi: ABI_TOKEN,
-      address: token2.value?.wrapped.address,
+      address: token.value?.wrapped.address,
       functionName: 'allowance',
       args: [address.value, CONTRACT_ADDRESS.SWAP_ROUTER_V3]
     }))
@@ -153,21 +71,7 @@ export const useBridgeStore = defineStore('bridge', () => {
 
   const resetStore = () => {
     form.value = {
-      // token0: {
-      //   address: '',
-      //   decimals: 0,
-      //   icon_url: '',
-      //   name: '',
-      //   symbol: ''
-      // },
-      // token1: {
-      //   address: '',
-      //   decimals: 0,
-      //   icon_url: '',
-      //   name: '',
-      //   symbol: ''
-      // },
-      token2: {
+      token: {
         address: '',
         decimals: 0,
         icon_url: '',
@@ -176,8 +80,6 @@ export const useBridgeStore = defineStore('bridge', () => {
       },
       amount: '',
       chainId: chainId.value,
-      minimumAmountOut: '',
-      maximumAmountIn: '',
       priceImpact: '',
       fee: 0,
       tradingFee: 0
@@ -191,24 +93,16 @@ export const useBridgeStore = defineStore('bridge', () => {
     fromNetwork,
     toNetwork,
     slippage,
-    // balance0,
-    // balance1,
-    balance2,
-    // token0,
-    // token1,
-    token2,
-    // allowance0,
-    // allowance1,
-    allowance2,
+    balance,
+    token,
+    allowance,
     txDeadline,
     isSwapping,
     isConfirmApprove,
     isConfirmSwap,
     activeSlippageAuto,
     form,
-    // refetchAllowance0,
-    // refetchAllowance1,
-    refetchAllowance2,
+    refetchAllowance,
     resetStore
   }
 })

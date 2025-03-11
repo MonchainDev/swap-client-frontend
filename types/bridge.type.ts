@@ -10,13 +10,9 @@ export type ReturnTypeGetBalance = {
 }
 
 export interface IFormBridge {
-  // token0: IToken
-  // token1: IToken
-  token2: IToken
+  token: IToken
   amount: string
   chainId?: number
-  minimumAmountOut?: string
-  maximumAmountIn?: string
   priceImpact: string
   fee: number
   tradingFee: number

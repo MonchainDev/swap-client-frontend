@@ -6,16 +6,6 @@
       <div class="from-network w-1/2">
         <ChooseNetworkBridge type="FROM" />
       </div>
-      <!-- <InputBridge
-        :is-selected="isToken0Selected"
-        :token="form.token0"
-        :balance="balance0?.formatted"
-        :step-bridge
-        type="BASE"
-        class="h-[138px] w-1/2 bg-[#EFEFFF] sm:h-[120px]"
-        @select-token="handleOpenChooseNetwork"
-        @change="handleInput"
-      /> -->
       <div class="relative z-10 select-none">
         <div
           class="absolute left-1/2 top-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[4px] border-solid border-white bg-[#1573FE] p-2 sm:size-9"
@@ -27,51 +17,13 @@
       <div class="to-network w-1/2">
         <ChooseNetworkBridge type="TO" />
       </div>
-      <!-- <InputBridge
-        :is-selected="isToken1Selected"
-        :token="form.token1"
-        :balance="balance1?.formatted"
-        :step-bridge
-        type="QUOTE"
-        class="h-[138px] w-1/2 bg-[#EFEFFF] sm:h-[120px]"
-        @select-token="handleOpenChooseNetwork"
-        @change="handleInput"
-      /> -->
-      <!-- <template v-else>
-        <div class="rounded-lg border border-solid border-gray-3 bg-[#FAFAFA] px-8 py-4 sm:p-4">
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-[10px]">
-              <img :src="form.token0.icon_url" alt="logo" class="size-9 rounded-full" @error="handleImageError($event)" />
-              <div class="flex flex-col">
-                <span class="text-base font-semibold">{{ form.token0.symbol }}</span>
-                <span class="text-xs text-[#6F6A79]">{{ form.token0.name }}</span>
-              </div>
-            </div>
-            <div class="flex flex-col text-right">
-              <span class="text-[32px] font-semibold leading-7">{{ form.amountIn }}</span>
-              <span class="text-sm font-semibold text-gray-6">≈ $150.6</span>
-            </div>
-          </div>
-          <div class="relative flex items-center justify-between gap-2 pt-[38px]">
-            <img src="/line-arrow.png" class="absolute left-4 top-0 h-[63px] sm:w-5" />
-            <div class="flex items-center gap-[10px] pl-[63px] sm:pl-[46px]">
-              <img :src="form.token0.icon_url" alt="logo" class="size-9 rounded-full" @error="handleImageError($event)" />
-              <div class="flex flex-col">
-                <div class="line-clamp-1 text-base font-semibold">{{ form.token1.symbol }}</div>
-                <div class="line-clamp-1 text-xs text-[#6F6A79]">{{ form.token1.name }}</div>
-              </div>
-            </div>
-            <span class="flex-1 text-right text-[32px] font-semibold leading-7">≈ {{ form.amountOut }}</span>
-          </div>
-        </div>
-      </template> -->
     </div>
     <div v-if="!approveAndSend" class="mt-3 w-full sm:mt-4">
       <InputBridge
         v-model:amount="form.amount"
         :is-selected="isToken2Selected"
-        :token="form.token2"
-        :balance="balance2?.formatted"
+        :token="form.token"
+        :balance="balance?.formatted"
         :step-bridge
         type="SEND"
         class="h-[138px] w-full border border-[#EEEEEE] bg-white sm:h-[100px]"
@@ -108,9 +60,9 @@
           <p class="mb-1 text-primary sm:mb-2 sm:text-sm">Send</p>
           <div class="flex items-center justify-between gap-2 rounded-lg bg-[#FAFAFA]">
             <div class="flex items-center gap-1">
-              <img :src="form.token2.icon_url" alt="logo" class="size-7 rounded-lg sm:size-5" />
+              <img :src="form.token.icon_url" alt="logo" class="size-7 rounded-lg sm:size-5" />
               <p class="overflow-hidden text-ellipsis text-[22px] font-semibold leading-[28px] sm:text-base">
-                {{ form.token2.symbol }}
+                {{ form.token.symbol }}
               </p>
             </div>
             <div class="flex flex-col">
@@ -222,6 +174,7 @@
   import PopupSellToken from '../popup/PopupSellToken.vue'
   // import HeaderFormSwap from './HeaderFormSwap.vue'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
+  import { ElNotification } from 'element-plus'
   export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE'
 
   interface IProps {
@@ -229,7 +182,7 @@
   }
 
   const _props = withDefaults(defineProps<IProps>(), {
-    title: 'Swap'
+    title: 'Bridge'
   })
 
   const approveAndSend = ref<boolean>(false)
@@ -237,7 +190,7 @@
   const { isConnected } = useAccount()
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, balance2, form } = storeToRefs(useBridgeStore())
+  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, balance, form } = storeToRefs(useBridgeStore())
 
   const isEditSlippage = ref(false)
   const stepBridge = ref<StepBridge>('SELECT_TOKEN')
@@ -252,10 +205,10 @@
 
   // const isToken0Selected = computed(() => form.value.token0.symbol !== '')
   // const isToken1Selected = computed(() => form.value.token1.symbol !== '')
-  const isToken2Selected = computed(() => form.value.token2?.symbol !== '')
+  const isToken2Selected = computed(() => form.value.token?.symbol !== '')
   // const isQuoteExist = computed(() => form.value.amountOut && form.value.amountIn)
   // const formatTitle = computed(() => {
-  //   return stepBridge.value === 'SELECT_TOKEN' ? _props.title : 'Confirm swap'
+  //   return stepBridge.value === 'SELECT_TOKEN' ? _props.title : 'Confirm bridge'
   // })
 
   // const noRoute = computed(() => !(((bestTrade.value && bestTrade.value?.routes.length) ?? 0) > 0))
@@ -420,7 +373,7 @@
     // }
 
     if (typeOpenPopup.value === 'SEND') {
-      form.value.token2 = token
+      form.value.token = token
       // form.value.token0 = token.address === form.value.token0.address ? { address: '', decimals: '', icon_url: '', name: '', symbol: '' } : form.value.token0
       // if (token.address === form.value.token0.address) {
       //   form.value.token0 = { name: '', symbol: '', decimals: 0, icon_url: '', address: '' }
@@ -512,6 +465,7 @@
 
   const handleBridge = async () => {
     approveAndSend.value = !approveAndSend.value
+    bridgeSuccess(15, 'ATOM', 123.566, 'https://explorer.monchain.info')
     // try {
     //   if (isDisabledButton.value) return
     //   // step 1: next step 2
@@ -572,6 +526,22 @@
   // const el1: ReturnType<typeof ElNotification> | null = null
 
   // const { handleImageError } = useErrorImage()
+
+  const bridgeSuccess = (amount: number, token: string, value: number, explorerLink: string) => {
+    const message = `
+        <p>${amount} ${token} ⇒ ${value} USDC.</p>
+        <p>View on <a style="text-decoration: underline;" href="${explorerLink}" target="_blank" rel="noopener noreferrer">Mon Explorer</a></p>
+    `
+    // const isMobile = window.innerWidth <= 768
+    ElNotification({
+      title: 'Bridge swapping successfully',
+      dangerouslyUseHTMLString: true,
+      message: message,
+      type: 'success',
+      customClass: 'notification-bridge-success',
+      position: isDesktop.value ? 'top-right' : 'bottom-right'
+    })
+  }
 </script>
 
 <style scoped lang="scss">
@@ -613,5 +583,19 @@
   }
   .tooltip-fee-bridge {
     @apply min-w-[320px] rounded-lg px-6 py-3;
+  }
+
+  .notification-bridge-success {
+    background-color: #e8ffeb;
+    padding: 20px 16px;
+    .el-notification__title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #000000;
+    }
+    .el-notification__content {
+      font-size: 14px;
+      color: #000000;
+    }
   }
 </style>
