@@ -201,6 +201,7 @@
   })
 
   const { showToastMsg } = useShowToastMsg()
+  const { address: account } = useAccount()
 
   const loadingHarvest = ref(false)
   const handleClickHarvest = async () => {
@@ -212,7 +213,7 @@
         abi: MasterChefV3ABI,
         address: CONTRACT_ADDRESS.MASTER_CHEF_V3 as `0x${string}`,
         functionName: 'harvest',
-        args: [props.position.tokenId, '0x4298706288f08E37B41096e888B00100Bd99e060']
+        args: [props.position.tokenId, account.value]
       })
       console.log('🚀 ~ handleClickHarvest ~ hash:', hash)
 
@@ -236,8 +237,6 @@
       loadingHarvest.value = false
     }
   }
-
-  const { address: account } = useAccount()
 
   const loadingStake = ref(false)
   const handleStake = async () => {
