@@ -86,11 +86,11 @@
       <SkeletonListToken v-if="loading" class="px-8 pt-6 sm:px-4" />
       <div v-else class="flex h-[500px] flex-col gap-2 pb-4">
         <ElScrollbar v-if="data.length" max-height="500px">
-          <ul class="pr-4">
+          <ul class="pr-8">
             <li
               v-for="item in data"
               :key="item.address"
-              class="flex h-[68px] cursor-pointer items-center justify-between gap-3 pl-8 first:mt-6 hover:bg-gray-3 sm:pl-4"
+              class="mb-3 flex h-[52px] cursor-pointer items-center justify-between gap-3 pl-8 first:mt-3 last:mb-0 hover:bg-gray-3 sm:pl-4"
               @click="handleClickToken(item)"
             >
               <div class="grid h-[68px] cursor-pointer grid-cols-[40px_1fr] items-center gap-3">
@@ -100,9 +100,13 @@
                   <span class="text-xs text-gray-8">{{ item.symbol }}</span>
                 </div>
               </div>
-              <div v-if="isSelect" class="mr-3">
-                <BaseIcon :name="useIncludes(tokenSelected, item.address) ? 'checkbox-fill' : 'checkbox'" size="24" />
+              <div v-if="isConnected" class="text-sm">
+                <span v-if="!isIncompatible" class="text-primary">0.012890</span>
+                <span v-else class="text-[#F99F01]">Incompatible</span>
               </div>
+              <!-- <div v-if="isSelect" class="mr-3">
+                <BaseIcon :name="useIncludes(tokenSelected, item.address) ? 'checkbox-fill' : 'checkbox'" size="24" />
+              </div> -->
             </li>
           </ul>
         </ElScrollbar>
@@ -113,8 +117,9 @@
 </template>
 
 <script lang="ts" setup>
+  import { useAccount } from '@wagmi/vue'
   import type { IToken } from '~/types'
-  import { useStorage } from '@vueuse/core'
+  // import { useStorage } from '@vueuse/core'
 
   interface IProps {
     showNetwork?: boolean
@@ -134,13 +139,15 @@
     type: Array<string>,
     default: []
   })
-
+  const { isConnected } = useAccount()
   const { setOpenPopup } = useBaseStore()
   const { listToken, isDesktop, currentNetwork: network } = storeToRefs(useBaseStore())
   const search = ref('')
   const loading = ref(false)
 
-  const recentTokens = useStorage<IToken[]>('recent_tokens', [])
+  const isIncompatible = ref<boolean>(false)
+
+  // const recentTokens = useStorage<IToken[]>('recent_tokens', [])
 
   const data = computed(() => {
     return listToken.value.filter((item) => {
@@ -173,7 +180,7 @@
         tokenSelected.value.push(item.address)
       }
     } else {
-      recentTokens.value = [item, ...recentTokens.value.filter((token) => token.address !== item.address)].slice(0, 7)
+      // recentTokens.value = [item, ...recentTokens.value.filter((token) => token.address !== item.address)].slice(0, 7)
       emit('select', { ...item, icon_url: item.icon_url ?? '' })
       setOpenPopup('popup-sell-token', false)
     }

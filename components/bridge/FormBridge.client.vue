@@ -1,12 +1,11 @@
 <template>
-  <div class="flex flex-col gap-2 rounded-lg bg-white px-8 pb-10 pt-[21px] shadow-md sm:p-4">
+  <div class="flex flex-col gap-2 rounded-lg bg-white px-8 pb-9 pt-[21px] shadow-md sm:gap-0 sm:p-4">
     <span class="text-2xl font-semibold leading-7 sm:text-lg"> Bridge </span>
-    <span class="text-sm text-gray-8 sm:hidden">Connects assets across blockchain networks seamlessly.</span>
-    <div class="relative mt-8 flex w-full justify-between gap-1 sm:mt-[14px]">
+    <span class="text-sm text-gray-8 sm:text-xs">Connects assets across blockchain networks seamlessly.</span>
+    <div v-if="!approveAndSend" class="relative mt-6 flex w-full justify-between gap-1 sm:mt-5">
       <div class="from-network w-1/2">
         <ChooseNetworkBridge type="FROM" />
       </div>
-
       <!-- <InputBridge
         :is-selected="isToken0Selected"
         :token="form.token0"
@@ -25,7 +24,6 @@
           <BaseIcon name="bridge" class="text-white" :size="isDesktop ? '24' : '18'" />
         </div>
       </div>
-
       <div class="to-network w-1/2">
         <ChooseNetworkBridge type="TO" />
       </div>
@@ -68,8 +66,7 @@
         </div>
       </template> -->
     </div>
-
-    <div class="mt-5 w-full sm:mt-[14px]">
+    <div v-if="!approveAndSend" class="mt-3 w-full sm:mt-4">
       <InputBridge
         v-model:amount="form.amount"
         :is-selected="isToken2Selected"
@@ -77,13 +74,55 @@
         :balance="balance2?.formatted"
         :step-bridge
         type="SEND"
-        class="h-[138px] w-full bg-[#EFEFFF] sm:h-[120px]"
+        class="h-[138px] w-full border border-[#EEEEEE] bg-white sm:h-[100px]"
         @select-token="handleOpenPopupSelectToken"
         @change="handleInput"
       />
     </div>
 
-    <div class="mt-6 w-full rounded-lg border border-dashed border-gray-4 px-8 py-4 sm:mt-[14px]">
+    <div v-if="approveAndSend" class="mt-6 w-full sm:mt-5">
+      <div class="flex w-full rounded-tl-lg rounded-tr-lg bg-[#FAFAFA] px-8 pb-7 pt-3 shadow sm:px-3 sm:pb-5">
+        <div class="flex flex-col">
+          <p class="mb-4 text-sm text-primary sm:mb-2 sm:text-xs">From network</p>
+          <div class="flex items-center gap-2 rounded-lg">
+            <img :src="fromNetwork?.logo" alt="logo" class="size-7 rounded-lg sm:size-5" />
+            <span class="overflow-hidden text-ellipsis text-base font-semibold sm:text-xs">
+              {{ fromNetwork?.title }}
+            </span>
+          </div>
+        </div>
+        <BaseIcon v-if="isDesktop" name="arrow-line-horizontal" size="116" class="arrow-horizontal mx-4 max-h-8" />
+        <BaseIcon v-else name="arrow-line-horizontal-mobile" size="48" class="arrow-horizontal mx-3 max-h-8" />
+        <div class="flex flex-col">
+          <p class="mb-4 text-sm text-primary sm:mb-2 sm:text-xs">To network</p>
+          <div class="flex items-center gap-2 rounded-lg">
+            <img :src="fromNetwork?.logo" alt="logo" class="size-7 rounded-lg sm:size-5" />
+            <span class="overflow-hidden text-ellipsis text-base font-semibold sm:text-xs">
+              {{ fromNetwork?.title }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="w-full rounded-bl-lg rounded-br-lg border-t border-[#EEEEEE] bg-[#FAFAFA] px-8 pb-7 pt-3 shadow sm:px-3 sm:pb-5">
+        <div class="flex flex-col">
+          <p class="mb-1 text-primary sm:mb-2 sm:text-sm">Send</p>
+          <div class="flex items-center justify-between gap-2 rounded-lg bg-[#FAFAFA]">
+            <div class="flex items-center gap-1">
+              <img :src="form.token2.icon_url" alt="logo" class="size-7 rounded-lg sm:size-5" />
+              <p class="overflow-hidden text-ellipsis text-[22px] font-semibold leading-[28px] sm:text-base">
+                {{ form.token2.symbol }}
+              </p>
+            </div>
+            <div class="flex flex-col">
+              <p class="text-[32px] font-semibold leading-[28px] text-primary sm:text-[22px]">15</p>
+              <p class="text-sm font-semibold text-gray-6">≈ 0.02</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-3 w-full rounded-lg border border-dashed border-gray-4 px-8 py-4 sm:mt-4 sm:px-4 sm:pt-3">
       <div class="flex justify-between">
         <span class="text-sm text-primary"> You Receive </span>
         <div class="flex flex-col gap-1 text-right">
@@ -100,7 +139,32 @@
       </div>
       <div class="mt-3 flex justify-between">
         <span class="text-sm text-primary"> Fee </span>
-        <span class="text-sm font-medium text-primary"> 0.0 </span>
+        <div class="text-end text-sm font-medium text-primary">
+          <span>0.0595 BNB</span> + <span>0.00001 ETH</span> +
+          <el-tooltip popper-class="tooltip-fee-bridge" append-to="body" placement="top-end" effect="light">
+            <template #content>
+              <div class="flex flex-col gap-2">
+                <div class="flex justify-between">
+                  <span class="text-sm text-[#6E6E6E]">Protocol Fee</span>
+                  <span class="text-sm text-[#1C1C1C]">0.150001 BNB</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-[#6E6E6E]">deBridge Fee</span>
+                  <span class="text-sm text-[#1C1C1C]">0.00005272 ETH</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-[#6E6E6E]">Market Maker Gas</span>
+                  <span class="text-sm text-[#1C1C1C]">12300.00005272</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-[#6E6E6E]">Cost</span>
+                  <span class="text-sm text-[#1C1C1C]">ATOM</span>
+                </div>
+              </div>
+            </template>
+            <span class="border-b border-dashed border-gray-4">140.0 ATOM</span>
+          </el-tooltip>
+        </div>
       </div>
     </div>
 
@@ -112,7 +176,7 @@
       <button
         v-if="isConnected"
         :disabled="isDisabledButton"
-        class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:h-[42px] sm:text-sm"
+        class="bg-linear mt-3 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:mt-4 sm:h-[42px] sm:text-sm"
         :class="{ 'bg-gray pointer-events-none cursor-default': isSwapping || isConfirmApprove || isConfirmSwap, 'btn-disabled': isDisabledButton }"
         @click="handleBridge"
       >
@@ -121,7 +185,7 @@
       </button>
       <button
         v-else
-        class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:h-[42px] sm:text-sm"
+        class="bg-linear mt-3 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:mt-4 sm:h-[42px] sm:text-sm"
         @click="setOpenPopup('popup-connect')"
       >
         <template v-if="isFetchQuote">
@@ -152,7 +216,7 @@
   // import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import type { IToken } from '~/types'
   import type { TYPE_BRIDGE } from '~/types/bridge.type'
-  import { type SwapOutput } from '~/utils/getBestTrade'
+  // import { type SwapOutput } from '~/utils/getBestTrade'
   import InputBridge from './InputBridge.vue'
   import ChooseNetworkBridge from './ChooseNetworkBridge.vue'
   import PopupSellToken from '../popup/PopupSellToken.vue'
@@ -168,10 +232,9 @@
     title: 'Swap'
   })
 
+  const approveAndSend = ref<boolean>(false)
   const { fromNetwork, toNetwork } = storeToRefs(useBridgeStore())
-
   const { isConnected } = useAccount()
-
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
   const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, balance2, form } = storeToRefs(useBridgeStore())
@@ -183,7 +246,7 @@
 
   // const trades = ref<SmartRouterTrade<TradeType>>()
 
-  const bestTrade = ref<SwapOutput | undefined>(undefined)
+  // const bestTrade = ref<SwapOutput | undefined>(undefined)
 
   const isFetchQuote = ref(false)
 
@@ -195,7 +258,7 @@
   //   return stepBridge.value === 'SELECT_TOKEN' ? _props.title : 'Confirm swap'
   // })
 
-  const noRoute = computed(() => !(((bestTrade.value && bestTrade.value?.routes.length) ?? 0) > 0))
+  // const noRoute = computed(() => !(((bestTrade.value && bestTrade.value?.routes.length) ?? 0) > 0))
   const notEnoughLiquidity = ref(false)
 
   /*
@@ -234,13 +297,15 @@
   })
 
   const isDisabledButton = computed(() => {
-    return (
-      // !isToken0Selected.value ||
-      // !isToken1Selected.value ||
-      // !form.value.amountOut ||
-      // !form.value.amountOut ||
-      isFetchQuote.value || noRoute.value || notEnoughLiquidity.value
-    )
+    return false
+    // return (
+    //   !isToken2Selected.value ||
+    //   !form.value.amount ||
+    //   !(fromNetwork.value.value === toNetwork.value.value) ||
+    //   isFetchQuote.value ||
+    //   noRoute.value ||
+    //   notEnoughLiquidity.value
+    // )
   })
 
   const handleSwapOrder = () => {
@@ -446,6 +511,7 @@
   // }
 
   const handleBridge = async () => {
+    approveAndSend.value = !approveAndSend.value
     // try {
     //   if (isDisabledButton.value) return
     //   // step 1: next step 2
@@ -524,6 +590,11 @@
     -webkit-text-fill-color: transparent;
     overflow: hidden;
   }
+  :deep(.arrow-horizontal) {
+    svg {
+      @apply mt-11 !h-[unset] !w-[unset] sm:mt-7;
+    }
+  }
 </style>
 
 <style lang="scss">
@@ -539,5 +610,8 @@
       font-size: 20px;
       color: var(--color-primary);
     }
+  }
+  .tooltip-fee-bridge {
+    @apply min-w-[320px] rounded-lg px-6 py-3;
   }
 </style>

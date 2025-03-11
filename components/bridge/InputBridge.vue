@@ -1,13 +1,13 @@
 <template>
-  <div class="input-swap flex flex-col gap-4 rounded-lg px-8 pt-4 sm:px-4 sm:pt-2" @click="handleClick">
-    <div class="flex items-center justify-between">
+  <div class="input-swap flex flex-col rounded-lg px-8 pt-4 sm:px-4 sm:pt-2" @click="handleClick">
+    <div class="mb-4 flex items-center justify-between sm:mb-1">
       <div class="flex items-center gap-5">
         <span class="text-sm text-primary">{{ getTitle }}</span>
-        <div v-if="type === 'BASE' && isConnected && stepBridge === 'SELECT_TOKEN'" class="grid grid-cols-[44px_44px_44px_44px] gap-2 sm:grid-cols-[44px_44px]">
+        <div v-if="isConnected" class="grid grid-cols-[44px_44px_44px_44px] gap-2 sm:grid-cols-[44px_44px]">
           <div
             v-for="(item, index) in 4"
             :key="item"
-            class="flex h-[22px] cursor-pointer items-center justify-center rounded-[4px] bg-white"
+            class="flex h-[22px] cursor-pointer items-center justify-center rounded-[4px] bg-[#F5F5F5]"
             :class="{ 'sm:hidden': index % 2 !== 0 }"
             @click="handleSelectPercent(index)"
           >
@@ -15,18 +15,18 @@
           </div>
         </div>
       </div>
-      <!-- <span v-if="isConnected && stepBridge === 'SELECT_TOKEN'" class="text-sm text-gray-8">Max: {{ formattedBalance }}</span> -->
+      <span v-if="isConnected" class="text-sm text-gray-8 sm:border-b-2 sm:border-[#D9D9D9] sm:py-1">Max: {{ formattedBalance }}</span>
     </div>
-    <div class="flex min-h-10 items-center gap-2">
+    <div class="flex min-h-12 items-center gap-2">
       <template v-if="isSelected">
         <div class="flex max-w-[150px] cursor-pointer items-center gap-[10px]" @click="emits('select-token', type)">
-          <img :src="token.icon_url" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError($event)" />
+          <img :src="token.icon_url" alt="logo" class="size-9 rounded-full sm:size-6" @error="handleImageError($event)" />
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
               <span class="font-medium">{{ token.symbol }}</span>
               <BaseIcon v-if="stepBridge === 'SELECT_TOKEN'" name="arrow" size="18" class="text-secondary -rotate-90" />
             </div>
-            <h4 class="line-clamp-1 text-xs text-[#6F6A79]">{{ token.name }}</h4>
+            <h4 class="line-clamp-1 text-xs text-[#6F6A79] sm:hidden">{{ token.name }}</h4>
           </div>
         </div>
       </template>
@@ -34,7 +34,7 @@
         <div class="flex h-9 cursor-pointer items-center gap-[10px] rounded-lg" @click="emits('select-token', type)">
           <!-- <span class="text-sm text-gray-6">Select token</span>
           <BaseIcon name="arrow" size="18" class="-rotate-90 text-gray-6" /> -->
-          <img src="/empty-token.png" alt="empty token" class="size-9 sm:size-8" />
+          <img src="/empty-token.png" alt="empty token" class="size-9 sm:size-6" />
 
           <div class="flex items-center gap-1 text-gray-6">
             <span>Select a token</span>
@@ -53,9 +53,10 @@
           @focus="emits('focus-input', type)"
           @input="handleInput"
         />
-        <!-- <span v-if="type === 'BASE'" class="text-sm font-semibold text-gray-6">≈ {{ amountUsd }}</span> -->
+        <span v-if="amount" class="text-sm font-semibold text-gray-6">≈ {{ amountUsd }}</span>
       </div>
     </div>
+    <span class="mt-2 text-xs text-[#DF1525] sm:hidden">You have insufficient balance</span>
   </div>
 </template>
 
@@ -97,14 +98,14 @@
 
   const { handleImageError } = useErrorImage()
 
-  // const formattedBalance = computed(() => {
-  //   return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
-  // })
+  const formattedBalance = computed(() => {
+    return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
+  })
 
-  // const amountUsd = computed(() => {
-  //   const random = Math.random()
-  //   return amount.value ? (random > 0.01 ? '$' + random.toFixed(2) : '<$0.01') : '$0'
-  // })
+  const amountUsd = computed(() => {
+    const random = Math.random()
+    return amount.value ? (random > 0.01 ? '$' + random.toFixed(2) : '<$0.01') : '$0'
+  })
 
   const handleClick = () => {
     if (!props.isSelected) {
@@ -146,7 +147,7 @@
         padding-right: 0;
 
         .el-input__inner {
-          height: 32px;
+          height: 28px;
           font-size: 32px;
           font-weight: 600;
           text-align: right;
@@ -155,9 +156,14 @@
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           overflow: hidden;
+          @media screen and (max-width: 768px) {
+            height: 24px;
+            font-size: 16px;
+          }
           &::placeholder {
             background: linear-gradient(91deg, #a8abb2 0%, #a8abb2 100%);
             background-clip: text;
+            font-weight: 500;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
           }

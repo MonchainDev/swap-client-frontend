@@ -11,12 +11,14 @@
     >
       <template #reference>
         <slot name="reference">
-          <div :class="type === 'FROM' ? 'from-network' : 'to-network'" class="h-[103px] cursor-pointer bg-[#EFEFFF] sm:h-[90px]">
-            <p class="mb-4 text-primary">{{ type === 'FROM' ? 'From network' : 'To network' }}</p>
-            <div class="flex cursor-pointer items-center gap-2 rounded-lg bg-[#EFEFFF]">
-              <img :src="type === 'FROM' ? fromNetwork?.logo : toNetwork?.logo" alt="logo" class="size-7 rounded-lg" />
-              <span class="text-base font-semibold sm:font-normal">{{ type === 'FROM' ? fromNetwork?.title : toNetwork?.title }}</span>
-              <BaseIcon name="arrow" size="24" class="-rotate-90" />
+          <div :class="type === 'FROM' ? 'from-network' : 'to-network'" class="h-[103px] cursor-pointer sm:h-[75px]">
+            <p class="mb-4 text-primary sm:mb-2 sm:text-xs">{{ type === 'FROM' ? 'From network' : 'To network' }}</p>
+            <div class="flex cursor-pointer items-center gap-2 rounded-lg">
+              <img :src="type === 'FROM' ? fromNetwork?.logo : toNetwork?.logo" alt="logo" class="size-7 rounded-lg sm:size-5" />
+              <span class="overflow-hidden text-ellipsis text-base font-semibold sm:text-xs">
+                {{ type === 'FROM' ? fromNetwork?.title : toNetwork?.title }}
+              </span>
+              <BaseIcon name="arrow" :size="isDesktop ? '24' : '20'" class="-rotate-90" />
             </div>
           </div>
         </slot>
@@ -63,7 +65,7 @@
     // isSelect: false,
     type: 'FROM'
   })
-
+  const { isDesktop } = storeToRefs(useBaseStore())
   const { fromNetwork, toNetwork } = storeToRefs(useBridgeStore())
   const visible = ref(false)
   const search = ref('')
@@ -121,10 +123,10 @@
     }
 
     .from-network {
-      @apply rounded-lg py-3 pl-8;
+      @apply rounded-lg bg-[#EFEFFF] py-3 pl-8 sm:py-2 sm:pl-4;
     }
     .to-network {
-      @apply rounded-lg py-3 pl-12;
+      @apply rounded-lg bg-[#F3F8FF] py-3 pl-12 sm:py-2 sm:pl-5;
     }
   }
 </style>
