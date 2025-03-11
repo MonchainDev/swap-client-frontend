@@ -62,4 +62,5 @@ export interface IPosition {
   poolAddress: string
   poolType: null | 'FARM'
   positionStatus: string
+  priceUdtTotal?: string
 }

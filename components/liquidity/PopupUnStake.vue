@@ -20,7 +20,7 @@
       <div class="mt-[30px] flex flex-col gap-[10px] rounded-lg border border-solid border-gray-4 bg-gray-1 px-6 pb-6 pt-5">
         <span>Min {{ min }} / Max {{ max }} of {{ position.baseSymbol }} per {{ position.quoteSymbol }}</span>
         <div>
-          <span class="font-semibold text-gray-7">~$0</span>
+          <span class="font-semibold text-gray-7">~${{ position.priceUdtTotal }}</span>
           <span>
             ({{ displayTokenReserve(position.quoteQuantity, position.quoteDecimals, position.quoteSymbol) }} /
             {{ displayTokenReserve(position.baseQuantity, position.baseDecimals, position.baseSymbol) }})</span

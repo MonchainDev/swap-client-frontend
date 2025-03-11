@@ -42,10 +42,10 @@
           <span :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
         </div>
         <div v-if="showUnStake || showStake" class="flex gap-2">
-          <template v-if="!showUnStake">
+          <template v-if="showUnStake">
             <span
               class="flex h-6 items-center justify-center rounded border border-solid border-hyperlink px-[10px] text-sm text-hyperlink"
-              @click.stop="emit('unstake', props.position)"
+              @click.stop="emit('unstake', props.position, priceUdtTotal)"
             >
               <span>Unstake</span>
             </span>
@@ -91,7 +91,7 @@
   })
 
   const emit = defineEmits<{
-    unstake: [pos: IPosition]
+    unstake: [pos: IPosition, priceUsd: string]
   }>()
 
   const router = useRouter()

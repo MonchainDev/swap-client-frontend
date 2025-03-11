@@ -99,8 +99,9 @@
               :position="item"
               :list-exchange-rate="listExchangeRate"
               @unstake="
-                (pos) => {
+                (pos, price) => {
                   positionCurrent = pos
+                  positionCurrent.priceUdtTotal = price
                   setOpenPopup('popup-unstake')
                 }
               "
