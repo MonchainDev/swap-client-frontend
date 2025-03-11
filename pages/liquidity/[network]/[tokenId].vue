@@ -99,9 +99,17 @@
           <div class="flex justify-between">
             <div class="flex flex-col">
               <span class="text-2xl font-semibold leading-7">Unclaimed fees</span>
-              <span class="text-[48px] font-semibold text-hyperlink">${{ Number(priceUsdFeeLower) + Number(priceUsdFeeUpper) }}</span>
+              <span class="line-clamp-1 text-[48px] font-semibold text-hyperlink">${{ Number(priceUsdFeeLower) + Number(priceUsdFeeUpper) }}</span>
             </div>
-            <BaseButton :disabled="!isConnected || !isOwner" type="linear" size="md" class="w-[170px] text-xl font-semibold uppercase">Collect</BaseButton>
+            <BaseButton
+              :disabled="disabledCollect"
+              :loading="loadingCollect"
+              type="linear"
+              size="md"
+              class="w-[170px] text-xl font-semibold uppercase"
+              @click="handleCollect"
+              >Collect</BaseButton
+            >
           </div>
 
           <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
@@ -173,7 +181,7 @@
 </template>
 
 <script lang="ts" setup>
-  import type { Currency, Price, Token } from '@monchain/swap-sdk-core'
+  import { type Currency, type Price, type Token } from '@monchain/swap-sdk-core'
   import type { FeeAmount, Pool } from '@monchain/v3-sdk'
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { useAccount } from '@wagmi/vue'
@@ -380,6 +388,23 @@
     // form.value.token1 = { ...token1.value, icon_url: '', name: token1.value?.name || '' } as unknown as IToken
     // feeAmount.value = fee.value ?? 0
     setOpenPopup('popup-add-liquidity')
+  }
+
+  const disabledCollect = computed(() => {
+    return !isConnected.value || !isOwner.value || (feeValue0.value?.equalTo(0) && feeValue1.value?.equalTo(0))
+  })
+
+  const { collectFee, loading: loadingCollect } = useCollectFee()
+
+  const handleCollect = async () => {
+    if (feeValue0.value && feeValue1.value) {
+      const options: Omit<CollectOptions, 'tokenId'> = {
+        recipient: account.value as `0x${string}`,
+        expectedCurrencyOwed0: feeValue0.value,
+        expectedCurrencyOwed1: feeValue1.value
+      }
+      collectFee(tokenId.value, options)
+    }
   }
 </script>
 
