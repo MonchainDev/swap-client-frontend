@@ -1,6 +1,6 @@
 <template>
   <div
-    class="grid cursor-pointer grid-cols-[3fr,136px,136px,3fr,3fr,150px] border-b border-solid border-gray-2 py-6 hover:bg-gray-2"
+    class="grid cursor-pointer grid-cols-[4fr,80px,136px,3fr,3fr,180px] border-b border-solid border-gray-2 py-6 hover:bg-gray-2"
     @click="router.push({ name: 'liquidity-network-tokenId', params: { network: props.position.network, tokenId: props.position.tokenId } })"
   >
     <div class="flex items-center gap-[10px] pl-6">
@@ -42,11 +42,22 @@
           <span :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
         </div>
         <div v-if="showUnStake || showStake" class="flex gap-2">
-          <template v-if="showUnStake">
-            <span class="flex h-6 items-center justify-center rounded border border-solid border-hyperlink px-[10px] text-sm text-hyperlink">Unstake</span>
-            <span class="flex h-6 items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white">Harvest</span>
+          <template v-if="!showUnStake">
+            <span
+              class="flex h-6 items-center justify-center rounded border border-solid border-hyperlink px-[10px] text-sm text-hyperlink"
+              @click.stop="emit('unstake', props.position)"
+            >
+              <span>Unstake</span>
+            </span>
+            <span class="flex h-6 items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white" @click.stop="handleClickHarvest">
+              <BaseIcon v-if="loadingHarvest" name="loading" size="12" class="animate-spin text-white" />
+              <span>Harvest</span>
+            </span>
           </template>
-          <span v-if="showStake" class="flex h-6 items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white">Stake</span>
+          <span v-if="showStake" class="flex h-6 items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white" @click.stop="handleStake">
+            <BaseIcon v-if="loadingStake" name="loading" size="12" class="animate-spin text-white" />
+            <span>Stake</span>
+          </span>
         </div>
       </div>
     </div>
@@ -58,6 +69,12 @@
   import { LIST_NETWORK } from '~/constant'
   // import { Bound } from '~/types'
   import type { IPosition } from '~/types/position.type'
+  import MasterChefV3ABI from '@/constant/abi/masterChefV3.json'
+  import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
+  import { waitForTransactionReceipt, writeContract } from '@wagmi/core'
+  import { config } from '~/config/wagmi'
+  import { CONTRACT_ADDRESS } from '~/constant/contract'
+  import { useAccount } from '@wagmi/vue'
 
   interface IProps {
     // position: PositionDetail
@@ -68,6 +85,10 @@
     // position: () => ({}) as PositionDetail
     position: () => ({}) as IPosition
   })
+
+  const emit = defineEmits<{
+    unstake: [pos: IPosition]
+  }>()
 
   const router = useRouter()
 
@@ -178,6 +199,78 @@
   const showUnStake = computed(() => {
     return props.position.poolType === 'FARM' && Number(props.position.rewardApr ?? 0) > 0
   })
+
+  const { showToastMsg } = useShowToastMsg()
+
+  const loadingHarvest = ref(false)
+  const handleClickHarvest = async () => {
+    try {
+      console.log('Harvest')
+      if (loadingHarvest.value) return
+      loadingHarvest.value = true
+      const hash = await writeContract(config, {
+        abi: MasterChefV3ABI,
+        address: CONTRACT_ADDRESS.MASTER_CHEF_V3 as `0x${string}`,
+        functionName: 'harvest',
+        args: [props.position.tokenId, '0x4298706288f08E37B41096e888B00100Bd99e060']
+      })
+      console.log('🚀 ~ handleClickHarvest ~ hash:', hash)
+
+      const { status } = await waitForTransactionReceipt(config, {
+        hash,
+        pollingInterval: 2000
+      })
+      if (status === 'success') {
+        showToastMsg('Harvested! Your funds ORB earnings have been sent to your wallet', 'success', hash)
+      } else {
+        showToastMsg('Transaction failed', 'error', hash)
+      }
+    } catch (error) {
+      console.error('handleClickHarvest ~ error', error)
+      //@ts-ignore
+      const msg = error?.shortMessage || null
+      if (msg) {
+        showToastMsg(msg, 'error')
+      }
+    } finally {
+      loadingHarvest.value = false
+    }
+  }
+
+  const { address: account } = useAccount()
+
+  const loadingStake = ref(false)
+  const handleStake = async () => {
+    try {
+      if (loadingStake.value) return
+      loadingStake.value = true
+      const hash = await writeContract(config, {
+        abi: NonfungiblePositionManagerABI,
+        address: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
+        functionName: 'safeTransferFrom',
+        args: [account.value, CONTRACT_ADDRESS.MASTER_CHEF_V3, props.position.tokenId]
+      })
+
+      const { status } = await waitForTransactionReceipt(config, {
+        hash,
+        pollingInterval: 2000
+      })
+      if (status === 'success') {
+        showToastMsg('Staked! Your funds have heen staked in the farm', 'success', hash)
+      } else {
+        showToastMsg('Transaction failed', 'error', hash)
+      }
+    } catch (error) {
+      console.error('handleStake ~ error', error)
+      //@ts-ignore
+      const msg = error?.shortMessage || null
+      if (msg) {
+        showToastMsg(msg, 'error')
+      }
+    } finally {
+      loadingStake.value = false
+    }
+  }
 </script>
 
 <style lang="scss"></style>

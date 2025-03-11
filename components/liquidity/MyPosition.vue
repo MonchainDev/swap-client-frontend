@@ -82,7 +82,7 @@
       </div>
     </div>
 
-    <div class="mt-9 grid h-11 grid-cols-[3fr,136px,136px,3fr,3fr,150px] bg-[#FAFAFA]">
+    <div class="mt-9 grid h-11 grid-cols-[4fr,80px,136px,3fr,3fr,180px] bg-[#FAFAFA]">
       <template v-for="item in listHeader" :key="item.title">
         <div class="flex items-center first:pl-6" :class="{ 'justify-center': item.align === 'center', 'justify-end': item.align === 'right' }">
           <span class="text-sm font-semibold text-gray-6">{{ item.title }}</span>
@@ -93,7 +93,17 @@
       <div v-loading="status === 'pending'" class="min-h-[100px]">
         <template v-if="status === 'success'">
           <template v-if="query.total > 0">
-            <PositionItem v-for="item in formattedData" :key="item.tokenId.toString()" :position="item" />
+            <PositionItem
+              v-for="item in formattedData"
+              :key="item.tokenId.toString()"
+              :position="item"
+              @unstake="
+                (pos) => {
+                  positionCurrent = pos
+                  setOpenPopup('popup-unstake')
+                }
+              "
+            />
             <BasePagination v-model:page="query.page" :total="query.total" class="mt-5 px-6" />
           </template>
           <template v-else>
@@ -107,6 +117,7 @@
     </template>
   </div>
   <PopupSelectToken v-model:token-selected="tokenSelected" :show-network="false" is-select />
+  <PopupUnStake :position="positionCurrent" />
 </template>
 
 <script lang="ts" setup>
@@ -115,6 +126,7 @@
   import type { ITab } from '~/types/component.type'
   import type { IPosition, IPositionOrigin } from '~/types/position.type'
   import type { IResponse } from '~/types/response.type'
+  import PopupUnStake from './PopupUnStake.vue'
   const enum TabValue {
     ALL = 'ALL',
     ACTIVE = 'ACTIVE',
@@ -171,6 +183,7 @@
 
   const networkSelected = ref<string[]>(LIST_NETWORK.map((item) => item.value))
   const tokenSelected = ref<string[]>([])
+  const positionCurrent = ref<IPosition | undefined>(undefined)
 
   const networkListSelected = computed(() => {
     return LIST_NETWORK.filter((item) => networkSelected.value.includes(item.value))
