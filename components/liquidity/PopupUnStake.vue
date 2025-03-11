@@ -47,12 +47,13 @@
 </template>
 
 <script lang="ts" setup>
-  import type { IPosition } from '~/types/position.type'
-  import { waitForTransactionReceipt, writeContract } from '@wagmi/core'
-  import { config } from '~/config/wagmi'
-  import MasterChefV3ABI from '@/constant/abi/masterChefV3.json'
-  import { CONTRACT_ADDRESS } from '~/constant/contract'
+  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
+  import { hexToBigInt } from 'viem'
+  import { config } from '~/config/wagmi'
+  import { CONTRACT_ADDRESS } from '~/constant/contract'
+  import type { IPosition } from '~/types/position.type'
+  import { MasterChefV3 } from '~/utils/masterChefV3'
 
   interface IProps {
     position?: IPosition
@@ -87,24 +88,29 @@
 
   const handleUnStake = async () => {
     try {
-      loadingUnStake.value = true
-      const hash = await writeContract(config, {
-        abi: MasterChefV3ABI,
-        address: CONTRACT_ADDRESS.MASTER_CHEF_V3 as `0x${string}`,
-        functionName: 'withdraw',
-        args: [props.position?.tokenId, account.value]
-      })
-      console.log('🚀 ~ handleClickHarvest ~ hash:', hash)
+      if (props.position) {
+        loadingUnStake.value = true
 
-      const { status } = await waitForTransactionReceipt(config, {
-        hash,
-        pollingInterval: 2000
-      })
-      if (status === 'success') {
-        showToastMsg('Unstaked! Your funds ORB earnings have been sent to your wallet', 'success', hash)
-        setOpenPopup('popup-unstake', false)
-      } else {
-        showToastMsg('Transaction failed', 'error', hash)
+        const { calldata, value } = MasterChefV3.withdrawCallParameters({ to: account.value!, tokenId: BigInt(props.position?.tokenId) })
+
+        const hash = await sendTransaction(config, {
+          to: CONTRACT_ADDRESS.MASTER_CHEF_V3 as `0x${string}`,
+          data: calldata,
+          value: hexToBigInt(value)
+        })
+
+        console.log('🚀 ~ handleUnStake ~ hash:', hash)
+
+        const { status } = await waitForTransactionReceipt(config, {
+          hash,
+          pollingInterval: 2000
+        })
+        if (status === 'success') {
+          showToastMsg('Unstaked! Your funds ORB earnings have been sent to your wallet', 'success', hash)
+          setOpenPopup('popup-unstake', false)
+        } else {
+          showToastMsg('Transaction failed', 'error', hash)
+        }
       }
     } catch (error) {
       console.error('handleUnStake error', error)

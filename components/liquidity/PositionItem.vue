@@ -68,15 +68,16 @@
   // import type { CurrencyAmount, Token } from '@monchain/swap-sdk-core'
   import { LIST_NETWORK } from '~/constant'
   // import { Bound } from '~/types'
-  import type { IPosition } from '~/types/position.type'
-  import MasterChefV3ABI from '@/constant/abi/masterChefV3.json'
-  import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
-  import { waitForTransactionReceipt, writeContract } from '@wagmi/core'
+  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import { useAccount } from '@wagmi/vue'
+  import Decimal from 'decimal.js'
+  import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
   import { CONTRACT_ADDRESS } from '~/constant/contract'
-  import { useAccount } from '@wagmi/vue'
   import type { IExchangeRate } from '~/types'
-  import Decimal from 'decimal.js'
+  import type { IPosition } from '~/types/position.type'
+  import { MasterChefV3 } from '~/utils/masterChefV3'
+  import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
 
   interface IProps {
     // position: PositionDetail
@@ -194,12 +195,15 @@
       console.log('Harvest')
       if (loadingHarvest.value) return
       loadingHarvest.value = true
-      const hash = await writeContract(config, {
-        abi: MasterChefV3ABI,
-        address: CONTRACT_ADDRESS.MASTER_CHEF_V3 as `0x${string}`,
-        functionName: 'harvest',
-        args: [props.position.tokenId, account.value]
+
+      const { calldata, value } = MasterChefV3.harvestCallParameters({ to: account.value!, tokenId: props.position.tokenId })
+
+      const hash = await sendTransaction(config, {
+        to: CONTRACT_ADDRESS.MASTER_CHEF_V3 as `0x${string}`,
+        data: calldata,
+        value: hexToBigInt(value)
       })
+
       console.log('🚀 ~ handleClickHarvest ~ hash:', hash)
 
       const { status } = await waitForTransactionReceipt(config, {
@@ -228,11 +232,17 @@
     try {
       if (loadingStake.value) return
       loadingStake.value = true
-      const hash = await writeContract(config, {
-        abi: NonfungiblePositionManagerABI,
-        address: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
-        functionName: 'safeTransferFrom',
-        args: [account.value, CONTRACT_ADDRESS.MASTER_CHEF_V3, props.position.tokenId]
+
+      const { calldata, value } = NonfungiblePositionManager.safeTransferFromParameters({
+        recipient: CONTRACT_ADDRESS.MASTER_CHEF_V3 as `0x${string}`,
+        tokenId: props.position.tokenId,
+        sender: account.value as `0x${string}`
+      })
+
+      const hash = await sendTransaction(config, {
+        to: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
+        data: calldata,
+        value: hexToBigInt(value)
       })
 
       const { status } = await waitForTransactionReceipt(config, {
