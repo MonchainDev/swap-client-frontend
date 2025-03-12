@@ -104,6 +104,7 @@
           type="BASE"
           is-selected
           :balance="balance0?.formatted"
+          :locked="depositADisabled"
           @change="handleChangeAmount"
           @select-percent="handleSelectPercent"
         />
@@ -113,6 +114,7 @@
           type="QUOTE"
           is-selected
           :balance="balance1?.formatted"
+          :locked="depositBDisabled"
           @change="handleChangeAmount"
           @select-percent="handleSelectPercent"
         />
@@ -196,7 +198,7 @@
 
   const invert = ref(false)
 
-  const { ticksAtLimit, dependentAmount, formattedAmounts, currencies, position: positionDetail } = useV3DerivedInfo()
+  const { ticksAtLimit, dependentAmount, formattedAmounts, currencies, position: positionDetail, depositADisabled, depositBDisabled } = useV3DerivedInfo()
 
   const currencyA = computed(() => currencies.value[CurrencyField.CURRENCY_A] as unknown as IToken)
   const currencyB = computed(() => currencies.value[CurrencyField.CURRENCY_B] as unknown as IToken)
