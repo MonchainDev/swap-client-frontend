@@ -19,6 +19,7 @@
           type="BASE"
           :is-selected="isToken0Selected"
           :balance="balance0?.formatted"
+          :locked="depositADisabled"
           @change="handleChangeAmount"
           @select-percent="handleSelectPercent"
         />
@@ -28,6 +29,7 @@
           type="QUOTE"
           :is-selected="isToken1Selected"
           :balance="balance1?.formatted"
+          :locked="depositBDisabled"
           @change="handleChangeAmount"
           @select-percent="handleSelectPercent"
         />
@@ -59,7 +61,7 @@
     isToken1Selected: false
   })
 
-  const { dependentAmount, formattedAmounts } = useV3DerivedInfo()
+  const { dependentAmount, formattedAmounts, depositADisabled, depositBDisabled } = useV3DerivedInfo()
 
   // watch(
   //   () => independentAmount.value,

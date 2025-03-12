@@ -138,7 +138,7 @@
 <script lang="ts" setup>
   import { CurrencyAmount, Percent } from '@monchain/swap-sdk-core'
   import { useAccount } from '@wagmi/vue'
-  import { hexToBigInt } from 'viem'
+  import { hexToBigInt, type Address } from 'viem'
   import { BIPS_BASE } from '~/constant'
   import { CONTRACT_ADDRESS } from '~/constant/contract'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
@@ -147,6 +147,7 @@
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
   import { WNATIVE } from '~/constant/token'
   import Decimal from 'decimal.js'
+  import { MasterChefV3 } from '~/utils/masterChefV3'
 
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
@@ -172,6 +173,10 @@
 
   const { position } = useV3PositionsFromTokenId(tokenId.value)
 
+  const { tokenIds } = useV3TokenIdsByAccount(CONTRACT_ADDRESS.MASTER_CHEF_V3 as Address)
+
+  const isStakeMV3 = computed(() => tokenIds.value?.includes(tokenId.value!))
+
   const loading = computed(() => !positionSDK.value)
 
   const disabledButton = computed(() => !percent.value || !parseFloat(percent.value) || parseFloat(percent.value) > 100)
@@ -182,7 +187,6 @@
     liquidityPercentage,
     liquidityValue0,
     liquidityValue1,
-    outOfRange,
     position: positionSDK,
     feeValue0,
     feeValue1
@@ -248,7 +252,7 @@
     try {
       if (
         !liquidityPercentage.value ||
-        outOfRange.value ||
+        !tokenId.value ||
         !account.value ||
         !positionSDK.value ||
         !chainId.value ||
@@ -261,9 +265,12 @@
       const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
       const allowedSlippage = 50
 
+      const interfaceManager = isStakeMV3.value ? MasterChefV3 : NonfungiblePositionManager
+      const addressTo = (isStakeMV3.value ? CONTRACT_ADDRESS.MASTER_CHEF_V3 : CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER) as `0x${string}`
+
       // we fall back to expecting 0 fees in case the fetch fails, which is safe in the
       // vast majority of cases
-      const { calldata, value } = NonfungiblePositionManager.removeCallParameters(positionSDK.value, {
+      const { calldata, value } = interfaceManager.removeCallParameters(positionSDK.value, {
         tokenId: tokenId.value!,
         liquidityPercentage: liquidityPercentage.value,
         slippageTolerance: basisPointsToPercent(allowedSlippage),
@@ -279,7 +286,7 @@
       console.log('🚀 ~ handleRemove ~ calldata:', calldata)
 
       const txHash = await sendTransaction(config, {
-        to: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER as `0x${string}`,
+        to: addressTo,
         data: calldata,
         value: hexToBigInt(value),
         account: account.value
