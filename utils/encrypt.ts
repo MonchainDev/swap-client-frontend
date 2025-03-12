@@ -1,7 +1,7 @@
 import JSEncrypt from 'jsencrypt'
 import CryptoJs from 'crypto-js'
 
-export function encrypt(data: Record<string, unknown>): { encryptedData: string; encryptedAesKey: string } | null {
+export function encrypt(data: IBodyTxCollect): { encryptedData: string; encryptedAesKey: string } | null {
   console.log('>>> / file: encrypt.ts:4 / data:', JSON.parse(JSON.stringify(data)))
 
   const PUBLIC_KEY = import.meta.env.NUXT_PUBLIC_KEY
@@ -47,6 +47,22 @@ type EncryptedBody = {
   contentKey: string
 }
 
+export interface IBodyTxCollect {
+  transactionHash: string
+  fromAddress?: string
+  toAddress?: string
+  fromToken: string
+  toToken: string
+  poolAddress?: string
+  network: string
+  tokenId?: number
+  amount?: number
+  feeAmount: number
+  rewardAmount?: number
+  transactionType: string
+  createdAt: string
+}
+
 /**
  * 
  * @param requestType 
@@ -74,7 +90,7 @@ type EncryptedBody = {
   const result = await $fetch('transaction/collect', 'POST', { data: encryptedBody })
  * ```
  */
-export function buildEncryptedBody(requestType: EncryptRequestType, body: Record<string, unknown> = {}): EncryptedBody {
+export function buildEncryptedBody(requestType: EncryptRequestType, body: IBodyTxCollect): EncryptedBody {
   const encrypted = encrypt(body)
   if (!encrypted) {
     throw new Error('Failed to encrypt data')
