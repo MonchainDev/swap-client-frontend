@@ -240,6 +240,26 @@ export default function useV3DerivedInfo() {
     Boolean(typeof tickLower.value === 'number' && poolForPosition.value && poolForPosition.value.tickCurrent <= tickLower.value)
   )
 
+  // sorted for token order
+  const depositADisabled = computed(() => {
+    return (
+      invalidRange.value ||
+      Boolean(
+        (deposit0Disabled.value && poolForPosition.value && tokenA.value && poolForPosition.value.token0.equals(tokenA.value)) ||
+          (deposit1Disabled.value && poolForPosition.value && tokenA.value && poolForPosition.value.token1.equals(tokenA.value))
+      )
+    )
+  })
+  const depositBDisabled = computed(() => {
+    return (
+      invalidRange.value ||
+      Boolean(
+        (deposit0Disabled.value && poolForPosition.value && tokenB.value && poolForPosition.value.token0.equals(tokenB.value)) ||
+          (deposit1Disabled.value && poolForPosition.value && tokenB.value && poolForPosition.value.token1.equals(tokenB.value))
+      )
+    )
+  })
+
   // create position entity based on users selection
   const position = computed(() => {
     if (
@@ -311,6 +331,10 @@ export default function useV3DerivedInfo() {
     ticksAtLimit,
     currencies,
     dependentField,
-    formattedAmounts
+    formattedAmounts,
+    depositADisabled,
+    depositBDisabled,
+    deposit0Disabled,
+    deposit1Disabled
   }
 }

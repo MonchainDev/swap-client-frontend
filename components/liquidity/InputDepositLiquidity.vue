@@ -1,7 +1,7 @@
 <template>
   <div
     class="input-swap flex flex-col gap-4 rounded-lg border border-solid border-gray-4 py-4 pl-8 pr-6 sm:px-4 sm:pt-2"
-    :class="{ 'pointer-events-none opacity-50': isDisabled }"
+    :class="{ 'pointer-events-none opacity-50': props.locked }"
     @click="handleClick"
   >
     <div class="flex items-center justify-between">
@@ -75,6 +75,7 @@
     type: TYPE_SWAP
     balance: string | undefined
     stepSwap?: string
+    locked: boolean
   }
 
   const props = withDefaults(defineProps<IProps>(), {
@@ -82,7 +83,8 @@
     token: () => ({ name: '', symbol: '', icon_url: '', address: '', decimals: 0 }),
     type: 'BASE',
     balance: '0',
-    stepSwap: 'SELECT_TOKEN'
+    stepSwap: 'SELECT_TOKEN',
+    locked: false
   })
 
   const emits = defineEmits<{
@@ -113,7 +115,7 @@
     return new Decimal(amount.value).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
   })
 
-  const isDisabled = computed(() => {
+  const _isDisabled = computed(() => {
     const { minPrice, maxPrice } = form.value
     const commonConditions = outOfRange.value || invalidRange.value || minPrice === '' || maxPrice === ''
     return route.name === 'liquidity-network-tokenId' ? false : poolExits.value ? commonConditions : commonConditions || startPriceTypedValue.value === ''
