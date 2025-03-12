@@ -187,7 +187,6 @@
     liquidityPercentage,
     liquidityValue0,
     liquidityValue1,
-    outOfRange,
     position: positionSDK,
     feeValue0,
     feeValue1
@@ -253,7 +252,7 @@
     try {
       if (
         !liquidityPercentage.value ||
-        outOfRange.value ||
+        !tokenId.value ||
         !account.value ||
         !positionSDK.value ||
         !chainId.value ||
