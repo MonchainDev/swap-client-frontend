@@ -70,7 +70,7 @@
                 <span class="text-[#049C6B]">{{ positionDetail?.feeApr }}% </span>
               </span>
             </div>
-            <span class="text-[48px] font-semibold">${{ Number(priceUsdBase) + Number(priceUsdQuote) }}</span>
+            <span class="text-[48px] font-semibold">${{ (Number(priceUsdBase) + Number(priceUsdQuote)).toFixed(2) }}</span>
           </div>
           <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
@@ -99,7 +99,7 @@
           <div class="flex justify-between">
             <div class="flex flex-col">
               <span class="text-2xl font-semibold leading-7">Unclaimed fees</span>
-              <span class="line-clamp-1 text-[48px] font-semibold text-hyperlink">${{ Number(priceUsdFeeLower) + Number(priceUsdFeeUpper) }}</span>
+              <span class="line-clamp-1 text-[48px] font-semibold text-hyperlink">${{ (Number(priceUsdFeeLower) + Number(priceUsdFeeUpper)).toFixed(2) }}</span>
             </div>
             <BaseButton
               :disabled="disabledCollect"
@@ -158,7 +158,7 @@
 
     <div class="mt-6 rounded-lg bg-white pb-6 shadow-md">
       <span class="block pl-6 pt-8 text-2xl font-semibold leading-7">History</span>
-      <BaseTable :data="[]" :loading="false" class="table-history mt-[26px]">
+      <BaseTable :data="listTransaction ?? undefined" :loading="statusListTx === 'pending'" class="table-history mt-[26px]">
         <ElTableColumn label="Timestamp" />
         <ElTableColumn label="Action" />
         <ElTableColumn label="Token Transferred" align="right" />
@@ -203,6 +203,10 @@
   const { isLoading, position: _position, refetch } = useV3PositionsFromTokenId(tokenId.value)
 
   const { data: positionDetail } = useFetch<IPosition>(`/api/position/get/${tokenId.value?.toString()}`, { query: { network: route.params.network } })
+
+  const { data: listTransaction, status: statusListTx } = useFetch<Array<Record<string, unknown>>>('/api/transaction/list', {
+    query: { network: route.params.network, poolAddress: positionDetail.value?.poolAddress, tokenId: tokenId.value?.toString() }
+  })
 
   const liquidity = computed(() => _position.value?.liquidity)
   const tickLower = computed(() => _position.value?.tickLower)

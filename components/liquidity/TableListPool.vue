@@ -31,12 +31,12 @@
     </ElTableColumn>
     <ElTableColumn label="TVL" align="right">
       <template #default="{ row }">
-        <span class="text-sm">${{ formatNumberAbbreviation(row.tvl) }}</span>
+        <span class="text-sm">${{ formatDollar(row.tvl) }}</span>
       </template>
     </ElTableColumn>
     <ElTableColumn label="Volume 24h" align="right">
       <template #default="{ row }">
-        <span class="text-sm">${{ formatNumberAbbreviation(row.volume24h) }}</span>
+        <span class="text-sm">${{ formatDollar(row.volume24h) }}</span>
       </template>
     </ElTableColumn>
     <ElTableColumn label="" align="center" width="50">
@@ -81,6 +81,11 @@
 
   const getNetwork = (networkName: string) => {
     return LIST_NETWORK.find((item) => item.value === networkName)
+  }
+
+  const formatDollar = (tvl: number | string) => {
+    const value = parseFloat(tvl.toString()) >= 1 ? parseFloat(tvl.toString()).toFixed(2) : tvl
+    return formatNumberAbbreviation(+value)
   }
 </script>
 
