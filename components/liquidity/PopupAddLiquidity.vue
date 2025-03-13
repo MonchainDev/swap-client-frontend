@@ -32,11 +32,11 @@
           <div class="flex flex-col text-right">
             <template v-if="props.showInput && step === 'CONFIRM'">
               <span class="text-[32px] font-semibold leading-none">{{ formattedStep2Amount0 }}</span>
-              <span class="text-sm font-semibold text-gray-6">${{ priceUsdBase }}</span>
+              <span class="text-sm font-semibold text-gray-6">${{ formatNumber(priceUsdBase) }}</span>
             </template>
             <template v-else>
               <span class="text-[32px] font-semibold leading-none">{{ formattedValue0 }}</span>
-              <span class="text-sm font-semibold text-gray-6">${{ props.usdUpper }}</span>
+              <span class="text-sm font-semibold text-gray-6">${{ formatNumber(props.usdUpper) }}</span>
             </template>
           </div>
         </div>
@@ -52,11 +52,11 @@
           <div class="flex flex-col text-right">
             <template v-if="props.showInput && step === 'CONFIRM'">
               <span class="text-[32px] font-semibold leading-none">{{ formattedStep2Amount1 }}</span>
-              <span class="text-sm font-semibold text-gray-6">${{ priceUsdQuote }}</span>
+              <span class="text-sm font-semibold text-gray-6">${{ formatNumber(priceUsdQuote) }}</span>
             </template>
             <template v-else>
               <span class="text-[32px] font-semibold leading-none">{{ formattedValue1 }}</span>
-              <span class="text-sm font-semibold text-gray-6">${{ props.usdLower }}</span>
+              <span class="text-sm font-semibold text-gray-6">${{ formatNumber(props.usdLower) }}</span>
             </template>
           </div>
         </div>

@@ -70,7 +70,7 @@
                 <span class="text-[#049C6B]">{{ positionDetail?.feeApr }}% </span>
               </span>
             </div>
-            <span class="text-[48px] font-semibold">${{ (Number(priceUsdBase) + Number(priceUsdQuote)).toFixed(2) }}</span>
+            <span class="text-[48px] font-semibold">${{ formatNumber((Number(priceUsdBase) + Number(priceUsdQuote)).toFixed(2)) }}</span>
           </div>
           <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
@@ -80,7 +80,7 @@
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">{{ formattedValueUpper }}</span>
-                <span class="text-sm text-gray-6">${{ priceUsdBase }}</span>
+                <span class="text-sm text-gray-6">${{ formatNumber(priceUsdBase) }}</span>
               </div>
             </div>
             <div class="flex h-1/2 items-center justify-between px-8">
@@ -90,7 +90,7 @@
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">{{ formattedValueLower }}</span>
-                <span class="text-sm text-gray-6">${{ priceUsdQuote }}</span>
+                <span class="text-sm text-gray-6">${{ formatNumber(priceUsdQuote) }}</span>
               </div>
             </div>
           </div>
@@ -99,7 +99,9 @@
           <div class="flex justify-between">
             <div class="flex flex-col">
               <span class="text-2xl font-semibold leading-7">Unclaimed fees</span>
-              <span class="line-clamp-1 text-[48px] font-semibold text-hyperlink">${{ (Number(priceUsdFeeLower) + Number(priceUsdFeeUpper)).toFixed(2) }}</span>
+              <span class="line-clamp-1 text-[48px] font-semibold text-hyperlink"
+                >${{ formatNumber((Number(priceUsdFeeLower) + Number(priceUsdFeeUpper)).toFixed(2)) }}</span
+              >
             </div>
             <BaseButton
               :disabled="disabledCollect"
@@ -120,7 +122,7 @@
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">{{ formattedFeeUpper }}</span>
-                <span class="text-sm text-gray-6">${{ priceUsdFeeUpper }}</span>
+                <span class="text-sm text-gray-6">${{ formatNumber(priceUsdFeeUpper) }}</span>
               </div>
             </div>
             <div class="flex h-1/2 items-center justify-between px-8">
@@ -130,7 +132,7 @@
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">{{ formattedFeeLower }}</span>
-                <span class="text-sm text-gray-6">${{ priceUsdFeeLower }}</span>
+                <span class="text-sm text-gray-6">${{ formatNumber(priceUsdFeeLower) }}</span>
               </div>
             </div>
           </div>

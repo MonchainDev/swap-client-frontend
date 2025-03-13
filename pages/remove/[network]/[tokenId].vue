@@ -57,7 +57,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedValue0 }}</span>
-              <span class="text-sm text-gray-6">${{ priceUsd0 }}</span>
+              <span class="text-sm text-gray-6">${{ formatNumber(priceUsd0) }}</span>
             </div>
           </div>
           <div class="flex h-1/2 items-center justify-between px-8">
@@ -67,7 +67,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedValue1 }}</span>
-              <span class="text-sm text-gray-6">${{ priceUsd1 }}</span>
+              <span class="text-sm text-gray-6">${{ formatNumber(priceUsd1) }}</span>
             </div>
           </div>
         </div>
@@ -79,7 +79,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedFee0 }}</span>
-              <span class="text-sm text-gray-6">${{ priceUsdFee0 }}</span>
+              <span class="text-sm text-gray-6">${{ formatNumber(priceUsdFee0) }}</span>
             </div>
           </div>
           <div class="flex h-1/2 items-center justify-between px-8">
@@ -89,7 +89,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedFee1 }}</span>
-              <span class="text-sm text-gray-6">${{ priceUsdFee1 }}</span>
+              <span class="text-sm text-gray-6">${{ formatNumber(priceUsdFee1) }}</span>
             </div>
           </div>
         </div>

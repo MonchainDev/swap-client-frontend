@@ -28,7 +28,7 @@
       <span>Max: {{ max }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
     </div>
     <div class="flex flex-col justify-center text-sm">
-      <span>≈ ${{ priceUdtTotal }}</span>
+      <span>≈ ${{ formatNumber(priceUdtTotal) }}</span>
       <span>({{ displayTokenReserve(props.position.quoteQuantity, props.position.quoteDecimals, props.position.quoteSymbol) }} /</span>
       <span>{{ displayTokenReserve(props.position.baseQuantity, props.position.baseDecimals, props.position.baseSymbol) }})</span>
     </div>

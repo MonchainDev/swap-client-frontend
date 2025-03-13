@@ -55,7 +55,7 @@
           @focus="emits('focus-input', type)"
           @input="handleInput"
         />
-        <span class="text-sm font-semibold text-gray-6">≈ ${{ priceUsd }}</span>
+        <span class="text-sm font-semibold text-gray-6">≈ ${{ formatNumber(priceUsd) }}</span>
       </div>
     </div>
   </div>
