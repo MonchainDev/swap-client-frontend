@@ -312,7 +312,7 @@
           tokenId: +route.params.tokenId,
           fromAddress: account.value!,
           toAddress: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER,
-          fromToken: positionSDK.value.pool.token0.address,
+          fromToken: addressTo,
           toToken: positionSDK.value.pool.token1.address,
           network: currentNetwork.value.value,
           transactionType: 'REMOVE_LIQUID'
