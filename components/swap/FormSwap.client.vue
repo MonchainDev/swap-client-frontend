@@ -130,9 +130,9 @@
   })
 
   const { setOpenPopup } = useBaseStore()
-  const { isDesktop } = storeToRefs(useBaseStore())
+  const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
 
-  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, allowance0, balance0, balance1, form } = storeToRefs(useSwapStore())
+  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, allowance0, balance0, balance1, form, token0, token1 } = storeToRefs(useSwapStore())
 
   const isEditSlippage = ref(false)
   const stepSwap = ref<StepSwap>('SELECT_TOKEN')
@@ -388,6 +388,7 @@
     if (status === 'success') {
       const { showToastMsg } = useShowToastMsg()
       showToastMsg('Swap successful', 'success', txHash)
+      await postTx(txHash)
       console.info('Transaction successful', 'success', txHash)
     } else {
       ElMessage.error('Transaction failed')
@@ -406,11 +407,11 @@
       // step 2: approve
       if (token0IsToken.value) {
         if (isNeedAllowance0.value) {
+          isConfirmApprove.value = true
           await approveToken(form.value.token0.address as string, CONTRACT_ADDRESS.SWAP_ROUTER_V3, MAX_NUMBER_APPROVE, (status) => {
             if (status === 'SUCCESS') {
               swap()
             }
-            isConfirmApprove.value = false
           })
         } else {
           // step 3: swap
@@ -449,11 +450,23 @@
       console.info(' (FormSwap.client.vue:319) sign sao sao sao saii  xong r ne')
       isConfirmSwap.value = false
       isSwapping.value = false
-      el1?.close()
     }
   }
-
-  const el1: ReturnType<typeof ElNotification> | null = null
+  async function postTx(txHash: string) {
+    const feeAmount = new Decimal(form.value.tradingFee).div(10 ** Number(form.value.token0.decimals || 0)).toFixed(4)
+    const body: IBodyTxCollect = {
+      transactionHash: txHash,
+      amount: +form.value.amountIn,
+      feeAmount: +feeAmount,
+      fromAddress: address.value,
+      toAddress: CONTRACT_ADDRESS.SWAP_ROUTER_V3,
+      fromToken: token0.value?.wrapped.address,
+      toToken: token1.value?.wrapped.address,
+      transactionType: 'SWAP',
+      network: currentNetwork.value.value
+    }
+    await postTransaction(body)
+  }
 
   const { handleImageError } = useErrorImage()
 </script>
