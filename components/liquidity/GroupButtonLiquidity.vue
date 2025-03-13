@@ -97,7 +97,6 @@
     } else {
       missingAmounts = !amountDeposit0 || !amountDeposit1
     }
-    console.log('🚀 ~ isShowEnterAmount ~ missingAmounts:', missingAmounts)
     if (route.name === 'liquidity-network-tokenId') {
       return missingAmounts
     } else {

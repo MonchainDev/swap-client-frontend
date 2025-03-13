@@ -21,29 +21,29 @@
         class="input-init-amount"
         @blur="handleBlurStartValue"
       />
-      <p v-if="form.token0.symbol && form.token1.symbol" class="flex justify-between text-sm">
-        <span> Current {{ form.token0.symbol }} Price:</span>
+      <p v-if="form.token0?.symbol && form.token1?.symbol" class="flex justify-between text-sm">
+        <span> Current {{ form.token0?.symbol }} Price:</span>
         <!-- <span>{{ startPriceTypedValue ? startPriceTypedValue : '-' }} {{ form.token1.symbol }}</span> -->
-        <span> {{ price ? (invertPrice ? price?.invert()?.toSignificant(6) : price?.toSignificant(6)) : '-' }} {{ form.token1.symbol }} </span>
+        <span> {{ price ? (invertPrice ? price?.invert()?.toSignificant(6) : price?.toSignificant(6)) : '-' }} {{ form.token1?.symbol }} </span>
       </p>
     </div>
     <div class="mt-7 flex items-center gap-3" :class="{ '!mt-0': poolExits }">
       <span class="text-lg font-semibold leading-7">Set price range</span>
       <template v-if="props.isToken0Selected && props.isToken1Selected">
         <div class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange">
-          <BaseIcon :name="listTokenOfRange[0].address === form.token0.address ? 'radio-fill' : 'radio'" size="24" />
-          <span class="text-base">{{ listTokenOfRange[0].symbol }}</span>
+          <BaseIcon :name="listTokenOfRange[0]?.address === form.token0?.address ? 'radio-fill' : 'radio'" size="24" />
+          <span class="text-base">{{ listTokenOfRange[0]?.symbol }}</span>
         </div>
 
         <div class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange">
-          <BaseIcon :name="listTokenOfRange[1].address === form.token0.address ? 'radio-fill' : 'radio'" size="24" />
-          <span class="text-base">{{ listTokenOfRange[1].symbol }}</span>
+          <BaseIcon :name="listTokenOfRange[1]?.address === form.token0?.address ? 'radio-fill' : 'radio'" size="24" />
+          <span class="text-base">{{ listTokenOfRange[1]?.symbol }}</span>
         </div>
       </template>
     </div>
     <p v-if="poolExits" class="mt-2 flex justify-between text-sm">
-      <span> Current {{ form.token0.symbol }} Price:</span>
-      <span> {{ price ? (invertPrice ? price?.invert()?.toSignificant(6) : price?.toSignificant(6)) : '-' }} {{ form.token1.symbol }} </span>
+      <span> Current {{ form.token0?.symbol }} Price:</span>
+      <span> {{ price ? (invertPrice ? price?.invert()?.toSignificant(6) : price?.toSignificant(6)) : '-' }} {{ form.token1?.symbol }} </span>
     </p>
     <!-- 
     <div class="mt-5">
