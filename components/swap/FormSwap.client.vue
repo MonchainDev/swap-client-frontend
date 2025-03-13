@@ -223,6 +223,7 @@
     setOpenPopup('popup-select-token', true)
   }
 
+  const poolAddress = ref<string>('')
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
     try {
       notEnoughLiquidity.value = false
@@ -250,7 +251,9 @@
           inputAmount: inputAmount,
           type: TradeType.EXACT_INPUT
         })
+
         bestTrade.value = _bestTrade
+        poolAddress.value = (_bestTrade.routes[0].pools[0] as V3Pool)?.address ?? ''
         form.value.amountOut = bestTrade.value.outputAmount.toSignificant(6)
         form.value.tradingFee = bestTrade.value.tradingFee
         form.value.minimumAmountOut = bestTrade.value.minimumAmountOut?.toSignificant(6)
@@ -453,17 +456,19 @@
     }
   }
   async function postTx(txHash: string) {
-    const feeAmount = new Decimal(form.value.tradingFee).div(10 ** Number(form.value.token0.decimals || 0)).toFixed(4)
+    const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
+
     const body: IBodyTxCollect = {
       transactionHash: txHash,
-      amount: +form.value.amountIn,
-      feeAmount: +feeAmount,
+      amount: inputAmount,
+      feeAmount: form.value.tradingFee,
       fromAddress: address.value,
       toAddress: CONTRACT_ADDRESS.SWAP_ROUTER_V3,
       fromToken: token0.value?.wrapped.address,
       toToken: token1.value?.wrapped.address,
       transactionType: 'SWAP',
-      network: currentNetwork.value.value
+      network: currentNetwork.value.value,
+      poolAddress: poolAddress.value
     }
     await postTransaction(body)
   }
