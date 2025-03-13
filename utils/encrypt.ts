@@ -1,7 +1,7 @@
 import JSEncrypt from 'jsencrypt'
 import CryptoJs from 'crypto-js'
 
-export function encrypt(data: { initSeconds: number; data: IBodyTxCollect[] }): { encryptedData: string; encryptedAesKey: string } | null {
+export function encrypt(data: { initSeconds: number; data: IBodyTxCollect }): { encryptedData: string; encryptedAesKey: string } | null {
   console.log('>>> / file: encrypt.ts:4 / data:', JSON.parse(JSON.stringify(data)))
 
   const PUBLIC_KEY = import.meta.env.VITE_NUXT_PUBLIC_KEY
@@ -62,7 +62,6 @@ export interface IBodyTxCollect {
   feeAmount?: number
   rewardAmount?: number
   transactionType?: TX_Type
-  createdAt?: string
 }
 
 /**
@@ -92,7 +91,7 @@ export interface IBodyTxCollect {
   const result = await $fetch('transaction/collect', 'POST', { data: encryptedBody })
  * ```
  */
-export function buildEncryptedBody(requestType: EncryptRequestType, body: { initSeconds: number; data: IBodyTxCollect[] }): EncryptedBody {
+export function buildEncryptedBody(requestType: EncryptRequestType, body: { initSeconds: number; data: IBodyTxCollect }): EncryptedBody {
   const encrypted = encrypt(body)
   if (!encrypted) {
     throw new Error('Failed to encrypt data')

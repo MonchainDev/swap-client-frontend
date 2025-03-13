@@ -237,7 +237,6 @@
             toToken: quoteCurrency.value?.wrapped.address,
             fromAddress: address.value,
             toAddress: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER,
-            createdAt: useDateFormat(new Date(), 'YYYY-MM-DD HH:mm:ss').value,
             network: currentNetwork.value.value,
             transactionType: 'ADD_POOL'
           }
