@@ -1,5 +1,5 @@
 <template>
-  <div class="input-swap flex flex-col gap-4 rounded-lg px-8 pt-4 sm:px-4 sm:pt-2" @click="handleClick">
+  <div class="input-swap flex flex-col gap-4 rounded-lg px-8 pt-4 sm:px-4 sm:pt-2" :class="{ 'pointer-events-none': props.locked }" @click="handleClick">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-5">
         <span class="text-sm text-primary">{{ type === 'BASE' ? 'Sell' : 'Buy' }}</span>
@@ -73,6 +73,7 @@
     type: TYPE_SWAP
     balance: string | undefined
     stepSwap: StepSwap
+    locked: boolean
   }
 
   const props = withDefaults(defineProps<IProps>(), {
@@ -80,7 +81,8 @@
     token: () => ({ name: '', symbol: '', icon_url: '', address: '', decimals: 0 }),
     type: 'BASE',
     balance: '0',
-    stepSwap: 'SELECT_TOKEN'
+    stepSwap: 'SELECT_TOKEN',
+    locked: false
   })
 
   const emits = defineEmits<{

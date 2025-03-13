@@ -9,6 +9,7 @@
           :token="form.token0"
           :balance="balance0?.formatted"
           :step-swap
+          :locked="isFetchQuote"
           type="BASE"
           class="h-[138px] bg-[#EFEFFF] sm:h-[120px]"
           @select-token="handleOpenPopupSelectToken"
@@ -29,6 +30,7 @@
           :token="form.token1"
           :balance="balance1?.formatted"
           :step-swap
+          :locked="isFetchQuote"
           type="QUOTE"
           class="h-[124px] bg-[#F3F8FF] sm:h-[100px]"
           @select-token="handleOpenPopupSelectToken"
@@ -153,6 +155,11 @@
   const noRoute = computed(() => !(((bestTrade.value && bestTrade.value?.routes.length) ?? 0) > 0))
   const notEnoughLiquidity = ref(false)
 
+  const isInsufficientBalance = computed(() => {
+    const amountA = form.value.amountIn || 0
+    const balanceA = balance0.value?.formatted || 0
+    return new Decimal(amountA).greaterThan(balanceA)
+  })
   /*
    * Message button
    * case 1: Select a token
@@ -198,7 +205,8 @@
       !form.value.amountOut ||
       isFetchQuote.value ||
       noRoute.value ||
-      notEnoughLiquidity.value
+      notEnoughLiquidity.value ||
+      isInsufficientBalance.value
     )
   })
 
