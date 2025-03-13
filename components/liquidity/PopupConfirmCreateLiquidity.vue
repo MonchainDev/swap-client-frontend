@@ -89,10 +89,12 @@
   import { useAccount } from '@wagmi/vue'
   import { Bound } from '~/types'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
-  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { config } from '~/config/wagmi'
   import { CONTRACT_ADDRESS } from '~/constant/contract'
   import { hexToBigInt } from 'viem'
+  import MonFactoryABI from '~/constant/abi/MonFactory.json'
+  import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
 
   interface IProps {
     position: Position | undefined
@@ -171,6 +173,7 @@
 
   const { address } = useAccount()
   const { showToastMsg } = useShowToastMsg()
+  const { currentNetwork } = storeToRefs(useBaseStore())
 
   const handleAddLiquidity = async () => {
     try {
@@ -203,6 +206,42 @@
         })
         if (status === 'success') {
           emit('reload', txHash)
+          const [poolAddress, balance] = await Promise.all([
+            readContract(config, {
+              address: CONTRACT_ADDRESS.MON_FACTORY as `0x${string}`,
+              functionName: 'getPool',
+              args: [props.position.pool.token0.address, props.position.pool.token1.address, props.position.pool.fee],
+              abi: MonFactoryABI
+            }),
+            readContract(config, {
+              address: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
+              functionName: 'balanceOf',
+              args: [address.value],
+              abi: NonfungiblePositionManagerABI
+            })
+          ])
+          const tokenId = await readContract(config, {
+            address: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
+            functionName: 'tokenOfOwnerByIndex',
+            args: [address.value, Number(balance) - 1],
+            abi: NonfungiblePositionManagerABI
+          })
+          console.log('🚀 ~ handleAddLiquidity ~ balance:', balance)
+          console.log('🚀 ~ handleAddLiquidity ~ tokenId:', tokenId)
+          console.log('🚀 ~ handleAddLiquidity ~ poolAddress:', poolAddress)
+          const body: IBodyTxCollect = {
+            transactionHash: txHash,
+            poolAddress: poolAddress as string,
+            tokenId: Number(tokenId),
+            fromToken: baseCurrency.value?.wrapped.address,
+            toToken: quoteCurrency.value?.wrapped.address,
+            fromAddress: address.value,
+            toAddress: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER,
+            createdAt: useDateFormat(new Date(), 'YYYY-MM-DD HH:mm:ss').value,
+            network: currentNetwork.value.value,
+            transactionType: 'ADD_POOL'
+          }
+          postTransaction(body)
         } else {
           showToastMsg('Transaction failed', 'error', txHash)
         }

@@ -1,4 +1,5 @@
 export default async function postTransaction(body: IBodyTxCollect) {
   const encryptedBody = buildEncryptedBody(EncryptRequestType.TX_COLLECT, body)
-  await $fetch('/api/transaction/collect', { body: encryptedBody })
+  console.log('🚀 ~ postTransaction ~ encryptedBody:', encryptedBody)
+  await $fetch('/api/transaction/collect', { body: JSON.stringify(encryptedBody), method: 'POST' })
 }

@@ -4,7 +4,7 @@ import CryptoJs from 'crypto-js'
 export function encrypt(data: IBodyTxCollect): { encryptedData: string; encryptedAesKey: string } | null {
   console.log('>>> / file: encrypt.ts:4 / data:', JSON.parse(JSON.stringify(data)))
 
-  const PUBLIC_KEY = import.meta.env.NUXT_PUBLIC_KEY
+  const PUBLIC_KEY = import.meta.env.VITE_NUXT_PUBLIC_KEY
   if (!PUBLIC_KEY) {
     console.error('NUXT_PUBLIC_KEY is not defined')
     return null
@@ -47,20 +47,22 @@ type EncryptedBody = {
   contentKey: string
 }
 
+type TX_Type = 'ADD_POOL' | 'ADD_POSITION' | 'SWAP' | 'INCREASE_LIQUID' | 'REMOVE_LIQUID' | 'STAKE' | 'UNSTAKE' | 'HARVEST'
+
 export interface IBodyTxCollect {
   transactionHash: string
   fromAddress?: string
   toAddress?: string
-  fromToken: string
-  toToken: string
+  fromToken?: string
+  toToken?: string
   poolAddress?: string
-  network: string
+  network?: string
   tokenId?: number
   amount?: number
-  feeAmount: number
+  feeAmount?: number
   rewardAmount?: number
-  transactionType: string
-  createdAt: string
+  transactionType?: TX_Type
+  createdAt?: string
 }
 
 /**
