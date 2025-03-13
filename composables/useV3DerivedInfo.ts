@@ -51,7 +51,7 @@ export default function useV3DerivedInfo() {
     return undefined
   })
 
-  const { pool } = usePools()
+  const { pool, poolAddresses } = usePools()
   const noLiquidity = computed(() => !pool.value)
 
   const invertPrice = computed(() => Boolean(baseToken.value && token0.value && !baseToken.value.equals(token0.value)))
@@ -335,6 +335,7 @@ export default function useV3DerivedInfo() {
     depositADisabled,
     depositBDisabled,
     deposit0Disabled,
-    deposit1Disabled
+    deposit1Disabled,
+    poolAddresses
   }
 }

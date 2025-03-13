@@ -137,7 +137,7 @@
 <script lang="ts" setup>
   import { Percent, type Currency } from '@monchain/swap-sdk-core'
   import { type Position } from '@monchain/v3-sdk'
-  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
   import { hexToBigInt } from 'viem'
@@ -147,6 +147,7 @@
   import { Bound, CurrencyField, type IToken } from '~/types'
   import type { TYPE_SWAP } from '~/types/swap.type'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
+  import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
 
   interface IProps {
     valueUpper: string
@@ -185,6 +186,7 @@
   const { form, balance0, balance1, typedValue, independentField, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
   const { refetchAllowance0, refetchAllowance1, refetchBalance0, refetchBalance1 } = useLiquidityStore()
   const { setOpenPopup } = useBaseStore()
+  const { currentNetwork } = storeToRefs(useBaseStore())
 
   const { address } = useAccount()
 
@@ -198,7 +200,16 @@
 
   const invert = ref(false)
 
-  const { ticksAtLimit, dependentAmount, formattedAmounts, currencies, position: positionDetail, depositADisabled, depositBDisabled } = useV3DerivedInfo()
+  const {
+    ticksAtLimit,
+    dependentAmount,
+    formattedAmounts,
+    currencies,
+    position: positionDetail,
+    depositADisabled,
+    depositBDisabled,
+    poolAddresses
+  } = useV3DerivedInfo()
 
   const currencyA = computed(() => currencies.value[CurrencyField.CURRENCY_A] as unknown as IToken)
   const currencyB = computed(() => currencies.value[CurrencyField.CURRENCY_B] as unknown as IToken)
@@ -427,6 +438,7 @@
           setOpenPopup('popup-add-liquidity', false)
           showToastMsg('Transaction successful', 'success', txHash)
           emit('reload')
+          let body: IBodyTxCollect = {} as IBodyTxCollect
           if (props.showInput === false) {
             // page create pool
             typedValue.value = ''
@@ -436,7 +448,44 @@
             invert.value = false
             step.value = 'INPUT'
             router.push('/liquidity/positions')
+            const balance = await readContract(config, {
+              address: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
+              functionName: 'balanceOf',
+              args: [address.value],
+              abi: NonfungiblePositionManagerABI
+            })
+            const tokenId = await readContract(config, {
+              address: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
+              functionName: 'tokenOfOwnerByIndex',
+              args: [address.value, Number(balance) - 1],
+              abi: NonfungiblePositionManagerABI
+            })
+
+            body = {
+              transactionHash: txHash,
+              poolAddress: poolAddresses.value ? poolAddresses.value[0] : '',
+              tokenId: Number(tokenId),
+              fromAddress: address.value!,
+              toAddress: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER,
+              fromToken: positionDetail.value.pool.token0.address,
+              toToken: positionDetail.value.pool.token1.address,
+              network: currentNetwork.value.value,
+              transactionType: 'ADD_POSITION'
+            }
+          } else {
+            body = {
+              transactionHash: txHash,
+              poolAddress: poolAddresses.value ? poolAddresses.value[0] : '',
+              tokenId: +route.params.tokenId,
+              fromAddress: address.value!,
+              toAddress: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER,
+              fromToken: positionDetail.value.pool.token0.address,
+              toToken: positionDetail.value.pool.token1.address,
+              network: currentNetwork.value.value,
+              transactionType: 'INCREASE_LIQUID'
+            }
           }
+          await postTransaction(body)
         } else {
           showToastMsg('Transaction failed', 'error', txHash)
         }

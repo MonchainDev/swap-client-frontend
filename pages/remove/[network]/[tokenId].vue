@@ -163,6 +163,7 @@
   const { chainId, address: account } = useAccount()
   const { setOpenPopup } = useBaseStore()
   const { exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
+  const { currentNetwork } = storeToRefs(useBaseStore())
 
   const tokenId = computed(() => {
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
@@ -191,6 +192,8 @@
     feeValue0,
     feeValue1
   } = useDerivedV3BurnInfo(position, percent, receiveNative)
+
+  const { poolAddresses } = usePools()
 
   const formattedFee0 = computed(() => formattedCurrencyAmount(feeValue0.value))
   const formattedFee1 = computed(() => formattedCurrencyAmount(feeValue1.value))
@@ -303,6 +306,18 @@
         percent.value = ''
         showToastMsg('Transaction receipt', 'success', txHash)
         setOpenPopup('popup-confirm-remove', false)
+        const body: IBodyTxCollect = {
+          transactionHash: txHash,
+          poolAddress: poolAddresses.value ? poolAddresses.value[0] : '',
+          tokenId: +route.params.tokenId,
+          fromAddress: account.value!,
+          toAddress: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER,
+          fromToken: positionSDK.value.pool.token0.address,
+          toToken: positionSDK.value.pool.token1.address,
+          network: currentNetwork.value.value,
+          transactionType: 'REMOVE_LIQUID'
+        }
+        await postTransaction(body)
         router.push({ name: 'liquidity-network-tokenId', params: { tokenId: route.params.tokenId, network: route.params.network } })
       } else {
         showToastMsg('Transaction failed', 'error', txHash)

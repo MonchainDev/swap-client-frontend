@@ -18,7 +18,6 @@ export const fetchExchange = async <T>(url: string, method: Method, opt?: AxiosR
       },
       data: opt?.data
     })
-    console.log('🚀 ~ data:', data.data)
     return data.data as T
   } catch (error) {
     return Promise.reject(error)
