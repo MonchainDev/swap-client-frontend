@@ -117,6 +117,7 @@
   import type { TYPE_SWAP } from '~/types/swap.type'
   import { getBestTrade, type SwapOutput } from '~/utils/getBestTrade'
   import HeaderFormSwap from './HeaderFormSwap.vue'
+  import type { IBodyTxCollect } from '~/types/encrypt.type'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
 
   export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'

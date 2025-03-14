@@ -95,6 +95,7 @@
   import { hexToBigInt } from 'viem'
   import MonFactoryABI from '~/constant/abi/MonFactory.json'
   import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
+  import type { IBodyTxCollect } from '~/types/encrypt.type'
 
   interface IProps {
     position: Position | undefined

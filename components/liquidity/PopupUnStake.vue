@@ -52,6 +52,7 @@
   import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
   import { CONTRACT_ADDRESS } from '~/constant/contract'
+  import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { IPosition } from '~/types/position.type'
   import { MasterChefV3 } from '~/utils/masterChefV3'
 
@@ -107,6 +108,21 @@
         })
         if (status === 'success') {
           showToastMsg('Unstaked! Your funds ORB earnings have been sent to your wallet', 'success', hash)
+          const { tokenId, network, tokenBase, tokenQuote, poolAddress, pendingReward } = props.position
+
+          const body: IBodyTxCollect = {
+            transactionHash: hash,
+            tokenId: tokenId,
+            network: network,
+            fromAddress: account.value!,
+            toAddress: CONTRACT_ADDRESS.MASTER_CHEF_V3,
+            fromToken: tokenBase,
+            toToken: tokenQuote,
+            poolAddress: poolAddress,
+            rewardAmount: pendingReward,
+            transactionType: 'UNSTAKE'
+          }
+          await postTransaction(body)
           setOpenPopup('popup-unstake', false)
         } else {
           showToastMsg('Transaction failed', 'error', hash)

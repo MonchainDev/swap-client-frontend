@@ -148,6 +148,7 @@
   import type { TYPE_SWAP } from '~/types/swap.type'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
   import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
+  import type { IBodyTxCollect } from '~/types/encrypt.type'
 
   interface IProps {
     valueUpper: string
@@ -380,7 +381,7 @@
 
   const handleAddLiquidity = async () => {
     try {
-      if (!form.value.amountDeposit0 || !form.value.amountDeposit1 || !currencyA.value || !currencyB.value) {
+      if (!currencyA.value || !currencyB.value) {
         return
       }
 
