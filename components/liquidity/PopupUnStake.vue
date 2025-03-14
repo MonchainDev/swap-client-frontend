@@ -108,7 +108,7 @@
         })
         if (status === 'success') {
           showToastMsg('Unstaked! Your funds ORB earnings have been sent to your wallet', 'success', hash)
-          const { tokenId, network, tokenBase, tokenQuote, poolAddress } = props.position
+          const { tokenId, network, tokenBase, tokenQuote, poolAddress, pendingReward } = props.position
 
           const body: IBodyTxCollect = {
             transactionHash: hash,
@@ -119,6 +119,7 @@
             fromToken: tokenBase,
             toToken: tokenQuote,
             poolAddress: poolAddress,
+            rewardAmount: pendingReward,
             transactionType: 'UNSTAKE'
           }
           await postTransaction(body)

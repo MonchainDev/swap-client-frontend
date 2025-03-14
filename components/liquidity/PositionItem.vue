@@ -213,7 +213,7 @@
       })
       if (status === 'success') {
         showToastMsg('Harvested! Your funds ORB earnings have been sent to your wallet', 'success', hash)
-        const { tokenId, network, tokenBase, tokenQuote, poolAddress } = props.position
+        const { tokenId, network, tokenBase, tokenQuote, poolAddress, pendingReward } = props.position
         const body: IBodyTxCollect = {
           transactionHash: hash,
           tokenId,
@@ -223,6 +223,7 @@
           fromAddress: account.value,
           toAddress: CONTRACT_ADDRESS.MASTER_CHEF_V3,
           poolAddress,
+          rewardAmount: pendingReward,
           transactionType: 'HARVEST'
         }
         await postTransaction(body)
@@ -265,7 +266,7 @@
       })
       if (status === 'success') {
         showToastMsg('Staked! Your funds have heen staked in the farm', 'success', hash)
-        const { tokenId, network, tokenBase, tokenQuote, poolAddress } = props.position
+        const { tokenId, network, tokenBase, tokenQuote, poolAddress, pendingReward } = props.position
         const body: IBodyTxCollect = {
           transactionHash: hash,
           tokenId,
@@ -275,6 +276,7 @@
           fromAddress: account.value,
           toAddress: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES,
           poolAddress,
+          rewardAmount: pendingReward,
           transactionType: 'STAKE'
         }
         await postTransaction(body)
