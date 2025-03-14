@@ -25,7 +25,7 @@
           </div>
           <div class="flex flex-col text-right">
             <span class="text-[32px] font-semibold leading-none">{{ formattedValue0 }}</span>
-            <span class="text-sm font-semibold text-gray-6">${{ props.usdUpper }}</span>
+            <span class="text-sm font-semibold text-gray-6">${{ formatNumber(props.usdUpper) }}</span>
           </div>
         </div>
         <div class="ml-8 h-[30px] w-5 border-r-2 border-dashed border-gray-6" />
@@ -39,7 +39,7 @@
           </div>
           <div class="flex flex-col text-right">
             <span class="text-[32px] font-semibold leading-none">{{ formattedValue1 }}</span>
-            <span class="text-sm font-semibold text-gray-6">${{ props.usdLower }}</span>
+            <span class="text-sm font-semibold text-gray-6">${{ formatNumber(props.usdLower) }}</span>
           </div>
         </div>
         <div class="flex flex-1 items-center justify-between border-t border-solid border-t-gray-3 px-8">
@@ -89,10 +89,12 @@
   import { useAccount } from '@wagmi/vue'
   import { Bound } from '~/types'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
-  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { config } from '~/config/wagmi'
   import { CONTRACT_ADDRESS } from '~/constant/contract'
   import { hexToBigInt } from 'viem'
+  import MonFactoryABI from '~/constant/abi/MonFactory.json'
+  import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
 
   interface IProps {
     position: Position | undefined
@@ -171,6 +173,7 @@
 
   const { address } = useAccount()
   const { showToastMsg } = useShowToastMsg()
+  const { currentNetwork } = storeToRefs(useBaseStore())
 
   const handleAddLiquidity = async () => {
     try {
@@ -203,6 +206,41 @@
         })
         if (status === 'success') {
           emit('reload', txHash)
+          const [poolAddress, balance] = await Promise.all([
+            readContract(config, {
+              address: CONTRACT_ADDRESS.MON_FACTORY as `0x${string}`,
+              functionName: 'getPool',
+              args: [props.position.pool.token0.address, props.position.pool.token1.address, props.position.pool.fee],
+              abi: MonFactoryABI
+            }),
+            readContract(config, {
+              address: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
+              functionName: 'balanceOf',
+              args: [address.value],
+              abi: NonfungiblePositionManagerABI
+            })
+          ])
+          const tokenId = await readContract(config, {
+            address: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
+            functionName: 'tokenOfOwnerByIndex',
+            args: [address.value, Number(balance) - 1],
+            abi: NonfungiblePositionManagerABI
+          })
+          console.log('🚀 ~ handleAddLiquidity ~ balance:', balance)
+          console.log('🚀 ~ handleAddLiquidity ~ tokenId:', tokenId)
+          console.log('🚀 ~ handleAddLiquidity ~ poolAddress:', poolAddress)
+          const body: IBodyTxCollect = {
+            transactionHash: txHash,
+            poolAddress: poolAddress as string,
+            tokenId: Number(tokenId),
+            fromToken: baseCurrency.value?.wrapped.address,
+            toToken: quoteCurrency.value?.wrapped.address,
+            fromAddress: address.value,
+            toAddress: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER,
+            network: currentNetwork.value.value,
+            transactionType: 'ADD_POOL'
+          }
+          postTransaction(body)
         } else {
           showToastMsg('Transaction failed', 'error', txHash)
         }

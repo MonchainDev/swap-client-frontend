@@ -20,15 +20,15 @@
       <span class="rounded bg-gray-2 px-2 py-1 text-sm">{{ fee }}</span>
     </div>
     <div class="flex flex-col items-center justify-center gap-1 px-1 text-sm">
-      <div class="break-all font-semibold text-success">{{ (props.position.feeApr || 0).toFixed(2) }}%</div>
-      <div class="text-gray-6">{{ props.position.rewardApr }}%</div>
+      <div class="break-all font-semibold text-success">{{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}%</div>
+      <div class="text-gray-6">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</div>
     </div>
     <div class="flex flex-col justify-center text-sm">
-      <span>Min: {{ min }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
-      <span>Max: {{ max }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
+      <span>Min: {{ formatNumber(min) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
+      <span>Max: {{ formatNumber(max) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
     </div>
     <div class="flex flex-col justify-center text-sm">
-      <span>≈ ${{ priceUdtTotal }}</span>
+      <span>≈ ${{ formatNumber(priceUdtTotal) }}</span>
       <span>({{ displayTokenReserve(props.position.quoteQuantity, props.position.quoteDecimals, props.position.quoteSymbol) }} /</span>
       <span>{{ displayTokenReserve(props.position.baseQuantity, props.position.baseDecimals, props.position.baseSymbol) }})</span>
     </div>
@@ -151,7 +151,7 @@
   })
 
   const showStake = computed(() => {
-    return props.position.poolType === 'FARM' && !(Number(props.position.rewardApr ?? 0) > 0)
+    return props.position.poolType === 'FARM' && Number(props.position.pendingReward) === 0
   })
 
   const showUnStake = computed(() => {

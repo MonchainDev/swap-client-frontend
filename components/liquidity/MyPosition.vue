@@ -264,7 +264,8 @@
           baseQuantity: data.baseqtty,
           quoteQuantity: data.quoteqtty,
           poolType: data.pooltype,
-          positionStatus: data.positionstatus
+          positionStatus: data.positionstatus,
+          pendingReward: data.pendingreward ?? 0
         }
       })
     }

@@ -57,7 +57,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedValue0 }}</span>
-              <span class="text-sm text-gray-6">${{ priceUsd0 }}</span>
+              <span class="text-sm text-gray-6">${{ formatNumber(priceUsd0) }}</span>
             </div>
           </div>
           <div class="flex h-1/2 items-center justify-between px-8">
@@ -67,7 +67,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedValue1 }}</span>
-              <span class="text-sm text-gray-6">${{ priceUsd1 }}</span>
+              <span class="text-sm text-gray-6">${{ formatNumber(priceUsd1) }}</span>
             </div>
           </div>
         </div>
@@ -79,7 +79,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedFee0 }}</span>
-              <span class="text-sm text-gray-6">${{ priceUsdFee0 }}</span>
+              <span class="text-sm text-gray-6">${{ formatNumber(priceUsdFee0) }}</span>
             </div>
           </div>
           <div class="flex h-1/2 items-center justify-between px-8">
@@ -89,7 +89,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedFee1 }}</span>
-              <span class="text-sm text-gray-6">${{ priceUsdFee1 }}</span>
+              <span class="text-sm text-gray-6">${{ formatNumber(priceUsdFee1) }}</span>
             </div>
           </div>
         </div>
@@ -163,6 +163,7 @@
   const { chainId, address: account } = useAccount()
   const { setOpenPopup } = useBaseStore()
   const { exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
+  const { currentNetwork } = storeToRefs(useBaseStore())
 
   const tokenId = computed(() => {
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
@@ -191,6 +192,8 @@
     feeValue0,
     feeValue1
   } = useDerivedV3BurnInfo(position, percent, receiveNative)
+
+  const { poolAddresses } = usePools()
 
   const formattedFee0 = computed(() => formattedCurrencyAmount(feeValue0.value))
   const formattedFee1 = computed(() => formattedCurrencyAmount(feeValue1.value))
@@ -303,6 +306,18 @@
         percent.value = ''
         showToastMsg('Transaction receipt', 'success', txHash)
         setOpenPopup('popup-confirm-remove', false)
+        const body: IBodyTxCollect = {
+          transactionHash: txHash,
+          poolAddress: poolAddresses.value ? poolAddresses.value[0] : '',
+          tokenId: +route.params.tokenId,
+          fromAddress: account.value!,
+          toAddress: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER,
+          fromToken: addressTo,
+          toToken: positionSDK.value.pool.token1.address,
+          network: currentNetwork.value.value,
+          transactionType: 'REMOVE_LIQUID'
+        }
+        await postTransaction(body)
         router.push({ name: 'liquidity-network-tokenId', params: { tokenId: route.params.tokenId, network: route.params.network } })
       } else {
         showToastMsg('Transaction failed', 'error', txHash)

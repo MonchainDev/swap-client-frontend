@@ -3,7 +3,7 @@
   <template v-if="data && status === 'success'">
     <div class="mx-auto mb-[42px] mt-[30px] max-w-[1024px]">
       <BlockHeaderLiquid :pool="data" />
-      <BlockMyPosition class="mt-20" />
+      <BlockMyPosition class="mt-20" :pool="data" />
       <BlockPairInfo class="mt-[67px]" :pool="data" />
       <TableTxPoolDetail />
     </div>

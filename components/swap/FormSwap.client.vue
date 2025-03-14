@@ -9,6 +9,7 @@
           :token="form.token0"
           :balance="balance0?.formatted"
           :step-swap
+          :locked="isFetchQuote"
           type="BASE"
           class="h-[138px] bg-[#EFEFFF] sm:h-[120px]"
           @select-token="handleOpenPopupSelectToken"
@@ -29,6 +30,7 @@
           :token="form.token1"
           :balance="balance1?.formatted"
           :step-swap
+          :locked="isFetchQuote"
           type="QUOTE"
           class="h-[124px] bg-[#F3F8FF] sm:h-[100px]"
           @select-token="handleOpenPopupSelectToken"
@@ -128,9 +130,9 @@
   })
 
   const { setOpenPopup } = useBaseStore()
-  const { isDesktop } = storeToRefs(useBaseStore())
+  const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
 
-  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, allowance0, balance0, balance1, form } = storeToRefs(useSwapStore())
+  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, allowance0, balance0, balance1, form, token0, token1 } = storeToRefs(useSwapStore())
 
   const isEditSlippage = ref(false)
   const stepSwap = ref<StepSwap>('SELECT_TOKEN')
@@ -153,6 +155,11 @@
   const noRoute = computed(() => !(((bestTrade.value && bestTrade.value?.routes.length) ?? 0) > 0))
   const notEnoughLiquidity = ref(false)
 
+  const isInsufficientBalance = computed(() => {
+    const amountA = form.value.amountIn || 0
+    const balanceA = balance0.value?.formatted || 0
+    return new Decimal(amountA).greaterThan(balanceA)
+  })
   /*
    * Message button
    * case 1: Select a token
@@ -198,7 +205,8 @@
       !form.value.amountOut ||
       isFetchQuote.value ||
       noRoute.value ||
-      notEnoughLiquidity.value
+      notEnoughLiquidity.value ||
+      isInsufficientBalance.value
     )
   })
 
@@ -215,6 +223,7 @@
     setOpenPopup('popup-select-token', true)
   }
 
+  const poolAddress = ref<string>('')
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
     try {
       notEnoughLiquidity.value = false
@@ -242,7 +251,9 @@
           inputAmount: inputAmount,
           type: TradeType.EXACT_INPUT
         })
+
         bestTrade.value = _bestTrade
+        poolAddress.value = (_bestTrade.routes[0].pools[0] as V3Pool)?.address ?? ''
         form.value.amountOut = bestTrade.value.outputAmount.toSignificant(6)
         form.value.tradingFee = bestTrade.value.tradingFee
         form.value.minimumAmountOut = bestTrade.value.minimumAmountOut?.toSignificant(6)
@@ -380,6 +391,7 @@
     if (status === 'success') {
       const { showToastMsg } = useShowToastMsg()
       showToastMsg('Swap successful', 'success', txHash)
+      await postTx(txHash)
       console.info('Transaction successful', 'success', txHash)
     } else {
       ElMessage.error('Transaction failed')
@@ -398,11 +410,11 @@
       // step 2: approve
       if (token0IsToken.value) {
         if (isNeedAllowance0.value) {
+          isConfirmApprove.value = true
           await approveToken(form.value.token0.address as string, CONTRACT_ADDRESS.SWAP_ROUTER_V3, MAX_NUMBER_APPROVE, (status) => {
             if (status === 'SUCCESS') {
               swap()
             }
-            isConfirmApprove.value = false
           })
         } else {
           // step 3: swap
@@ -441,11 +453,25 @@
       console.info(' (FormSwap.client.vue:319) sign sao sao sao saii  xong r ne')
       isConfirmSwap.value = false
       isSwapping.value = false
-      el1?.close()
     }
   }
+  async function postTx(txHash: string) {
+    const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
 
-  const el1: ReturnType<typeof ElNotification> | null = null
+    const body: IBodyTxCollect = {
+      transactionHash: txHash,
+      amount: inputAmount,
+      feeAmount: form.value.tradingFee,
+      fromAddress: address.value,
+      toAddress: CONTRACT_ADDRESS.SWAP_ROUTER_V3,
+      fromToken: token0.value?.wrapped.address,
+      toToken: token1.value?.wrapped.address,
+      transactionType: 'SWAP',
+      network: currentNetwork.value.value,
+      poolAddress: poolAddress.value
+    }
+    await postTransaction(body)
+  }
 
   const { handleImageError } = useErrorImage()
 </script>

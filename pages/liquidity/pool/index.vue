@@ -19,7 +19,7 @@
             <span class="tab-active cursor-pointer pb-[10px] hover:text-hyperlink">My Position</span>
           </NuxtLink>
         </div>
-        <NuxtLink to="/liquidity/add">
+        <NuxtLink to="/add">
           <BaseButton size="sm" class="flex w-[149px] items-center gap-1 !text-white">
             <BaseIcon name="plus" size="24" />
             <span>Add Liquidity</span>

@@ -1,4 +1,13 @@
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  return await fetchExchange(`transaction/collect`, 'POST', { data: body })
+  try {
+    const rs = await fetchExchange(`transaction/collect`, 'POST', { data: body })
+    return rs
+  } catch (error) {
+    return createError({
+      statusCode: 500,
+      data: { error: (error as Error)?.message },
+      statusMessage: 'Internal Server Error'
+    })
+  }
 })

@@ -19,7 +19,7 @@
             <BaseTab v-model:model="tabActive" :list="[{ title: 'My Positions', value: 'POSITION' }]" />
           </NuxtLink>
         </div>
-        <NuxtLink to="/liquidity/add">
+        <NuxtLink to="/add">
           <BaseButton size="sm" class="flex w-[149px] items-center gap-1 !text-white">
             <BaseIcon name="plus" size="24" />
             <span>Add Liquidity</span>

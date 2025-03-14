@@ -1,10 +1,10 @@
 import JSEncrypt from 'jsencrypt'
 import CryptoJs from 'crypto-js'
 
-export function encrypt(data: IBodyTxCollect): { encryptedData: string; encryptedAesKey: string } | null {
+export function encrypt(data: { initSeconds: number; data: IBodyTxCollect }): { encryptedData: string; encryptedAesKey: string } | null {
   console.log('>>> / file: encrypt.ts:4 / data:', JSON.parse(JSON.stringify(data)))
 
-  const PUBLIC_KEY = import.meta.env.NUXT_PUBLIC_KEY
+  const PUBLIC_KEY = import.meta.env.VITE_NUXT_PUBLIC_KEY
   if (!PUBLIC_KEY) {
     console.error('NUXT_PUBLIC_KEY is not defined')
     return null
@@ -39,7 +39,7 @@ export function encrypt(data: IBodyTxCollect): { encryptedData: string; encrypte
 }
 
 export enum EncryptRequestType {
-  TX_COLLECT = 'TX_COLLECT'
+  TX_COLLECT = 'transactions/collect'
 }
 type EncryptedBody = {
   requestType: string
@@ -47,20 +47,21 @@ type EncryptedBody = {
   contentKey: string
 }
 
+type TX_Type = 'ADD_POOL' | 'ADD_POSITION' | 'SWAP' | 'INCREASE_LIQUID' | 'REMOVE_LIQUID' | 'STAKE' | 'UNSTAKE' | 'HARVEST'
+
 export interface IBodyTxCollect {
   transactionHash: string
   fromAddress?: string
   toAddress?: string
-  fromToken: string
-  toToken: string
+  fromToken?: string
+  toToken?: string
   poolAddress?: string
-  network: string
+  network?: string
   tokenId?: number
   amount?: number
-  feeAmount: number
+  feeAmount?: number
   rewardAmount?: number
-  transactionType: string
-  createdAt: string
+  transactionType?: TX_Type
 }
 
 /**
@@ -90,7 +91,7 @@ export interface IBodyTxCollect {
   const result = await $fetch('transaction/collect', 'POST', { data: encryptedBody })
  * ```
  */
-export function buildEncryptedBody(requestType: EncryptRequestType, body: IBodyTxCollect): EncryptedBody {
+export function buildEncryptedBody(requestType: EncryptRequestType, body: { initSeconds: number; data: IBodyTxCollect }): EncryptedBody {
   const encrypted = encrypt(body)
   if (!encrypted) {
     throw new Error('Failed to encrypt data')

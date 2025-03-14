@@ -32,7 +32,8 @@
           <span>APR</span>
         </div>
         <span class="text-xl">
-          <span class="font-semibold text-[#049C6B]">{{ pool.feeApr }}% </span>{{ pool.rewardApr }}%</span
+          <span class="font-semibold text-[#049C6B]">{{ formatNumber((pool.feeApr || 0).toFixed(2)) }}% </span
+          >{{ formatNumber((pool.rewardApr || 0).toFixed(2)) }}%</span
         >
       </div>
     </div>

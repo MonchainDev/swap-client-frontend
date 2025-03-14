@@ -33,10 +33,12 @@
             <span class="text-xs text-gray-7">0</span>
           </div>
         </div>
-        <BaseButton class="mt-6 flex w-full items-center" size="sm">
-          <BaseIcon name="plus" size="18" />
-          <span>Add Liquidity</span>
-        </BaseButton>
+        <NuxtLink :to="`/add/${props.pool.tokenBase}/${props.pool.tokenQuote}/${props.pool.fee}`">
+          <BaseButton class="mt-6 flex w-full items-center" size="sm">
+            <BaseIcon name="plus" size="18" />
+            <span>Add Liquidity</span>
+          </BaseButton>
+        </NuxtLink>
       </div>
       <div class="rounded-lg bg-white p-6 shadow-sm">
         <div class="flex justify-between">
@@ -53,6 +55,7 @@
 
 <script lang="ts" setup>
   import type { ITab } from '~/types/component.type'
+  import type { IPool } from '~/types/pool.type'
 
   const enum TabValue {
     ALL = 'ALL',
@@ -60,6 +63,14 @@
     INACTIVE = 'INACTIVE',
     CLOSE = 'CLOSE'
   }
+
+  interface IProps {
+    pool: IPool
+  }
+
+  const props = withDefaults(defineProps<IProps>(), {
+    pool: () => ({}) as IPool
+  })
 
   const listTab: ITab[] = [
     { title: 'All', value: TabValue.ALL },

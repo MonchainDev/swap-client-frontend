@@ -20,7 +20,7 @@ export default function useShowToastMsg() {
             href
               ? h('span', { class: 'text-sm text-primary flex gap-1' }, [
                   h('span', {}, 'View on'),
-                  h('a', { class: 'underline cursor-pointer', href: `https://explorer.monchain.info/tx/${href}`, target: '_blank' }, 'Mon explore')
+                  h('a', { class: 'underline cursor-pointer', href: `https://explorer.monchain.info/tx/${href}`, target: '_blank' }, 'Mon explorer')
                 ])
               : ''
           ])
