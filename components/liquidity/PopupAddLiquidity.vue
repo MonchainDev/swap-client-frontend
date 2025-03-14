@@ -380,7 +380,7 @@
 
   const handleAddLiquidity = async () => {
     try {
-      if (!form.value.amountDeposit0 || !form.value.amountDeposit1 || !currencyA.value || !currencyB.value) {
+      if (!currencyA.value || !currencyB.value) {
         return
       }
 
