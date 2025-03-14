@@ -65,4 +65,5 @@ export interface IPosition {
   positionStatus: string
   priceUdtTotal?: string
   pendingReward: number
+  liquidity: number
 }
