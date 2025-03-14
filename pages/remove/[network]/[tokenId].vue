@@ -148,6 +148,7 @@
   import { WNATIVE } from '~/constant/token'
   import Decimal from 'decimal.js'
   import { MasterChefV3 } from '~/utils/masterChefV3'
+  import type { IBodyTxCollect } from '~/types/encrypt.type'
 
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
