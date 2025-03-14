@@ -36,6 +36,7 @@ export interface IPositionOrigin {
   baseqtty: number
   pooltype: null | 'FARM'
   positionstatus: string
+  pendingreward: number
 }
 
 export interface IPosition {
@@ -63,4 +64,5 @@ export interface IPosition {
   poolType: null | 'FARM'
   positionStatus: string
   priceUdtTotal?: string
+  pendingReward: number
 }
