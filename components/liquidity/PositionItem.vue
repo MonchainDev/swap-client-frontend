@@ -78,6 +78,7 @@
   import type { IPosition } from '~/types/position.type'
   import { MasterChefV3 } from '~/utils/masterChefV3'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
+  import type { IBodyTxCollect } from '~/types/encrypt.type'
 
   interface IProps {
     // position: PositionDetail
@@ -212,6 +213,19 @@
       })
       if (status === 'success') {
         showToastMsg('Harvested! Your funds ORB earnings have been sent to your wallet', 'success', hash)
+        const { tokenId, network, tokenBase, tokenQuote, poolAddress } = props.position
+        const body: IBodyTxCollect = {
+          transactionHash: hash,
+          tokenId,
+          network,
+          fromToken: tokenBase,
+          toToken: tokenQuote,
+          fromAddress: account.value,
+          toAddress: CONTRACT_ADDRESS.MASTER_CHEF_V3,
+          poolAddress,
+          transactionType: 'HARVEST'
+        }
+        await postTransaction(body)
       } else {
         showToastMsg('Transaction failed', 'error', hash)
       }
@@ -251,6 +265,19 @@
       })
       if (status === 'success') {
         showToastMsg('Staked! Your funds have heen staked in the farm', 'success', hash)
+        const { tokenId, network, tokenBase, tokenQuote, poolAddress } = props.position
+        const body: IBodyTxCollect = {
+          transactionHash: hash,
+          tokenId,
+          network,
+          fromToken: tokenBase,
+          toToken: tokenQuote,
+          fromAddress: account.value,
+          toAddress: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES,
+          poolAddress,
+          transactionType: 'STAKE'
+        }
+        await postTransaction(body)
       } else {
         showToastMsg('Transaction failed', 'error', hash)
       }
