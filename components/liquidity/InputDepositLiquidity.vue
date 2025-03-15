@@ -1,7 +1,7 @@
 <template>
   <div
     class="input-swap flex flex-col gap-4 rounded-lg border border-solid border-gray-4 py-4 pl-8 pr-6 sm:px-4 sm:pt-2"
-    :class="{ 'pointer-events-none opacity-50': props.locked }"
+    :class="{ 'pointer-events-none opacity-50': isDisabled }"
     @click="handleClick"
   >
     <div class="flex items-center justify-between">
@@ -102,7 +102,7 @@
 
   const { handleImageError } = useErrorImage()
 
-  const { outOfRange, invalidRange } = useV3DerivedInfo()
+  const { invalidRange } = useV3DerivedInfo()
   const { startPriceTypedValue, form, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
   const { poolExits } = usePools()
   const route = useRoute()
@@ -115,10 +115,14 @@
     return new Decimal(amount.value).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
   })
 
-  const _isDisabled = computed(() => {
+  const isDisabled = computed(() => {
     const { minPrice, maxPrice } = form.value
-    const commonConditions = outOfRange.value || invalidRange.value || minPrice === '' || maxPrice === ''
-    return route.name === 'liquidity-network-tokenId' ? false : poolExits.value ? commonConditions : commonConditions || startPriceTypedValue.value === ''
+    const commonConditions = invalidRange.value || minPrice === '' || maxPrice === ''
+    return route.name === 'liquidity-network-tokenId'
+      ? props.locked
+      : poolExits.value
+        ? commonConditions || props.locked
+        : commonConditions || startPriceTypedValue.value === '' || props.locked
   })
 
   // watch(

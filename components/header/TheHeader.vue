@@ -16,7 +16,6 @@
             class="text-center text-base font-medium leading-6 hover:text-primary"
             >Farm/ Liquidity</NuxtLink
           >
-          <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Farming</div>
           <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Bridge</div>
         </div>
       </div>

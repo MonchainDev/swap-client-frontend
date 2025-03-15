@@ -109,6 +109,7 @@
   import { FeeAmount } from '~/constant/fee'
   import type { TYPE_SWAP } from '~/types/swap.type'
   import Decimal from 'decimal.js'
+  import { priceToClosestTick } from '@monchain/v3-sdk'
 
   export type INPUT_PRICE = 'MIN' | 'MAX'
   interface IProps {
@@ -205,40 +206,72 @@
     }
   }
 
-  const { price, invertPrice, tokenA, position, ticksAtLimit, formattedAmounts, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange } = useV3DerivedInfo()
+  const { price, invertPrice, tokenA, position, ticksAtLimit, tickSpaceLimits, formattedAmounts, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange } =
+    useV3DerivedInfo()
 
-  watch(
-    () => lowerPrice.value,
-    (value) => {
-      if (typeof leftRangeTypedValue.value === 'boolean') {
-        // case neu xoa het gia tri min va max, sau khi nhap max price se set gia tri min price = ''
-        // min price = 0  khi set full range
-        form.value.minPrice = form.value.minPrice === '' ? '' : '0'
-      } else {
-        if (lowerPrice.value) {
-          form.value.minPrice = isSorted.value ? value?.toSignificant(6) : upperPrice.value?.invert().toSignificant(6)
-          // console.log('🚀 ~ value lowerPrice change:', form.value.minPrice)
-        } else {
-          form.value.minPrice = ''
-        }
-      }
+  const leftPrice = computed(() => {
+    return isSorted.value ? lowerPrice.value : upperPrice.value?.invert()
+  })
+  const rightPrice = computed(() => {
+    return isSorted.value ? upperPrice.value : lowerPrice.value?.invert()
+  })
+
+  watchEffect(() => {
+    if (ticksAtLimit.value[isSorted.value ? Bound.LOWER : Bound.UPPER]) {
+      form.value.minPrice = '0'
+      return
     }
-  )
-  watch(
-    () => upperPrice.value,
-    (value) => {
-      if (typeof rightRangeTypedValue.value === 'boolean') {
-        form.value.maxPrice = form.value.maxPrice === '' || form.value.maxPrice === '0' ? form.value.maxPrice : '∞'
-      } else {
-        if (upperPrice.value) {
-          form.value.maxPrice = isSorted.value ? value?.toSignificant(6) : lowerPrice.value?.invert().toSignificant(6)
-          // console.log('🚀 ~ value upperPrice change:', form.value.maxPrice)
-        } else {
-          form.value.maxPrice = ''
-        }
-      }
+    if (tickSpaceLimits.value?.[Bound.LOWER] !== undefined && leftPrice.value && priceToClosestTick(leftPrice.value) <= tickSpaceLimits.value[Bound.LOWER]) {
+      form.value.minPrice = '0'
+      return
     }
-  )
+    form.value.minPrice = leftPrice.value?.toSignificant(5) ?? ''
+  })
+
+  watchEffect(() => {
+    if (ticksAtLimit.value[isSorted.value ? Bound.UPPER : Bound.LOWER]) {
+      form.value.maxPrice = '∞'
+      return
+    }
+    if (tickSpaceLimits.value?.[Bound.UPPER] !== undefined && rightPrice.value && priceToClosestTick(rightPrice.value) >= tickSpaceLimits.value[Bound.UPPER]) {
+      form.value.maxPrice = '∞'
+      return
+    }
+    form.value.maxPrice = rightPrice.value?.toSignificant(5) ?? ''
+  })
+
+  // watch(
+  //   () => lowerPrice.value,
+  //   (value) => {
+  //     if (typeof leftRangeTypedValue.value === 'boolean') {
+  //       // case neu xoa het gia tri min va max, sau khi nhap max price se set gia tri min price = ''
+  //       // min price = 0  khi set full range
+  //       form.value.minPrice = form.value.minPrice === '' ? '' : '0'
+  //     } else {
+  //       if (lowerPrice.value) {
+  //         form.value.minPrice = isSorted.value ? value?.toSignificant(6) : upperPrice.value?.invert().toSignificant(6)
+  //         // console.log('🚀 ~ value lowerPrice change:', form.value.minPrice)
+  //       } else {
+  //         form.value.minPrice = ''
+  //       }
+  //     }
+  //   }
+  // )
+  // watch(
+  //   () => upperPrice.value,
+  //   (value) => {
+  //     if (typeof rightRangeTypedValue.value === 'boolean') {
+  //       form.value.maxPrice = form.value.maxPrice === '' || form.value.maxPrice === '0' ? form.value.maxPrice : '∞'
+  //     } else {
+  //       if (upperPrice.value) {
+  //         form.value.maxPrice = isSorted.value ? value?.toSignificant(6) : lowerPrice.value?.invert().toSignificant(6)
+  //         // console.log('🚀 ~ value upperPrice change:', form.value.maxPrice)
+  //       } else {
+  //         form.value.maxPrice = ''
+  //       }
+  //     }
+  //   }
+  // )
 
   const handleChangeActiveRange = () => {
     buttonRangePercent.value = null
