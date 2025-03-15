@@ -73,13 +73,17 @@
           window.open(`https://link.trustwallet.com/open_url?coin_id=60&url=${window.location.href}`, '_blank')
         }
       } else if (type === 'METAMASK') {
-        if (window.ethereum) {
+        if (window.ethereum.isMetaMask) {
           await connectAsync({ connector: connectors[0], chainId: chainId.value })
         } else {
           window.open(`https://metamask.app.link/dapp/${window.location.href}`, '_blank')
         }
       } else if (type === 'COINBASE') {
-        await connectAsync({ connector: connectors[1], chainId: chainId.value })
+        if (window.coinbaseWalletExtension) {
+          await connectAsync({ connector: connectors[1], chainId: chainId.value })
+        } else {
+          window.open(`https://go.cb-w.com/dapp?cb_url=${window.location.href}`, '_blank')
+        }
       }
       // else {
       //   await connectAsync({ connector: connectors[2], chainId: chainId.value })
