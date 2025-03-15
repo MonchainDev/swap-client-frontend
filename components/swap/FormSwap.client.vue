@@ -1,5 +1,6 @@
 <template>
   <div class="flex flex-col gap-2 rounded-lg bg-white px-8 pb-10 pt-[21px] shadow-md sm:p-4">
+    <el-button @click="testRoute" class="top-30 fixed left-20">Test Route</el-button>
     <HeaderFormSwap v-model:step-swap="stepSwap" :title="formatTitle" :is-confirm-approve="isConfirmApprove" :is-swapping="isSwapping" />
     <div class="relative mt-7 flex flex-col gap-1 sm:mt-[14px]">
       <template v-if="stepSwap === 'SELECT_TOKEN'">
@@ -103,12 +104,12 @@
 </template>
 
 <script lang="ts" setup>
-  import { type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
-  import { TradeType } from '@monchain/swap-sdk-core'
+  import { SmartRouter, type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
+  import { BaseCurrency, CurrencyAmount, NativeCurrency, Token, TradeType } from '@monchain/swap-sdk-core'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
-  import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
+  import { createPublicClient, encodeFunctionData, hexToBigInt, http, type Hex } from 'viem'
   import { config } from '~/config/wagmi'
   import { DEFAULT_SLIPPAGE } from '~/constant'
   import swapRouterABI from '~/constant/abi/swapRouter.json'
@@ -119,6 +120,19 @@
   import HeaderFormSwap from './HeaderFormSwap.vue'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
+
+  import { GraphQLClient } from 'graphql-request'
+  import { monTestnet } from '~/utils/config/chains'
+  import { monTestnetTokens } from '@monchain/tokens'
+  const _publicClient = createPublicClient({
+    chain: monTestnet,
+    transport: http('https://rpc-testnet.monchain.info'),
+    batch: {
+      multicall: {
+        batchSize: 1024 * 200
+      }
+    }
+  })
 
   export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
 
@@ -224,6 +238,48 @@
     setOpenPopup('popup-select-token', true)
   }
 
+  const testRoute = async () => {
+    try {
+      // USING TEST GRAPHQL
+      const currencyA = new Token(16789, '0x60677f295237B44a84d86dC67C9aE60B8412D017', 6, 'MT6', 'MT6')
+      const currencyB = new Token(16789, '0xc57375694b5c43F6ece9A6fbfE687A94b75778C1', 8, 'MT8', 'MT8')
+      // const currencyA = Native.onChain(16789)
+      // const currencyB = monTestnetTokens.usdt
+      const v3SubgraphClient = new GraphQLClient('https://e3fe-2001-ee0-41c1-ac0f-8924-daec-167b-3662.ngrok-free.app/subgraphs/name/v3')
+
+      const getBestRoute = () =>
+        SmartRouter.getV3CandidatePools({
+          onChainProvider: () => _publicClient,
+          subgraphProvider: () => v3SubgraphClient,
+          currencyA,
+          currencyB,
+          subgraphFallback: false
+        })
+      const _v3Pools = await getBestRoute()
+      console.log('>>> / _v3Pools:', _v3Pools)
+      const quoteProvider = SmartRouter.createQuoteProvider({
+        onChainProvider: () => _publicClient
+      })
+      const poolProvider = SmartRouter.createStaticPoolProvider(_v3Pools)
+
+      const _inputAmount = CurrencyAmount.fromRawAmount(currencyA, 500000000)
+      console.log('>>> / _inputAmount:', _inputAmount)
+
+      const _trade = await SmartRouter.getBestTrade(_inputAmount, currencyB, TradeType.EXACT_INPUT, {
+        gasPriceWei: () => _publicClient.getGasPrice(),
+        maxHops: 2,
+        maxSplits: 3,
+        poolProvider,
+        quoteProvider,
+        quoterOptimization: true,
+        distributionPercent: 10
+      })
+      console.log('>>> / _trade:', _trade)
+    } catch (error) {
+      console.log('🚀 ~ testRoute ~ error:', error)
+    }
+  }
+
   const poolAddress = ref<string>('')
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
     try {
@@ -252,6 +308,7 @@
           inputAmount: inputAmount,
           type: TradeType.EXACT_INPUT
         })
+        console.log('_bestTrade', _bestTrade)
 
         bestTrade.value = _bestTrade
         poolAddress.value = (_bestTrade.routes[0].pools[0] as V3Pool)?.address ?? ''
