@@ -74,19 +74,14 @@ export default function useV3DerivedInfo() {
   })
 
   // set min and max price default if pool exits
-  watch(
-    () => pool.value?.fee,
-    (value) => {
-      if (value) {
-        const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
-        if (currentPrice) {
-          dispatchRangeTypedValue('BOTH', currentPrice, ZOOM_LEVELS[value])
-        }
-      } else {
-        pool.value = undefined
+  watchEffect(() => {
+    if (pool.value?.fee) {
+      const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
+      if (currentPrice) {
+        dispatchRangeTypedValue('BOTH', currentPrice, ZOOM_LEVELS[pool.value.fee])
       }
     }
-  )
+  })
 
   // check for invalid price input (converts to invalid ratio)
   const invalidPrice = computed(() => {

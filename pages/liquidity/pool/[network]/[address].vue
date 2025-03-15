@@ -13,6 +13,10 @@
 <script lang="ts" setup>
   import type { IPool } from '~/types/pool.type'
 
+  definePageMeta({
+    middleware: ['reset-all-popup-middleware', 'reset-form-liquidity-middleware']
+  })
+
   const { address: poolAddress, network } = useRoute('liquidity-pool-network-address').params
 
   const { data, status } = useFetch<IPool>(`/api/pool/get/${poolAddress}`, { query: { network: network?.toUpperCase() } })

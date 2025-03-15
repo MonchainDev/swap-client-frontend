@@ -94,6 +94,7 @@
 
   const emit = defineEmits<{
     unstake: [pos: IPosition, priceUsd: string]
+    reload: []
   }>()
 
   const router = useRouter()
@@ -156,7 +157,7 @@
   })
 
   const showUnStake = computed(() => {
-    return props.position.poolType === 'FARM' && Number(props.position.rewardApr ?? 0) > 0
+    return props.position.poolType === 'FARM' && Number(props.position.pendingReward) > 0
   })
 
   const exchangeRateBaseCurrency = computed(() => {
@@ -227,6 +228,7 @@
           transactionType: 'HARVEST'
         }
         await postTransaction(body)
+        emit('reload')
       } else {
         showToastMsg('Transaction failed', 'error', hash)
       }
@@ -280,6 +282,7 @@
           transactionType: 'STAKE'
         }
         await postTransaction(body)
+        emit('reload')
       } else {
         showToastMsg('Transaction failed', 'error', hash)
       }

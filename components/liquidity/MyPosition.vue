@@ -106,6 +106,7 @@
                     setOpenPopup('popup-unstake')
                   }
                 "
+                @reload="refresh"
               />
               <BasePagination v-model:page="query.page" :total="query.total" class="mt-5 px-6" />
             </template>
@@ -122,7 +123,7 @@
   </ClientOnly>
 
   <PopupSelectToken v-model:token-selected="tokenSelected" :show-network="false" is-select />
-  <PopupUnStake :position="positionCurrent" />
+  <PopupUnStake :position="positionCurrent" @reload="refresh" />
 </template>
 
 <script lang="ts" setup>
@@ -222,7 +223,7 @@
     return params.toString()
   })
 
-  const { data, status } = await useLazyFetch<IResponse<IPositionOrigin[]>>(() => `/api/position/list?${queryString.value}`, {
+  const { data, status, refresh } = await useLazyFetch<IResponse<IPositionOrigin[]>>(() => `/api/position/list?${queryString.value}`, {
     key: queryString.value,
     immediate: true,
     onResponse: ({ response }) => {

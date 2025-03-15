@@ -64,6 +64,10 @@
     position: undefined
   })
 
+  const emit = defineEmits<{
+    reload: []
+  }>()
+
   const min = computed(() => {
     // priceLower*quotedecimals/basedecimals
     if (!props.position) return 0
@@ -123,6 +127,7 @@
             transactionType: 'UNSTAKE'
           }
           await postTransaction(body)
+          emit('reload')
           setOpenPopup('popup-unstake', false)
         } else {
           showToastMsg('Transaction failed', 'error', hash)
