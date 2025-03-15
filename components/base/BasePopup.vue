@@ -1,39 +1,41 @@
 <template>
-  <ElDialog
-    v-model="isOpen"
-    :width="props.width"
-    :style="{ 'max-width': '95%' }"
-    :append-to-body="props.appendBody"
-    :close-on-press-escape="props.closePressEscape"
-    :close-on-click-modal="props.closeClickModal"
-    :top="props.top"
-    :align-center="props.alignCenter"
-    :show-close="false"
-    :fullscreen="fullscreen"
-    class="base-popup"
-    @open="handleOpen"
-    @close="handleClose"
-  >
-    <template #header>
-      <div class="wrap-header flex w-full items-center justify-between text-[22px] font-semibold leading-7 text-primary first-letter:uppercase sm:text-base">
-        <slot name="title">
-          <span>{{ props.title }}</span></slot
-        >
-        <slot name="close">
-          <BaseIcon name="x" class="cursor-pointer" size="24" @click="setOpenPopup(props.name, false)" />
-        </slot>
-      </div>
-    </template>
+  <ClientOnly>
+    <ElDialog
+      v-model="isOpen"
+      :width="props.width"
+      :style="{ 'max-width': '95%' }"
+      :append-to-body="props.appendBody"
+      :close-on-press-escape="props.closePressEscape"
+      :close-on-click-modal="props.closeClickModal"
+      :top="props.top"
+      :align-center="props.alignCenter"
+      :show-close="false"
+      :fullscreen="fullscreen"
+      class="base-popup"
+      @open="handleOpen"
+      @close="handleClose"
+    >
+      <template #header>
+        <div class="wrap-header flex w-full items-center justify-between text-[22px] font-semibold leading-7 text-primary first-letter:uppercase sm:text-base">
+          <slot name="title">
+            <span>{{ props.title }}</span></slot
+          >
+          <slot name="close">
+            <BaseIcon name="x" class="cursor-pointer" size="24" @click="setOpenPopup(props.name, false)" />
+          </slot>
+        </div>
+      </template>
 
-    <div ref="popupBody" class="popup-content" :style="{ padding: props.padding }">
-      <slot />
-    </div>
-    <template v-if="isShowFooter" #footer>
-      <div class="popup-footer">
-        <slot name="footer" />
+      <div ref="popupBody" class="popup-content" :style="{ padding: props.padding }">
+        <slot />
       </div>
-    </template>
-  </ElDialog>
+      <template v-if="isShowFooter" #footer>
+        <div class="popup-footer">
+          <slot name="footer" />
+        </div>
+      </template>
+    </ElDialog>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">
