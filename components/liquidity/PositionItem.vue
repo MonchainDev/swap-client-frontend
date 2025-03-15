@@ -94,6 +94,7 @@
 
   const emit = defineEmits<{
     unstake: [pos: IPosition, priceUsd: string]
+    reload: []
   }>()
 
   const router = useRouter()
@@ -227,6 +228,7 @@
           transactionType: 'HARVEST'
         }
         await postTransaction(body)
+        emit('reload')
       } else {
         showToastMsg('Transaction failed', 'error', hash)
       }
@@ -280,6 +282,7 @@
           transactionType: 'STAKE'
         }
         await postTransaction(body)
+        emit('reload')
       } else {
         showToastMsg('Transaction failed', 'error', hash)
       }
