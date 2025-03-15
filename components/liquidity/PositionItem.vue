@@ -156,7 +156,7 @@
   })
 
   const showUnStake = computed(() => {
-    return props.position.poolType === 'FARM' && Number(props.position.rewardApr ?? 0) > 0
+    return props.position.poolType === 'FARM' && Number(props.position.pendingReward) > 0
   })
 
   const exchangeRateBaseCurrency = computed(() => {
