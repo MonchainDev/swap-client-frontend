@@ -188,8 +188,10 @@
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
+  import type { Address } from 'viem'
   import ChartLine from '~/components/chart/ChartLine.vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
+  import { CONTRACT_ADDRESS } from '~/constant/contract'
   import { Bound, ChainId } from '~/types'
   import type { IPosition } from '~/types/position.type'
 
@@ -203,6 +205,9 @@
   const { feeAmount, form, existingPosition, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
 
   const { isLoading, position: _position, refetch } = useV3PositionsFromTokenId(tokenId.value)
+
+  const { tokenIds } = useV3TokenIdsByAccount(CONTRACT_ADDRESS.MASTER_CHEF_V3 as Address)
+  const isStakeMV3 = computed(() => tokenIds.value?.includes(tokenId.value!))
 
   const { data: positionDetail } = useFetch<IPosition>(`/api/position/get/${tokenId.value?.toString()}`, { query: { network: route.params.network } })
 
@@ -272,7 +277,8 @@
 
   const feeValueUpper = computed(() => (inverted.value ? feeValue0.value : feeValue1.value))
   const feeValueLower = computed(() => (inverted.value ? feeValue1.value : feeValue0.value))
-  const isOwner = computed(() => account.value === owner.value)
+
+  const isOwner = computed(() => account.value === owner.value || _position.value?.operator === account.value || isStakeMV3.value)
 
   // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
   // const currency0ForFeeCollectionPurposes = computed(() =>
