@@ -138,7 +138,7 @@
   })
 
   const formatTradingFee = computed(() => {
-    return new Decimal(form.value.tradingFee).div(10 ** Number(form.value.token0.decimals || 0)).toFixed(4)
+    return new Decimal(form.value.tradingFee.toString()).div(10 ** Number(form.value.token0.decimals || 0)).toFixed(4)
   })
 
   const exchangeRate = computed(() => {
