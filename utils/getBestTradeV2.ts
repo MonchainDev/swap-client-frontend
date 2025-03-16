@@ -81,7 +81,7 @@ const _getBestTrade = async (
   }
 }
 
-export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapInput): Promise<SwapOutput> => {
+export const getBestTradeV2 = async ({ token0, token1, inputAmount, type }: SwapInput): Promise<SwapOutput> => {
   try {
     // const listPool: V3Pool[] = []
     // const token0Info = await useGetTokenInfo(token0)
@@ -200,7 +200,7 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
     } else {
       const currencyAmount = CurrencyAmount.fromRawAmount(token1Currency, inputAmount)
       //   const bestTrades = await Trade.bestTradeExactOut(listPool, token0Currency, currencyAmount)
-      const bestTrades = await _getBestTrade(token0Currency, token1Currency, currencyAmount, TradeType.EXACT_OUTPUT)
+      const bestTrades = await _getBestTrade(token1Currency, token0Currency, currencyAmount, TradeType.EXACT_OUTPUT)
       if (!bestTrades) {
         throw new Error('No trade found')
       }

@@ -246,7 +246,7 @@
         const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
         console.log('🚀 ~ handleInput ~ inputAmount', inputAmount)
         // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
-        const _bestTrade = await getBestTrade({
+        const _bestTrade = await getBestTradeV2({
           token0: token0.value!,
           token1: token1.value!,
           inputAmount: inputAmount,
@@ -266,7 +266,7 @@
         form.value.amountOut = amount
         form.value.amountIn = ''
         const inputAmount = Number(form.value.amountOut) * ((10 ** Number(form.value.token1.decimals)) as number)
-        const _bestTrade = await getBestTrade({
+        const _bestTrade = await getBestTradeV2({
           token0: token0.value!,
           token1: token1.value!,
           inputAmount: inputAmount,
