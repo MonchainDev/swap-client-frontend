@@ -5,7 +5,7 @@
       <BlockHeaderLiquid :pool="data" />
       <BlockMyPosition class="mt-20" :pool="data" />
       <BlockPairInfo class="mt-[67px]" :pool="data" />
-      <TableTxPoolDetail />
+      <TableTxPoolDetail :pool="data" />
     </div>
   </template>
 </template>
