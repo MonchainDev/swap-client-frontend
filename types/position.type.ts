@@ -37,6 +37,7 @@ export interface IPositionOrigin {
   pooltype: null | 'FARM'
   positionstatus: string
   pendingreward: number
+  moonpersecond: number
 }
 
 export interface IPosition {
@@ -66,4 +67,5 @@ export interface IPosition {
   priceUdtTotal?: string
   pendingReward: number
   liquidity: number
+  moonPerSecond: number
 }

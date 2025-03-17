@@ -68,7 +68,7 @@
   // import type { CurrencyAmount, Token } from '@monchain/swap-sdk-core'
   import { LIST_NETWORK } from '~/constant'
   // import { Bound } from '~/types'
-  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
   import { hexToBigInt } from 'viem'
@@ -153,11 +153,11 @@
   })
 
   const showStake = computed(() => {
-    return props.position.poolType === 'FARM' && Number(props.position.pendingReward) === 0
+    return props.position.poolType === 'FARM' && Number(props.position.moonPerSecond) === 0
   })
 
   const showUnStake = computed(() => {
-    return props.position.poolType === 'FARM' && Number(props.position.pendingReward) > 0
+    return Number(props.position.moonPerSecond) > 0 || stakeLocalSuccess.value
   })
 
   const exchangeRateBaseCurrency = computed(() => {
@@ -190,6 +190,8 @@
 
   const { showToastMsg } = useShowToastMsg()
   const { address: account } = useAccount()
+
+  const stakeLocalSuccess = ref(false)
 
   const loadingHarvest = ref(false)
   const handleClickHarvest = async () => {
@@ -268,6 +270,7 @@
       })
       if (status === 'success') {
         showToastMsg('Staked! Your funds have heen staked in the farm', 'success', hash)
+
         const { tokenId, network, tokenBase, tokenQuote, poolAddress, pendingReward } = props.position
         const body: IBodyTxCollect = {
           transactionHash: hash,
@@ -281,7 +284,7 @@
           rewardAmount: pendingReward,
           transactionType: 'STAKE'
         }
-        await postTransaction(body)
+        await Promise.race([v3PoolAddressPid(), postTransaction(body)])
         emit('reload')
       } else {
         showToastMsg('Transaction failed', 'error', hash)
@@ -296,6 +299,17 @@
         showToastMsg(msg, 'error')
       }
     }
+  }
+
+  async function v3PoolAddressPid() {
+    const amount = (await readContract(config, {
+      address: CONTRACT_ADDRESS.MASTER_CHEF_V3 as `0x${string}`,
+      abi: MasterChefV3.ABI,
+      functionName: 'v3PoolAddressPid',
+      args: [props.position.poolAddress]
+    })) as bigint
+    console.log('🚀 ~ v3PoolAddressPid ~ amount:', amount)
+    stakeLocalSuccess.value = amount > BigInt(0)
   }
 </script>
 
