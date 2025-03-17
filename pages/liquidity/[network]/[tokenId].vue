@@ -387,7 +387,10 @@
 
   const priceUsdFeeUpper = computed(() => {
     if (!feeValueUpper.value) return '0'
-    if (currencyBase.value && exchangeRateBaseCurrency.value) {
+    const exchangeRate = feeValueUpper.value.currency.wrapped.equals(baseCurrency.value?.wrapped as Currency)
+      ? exchangeRateBaseCurrency.value
+      : exchangeRateQuoteCurrency.value
+    if (currencyBase.value && exchangeRate) {
       return new Decimal(feeValueUpper.value.toExact()).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
     }
     return '0'
@@ -395,7 +398,10 @@
 
   const priceUsdFeeLower = computed(() => {
     if (!feeValueLower.value) return '0'
-    if (currencyQuote.value && exchangeRateQuoteCurrency.value) {
+    const exchangeRate = feeValueLower.value.currency.wrapped.equals(quoteCurrency.value?.wrapped as Currency)
+      ? exchangeRateQuoteCurrency.value
+      : exchangeRateBaseCurrency.value
+    if (currencyQuote.value && exchangeRate) {
       return new Decimal(feeValueLower.value.toExact()).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
     }
     return '0'
