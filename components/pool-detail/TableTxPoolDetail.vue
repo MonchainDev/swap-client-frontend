@@ -70,6 +70,9 @@
 
   const { address: poolAddress, network } = useRoute('info-network-address').params
 
+  /**
+   * TODO: Get token symbol, amount base / quote
+   */
   const { data } = useFetch<ITransaction[]>(`/api/transaction/list`, { query: { network: network?.toUpperCase(), poolAddress } })
 
   // const getAmount = (row: ITransaction) => {
