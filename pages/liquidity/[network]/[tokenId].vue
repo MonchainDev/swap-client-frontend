@@ -202,7 +202,8 @@
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
   })
   const { chainId, isConnected, address: account } = useAccount()
-  const { feeAmount, form, existingPosition, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
+  const { feeAmount, form, existingPosition, exchangeRateBaseCurrency, exchangeRateQuoteCurrency, baseCurrency, quoteCurrency } =
+    storeToRefs(useLiquidityStore())
 
   const { isLoading, position: _position, refetch } = useV3PositionsFromTokenId(tokenId.value)
 
@@ -364,16 +365,22 @@
 
   const priceUsdBase = computed(() => {
     if (!formattedValueUpper.value) return '0'
-    if (currencyBase.value && exchangeRateBaseCurrency.value) {
-      return new Decimal(formattedValueUpper.value.replaceAll(',', '')).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
+    const exchangeRate = feeValueUpper.value?.currency.wrapped.equals(baseCurrency.value?.wrapped as Currency)
+      ? exchangeRateBaseCurrency.value
+      : exchangeRateQuoteCurrency.value
+    if (currencyBase.value && exchangeRate) {
+      return new Decimal(formattedValueUpper.value.replaceAll(',', '')).mul(exchangeRate).toSignificantDigits(6).toString()
     }
     return '0'
   })
 
   const priceUsdQuote = computed(() => {
     if (!formattedValueLower.value) return '0'
-    if (currencyQuote.value && exchangeRateQuoteCurrency.value) {
-      return new Decimal(formattedValueLower.value.replaceAll(',', '')).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+    const exchangeRate = feeValueLower.value?.currency.wrapped.equals(quoteCurrency.value?.wrapped as Currency)
+      ? exchangeRateQuoteCurrency.value
+      : exchangeRateBaseCurrency.value
+    if (currencyQuote.value && exchangeRate) {
+      return new Decimal(formattedValueLower.value.replaceAll(',', '')).mul(exchangeRate).toSignificantDigits(6).toString()
     }
     return '0'
   })
