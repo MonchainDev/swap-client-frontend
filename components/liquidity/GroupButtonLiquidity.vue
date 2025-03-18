@@ -46,7 +46,7 @@
     loadingAdd: false
   })
 
-  const { tokenA, tokenB } = useV3DerivedInfo()
+  const { tokenA, tokenB, depositADisabled, depositBDisabled } = useV3DerivedInfo()
   const { feeAmount, form, balance0, balance1, startPriceTypedValue, allowance0, allowance1, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
   const { poolExits } = usePools()
   const { isConnected } = useAccount()
@@ -87,11 +87,20 @@
   //  isInvalidPair = false, start current price = '', amount deposit A = '', amount deposit B = ''
   const isShowEnterAmount = computed(() => {
     const { amountDeposit0, amountDeposit1 } = form.value
-    const missingAmounts = !amountDeposit0 || !amountDeposit1
+    let missingAmounts = false
+    if (depositADisabled.value && depositBDisabled.value) {
+      missingAmounts = true
+    } else if (depositADisabled.value && !depositBDisabled.value) {
+      missingAmounts = !amountDeposit1
+    } else if (!depositADisabled.value && depositBDisabled.value) {
+      missingAmounts = !amountDeposit0
+    } else {
+      missingAmounts = !amountDeposit0 || !amountDeposit1
+    }
     if (route.name === 'liquidity-network-tokenId') {
       return missingAmounts
     } else {
-      return poolExits.value ? isInvalidPair.value && missingAmounts : !isInvalidPair.value && (missingAmounts || !startPriceTypedValue.value)
+      return poolExits.value ? missingAmounts : !isInvalidPair.value && (missingAmounts || !startPriceTypedValue.value)
     }
   })
 
@@ -133,10 +142,21 @@
   })
 
   const isDisabledAdd = computed(() => {
-    if (route.name === 'liquidity-network-tokenId') {
-      return !parseFloat(form.value.amountDeposit0) || !parseFloat(form.value.amountDeposit1)
+    const { amountDeposit0, amountDeposit1 } = form.value
+    let missingAmounts = false
+    if (depositADisabled.value && depositBDisabled.value) {
+      missingAmounts = true
+    } else if (depositADisabled.value && !depositBDisabled.value) {
+      missingAmounts = !amountDeposit1
+    } else if (!depositADisabled.value && depositBDisabled.value) {
+      missingAmounts = !amountDeposit0
+    } else {
+      missingAmounts = !amountDeposit0 || !amountDeposit1
     }
-    return !parseFloat(form.value.amountDeposit0) || !parseFloat(form.value.amountDeposit1) || form.value.minPrice === '' || form.value.maxPrice === ''
+    if (route.name === 'liquidity-network-tokenId') {
+      return missingAmounts
+    }
+    return missingAmounts || form.value.minPrice === '' || form.value.maxPrice === ''
   })
 </script>
 

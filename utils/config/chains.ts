@@ -99,7 +99,7 @@ export const monTestnet = /*#__PURE__*/ defineChain({
   },
   contracts: {
     multicall3: {
-      address: '0xD8b028ac0aF22FdC2B0992960BcE9911668636ab',
+      address: '0x49C0e987D9E2a85FFf40664afc8C10420905826B',
       blockCreated: 31208
     }
   },

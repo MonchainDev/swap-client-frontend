@@ -57,7 +57,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedValue0 }}</span>
-              <span class="text-sm text-gray-6">${{ priceUsd0 }}</span>
+              <span class="text-sm text-gray-6">${{ formatNumber(priceUsd0) }}</span>
             </div>
           </div>
           <div class="flex h-1/2 items-center justify-between px-8">
@@ -67,7 +67,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedValue1 }}</span>
-              <span class="text-sm text-gray-6">${{ priceUsd1 }}</span>
+              <span class="text-sm text-gray-6">${{ formatNumber(priceUsd1) }}</span>
             </div>
           </div>
         </div>
@@ -79,7 +79,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedFee0 }}</span>
-              <span class="text-sm text-gray-6">${{ priceUsdFee0 }}</span>
+              <span class="text-sm text-gray-6">${{ formatNumber(priceUsdFee0) }}</span>
             </div>
           </div>
           <div class="flex h-1/2 items-center justify-between px-8">
@@ -89,7 +89,7 @@
             </div>
             <div class="flex flex-col gap-1 text-right">
               <span class="text-[22px] font-semibold leading-7">{{ formattedFee1 }}</span>
-              <span class="text-sm text-gray-6">${{ priceUsdFee1 }}</span>
+              <span class="text-sm text-gray-6">${{ formatNumber(priceUsdFee1) }}</span>
             </div>
           </div>
         </div>
@@ -138,7 +138,7 @@
 <script lang="ts" setup>
   import { CurrencyAmount, Percent } from '@monchain/swap-sdk-core'
   import { useAccount } from '@wagmi/vue'
-  import { hexToBigInt } from 'viem'
+  import { hexToBigInt, type Address } from 'viem'
   import { BIPS_BASE } from '~/constant'
   import { CONTRACT_ADDRESS } from '~/constant/contract'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
@@ -147,6 +147,8 @@
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
   import { WNATIVE } from '~/constant/token'
   import Decimal from 'decimal.js'
+  import { MasterChefV3 } from '~/utils/masterChefV3'
+  import type { IBodyTxCollect } from '~/types/encrypt.type'
 
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
@@ -162,6 +164,7 @@
   const { chainId, address: account } = useAccount()
   const { setOpenPopup } = useBaseStore()
   const { exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
+  const { currentNetwork } = storeToRefs(useBaseStore())
 
   const tokenId = computed(() => {
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
@@ -171,6 +174,10 @@
   // const nativeWrappedSymbol = computed(() => nativeCurrency.value?.wrapped.symbol)
 
   const { position } = useV3PositionsFromTokenId(tokenId.value)
+
+  const { tokenIds } = useV3TokenIdsByAccount(CONTRACT_ADDRESS.MASTER_CHEF_V3 as Address)
+
+  const isStakeMV3 = computed(() => tokenIds.value?.includes(tokenId.value!))
 
   const loading = computed(() => !positionSDK.value)
 
@@ -182,11 +189,12 @@
     liquidityPercentage,
     liquidityValue0,
     liquidityValue1,
-    outOfRange,
     position: positionSDK,
     feeValue0,
     feeValue1
   } = useDerivedV3BurnInfo(position, percent, receiveNative)
+
+  const { poolAddresses } = usePools()
 
   const formattedFee0 = computed(() => formattedCurrencyAmount(feeValue0.value))
   const formattedFee1 = computed(() => formattedCurrencyAmount(feeValue1.value))
@@ -248,7 +256,7 @@
     try {
       if (
         !liquidityPercentage.value ||
-        outOfRange.value ||
+        !tokenId.value ||
         !account.value ||
         !positionSDK.value ||
         !chainId.value ||
@@ -261,9 +269,12 @@
       const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
       const allowedSlippage = 50
 
+      const interfaceManager = isStakeMV3.value ? MasterChefV3 : NonfungiblePositionManager
+      const addressTo = (isStakeMV3.value ? CONTRACT_ADDRESS.MASTER_CHEF_V3 : CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER) as `0x${string}`
+
       // we fall back to expecting 0 fees in case the fetch fails, which is safe in the
       // vast majority of cases
-      const { calldata, value } = NonfungiblePositionManager.removeCallParameters(positionSDK.value, {
+      const { calldata, value } = interfaceManager.removeCallParameters(positionSDK.value, {
         tokenId: tokenId.value!,
         liquidityPercentage: liquidityPercentage.value,
         slippageTolerance: basisPointsToPercent(allowedSlippage),
@@ -279,7 +290,7 @@
       console.log('🚀 ~ handleRemove ~ calldata:', calldata)
 
       const txHash = await sendTransaction(config, {
-        to: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER as `0x${string}`,
+        to: addressTo,
         data: calldata,
         value: hexToBigInt(value),
         account: account.value
@@ -296,6 +307,18 @@
         percent.value = ''
         showToastMsg('Transaction receipt', 'success', txHash)
         setOpenPopup('popup-confirm-remove', false)
+        const body: IBodyTxCollect = {
+          transactionHash: txHash,
+          poolAddress: poolAddresses.value ? poolAddresses.value[0] : '',
+          tokenId: +route.params.tokenId,
+          fromAddress: account.value!,
+          toAddress: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER,
+          fromToken: addressTo,
+          toToken: positionSDK.value.pool.token1.address,
+          network: currentNetwork.value.value,
+          transactionType: 'REMOVE_LIQUID'
+        }
+        await postTransaction(body)
         router.push({ name: 'liquidity-network-tokenId', params: { tokenId: route.params.tokenId, network: route.params.network } })
       } else {
         showToastMsg('Transaction failed', 'error', txHash)

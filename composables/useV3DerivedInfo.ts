@@ -51,7 +51,7 @@ export default function useV3DerivedInfo() {
     return undefined
   })
 
-  const { pool } = usePools()
+  const { pool, poolAddresses } = usePools()
   const noLiquidity = computed(() => !pool.value)
 
   const invertPrice = computed(() => Boolean(baseToken.value && token0.value && !baseToken.value.equals(token0.value)))
@@ -74,19 +74,14 @@ export default function useV3DerivedInfo() {
   })
 
   // set min and max price default if pool exits
-  watch(
-    () => pool.value?.fee,
-    (value) => {
-      if (value) {
-        const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
-        if (currentPrice) {
-          dispatchRangeTypedValue('BOTH', currentPrice, ZOOM_LEVELS[value])
-        }
-      } else {
-        pool.value = undefined
+  watchEffect(() => {
+    if (pool.value?.fee) {
+      const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
+      if (currentPrice) {
+        dispatchRangeTypedValue('BOTH', currentPrice, ZOOM_LEVELS[pool.value.fee])
       }
     }
-  )
+  })
 
   // check for invalid price input (converts to invalid ratio)
   const invalidPrice = computed(() => {
@@ -240,6 +235,26 @@ export default function useV3DerivedInfo() {
     Boolean(typeof tickLower.value === 'number' && poolForPosition.value && poolForPosition.value.tickCurrent <= tickLower.value)
   )
 
+  // sorted for token order
+  const depositADisabled = computed(() => {
+    return (
+      invalidRange.value ||
+      Boolean(
+        (deposit0Disabled.value && poolForPosition.value && tokenA.value && poolForPosition.value.token0.equals(tokenA.value)) ||
+          (deposit1Disabled.value && poolForPosition.value && tokenA.value && poolForPosition.value.token1.equals(tokenA.value))
+      )
+    )
+  })
+  const depositBDisabled = computed(() => {
+    return (
+      invalidRange.value ||
+      Boolean(
+        (deposit0Disabled.value && poolForPosition.value && tokenB.value && poolForPosition.value.token0.equals(tokenB.value)) ||
+          (deposit1Disabled.value && poolForPosition.value && tokenB.value && poolForPosition.value.token1.equals(tokenB.value))
+      )
+    )
+  })
+
   // create position entity based on users selection
   const position = computed(() => {
     if (
@@ -311,6 +326,11 @@ export default function useV3DerivedInfo() {
     ticksAtLimit,
     currencies,
     dependentField,
-    formattedAmounts
+    formattedAmounts,
+    depositADisabled,
+    depositBDisabled,
+    deposit0Disabled,
+    deposit1Disabled,
+    poolAddresses
   }
 }

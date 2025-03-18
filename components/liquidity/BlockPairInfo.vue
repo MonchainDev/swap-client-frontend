@@ -29,21 +29,21 @@
               <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
               <span class="text-sm">{{ pool.baseSymbol }}</span>
             </div>
-            <span class="text-sm">{{ formatNumberWithDecimal(pool.baseQtty, pool.baseDecimals) }}</span>
+            <span class="text-sm">{{ pool.baseQtty ? formatNumberWithDecimal(pool.baseQtty, pool.baseDecimals) : 0 }}</span>
           </div>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-[5px]">
               <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
               <span class="text-sm">{{ pool.quoteSymbol }}</span>
             </div>
-            <span class="text-sm">{{ formatNumberWithDecimal(pool.quoteQtty, pool.quoteDecimals) }}</span>
+            <span class="text-sm">{{ pool.quoteQtty ? formatNumberWithDecimal(pool.quoteQtty, pool.quoteDecimals) : 0 }}</span>
           </div>
         </div>
         <div class="mt-[35px] flex flex-col gap-8">
           <div class="flex flex-col gap-[6px]">
             <span class="text-sm">Volume 24h</span>
             <div class="flex items-center gap-3">
-              <span class="text-xl font-semibold">${{ formatNumber(pool.volume24h) }}</span>
+              <span class="text-xl font-semibold">${{ formatNumber((pool.volume24h || 0).toFixed(2)) }}</span>
               <span class="flex items-center gap-1 rounded-[10px] bg-[#E8FFEB] px-2 py-[2px]">
                 <BaseIcon name="arrow-fill" size="12" class="rotate-180 text-success" />
                 <span class="text-sm font-semibold text-success">0%</span>
@@ -141,6 +141,7 @@
       volume
         .mul(fee)
         .div(10 ** 6)
+        .toSignificantDigits(6)
         .toString() ?? '0'
     )
   })

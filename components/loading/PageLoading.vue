@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen w-full flex-col items-center justify-center gap-2">
+  <div class="absolute inset-0 flex min-h-screen w-full flex-col items-center justify-center gap-2 bg-white">
     <div class="loader"></div>
     <div class="text-sm">Loading...</div>
   </div>

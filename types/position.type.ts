@@ -34,6 +34,10 @@ export interface IPositionOrigin {
   pooladdress: string
   quoteqtty: number
   baseqtty: number
+  pooltype: null | 'FARM'
+  positionstatus: string
+  pendingreward: number
+  moonpersecond: number
 }
 
 export interface IPosition {
@@ -58,4 +62,10 @@ export interface IPosition {
   createdBy: string
   priceLower: number
   poolAddress: string
+  poolType: null | 'FARM'
+  positionStatus: string
+  priceUdtTotal?: string
+  pendingReward: number
+  liquidity: number
+  moonPerSecond: number
 }

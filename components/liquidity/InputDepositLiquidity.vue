@@ -21,9 +21,9 @@
       <span v-if="isConnected && stepSwap === 'SELECT_TOKEN'" class="text-sm text-gray-8">Max: {{ formattedBalance }}</span>
     </div>
     <div class="flex min-h-10 items-center gap-2">
-      <template v-if="isSelected">
+      <template v-if="isSelected && token">
         <div class="flex max-w-[150px] cursor-pointer items-center gap-[10px]" @click="emits('select-token', type)">
-          <img :src="token && 'icon_url' in token ? token.icon_url : ''" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError($event)" />
+          <img :src="isIToken(token) ? token.icon_url || '' : ''" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError($event)" />
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
               <span class="font-medium">{{ token?.symbol }}</span>
@@ -55,7 +55,7 @@
           @focus="emits('focus-input', type)"
           @input="handleInput"
         />
-        <span class="text-sm font-semibold text-gray-6">≈ ${{ priceUsd }}</span>
+        <span class="text-sm font-semibold text-gray-6">≈ ${{ formatNumber(priceUsd) }}</span>
       </div>
     </div>
   </div>
@@ -75,6 +75,7 @@
     type: TYPE_SWAP
     balance: string | undefined
     stepSwap?: string
+    locked: boolean
   }
 
   const props = withDefaults(defineProps<IProps>(), {
@@ -82,7 +83,8 @@
     token: () => ({ name: '', symbol: '', icon_url: '', address: '', decimals: 0 }),
     type: 'BASE',
     balance: '0',
-    stepSwap: 'SELECT_TOKEN'
+    stepSwap: 'SELECT_TOKEN',
+    locked: false
   })
 
   const emits = defineEmits<{
@@ -100,7 +102,7 @@
 
   const { handleImageError } = useErrorImage()
 
-  const { outOfRange, invalidRange } = useV3DerivedInfo()
+  const { invalidRange } = useV3DerivedInfo()
   const { startPriceTypedValue, form, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
   const { poolExits } = usePools()
   const route = useRoute()
@@ -115,8 +117,12 @@
 
   const isDisabled = computed(() => {
     const { minPrice, maxPrice } = form.value
-    const commonConditions = outOfRange.value || invalidRange.value || minPrice === '' || maxPrice === ''
-    return route.name === 'liquidity-network-tokenId' ? false : poolExits.value ? commonConditions : commonConditions || startPriceTypedValue.value === ''
+    const commonConditions = invalidRange.value || minPrice === '' || maxPrice === ''
+    return route.name === 'liquidity-network-tokenId'
+      ? props.locked
+      : poolExits.value
+        ? commonConditions || props.locked
+        : commonConditions || startPriceTypedValue.value === '' || props.locked
   })
 
   // watch(
@@ -143,6 +149,9 @@
   }, 600)
 
   const { isConnected } = useAccount()
+  const isIToken = (token: IToken | Currency): token is IToken => {
+    return (token as IToken).icon_url !== undefined
+  }
 </script>
 
 <style lang="scss" scoped>

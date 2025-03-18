@@ -56,19 +56,29 @@
         </div>
         <div class="mt-5 flex justify-between sm:flex-col sm:gap-4">
           <div class="flex gap-3 sm:justify-between sm:gap-0">
-            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="handleChangeSlippage('1')"
+            <span
+              class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold"
+              @click="handleChangeSlippage('1', true)"
               >1%</span
             >
-            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="handleChangeSlippage('2')"
+            <span
+              class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold"
+              @click="handleChangeSlippage('2', true)"
               >2%</span
             >
-            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="handleChangeSlippage('3')"
+            <span
+              class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold"
+              @click="handleChangeSlippage('3', true)"
               >3%</span
             >
-            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="handleChangeSlippage('4')"
+            <span
+              class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold"
+              @click="handleChangeSlippage('4', true)"
               >4%</span
             >
-            <span class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold" @click="handleChangeSlippage('100')"
+            <span
+              class="flex cursor-pointer items-center justify-center rounded-lg bg-[#E3EEFF] p-3 text-xs font-semibold"
+              @click="handleChangeSlippage('100', true)"
               >Max</span
             >
           </div>
@@ -128,18 +138,18 @@
   })
 
   const formatTradingFee = computed(() => {
-    return new Decimal(form.value.tradingFee).div(10 ** Number(form.value.token0.decimals || 0)).toFixed(4)
+    return new Decimal(form.value.tradingFee.toString()).div(10 ** Number(form.value.token0.decimals || 0)).toFixed(4)
   })
 
   const exchangeRate = computed(() => {
     return {
-      base: (Number(form.value.amountOut) / Number(form.value.amountIn)).toFixed(2),
-      quote: (Number(form.value.amountIn) / Number(form.value.amountOut)).toFixed(6)
+      base: new Decimal(Number(form.value.amountOut) / Number(form.value.amountIn)).toSignificantDigits(5).toString(),
+      quote: new Decimal(Number(form.value.amountIn) / Number(form.value.amountOut)).toSignificantDigits(5).toString()
     }
   })
 
-  const handleChangeSlippage = (value: string) => {
-    if (isErrorSlippage.value) return
+  const handleChangeSlippage = (value: string, byPassError = false) => {
+    if (isErrorSlippage.value && !byPassError) return
     settingSlippage.value = value
     slippage.value = value
     editSlippage.value = false

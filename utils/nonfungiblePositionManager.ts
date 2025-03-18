@@ -286,7 +286,7 @@ export abstract class NonfungiblePositionManager {
     }
   }
 
-  private static encodeCollect(options: CollectOptions): Hex[] {
+  public static encodeCollect(options: CollectOptions): Hex[] {
     console.log('🚀 ~ NonfungiblePositionManager ~ encodeCollect ~ options:', options)
     const calldatas: Hex[] = []
 

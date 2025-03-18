@@ -8,3 +8,4 @@ export type POPUP_NAME =
   | 'popup-add-liquidity'
   | 'popup-confirm-remove'
   | 'popup-confirm-create-liquidity'
+  | 'popup-unstake'

@@ -9,6 +9,7 @@
           :token="form.token0"
           :balance="balance0?.formatted"
           :step-swap
+          :locked="isFetchQuote"
           type="BASE"
           class="h-[138px] bg-[#EFEFFF] sm:h-[120px]"
           @select-token="handleOpenPopupSelectToken"
@@ -29,6 +30,7 @@
           :token="form.token1"
           :balance="balance1?.formatted"
           :step-swap
+          :locked="isFetchQuote"
           type="QUOTE"
           class="h-[124px] bg-[#F3F8FF] sm:h-[100px]"
           @select-token="handleOpenPopupSelectToken"
@@ -112,8 +114,9 @@
   import swapRouterABI from '~/constant/abi/swapRouter.json'
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import type { IToken } from '~/types'
+  import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { TYPE_SWAP } from '~/types/swap.type'
-  import { getBestTrade, type SwapOutput } from '~/utils/getBestTrade'
+  import { type SwapOutput } from '~/utils/getBestTrade'
   import HeaderFormSwap from './HeaderFormSwap.vue'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
 
@@ -128,9 +131,9 @@
   })
 
   const { setOpenPopup } = useBaseStore()
-  const { isDesktop } = storeToRefs(useBaseStore())
+  const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
 
-  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, allowance0, balance0, balance1, form } = storeToRefs(useSwapStore())
+  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, allowance0, balance0, balance1, form, token0, token1 } = storeToRefs(useSwapStore())
 
   const isEditSlippage = ref(false)
   const stepSwap = ref<StepSwap>('SELECT_TOKEN')
@@ -153,6 +156,11 @@
   const noRoute = computed(() => !(((bestTrade.value && bestTrade.value?.routes.length) ?? 0) > 0))
   const notEnoughLiquidity = ref(false)
 
+  const isInsufficientBalance = computed(() => {
+    const amountA = form.value.amountIn || 0
+    const balanceA = balance0.value?.formatted || 0
+    return new Decimal(amountA).greaterThan(balanceA)
+  })
   /*
    * Message button
    * case 1: Select a token
@@ -198,7 +206,8 @@
       !form.value.amountOut ||
       isFetchQuote.value ||
       noRoute.value ||
-      notEnoughLiquidity.value
+      notEnoughLiquidity.value ||
+      isInsufficientBalance.value
     )
   })
 
@@ -215,6 +224,7 @@
     setOpenPopup('popup-select-token', true)
   }
 
+  const poolAddress = ref<string>('')
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
     try {
       notEnoughLiquidity.value = false
@@ -236,36 +246,41 @@
         const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
         console.log('🚀 ~ handleInput ~ inputAmount', inputAmount)
         // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
-        const _bestTrade = await getBestTrade({
-          token0: form.value.token0.address,
-          token1: form.value.token1.address,
+        const _bestTrade = await getBestTradeV2({
+          token0: token0.value!,
+          token1: token1.value!,
           inputAmount: inputAmount,
           type: TradeType.EXACT_INPUT
         })
+        console.log('🚀 ~ handleInput ~ _bestTrade:', _bestTrade)
+
         bestTrade.value = _bestTrade
-        form.value.amountOut = bestTrade.value.outputAmount.toSignificant(6)
-        form.value.tradingFee = bestTrade.value.tradingFee
-        form.value.minimumAmountOut = bestTrade.value.minimumAmountOut?.toSignificant(6)
+        poolAddress.value = (_bestTrade?.routes[0].pools[0] as V3Pool)?.address ?? ''
+        form.value.amountOut = _bestTrade.outputAmount.toSignificant(6)
+        form.value.tradingFee = _bestTrade.tradingFee
+        form.value.minimumAmountOut = _bestTrade.minimumAmountOut?.toSignificant(6)
         form.value.maximumAmountIn = ''
-        form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
+        form.value.priceImpact = _bestTrade.priceImpact.toFixed()
         isFetchQuote.value = false
       } else {
         form.value.amountOut = amount
         form.value.amountIn = ''
         const inputAmount = Number(form.value.amountOut) * ((10 ** Number(form.value.token1.decimals)) as number)
-        const _bestTrade = await getBestTrade({
-          token0: form.value.token0.address,
-          token1: form.value.token1.address,
+        const _bestTrade = await getBestTradeV2({
+          token0: token0.value!,
+          token1: token1.value!,
           inputAmount: inputAmount,
           type: TradeType.EXACT_OUTPUT
         })
-        bestTrade.value = _bestTrade
-        form.value.amountIn = bestTrade.value.inputAmount.toSignificant(6)
-        form.value.tradingFee = bestTrade.value.tradingFee
-        form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toSignificant(6)
-        form.value.minimumAmountOut = ''
-        form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
-        form.value.fee = _bestTrade.fee
+        if (_bestTrade) {
+          bestTrade.value = _bestTrade
+          form.value.amountIn = bestTrade.value.inputAmount.toSignificant(6)
+          form.value.tradingFee = bestTrade.value.tradingFee
+          form.value.maximumAmountIn = bestTrade.value?.outputAmountWithGasAdjusted?.toSignificant(6)
+          form.value.minimumAmountOut = ''
+          form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
+          form.value.fee = _bestTrade.fee
+        }
       }
       isFetchQuote.value = false
     } catch (_error) {
@@ -316,8 +331,8 @@
 
   const token0IsToken = computed(() => form.value.token0.address !== '')
 
-  const useExactInputMulticall = async (swapOut: SwapOutput) => {
-    const trade = swapOut as SmartRouterTrade<TradeType>
+  const useExactInputMulticall = async (swapOut: SmartRouterTrade<TradeType>) => {
+    const trade = swapOut
     const datas: Hex[] = []
 
     for (const route of trade.routes) {
@@ -380,6 +395,7 @@
     if (status === 'success') {
       const { showToastMsg } = useShowToastMsg()
       showToastMsg('Swap successful', 'success', txHash)
+      await postTx(txHash)
       console.info('Transaction successful', 'success', txHash)
     } else {
       ElMessage.error('Transaction failed')
@@ -398,11 +414,11 @@
       // step 2: approve
       if (token0IsToken.value) {
         if (isNeedAllowance0.value) {
+          isConfirmApprove.value = true
           await approveToken(form.value.token0.address as string, CONTRACT_ADDRESS.SWAP_ROUTER_V3, MAX_NUMBER_APPROVE, (status) => {
             if (status === 'SUCCESS') {
               swap()
             }
-            isConfirmApprove.value = false
           })
         } else {
           // step 3: swap
@@ -441,11 +457,25 @@
       console.info(' (FormSwap.client.vue:319) sign sao sao sao saii  xong r ne')
       isConfirmSwap.value = false
       isSwapping.value = false
-      el1?.close()
     }
   }
+  async function postTx(txHash: string) {
+    const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
 
-  const el1: ReturnType<typeof ElNotification> | null = null
+    const body: IBodyTxCollect = {
+      transactionHash: txHash,
+      amount: inputAmount,
+      feeAmount: Number(form.value.tradingFee ?? 0),
+      fromAddress: address.value,
+      toAddress: CONTRACT_ADDRESS.SWAP_ROUTER_V3,
+      fromToken: token0.value?.wrapped.address,
+      toToken: token1.value?.wrapped.address,
+      transactionType: 'SWAP',
+      network: currentNetwork.value.value,
+      poolAddress: poolAddress.value
+    }
+    await postTransaction(body)
+  }
 
   const { handleImageError } = useErrorImage()
 </script>
