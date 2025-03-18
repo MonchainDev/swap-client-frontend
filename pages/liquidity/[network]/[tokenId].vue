@@ -163,12 +163,12 @@
       <BaseTable :data="listTransaction ?? undefined" :loading="statusListTx === 'pending'" class="table-history mt-[26px]">
         <ElTableColumn label="Timestamp">
           <template #default="{ row }">
-            <div>{{ useTimeAgo(row.createdAt, { showSecond: true }) }}</div>
+            <div>{{ useDateFormat(row.createdAt, 'MM/DD/YYYY h:mm:ss A') }}</div>
           </template>
         </ElTableColumn>
         <ElTableColumn label="Action">
           <template #default="{ row }">
-            <div>{{ getTran(row.transactionType) }}</div>
+            <div class="capitalize">{{ getTran(row.transactionType) }}</div>
           </template>
         </ElTableColumn>
         <ElTableColumn label="Token Transferred" align="right" />
@@ -441,7 +441,7 @@
   }
 
   const getTran = (transactionType: string) => {
-    const type = transactionType ? transactionType.split('_').join(' ') : ''
+    const type = transactionType ? transactionType.split('_').join(' ').toLowerCase() : ''
     return type
   }
 </script>
