@@ -16,7 +16,14 @@
       <BaseButton v-if="isShowBtnEnable1" :loading="props.loading1" size="md" class="w-full text-xl font-semibold" @click="emit('approve', 'QUOTE')"
         >ENABLE {{ tokenB?.symbol }}</BaseButton
       >
-      <BaseButton v-if="isShowBtnAdd" :loading="props.loadingAdd" :disabled="isDisabledAdd" size="md" class="w-full text-xl font-semibold" @click="emit('add')">
+      <BaseButton
+        v-if="isShowBtnAdd"
+        :loading="props.loadingAdd"
+        :disabled="isDisabledAdd"
+        size="md"
+        class="mb-4 w-full text-xl font-semibold"
+        @click="emit('add')"
+      >
         ADD
       </BaseButton>
     </template>
