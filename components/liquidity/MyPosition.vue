@@ -266,7 +266,8 @@
           quoteQuantity: data.quoteqtty,
           poolType: data.pooltype,
           positionStatus: data.positionstatus,
-          pendingReward: data.pendingreward ?? 0
+          pendingReward: data.pendingreward ?? 0,
+          moonPerSecond: data.moonpersecond ?? 0
         }
       })
     }

@@ -19,5 +19,5 @@ export interface IFormSwap {
   maximumAmountIn?: string
   priceImpact: string
   fee: number
-  tradingFee: number
+  tradingFee: number | bigint
 }

@@ -5,7 +5,7 @@
       <BlockHeaderLiquid :pool="data" />
       <BlockMyPosition class="mt-20" :pool="data" />
       <BlockPairInfo class="mt-[67px]" :pool="data" />
-      <TableTxPoolDetail />
+      <TableTxPoolDetail :pool="data" />
     </div>
   </template>
 </template>
@@ -19,7 +19,7 @@
 
   const { address: poolAddress, network } = useRoute('liquidity-pool-network-address').params
 
-  const { data, status } = useFetch<IPool>(`/api/pool/get/${poolAddress}`, { query: { network: network?.toUpperCase() } })
+  const { data, status } = useFetch<IPool>(`/api/pool/get/${poolAddress.toLowerCase()}`, { query: { network: network?.toUpperCase() } })
 </script>
 
 <style lang="scss"></style>

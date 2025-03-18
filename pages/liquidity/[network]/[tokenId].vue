@@ -188,8 +188,10 @@
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
+  import type { Address } from 'viem'
   import ChartLine from '~/components/chart/ChartLine.vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
+  import { CONTRACT_ADDRESS } from '~/constant/contract'
   import { Bound, ChainId } from '~/types'
   import type { IPosition } from '~/types/position.type'
 
@@ -200,9 +202,13 @@
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
   })
   const { chainId, isConnected, address: account } = useAccount()
-  const { feeAmount, form, existingPosition, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
+  const { feeAmount, form, existingPosition, exchangeRateBaseCurrency, exchangeRateQuoteCurrency, baseCurrency, quoteCurrency } =
+    storeToRefs(useLiquidityStore())
 
   const { isLoading, position: _position, refetch } = useV3PositionsFromTokenId(tokenId.value)
+
+  const { tokenIds } = useV3TokenIdsByAccount(CONTRACT_ADDRESS.MASTER_CHEF_V3 as Address)
+  const isStakeMV3 = computed(() => tokenIds.value?.includes(tokenId.value!))
 
   const { data: positionDetail } = useFetch<IPosition>(`/api/position/get/${tokenId.value?.toString()}`, { query: { network: route.params.network } })
 
@@ -272,7 +278,8 @@
 
   const feeValueUpper = computed(() => (inverted.value ? feeValue0.value : feeValue1.value))
   const feeValueLower = computed(() => (inverted.value ? feeValue1.value : feeValue0.value))
-  const isOwner = computed(() => account.value === owner.value)
+
+  const isOwner = computed(() => account.value === owner.value || _position.value?.operator === account.value || isStakeMV3.value)
 
   // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
   // const currency0ForFeeCollectionPurposes = computed(() =>
@@ -358,23 +365,32 @@
 
   const priceUsdBase = computed(() => {
     if (!formattedValueUpper.value) return '0'
-    if (currencyBase.value && exchangeRateBaseCurrency.value) {
-      return new Decimal(formattedValueUpper.value.replaceAll(',', '')).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
+    const exchangeRate = feeValueUpper.value?.currency.wrapped.equals(baseCurrency.value?.wrapped as Currency)
+      ? exchangeRateBaseCurrency.value
+      : exchangeRateQuoteCurrency.value
+    if (currencyBase.value && exchangeRate) {
+      return new Decimal(formattedValueUpper.value.replaceAll(',', '')).mul(exchangeRate).toSignificantDigits(6).toString()
     }
     return '0'
   })
 
   const priceUsdQuote = computed(() => {
     if (!formattedValueLower.value) return '0'
-    if (currencyQuote.value && exchangeRateQuoteCurrency.value) {
-      return new Decimal(formattedValueLower.value.replaceAll(',', '')).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+    const exchangeRate = feeValueLower.value?.currency.wrapped.equals(quoteCurrency.value?.wrapped as Currency)
+      ? exchangeRateQuoteCurrency.value
+      : exchangeRateBaseCurrency.value
+    if (currencyQuote.value && exchangeRate) {
+      return new Decimal(formattedValueLower.value.replaceAll(',', '')).mul(exchangeRate).toSignificantDigits(6).toString()
     }
     return '0'
   })
 
   const priceUsdFeeUpper = computed(() => {
     if (!feeValueUpper.value) return '0'
-    if (currencyBase.value && exchangeRateBaseCurrency.value) {
+    const exchangeRate = feeValueUpper.value.currency.wrapped.equals(baseCurrency.value?.wrapped as Currency)
+      ? exchangeRateBaseCurrency.value
+      : exchangeRateQuoteCurrency.value
+    if (currencyBase.value && exchangeRate) {
       return new Decimal(feeValueUpper.value.toExact()).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
     }
     return '0'
@@ -382,7 +398,10 @@
 
   const priceUsdFeeLower = computed(() => {
     if (!feeValueLower.value) return '0'
-    if (currencyQuote.value && exchangeRateQuoteCurrency.value) {
+    const exchangeRate = feeValueLower.value.currency.wrapped.equals(quoteCurrency.value?.wrapped as Currency)
+      ? exchangeRateQuoteCurrency.value
+      : exchangeRateBaseCurrency.value
+    if (currencyQuote.value && exchangeRate) {
       return new Decimal(feeValueLower.value.toExact()).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
     }
     return '0'

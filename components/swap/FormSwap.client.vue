@@ -114,10 +114,10 @@
   import swapRouterABI from '~/constant/abi/swapRouter.json'
   import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import type { IToken } from '~/types'
-  import type { TYPE_SWAP } from '~/types/swap.type'
-  import { getBestTrade, type SwapOutput } from '~/utils/getBestTrade'
-  import HeaderFormSwap from './HeaderFormSwap.vue'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
+  import type { TYPE_SWAP } from '~/types/swap.type'
+  import { type SwapOutput } from '~/utils/getBestTrade'
+  import HeaderFormSwap from './HeaderFormSwap.vue'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
 
   export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
@@ -246,38 +246,41 @@
         const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
         console.log('🚀 ~ handleInput ~ inputAmount', inputAmount)
         // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
-        const _bestTrade = await getBestTrade({
-          token0: form.value.token0.address,
-          token1: form.value.token1.address,
+        const _bestTrade = await getBestTradeV2({
+          token0: token0.value!,
+          token1: token1.value!,
           inputAmount: inputAmount,
           type: TradeType.EXACT_INPUT
         })
+        console.log('🚀 ~ handleInput ~ _bestTrade:', _bestTrade)
 
         bestTrade.value = _bestTrade
-        poolAddress.value = (_bestTrade.routes[0].pools[0] as V3Pool)?.address ?? ''
-        form.value.amountOut = bestTrade.value.outputAmount.toSignificant(6)
-        form.value.tradingFee = bestTrade.value.tradingFee
-        form.value.minimumAmountOut = bestTrade.value.minimumAmountOut?.toSignificant(6)
+        poolAddress.value = (_bestTrade?.routes[0].pools[0] as V3Pool)?.address ?? ''
+        form.value.amountOut = _bestTrade.outputAmount.toSignificant(6)
+        form.value.tradingFee = _bestTrade.tradingFee
+        form.value.minimumAmountOut = _bestTrade.minimumAmountOut?.toSignificant(6)
         form.value.maximumAmountIn = ''
-        form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
+        form.value.priceImpact = _bestTrade.priceImpact.toFixed()
         isFetchQuote.value = false
       } else {
         form.value.amountOut = amount
         form.value.amountIn = ''
         const inputAmount = Number(form.value.amountOut) * ((10 ** Number(form.value.token1.decimals)) as number)
-        const _bestTrade = await getBestTrade({
-          token0: form.value.token0.address,
-          token1: form.value.token1.address,
+        const _bestTrade = await getBestTradeV2({
+          token0: token0.value!,
+          token1: token1.value!,
           inputAmount: inputAmount,
           type: TradeType.EXACT_OUTPUT
         })
-        bestTrade.value = _bestTrade
-        form.value.amountIn = bestTrade.value.inputAmount.toSignificant(6)
-        form.value.tradingFee = bestTrade.value.tradingFee
-        form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toSignificant(6)
-        form.value.minimumAmountOut = ''
-        form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
-        form.value.fee = _bestTrade.fee
+        if (_bestTrade) {
+          bestTrade.value = _bestTrade
+          form.value.amountIn = bestTrade.value.inputAmount.toSignificant(6)
+          form.value.tradingFee = bestTrade.value.tradingFee
+          form.value.maximumAmountIn = bestTrade.value?.outputAmountWithGasAdjusted?.toSignificant(6)
+          form.value.minimumAmountOut = ''
+          form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
+          form.value.fee = _bestTrade.fee
+        }
       }
       isFetchQuote.value = false
     } catch (_error) {
@@ -328,8 +331,8 @@
 
   const token0IsToken = computed(() => form.value.token0.address !== '')
 
-  const useExactInputMulticall = async (swapOut: SwapOutput) => {
-    const trade = swapOut as SmartRouterTrade<TradeType>
+  const useExactInputMulticall = async (swapOut: SmartRouterTrade<TradeType>) => {
+    const trade = swapOut
     const datas: Hex[] = []
 
     for (const route of trade.routes) {
@@ -462,7 +465,7 @@
     const body: IBodyTxCollect = {
       transactionHash: txHash,
       amount: inputAmount,
-      feeAmount: form.value.tradingFee,
+      feeAmount: Number(form.value.tradingFee ?? 0),
       fromAddress: address.value,
       toAddress: CONTRACT_ADDRESS.SWAP_ROUTER_V3,
       fromToken: token0.value?.wrapped.address,
