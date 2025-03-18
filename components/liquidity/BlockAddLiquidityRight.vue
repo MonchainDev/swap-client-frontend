@@ -186,24 +186,25 @@
       .toString()
   })
 
-  const handleChangePriceRange = (type: INPUT_PRICE, amount: string) => {
+  const handleChangePriceRange = (type: INPUT_PRICE, _amount: string) => {
     if (type === 'MIN') {
-      if (buttonRangePercent.value === 100) {
-        buttonRangePercent.value = amount !== '0' ? null : buttonRangePercent.value
-      } else {
-        buttonRangePercent.value = null
-      }
+      // if (buttonRangePercent.value === 100) {
+      //   buttonRangePercent.value = amount !== '0' ? null : buttonRangePercent.value
+      // } else {
+      //   buttonRangePercent.value = null
+      // }
       dispatchRangeTypedValue('MIN', +form.value.minPrice!)
     } else {
-      if (buttonRangePercent.value === 100) {
-        buttonRangePercent.value = amount !== '∞' ? null : buttonRangePercent.value
-      } else {
-        buttonRangePercent.value = null
-      }
+      // if (buttonRangePercent.value === 100) {
+      //   buttonRangePercent.value = amount !== '∞' ? null : buttonRangePercent.value
+      // } else {
+      //   buttonRangePercent.value = null
+      // }
 
-      buttonRangePercent.value = amount !== '∞' ? null : buttonRangePercent.value
+      // buttonRangePercent.value = amount !== '∞' ? null : buttonRangePercent.value
       dispatchRangeTypedValue('MAX', +form.value.maxPrice!)
     }
+    buttonRangePercent.value = null
   }
 
   const { price, invertPrice, tokenA, position, ticksAtLimit, tickSpaceLimits, formattedAmounts, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange } =
