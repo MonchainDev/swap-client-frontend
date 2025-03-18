@@ -161,8 +161,16 @@
     <div class="mt-6 rounded-lg bg-white pb-6 shadow-md">
       <span class="block pl-6 pt-8 text-2xl font-semibold leading-7">History</span>
       <BaseTable :data="listTransaction ?? undefined" :loading="statusListTx === 'pending'" class="table-history mt-[26px]">
-        <ElTableColumn label="Timestamp" />
-        <ElTableColumn label="Action" />
+        <ElTableColumn label="Timestamp">
+          <template #default="{ row }">
+            <div>{{ useTimeAgo(row.createdAt, { showSecond: true }) }}</div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="Action">
+          <template #default="{ row }">
+            <div>{{ getTran(row.transactionType) }}</div>
+          </template>
+        </ElTableColumn>
         <ElTableColumn label="Token Transferred" align="right" />
       </BaseTable>
     </div>
@@ -430,6 +438,11 @@
       }
       collectFee(tokenId.value, options)
     }
+  }
+
+  const getTran = (transactionType: string) => {
+    const type = transactionType ? transactionType.split('_').join(' ') : ''
+    return type
   }
 </script>
 
