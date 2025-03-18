@@ -114,12 +114,16 @@
         }
       },
       tooltip: {
-        custom: function ({ _series, _seriesIndex, _dataPointIndex, _w }) {
+        custom: function ({ _series, _seriesIndex, dataPointIndex, _w }) {
+          console.log('🚀 ~ chartOptions ~ dataPointIndex:', dataPointIndex)
+          const { token0Price, token1Price, token0Symbol, token1Symbol, totalValueLockedToken0 } = props.chartData[dataPointIndex]
+          console.log('🚀 ~ chartOptions ~ token1Price:', token1Price)
+          console.log('🚀 ~ chartOptions ~ token0Price:', token0Price)
           return `<div class="p-[10px] px-[13px] rounded-lg bg-[#49AB8B] flex text-white flex-col">
           <span class="text-white text-sm font-semibold"> Tick stats </span>
-          <span class="text-xs">USDT Price: 0.0015 WBNB</span>
-          <span class="text-xs">WBNB Price: 675.9196 USDT</span>
-          <span class="text-xs">USDT Locked: 2,859.05 USDT</span>
+          <span class="text-xs">${token0Symbol} Price: ${formatNumber(parseFloat(token0Price).toFixed(2))} ${token0Symbol}</span>
+          <span class="text-xs">${token1Symbol} Price: ${formatNumber(parseFloat(token1Price).toFixed(2))} ${token1Symbol}</span>
+          <span class="text-xs">${token0Symbol} Locked: ${formatNumber(parseFloat(totalValueLockedToken0).toFixed(2))} ${token0Symbol}</span>
         </div>`
         }
 

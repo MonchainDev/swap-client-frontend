@@ -1,77 +1,75 @@
 <template>
-  <ClientOnly>
-    <div class="flex flex-col gap-7">
-      <div v-if="props.showHeader" class="flex items-center gap-5 text-sm">
-        <span class="text-2xl font-semibold leading-7">Pair info</span>
-        <div class="flex items-center gap-1">
-          <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
-          <span>1 {{ pool.baseSymbol }} = {{ formatNumber(price0) }} {{ pool.quoteSymbol }}</span>
-        </div>
-        <div class="flex items-center gap-1">
-          <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
-          <span> 1 {{ pool.quoteSymbol }} = {{ formatNumber(price1) }} {{ pool.baseSymbol }}</span>
-        </div>
+  <div class="flex flex-col gap-7">
+    <div v-if="props.showHeader" class="flex items-center gap-5 text-sm">
+      <span class="text-2xl font-semibold leading-7">Pair info</span>
+      <div class="flex items-center gap-1">
+        <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
+        <span>1 {{ pool.baseSymbol }} = {{ formatNumber(price0) }} {{ pool.quoteSymbol }}</span>
       </div>
-      <div class="grid min-h-[421px] grid-cols-[374px_1fr] gap-6">
-        <div class="rounded-lg bg-white px-6 py-4 shadow-md">
+      <div class="flex items-center gap-1">
+        <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
+        <span> 1 {{ pool.quoteSymbol }} = {{ formatNumber(price1) }} {{ pool.baseSymbol }}</span>
+      </div>
+    </div>
+    <div class="grid min-h-[421px] grid-cols-[374px_1fr] gap-6">
+      <div class="rounded-lg bg-white px-6 py-4 shadow-md">
+        <div class="flex flex-col gap-[6px]">
+          <span class="text-sm">Total Tokens locked (TVL)</span>
+          <div class="flex items-center gap-3">
+            <span class="text-xl font-semibold">${{ (pool.tvl ?? 0).toFixed(2) }}</span>
+            <span class="flex items-center gap-1 rounded-[10px] bg-[#E8FFEB] px-2 py-[2px]">
+              <BaseIcon name="arrow-fill" size="12" class="rotate-180 text-success" />
+              <span class="text-sm font-semibold text-success">0%</span>
+            </span>
+          </div>
+        </div>
+        <div class="mt-[31px] flex flex-col gap-3 border-b border-t border-solid border-gray-3 py-5 pt-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-[5px]">
+              <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
+              <span class="text-sm">{{ pool.baseSymbol }}</span>
+            </div>
+            <span class="text-sm">{{ pool.baseQtty ? formatNumberWithDecimal(pool.baseQtty, pool.baseDecimals) : 0 }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-[5px]">
+              <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
+              <span class="text-sm">{{ pool.quoteSymbol }}</span>
+            </div>
+            <span class="text-sm">{{ pool.quoteQtty ? formatNumberWithDecimal(pool.quoteQtty, pool.quoteDecimals) : 0 }}</span>
+          </div>
+        </div>
+        <div class="mt-[35px] flex flex-col gap-8">
           <div class="flex flex-col gap-[6px]">
-            <span class="text-sm">Total Tokens locked (TVL)</span>
+            <span class="text-sm">Volume 24h</span>
             <div class="flex items-center gap-3">
-              <span class="text-xl font-semibold">${{ (pool.tvl ?? 0).toFixed(2) }}</span>
+              <span class="text-xl font-semibold">${{ formatNumber((pool.volume24h || 0).toFixed(2)) }}</span>
               <span class="flex items-center gap-1 rounded-[10px] bg-[#E8FFEB] px-2 py-[2px]">
                 <BaseIcon name="arrow-fill" size="12" class="rotate-180 text-success" />
                 <span class="text-sm font-semibold text-success">0%</span>
               </span>
             </div>
           </div>
-          <div class="mt-[31px] flex flex-col gap-3 border-b border-t border-solid border-gray-3 py-5 pt-4">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-[5px]">
-                <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
-                <span class="text-sm">{{ pool.baseSymbol }}</span>
-              </div>
-              <span class="text-sm">{{ pool.baseQtty ? formatNumberWithDecimal(pool.baseQtty, pool.baseDecimals) : 0 }}</span>
+          <div class="flex flex-col gap-[6px]">
+            <span class="text-sm">Fee 24h</span>
+            <div class="flex items-center gap-3">
+              <span class="text-xl font-semibold">${{ formatNumber(fee24h) }}</span>
+              <span class="flex items-center gap-1 rounded-[10px] bg-[#FFECEF] px-2 py-[2px]">
+                <BaseIcon name="arrow-fill" size="12" class="text-error" />
+                <span class="text-sm font-semibold text-error">0%</span>
+              </span>
             </div>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-[5px]">
-                <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
-                <span class="text-sm">{{ pool.quoteSymbol }}</span>
-              </div>
-              <span class="text-sm">{{ pool.quoteQtty ? formatNumberWithDecimal(pool.quoteQtty, pool.quoteDecimals) : 0 }}</span>
-            </div>
-          </div>
-          <div class="mt-[35px] flex flex-col gap-8">
-            <div class="flex flex-col gap-[6px]">
-              <span class="text-sm">Volume 24h</span>
-              <div class="flex items-center gap-3">
-                <span class="text-xl font-semibold">${{ formatNumber((pool.volume24h || 0).toFixed(2)) }}</span>
-                <span class="flex items-center gap-1 rounded-[10px] bg-[#E8FFEB] px-2 py-[2px]">
-                  <BaseIcon name="arrow-fill" size="12" class="rotate-180 text-success" />
-                  <span class="text-sm font-semibold text-success">0%</span>
-                </span>
-              </div>
-            </div>
-            <div class="flex flex-col gap-[6px]">
-              <span class="text-sm">Fee 24h</span>
-              <div class="flex items-center gap-3">
-                <span class="text-xl font-semibold">${{ formatNumber(fee24h) }}</span>
-                <span class="flex items-center gap-1 rounded-[10px] bg-[#FFECEF] px-2 py-[2px]">
-                  <BaseIcon name="arrow-fill" size="12" class="text-error" />
-                  <span class="text-sm font-semibold text-error">0%</span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="rounded-lg bg-white px-6 py-4 shadow-md">
-          <BaseTab v-model:model="tabActive" :list="listTab" />
-          <div v-loading="isLoading" class="mt-7">
-            <component :is="component" v-if="!isLoading" :chart-data="chartData" />
           </div>
         </div>
       </div>
+      <div class="rounded-lg bg-white px-6 py-4 shadow-md">
+        <BaseTab v-model:model="tabActive" :list="listTab" />
+        <div v-loading="isLoading" class="mt-7">
+          <component :is="component" v-if="!isLoading" :chart-data="chartData" />
+        </div>
+      </div>
     </div>
-  </ClientOnly>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -98,11 +96,27 @@
     tvlUSD: string
     volumeUSD: string
     liquidity: string
+    token0Price: string
+    token1Price: string
+    pool: {
+      totalValueLockedToken0: string
+      token0: {
+        symbol: string
+      }
+      token1: {
+        symbol: string
+      }
+    }
   }
 
   export interface IDataChart {
     date: string
     value: string
+    token0Price: string
+    token1Price: string
+    token0Symbol: string
+    token1Symbol: string
+    totalValueLockedToken0: string
   }
 
   interface IProps {
@@ -183,11 +197,11 @@
     enabled: computed(() => !!props.pool.poolAddress)
   })
 
-  const chartData = computed(() => {
+  const chartData = computed((): IDataChart[] => {
     const valueMap = {
       [TabValue.VOLUME]: 'volumeUSD',
       [TabValue.LIQUIDITY]: 'liquidity',
-      [TabValue.FEE]: 'feeUSD',
+      [TabValue.FEE]: 'feesUSD',
       [TabValue.TVL]: 'tvlUSD'
     }
 
@@ -197,7 +211,12 @@
       ? data.value?.poolDayDatas
           .map((item: poolDayDatas) => ({
             date: new Date(item.date * 1000).toLocaleDateString(),
-            value: item[selectedValue as keyof poolDayDatas]?.toString()
+            value: item[selectedValue as keyof poolDayDatas]?.toString(),
+            token0Price: item.token0Price ?? '0',
+            token1Price: item.token1Price ?? '0',
+            token0Symbol: item.pool.token0.symbol,
+            token1Symbol: item.pool.token1.symbol,
+            totalValueLockedToken0: item.pool.totalValueLockedToken0 ?? '0'
           }))
           //@ts-ignore
           .sort((a: IDataChart, b: IDataChart) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -217,6 +236,17 @@
             feesUSD
             tvlUSD
             date
+            token0Price
+            token1Price
+            pool {
+              totalValueLockedToken0
+              token0 {
+                symbol
+              }
+              token1 {
+                symbol
+              }
+            }
           }
         }
       `

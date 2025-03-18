@@ -109,9 +109,10 @@
           hideOverlappingLabels: true, // Prevent overlapping
           formatter: function (value) {
             // Find the index of the current value in the categories array
-            const index = categories.value.indexOf(value)
+            // const index = categories.value.indexOf(value)
             // Show every 4th label to reduce clutter
-            return index % 2 === 0 ? value : ''
+            // return index % 2 === 0 ? value : ''
+            return value
           }
         },
         axisBorder: {
