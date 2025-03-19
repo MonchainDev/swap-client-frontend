@@ -55,7 +55,7 @@ const masterChefV3Addresses = {
 const swapRouterV3Addresses = {
   [ChainId.MON_TESTNET]: '0x737A8fc40BCCa63dAE76BB1f300D31078fe9a79D',
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0x',
+  [ChainId.BSC_TESTNET]: '0xE18c090D3368dd6A5DF0086D403bFCfc6F3bE2a5',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, string>
