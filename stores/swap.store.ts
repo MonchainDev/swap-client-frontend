@@ -1,9 +1,7 @@
-import { Token } from '@monchain/swap-sdk-core'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import { defineStore } from 'pinia'
-import { DEFAULT_SLIPPAGE, EMPTY_TOKEN, NATIVE_TOKEN } from '~/constant'
+import { DEFAULT_SLIPPAGE, EMPTY_TOKEN } from '~/constant'
 import ABI_TOKEN from '~/constant/contract/contract-token.json'
-import { ChainId } from '~/types'
 import type { IFormSwap } from '~/types/swap.type'
 
 export const useSwapStore = defineStore('swap', () => {
@@ -50,37 +48,9 @@ export const useSwapStore = defineStore('swap', () => {
     }))
   )
 
-  const token0 = computed(() => {
-    if (form.value.token0.symbol === NATIVE_TOKEN.symbol && form.value.token0.address === '') {
-      return Native.onChain(ChainId.MON_TESTNET)
-    } else {
-      return form.value.token0.symbol
-        ? new Token(
-            ChainId.MON_TESTNET,
-            form.value.token0.address as `0x${string}`,
-            +form.value.token0.decimals,
-            form.value.token0.symbol,
-            form.value.token0.name
-          )
-        : undefined
-    }
-  })
+  const token0 = computed(() => useCurrency(form.value.token0.address as string, chainId.value!).token.value)
 
-  const token1 = computed(() => {
-    if (form.value.token1.symbol === NATIVE_TOKEN.symbol && form.value.token1.address === '') {
-      return Native.onChain(ChainId.MON_TESTNET)
-    } else {
-      return form.value.token1.symbol
-        ? new Token(
-            ChainId.MON_TESTNET,
-            form.value.token1.address as `0x${string}`,
-            +form.value.token1.decimals,
-            form.value.token1.symbol,
-            form.value.token1.name
-          )
-        : undefined
-    }
-  })
+  const token1 = computed(() => useCurrency(form.value.token1.address as string, chainId.value!).token.value)
 
   const swapRouterV3Address = computed(() => getSwapRouterV3Address(chainId.value))
 

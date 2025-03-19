@@ -1,12 +1,11 @@
 import ABI_TOKEN from '@/constant/contract/contract-token.json'
-import type { Price } from '@monchain/swap-sdk-core'
-import { Token } from '@monchain/swap-sdk-core'
+import type { Price, Token } from '@monchain/swap-sdk-core'
 import type { Position } from '@monchain/v3-sdk'
 import { useQuery } from '@tanstack/vue-query'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import Decimal from 'decimal.js'
 import { defineStore } from 'pinia'
-import { EMPTY_TOKEN, NATIVE_TOKEN } from '~/constant'
+import { EMPTY_TOKEN } from '~/constant'
 import { FeeAmount } from '~/constant/fee'
 import { ZOOM_LEVELS } from '~/constant/zoom-level'
 import { CurrencyField, type IExchangeRate, type IToken, type ZoomLevels } from '~/types'
@@ -43,29 +42,15 @@ export const useLiquidityStore = defineStore('liquidity', () => {
   // array of Set price range
   const listTokenOfRange = ref<IToken[]>([])
 
+  const { chainId } = useActiveChainId()
+
   const zoomLevel = computed(() => {
     return feeAmount.value ? ZOOM_LEVELS[feeAmount.value as FeeAmount] : ZOOM_LEVELS[FeeAmount.LOWEST]
   })
 
-  const baseCurrency = computed(() => {
-    if (form.value.token0.symbol === NATIVE_TOKEN.symbol && form.value.token0.address === '') {
-      return Native.onChain(chainId.value!)
-    } else {
-      return form.value.token0.symbol
-        ? new Token(chainId.value!, form.value.token0.address as `0x${string}`, +form.value.token0.decimals, form.value.token0.symbol, form.value.token0.name)
-        : undefined
-    }
-  })
+  const baseCurrency = computed(() => useCurrency(form.value.token0.address as string, chainId.value!).token.value)
 
-  const quoteCurrency = computed(() => {
-    if (form.value.token1.symbol === NATIVE_TOKEN.symbol && form.value.token1.address === '') {
-      return Native.onChain(chainId.value!)
-    } else {
-      return form.value.token1.symbol
-        ? new Token(chainId.value!, form.value.token1.address as `0x${string}`, +form.value.token1.decimals, form.value.token1.symbol, form.value.token1.name)
-        : undefined
-    }
-  })
+  const quoteCurrency = computed(() => useCurrency(form.value.token1.address as string, chainId.value!).token.value)
 
   function switchTokens() {
     ;[form.value.token0, form.value.token1] = [form.value.token1, form.value.token0]
@@ -135,7 +120,6 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     }))
   )
 
-  const { chainId } = useActiveChainId()
   const spenderAddress = computed(() => getSpenderCreatePool(chainId.value))
 
   const { data: allowance0, refetch: refetchAllowance0 } = useReadContract(
