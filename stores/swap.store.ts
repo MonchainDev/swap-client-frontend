@@ -32,18 +32,18 @@ export const useSwapStore = defineStore('swap', () => {
     tradingFee: 0
   })
 
-  const { data: balance0, refetch: _refetchBalance0 } = useBalance(
+  const { data: balance0 } = useBalance(
     computed(() => ({
       address: address.value,
-      token: form.value.token0.address as MaybeRef<`0x${string}`>,
+      token: (form.value.token0.address?.toLowerCase() === zeroAddress ? '' : form.value.token0.address) as `0x${string}`,
       watch: true
     }))
   )
 
-  const { data: balance1, refetch: _refetchBalance1 } = useBalance(
+  const { data: balance1 } = useBalance(
     computed(() => ({
       address: address.value,
-      token: form.value.token1.address as MaybeRef<`0x${string}`>,
+      token: (form.value.token1.address?.toLowerCase() === zeroAddress ? '' : form.value.token1.address) as `0x${string}`,
       watch: true
     }))
   )

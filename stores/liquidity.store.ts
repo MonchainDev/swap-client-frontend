@@ -107,7 +107,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
   const { data: balance0, refetch: refetchBalance0 } = useBalance(
     computed(() => ({
       address: address.value,
-      token: form.value.token0.address as MaybeRef<`0x${string}`>,
+      token: (form.value.token0.address?.toLowerCase() === zeroAddress ? '' : form.value.token0.address) as `0x${string}`,
       watch: true
     }))
   )
@@ -115,7 +115,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
   const { data: balance1, refetch: refetchBalance1 } = useBalance(
     computed(() => ({
       address: address.value,
-      token: form.value.token1.address as MaybeRef<`0x${string}`>,
+      token: (form.value.token1.address?.toLowerCase() === zeroAddress ? '' : form.value.token1.address) as `0x${string}`,
       watch: true
     }))
   )
