@@ -249,7 +249,8 @@
           token0: token0.value!,
           token1: token1.value!,
           inputAmount: inputAmount,
-          type: TradeType.EXACT_INPUT
+          type: TradeType.EXACT_INPUT,
+          chainId: currentNetwork.value.chainId
         })
         console.log('🚀 ~ handleInput ~ _bestTrade:', _bestTrade)
 
@@ -265,11 +266,15 @@
         form.value.amountOut = amount
         form.value.amountIn = ''
         const inputAmount = Number(form.value.amountOut) * ((10 ** Number(form.value.token1.decimals)) as number)
+        /**
+         * TODO: chain id is chain of wallet, not chain of state pinia
+         */
         const _bestTrade = await getBestTradeV2({
           token0: token0.value!,
           token1: token1.value!,
           inputAmount: inputAmount,
-          type: TradeType.EXACT_OUTPUT
+          type: TradeType.EXACT_OUTPUT,
+          chainId: currentNetwork.value.chainId // chainId of wallet
         })
         if (_bestTrade) {
           bestTrade.value = _bestTrade
