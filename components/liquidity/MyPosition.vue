@@ -128,7 +128,7 @@
 
 <script lang="ts" setup>
   import { useAccount } from '@wagmi/vue'
-  import { LIST_NETWORK } from '~/constant'
+  import { LIST_NETWORK } from '~/config/networks'
   import type { ITab } from '~/types/component.type'
   import type { IPosition, IPositionOrigin } from '~/types/position.type'
   import type { IResponse } from '~/types/response.type'
@@ -188,12 +188,12 @@
 
   const { handleImageError } = useErrorImage()
 
-  const networkSelected = ref<string[]>(LIST_NETWORK.map((item) => item.value))
+  const networkSelected = ref<string[]>(LIST_NETWORK.map((item) => item.network))
   const tokenSelected = ref<string[]>([])
   const positionCurrent = ref<IPosition | undefined>(undefined)
 
   const networkListSelected = computed(() => {
-    return LIST_NETWORK.filter((item) => networkSelected.value.includes(item.value))
+    return LIST_NETWORK.filter((item) => networkSelected.value.includes(item.network))
   })
   const tokenListSelected = computed(() => {
     return listToken.value.filter((item) => tokenSelected.value.includes(item.address))
@@ -202,7 +202,7 @@
   const titleFilterNetwork = computed(() => {
     return networkListSelected.value.length === LIST_NETWORK.length
       ? `All networks (${networkListSelected.value.length})`
-      : networkListSelected.value.map((item) => item.title).join(', ')
+      : networkListSelected.value.map((item) => item.name).join(', ')
   })
 
   const titleFilterToken = computed(() => {
@@ -214,7 +214,7 @@
   const queryString = computed(() => {
     // const poolStatus = tabActive.value === TabValue.ALL ? '' : tabActive.value
     const params = new URLSearchParams()
-    networkListSelected.value.forEach((network) => params.append('networks', network.value))
+    networkListSelected.value.forEach((network) => params.append('networks', network.network))
     tokenListSelected.value.forEach((token) => params.append('tokens', token.symbol === 'MON' ? 'WMON' : token.symbol))
     // params.append('poolStatus', poolStatus)
     params.append('page', query.value.page.toString())

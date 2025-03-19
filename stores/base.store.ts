@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { DEFAULT_NETWORK } from '~/constant'
+import { DEFAULT_NETWORK } from '~/config/networks'
 import type { INetwork, IToken } from '~/types'
 import type { POPUP_NAME } from '~/types/popup.type'
 

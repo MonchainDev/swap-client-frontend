@@ -14,11 +14,17 @@ export interface IToken {
 }
 
 export interface INetwork {
-  title: string
+  name: string
   logo: string
-  value: string
   chainId: ChainId
-  disabled?: boolean
+  id: number
+  network: string
+  rpc: string
+  graphUrl: string
+  nativeToken: string
+  wrapToken: string
+  wrapTokenAddress: string
+  loading?: boolean
 }
 
 export enum ChainId {

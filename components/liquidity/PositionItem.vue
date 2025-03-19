@@ -11,8 +11,8 @@
       <div class="flex flex-col">
         <div class="line-clamp-1 text-base font-semibold">{{ props.position?.baseSymbol }}/{{ props.position.quoteSymbol }}</div>
         <div class="flex items-center space-x-1">
-          <img :src="networkSelected?.logo" :alt="networkSelected?.title" class="size-[14px]" />
-          <span class="text-xs text-gray-8">{{ networkSelected?.title }} | #{{ props.position.tokenId }}</span>
+          <img :src="networkSelected?.logo" :alt="networkSelected?.name" class="size-[14px]" />
+          <span class="text-xs text-gray-8">{{ networkSelected?.name }} | #{{ props.position.tokenId }}</span>
         </div>
       </div>
     </div>
@@ -66,7 +66,7 @@
 
 <script lang="ts" setup>
   // import type { CurrencyAmount, Token } from '@monchain/swap-sdk-core'
-  import { LIST_NETWORK } from '~/constant'
+  import { LIST_NETWORK } from '~/config/networks'
   // import { Bound } from '~/types'
   import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
@@ -75,10 +75,10 @@
   import { config } from '~/config/wagmi'
   import { CONTRACT_ADDRESS } from '~/constant/contract'
   import type { IExchangeRate } from '~/types'
+  import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { IPosition } from '~/types/position.type'
   import { MasterChefV3 } from '~/utils/masterChefV3'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
-  import type { IBodyTxCollect } from '~/types/encrypt.type'
 
   interface IProps {
     // position: PositionDetail
@@ -103,7 +103,7 @@
 
   const networkSelected = computed(() => {
     if (props.position) {
-      return LIST_NETWORK.find((item) => item.value === props.position.network)
+      return LIST_NETWORK.find((item) => item.network === props.position.network)
     }
     return undefined
   })

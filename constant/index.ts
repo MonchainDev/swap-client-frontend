@@ -1,6 +1,6 @@
-import { ChainId, type INetwork, type IToken, type ZoomLevels } from '~/types'
-import { ZOOM_LEVELS } from './zoom-level'
+import { type IToken, type ZoomLevels } from '~/types'
 import { FeeAmount } from './fee'
+import { ZOOM_LEVELS } from './zoom-level'
 
 const DEFAULT_SLIPPAGE = '1'
 const DECIMALS_NATIVE = 18
@@ -19,51 +19,6 @@ const WRAPPED_NATIVE_TOKEN: IToken = {
   decimals: 18,
   icon_url: 'https://cryptologos.cc/logos/compound-comp-logo.png?v=040',
   address: '0xF76eF13fb6B775e4609C921cAA1BD9307E338276'
-}
-
-const LIST_NETWORK: INetwork[] = [
-  {
-    title: 'BNB Chain',
-    logo: '/logo-bnb-chain.png',
-    value: 'BNB',
-    chainId: ChainId.BSC_TESTNET,
-    disabled: true
-  },
-  {
-    title: 'Ethereum',
-    logo: '/logo-ethereum-chain.png',
-    value: 'ETH',
-    chainId: ChainId.SEPOLIA,
-    disabled: true
-  },
-  {
-    title: 'Polygon',
-    logo: '/logo-polygon-chain.png',
-    value: 'MATIC',
-    chainId: ChainId.POLYGON,
-    disabled: true
-  },
-  {
-    title: 'Mon Chain',
-    logo: '/logo-mon-chain.png',
-    value: 'MON',
-    chainId: ChainId.MON_TESTNET,
-    disabled: false
-  },
-  {
-    title: 'Linea Chain',
-    logo: '/logo-liena-chain.png',
-    value: 'LINEA',
-    chainId: ChainId.LINEA,
-    disabled: true
-  }
-]
-
-const DEFAULT_NETWORK: INetwork = {
-  title: 'Mon Chain',
-  logo: '/logo-mon-chain.png',
-  value: 'MON',
-  chainId: ChainId.MON_TESTNET
 }
 
 const QUICK_ACTION_CONFIGS: Record<FeeAmount | string, { [percentage: number]: ZoomLevels }> = {
@@ -163,16 +118,4 @@ const BIPS_BASE = 10000n
 const FAST_INTERVAL = 10000
 const SLOW_INTERVAL = 60000
 
-export {
-  DEFAULT_SLIPPAGE,
-  DECIMALS_NATIVE,
-  NATIVE_TOKEN,
-  WRAPPED_NATIVE_TOKEN,
-  LIST_NETWORK,
-  DEFAULT_NETWORK,
-  QUICK_ACTION_CONFIGS,
-  LIST_FEE_AMOUNT,
-  BIPS_BASE,
-  SLOW_INTERVAL,
-  FAST_INTERVAL
-}
+export { BIPS_BASE, DECIMALS_NATIVE, DEFAULT_SLIPPAGE, FAST_INTERVAL, LIST_FEE_AMOUNT, NATIVE_TOKEN, QUICK_ACTION_CONFIGS, SLOW_INTERVAL, WRAPPED_NATIVE_TOKEN }
