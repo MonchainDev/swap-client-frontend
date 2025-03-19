@@ -75,7 +75,7 @@ export const publicClient = ({ chainId }: { chainId?: ChainId }) => {
   if (chainId && viemClients[chainId]) {
     return viemClients[chainId]
   }
-  console.log('aa')
+  console.log('publicClient', chainId)
 
   const httpString = chainId && first(PUBLIC_NODES[chainId]) ? first(PUBLIC_NODES[chainId]) : undefined
 

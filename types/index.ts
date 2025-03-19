@@ -25,8 +25,8 @@ export enum ChainId {
   BSC_TESTNET = 97,
   MON_TESTNET = 16789,
   SEPOLIA = 11155111,
-  POLYGON = 137,
-  LINEA = 80001
+  ARBITRUM_SEPOLIA = 421614,
+  AMOY_POLYGON = 80002
 }
 
 export enum CurrencyField {
