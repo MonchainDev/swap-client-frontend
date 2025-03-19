@@ -1,16 +1,20 @@
 import type { Address } from 'viem'
 
 export interface IToken {
-  circulating_market_cap?: string
+  id: number
+  tokenSymbol: string
+  tokenAddress: string
+  tokenDecimals: number
+  network: string
+  chainId: number
+  stable: boolean
+  crossChain: boolean
   icon_url: string
-  name: string
-  decimals: string | number
-  symbol: string
+  // interface old
   address: string
-  type?: string
-  holders?: string
-  exchange_rate?: string
-  total_supply?: string
+  decimals: number
+  symbol: string
+  name: string
 }
 
 export interface INetwork {

@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/vue-query'
 import { defineStore } from 'pinia'
 import { DEFAULT_NETWORK } from '~/config/networks'
 import type { INetwork, IToken } from '~/types'
@@ -26,6 +27,26 @@ export const useBaseStore = defineStore('base', () => {
       })
     }
   }
+
+  useQuery({
+    queryKey: computed(() => ['token-list', currentNetwork.value.chainId]),
+    queryFn: async () => {
+      const { data } = await useFetch<IToken[]>('/api/v2/tokens', { query: { network: currentNetwork.value.network } })
+      const tokenList = Array.isArray(data.value)
+        ? data.value.map((item) => ({
+            ...item,
+            logo: '',
+            address: item.tokenAddress,
+            symbol: item.tokenSymbol,
+            decimals: item.tokenDecimals,
+            name: item.tokenSymbol
+          }))
+        : []
+      listToken.value = tokenList
+      return data.value
+    },
+    enabled: computed(() => !!currentNetwork.value.chainId)
+  })
 
   return { popup, setOpenPopup, listToken, nativeBalance, isDesktop, currentNetwork }
 })

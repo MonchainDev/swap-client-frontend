@@ -24,7 +24,7 @@
           <template v-if="showNetwork" #suffix>
             <div class="flex min-w-[136px] items-center gap-[9px] rounded-lg bg-white p-[6px] sm:hidden">
               <img :src="network.logo" alt="logo" class="size-6 rounded-lg" />
-              <span class="text-xs font-semibold text-primary">{{ network.title }}</span>
+              <span class="text-xs font-semibold text-primary">{{ network.name }}</span>
             </div>
           </template>
         </ElInput>
