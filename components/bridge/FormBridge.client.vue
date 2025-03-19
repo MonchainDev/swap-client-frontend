@@ -184,7 +184,7 @@
   import Decimal from 'decimal.js'
   import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
   import { config } from '~/config/wagmi'
-  import type { V3Pool } from '@monchain/smart-router'
+  import type { Route, V3Pool } from '@monchain/smart-router'
 
   export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE'
 
@@ -311,10 +311,10 @@
         token1: token.value!,
         inputAmount: outAmount,
         type: TradeType.EXACT_OUTPUT
-      })
+      }) as SwapOutput
 
       /*
-      
+      input gọi API sign: http://localhost:8000/api/v1/sign/relay-transfer
       {
         "contractAddress": "địa chỉ contract lifi trên API network, mạng gốc ở network nào thì lấy theo contract của network đó",
         "chainId": chain gốc,
@@ -322,7 +322,7 @@
         "receiverAddress": "địa chỉ ví nhận",
         "sendingAssetId": "địa chỉ token chuyển đi, luôn lấy theo API",
         "receiverAssetId": "luôn lấy địa address api",
-        "amountIn": Số tiền nhập vào,
+        "amountIn": Số tiền nhập vào dạng wei,
         "routes": [
             {
                 "tokenInAddress": "địa chỉ token USDT",
@@ -337,7 +337,38 @@
       }
       */
 
-      const routes = _bestTrade.routes
+      const trade = _bestTrade as SmartRouterTrade<TradeType>
+      const routes = trade.routes as Route[]
+      for (let i = 0; i < routes.length; i++) {
+        const route = routes[i];
+
+        const liquidity = (route.pools[0] as V3Pool).liquidity.toString()
+      const sqrtRatioX96 = (route.pools[0] as V3Pool).sqrtRatioX96
+      const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
+
+      const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
+      let nextPrice: Decimal = new Decimal(0)
+      if (zeroToOne) {
+        // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
+        nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
+      } else {
+        // √(Pnew) = (Δy / L) + √(Pcurrent)
+        nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
+      }
+      const sqrtPriceLimitX96 = nextPrice
+        .sqrt()
+        .mul(2 ** 96)
+        .toNumber()
+
+        const routeIn = {
+           tokenInAddress: route.inputAmount.currency.wrapped.address,
+           tokenOutAddress: route.outputAmount.currency.wrapped.address,
+           fee: (route.pools[0] as V3Pool).fee,
+           amountOut: route.outputAmount.numerator,
+           amountInMaximum: route.inputAmount.numerator,
+           sqrtPriceLimitX96: sqrtPriceLimitX96
+        }
+      }
 
       console.log('🚀 ~ handleInput ~ _bestTrade:', _bestTrade)
       isFetchQuote.value = false
