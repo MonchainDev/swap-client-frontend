@@ -17,7 +17,13 @@
             >Farm/ Liquidity</NuxtLink
           >
           <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Farming</div>
-          <NuxtLink active-class="active-menu" to="/bridge" class="text-center text-base font-medium leading-6 hover:text-primary">Bridge</NuxtLink>
+          <NuxtLink
+            :class="{ 'active-menu': $route.path.includes('/bridge') }"
+            to="/bridge"
+            class="text-center text-base font-medium leading-6 hover:text-primary"
+          >
+            Bridge
+          </NuxtLink>
           <!-- <div active-class="active-menu" to="/swap" class="text-center text-base font-medium leading-6 hover:text-primary">Bridge</div> -->
         </div>
       </div>

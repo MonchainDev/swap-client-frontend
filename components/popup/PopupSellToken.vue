@@ -29,58 +29,11 @@
         </template>
         <template v-if="showNetwork" #suffix>
           <div class="flex min-w-[136px] items-center gap-[9px] rounded-lg bg-white p-[6px] sm:hidden">
-            <img :src="network.logo" alt="logo" class="size-6 rounded-lg" />
-            <span class="text-xs font-semibold text-primary">{{ network.title }}</span>
+            <!-- <img :src="network.logo" alt="logo" class="size-6 rounded-lg" /> -->
+            <span class="text-xs font-semibold text-primary">{{ toNetwork?.network }}</span>
           </div>
         </template>
       </ElInput>
-      <!-- <template v-if="_props.isSelect">
-        <template v-if="tokenRecentFilter.length">
-          <div class="grid grid-cols-[1fr_40px] gap-1">
-            <ElScrollbar class="hidden-scroll">
-              <ul class="flex gap-4">
-                <li
-                  v-for="item in tokenRecentFilter"
-                  :key="item.address"
-                  class="flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-solid border-gray-3 bg-white px-4"
-                >
-                  <img
-                    :src="item.icon_url || ''"
-                    alt="logo token"
-                    class="size-5 rounded-full object-cover"
-                    @error="handleImageError($event)"
-                    @click="handleClickToken(item)"
-                  />
-                  <span class="flex-1 text-xs font-semibold" @click="handleClickToken(item)">{{ item.symbol }}</span>
-                  <BaseIcon name="x-circle" size="14" class="cursor-pointer" @click="removeToken(item)" />
-                </li>
-              </ul>
-            </ElScrollbar>
-            <div class="reload flex items-center justify-end">
-              <BaseIcon name="reload" size="24" class="cursor-pointer" @click="removeAll" />
-            </div>
-          </div>
-        </template>
-      </template>
-      <template v-else>
-        <template v-if="recentTokens.length">
-          <div class="grid grid-cols-1 gap-1">
-            <ElScrollbar class="hidden-scroll">
-              <ul class="flex gap-4">
-                <li
-                  v-for="item in recentTokens"
-                  :key="item.address"
-                  class="flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-solid border-gray-3 bg-white px-4"
-                  @click="handleClickToken(item)"
-                >
-                  <img :src="item.icon_url || ''" alt="logo token" class="size-5 rounded-full object-cover" @error="handleImageError($event)" />
-                  <span class="flex-1 text-xs font-semibold">{{ item.symbol }}</span>
-                </li>
-              </ul>
-            </ElScrollbar>
-          </div>
-        </template>
-      </template> -->
     </div>
     <div class="bg-[#FAFAFA]">
       <SkeletonListToken v-if="loading" class="px-8 pt-6 sm:px-4" />
@@ -89,24 +42,21 @@
           <ul class="pr-8">
             <li
               v-for="item in data"
-              :key="item.address"
+              :key="item.tokenAddress"
               class="mb-3 flex h-[52px] cursor-pointer items-center justify-between gap-3 pl-8 first:mt-3 last:mb-0 hover:bg-gray-3 sm:pl-4"
               @click="handleClickToken(item)"
             >
               <div class="grid h-[68px] cursor-pointer grid-cols-[40px_1fr] items-center gap-3">
-                <img :src="item.icon_url || ''" alt="logo token" class="size-10 rounded-full object-cover" @error="handleImageError($event)" />
+                <!-- <img :src="item.icon_url || ''" alt="logo token" class="size-10 rounded-full object-cover" @error="handleImageError($event)" /> -->
                 <div class="flex flex-col">
-                  <span class="text-base font-medium">{{ item.name }}</span>
-                  <span class="text-xs text-gray-8">{{ item.symbol }}</span>
+                  <span class="text-base font-medium">{{ item.network }}</span>
+                  <span class="text-xs text-gray-8">{{ item.tokenSymbol }}</span>
                 </div>
               </div>
               <div v-if="isConnected" class="text-sm">
                 <span v-if="!isIncompatible" class="text-primary">0.012890</span>
                 <span v-else class="text-[#F99F01]">Incompatible</span>
               </div>
-              <!-- <div v-if="isSelect" class="mr-3">
-                <BaseIcon :name="useIncludes(tokenSelected, item.address) ? 'checkbox-fill' : 'checkbox'" size="24" />
-              </div> -->
             </li>
           </ul>
         </ElScrollbar>
@@ -118,12 +68,13 @@
 
 <script lang="ts" setup>
   import { useAccount } from '@wagmi/vue'
-  import type { IToken } from '~/types'
-  // import { useStorage } from '@vueuse/core'
+  // import type { IToken } from '~/types'
+  import type { TokenConfig } from '~/types/bridge.type'
 
   interface IProps {
     showNetwork?: boolean
     isSelect?: boolean
+    listToken: TokenConfig[]
   }
 
   const _props = withDefaults(defineProps<IProps>(), {
@@ -132,7 +83,7 @@
   })
 
   const emit = defineEmits<{
-    select: [token: IToken]
+    select: [token: TokenConfig]
   }>()
 
   const tokenSelected = defineModel('tokenSelected', {
@@ -141,63 +92,40 @@
   })
   const { isConnected } = useAccount()
   const { setOpenPopup } = useBaseStore()
-  const { listToken, isDesktop, currentNetwork: network } = storeToRefs(useBaseStore())
+  const { isDesktop } = storeToRefs(useBaseStore())
+  const { toNetwork } = storeToRefs(useBridgeStore())
+
   const search = ref('')
   const loading = ref(false)
-
   const isIncompatible = ref<boolean>(false)
 
-  // const recentTokens = useStorage<IToken[]>('recent_tokens', [])
-
   const data = computed(() => {
-    return listToken.value.filter((item) => {
+    return _props.listToken.filter((item) => {
       return (
-        item.name?.toLowerCase().includes(search.value.toLowerCase()) ||
-        item.symbol?.toLowerCase().includes(search.value.toLowerCase()) ||
-        item.address?.toLowerCase().includes(search.value.toLowerCase())
+        item.network?.toLowerCase().includes(search.value.toLowerCase()) ||
+        item.tokenSymbol?.toLowerCase().includes(search.value.toLowerCase()) ||
+        item.tokenAddress?.toLowerCase().includes(search.value.toLowerCase())
       )
     })
   })
-
-  // const tokenRecentFilter = computed(() => {
-  //   return listToken.value.filter((item) => tokenSelected.value.includes(item.address))
-  // })
-
-  // const titlePopup = computed(() => {
-  //   return _props.isSelect ? `Select tokens ${tokenSelected.value.length ? ': ' + tokenSelected.value.length : ''}` : 'Select a token'
-  // })
-
   const handleSearchToken = useDebounce(() => {
     loading.value = false
   }, 600)
 
-  const handleClickToken = (item: IToken) => {
+  const handleClickToken = (item: TokenConfig) => {
     if (_props.isSelect) {
-      const index = tokenSelected.value.indexOf(item.address)
+      const index = tokenSelected.value.indexOf(item.tokenAddress)
       if (index > -1) {
         tokenSelected.value.splice(index, 1)
       } else {
-        tokenSelected.value.push(item.address)
+        tokenSelected.value.push(item.tokenAddress)
       }
     } else {
-      // recentTokens.value = [item, ...recentTokens.value.filter((token) => token.address !== item.address)].slice(0, 7)
-      emit('select', { ...item, icon_url: item.icon_url ?? '' })
+      emit('select', { ...item })
       setOpenPopup('popup-sell-token', false)
     }
   }
-
-  // const removeToken = (item: IToken) => {
-  //   const index = tokenSelected.value.indexOf(item.address)
-  //   if (index > -1) {
-  //     tokenSelected.value.splice(index, 1)
-  //   }
-  // }
-
-  // const removeAll = () => {
-  //   tokenSelected.value = []
-  // }
-
-  const { handleImageError } = useErrorImage()
+  // const { handleImageError } = useErrorImage()
 </script>
 
 <style lang="scss" scoped>

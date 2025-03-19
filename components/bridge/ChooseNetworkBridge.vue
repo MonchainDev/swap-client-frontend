@@ -14,9 +14,10 @@
           <div :class="type === 'FROM' ? 'from-network' : 'to-network'" class="h-[103px] cursor-pointer sm:h-[75px]">
             <p class="mb-4 text-primary sm:mb-2 sm:text-xs">{{ type === 'FROM' ? 'From network' : 'To network' }}</p>
             <div class="flex cursor-pointer items-center gap-2 rounded-lg">
-              <img :src="type === 'FROM' ? fromNetwork?.logo : toNetwork?.logo" alt="logo" class="size-7 rounded-lg sm:size-5" />
+              <img alt="logo" class="size-7 rounded-lg sm:size-5" />
+              <!-- :src="type === 'FROM' ? getLogoByNetwork(fromNetwork?.network!) : getLogoByNetwork(toNetwork?.network!)" -->
               <span class="overflow-hidden text-ellipsis text-base font-semibold sm:text-xs">
-                {{ type === 'FROM' ? fromNetwork?.title : toNetwork?.title }}
+                {{ type === 'FROM' ? fromNetwork?.network : toNetwork?.network }}
               </span>
               <BaseIcon name="arrow" :size="isDesktop ? '24' : '20'" class="-rotate-90" />
             </div>
@@ -31,15 +32,11 @@
           </template>
         </ElInput>
         <ul class="space-y-4">
-          <li v-for="item in listNetwork" :key="item.value">
-            <div
-              class="flex cursor-pointer items-center justify-between gap-3"
-              :class="{ 'pointer-events-none opacity-50': item.disabled }"
-              @click="handleSelectNetwork(item)"
-            >
+          <li v-for="item in listNetworks" :key="item.id">
+            <div class="flex cursor-pointer items-center justify-between gap-3" @click="handleSelectNetwork(item)">
               <div class="flex items-center gap-3">
-                <img :src="item.logo" alt="logo" class="size-9 rounded-lg" />
-                <span class="text-sm font-semibold text-primary sm:font-normal">{{ item.title }}</span>
+                <!-- <img :src="getLogoByNetwork(item.network)" alt="logo" class="size-9 rounded-lg" /> -->
+                <span class="text-sm font-semibold text-primary sm:font-normal">{{ item.network }}</span>
               </div>
               <!-- <div v-if="isSelect">
                 <BaseIcon :name="useIncludes(networkSelected, item.value) ? 'checkbox-fill' : 'checkbox'" size="24" />
@@ -53,8 +50,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { LIST_NETWORK } from '~/constant'
-  import type { INetwork } from '~/types'
+  import type { NetworkConfig } from '~/types/bridge.type'
 
   interface IProps {
     // isSelect?: boolean
@@ -66,38 +62,53 @@
     type: 'FROM'
   })
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { fromNetwork, toNetwork } = storeToRefs(useBridgeStore())
+  const { fromNetwork, toNetwork, listNetwork } = storeToRefs(useBridgeStore())
   const visible = ref(false)
   const search = ref('')
-
   // const networkSelected = defineModel('networkSelected', {
   //   type: Array<string>,
   //   default: []
   // })
 
-  const listNetwork = computed(() => {
-    return LIST_NETWORK.filter((item) => item.title.toLowerCase().includes(useTrim(search.value.toLowerCase())))
+  const emits = defineEmits<{
+    'select-network': []
+  }>()
+
+  const listNetworks = computed(() => {
+    return listNetwork.value.filter((item) => item.network.toLowerCase().includes(useTrim(search.value.toLowerCase())))
   })
 
-  const handleSelectNetwork = (item: INetwork) => {
+  // function getLogoByNetwork(network: string): string {
+  //   switch (network) {
+  //     case 'ETH':
+  //       return '/logo-ethereum-chain.png'
+  //     case 'POLYGON':
+  //       return '/logo-polygon-chain.png'
+  //     case 'ARBITRUM':
+  //       return '/logo-liena-chain.png'
+  //     case 'BSC':
+  //       return '/logo-bnb-chain.png'
+  //     case 'MON':
+  //       return '/logo-mon-chain.png'
+  //     case 'LINEA':
+  //       return '/logo-linea-chain.png'
+  //     default:
+  //       return '/logo-mon-chain.png'
+  //   }
+  // }
+
+  fromNetwork.value = listNetwork.value[0]
+  toNetwork.value = listNetwork.value[0]
+
+  const handleSelectNetwork = (item: NetworkConfig) => {
     if (_props.type === 'FROM') {
       fromNetwork.value = item
       visible.value = false
     } else {
       toNetwork.value = item
+      emits('select-network')
       visible.value = false
     }
-    // if (_props.isSelect) {
-    //   const index = networkSelected.value.indexOf(item.value)
-    //   if (index > -1) {
-    //     networkSelected.value.splice(index, 1)
-    //   } else {
-    //     networkSelected.value.push(item.value)
-    //   }
-    //   if (networkSelected.value.length === 0) {
-    //     networkSelected.value.push(DEFAULT_NETWORK.value)
-    //   }
-    // }
   }
 </script>
 

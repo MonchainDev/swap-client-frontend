@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-2 rounded-lg bg-white px-8 pb-9 pt-[21px] shadow-md sm:gap-0 sm:p-4">
     <span class="text-2xl font-semibold leading-7 sm:text-lg"> Bridge </span>
     <span class="text-sm text-gray-8 sm:text-xs">Connects assets across blockchain networks seamlessly.</span>
-    <div v-if="!approveAndSend" class="relative mt-6 flex w-full justify-between gap-1 sm:mt-5">
+    <div class="relative mt-6 flex w-full justify-between gap-1 sm:mt-5">
       <div class="from-network w-1/2">
         <ChooseNetworkBridge type="FROM" />
       </div>
@@ -15,31 +15,30 @@
         </div>
       </div>
       <div class="to-network w-1/2">
-        <ChooseNetworkBridge type="TO" />
+        <ChooseNetworkBridge type="TO" @select-network="handleSelectNetwork" />
       </div>
     </div>
-    <div v-if="!approveAndSend" class="mt-3 w-full sm:mt-4">
+    <div class="mt-3 w-full sm:mt-4">
       <InputBridge
         v-model:amount="form.amount"
-        :is-selected="isToken2Selected"
+        :is-selected="isTokenSelected"
         :token="form.token"
         :balance="balance?.formatted"
         :step-bridge
-        type="SEND"
         class="h-[138px] w-full border border-[#EEEEEE] bg-white sm:h-[100px]"
         @select-token="handleOpenPopupSelectToken"
         @change="handleInput"
       />
     </div>
 
-    <div v-if="approveAndSend" class="mt-6 w-full sm:mt-5">
+    <div class="mt-6 w-full sm:mt-5">
       <div class="flex w-full rounded-tl-lg rounded-tr-lg bg-[#FAFAFA] px-8 pb-7 pt-3 shadow sm:px-3 sm:pb-5">
         <div class="flex flex-col">
           <p class="mb-4 text-sm text-primary sm:mb-2 sm:text-xs">From network</p>
           <div class="flex items-center gap-2 rounded-lg">
-            <img :src="fromNetwork?.logo" alt="logo" class="size-7 rounded-lg sm:size-5" />
+            <!-- <img :src="fromNetwork?.logo" alt="logo" class="size-7 rounded-lg sm:size-5" /> -->
             <span class="overflow-hidden text-ellipsis text-base font-semibold sm:text-xs">
-              {{ fromNetwork?.title }}
+              {{ fromNetwork?.network }}
             </span>
           </div>
         </div>
@@ -48,9 +47,9 @@
         <div class="flex flex-col">
           <p class="mb-4 text-sm text-primary sm:mb-2 sm:text-xs">To network</p>
           <div class="flex items-center gap-2 rounded-lg">
-            <img :src="fromNetwork?.logo" alt="logo" class="size-7 rounded-lg sm:size-5" />
+            <!-- <img :src="fromNetwork?.logo" alt="logo" class="size-7 rounded-lg sm:size-5" /> -->
             <span class="overflow-hidden text-ellipsis text-base font-semibold sm:text-xs">
-              {{ fromNetwork?.title }}
+              {{ toNetwork?.network }}
             </span>
           </div>
         </div>
@@ -60,9 +59,9 @@
           <p class="mb-1 text-primary sm:mb-2 sm:text-sm">Send</p>
           <div class="flex items-center justify-between gap-2 rounded-lg bg-[#FAFAFA]">
             <div class="flex items-center gap-1">
-              <img :src="form.token.icon_url" alt="logo" class="size-7 rounded-lg sm:size-5" />
+              <!-- <img :src="form.token.icon_url" alt="logo" class="size-7 rounded-lg sm:size-5" /> -->
               <p class="overflow-hidden text-ellipsis text-[22px] font-semibold leading-[28px] sm:text-base">
-                {{ form.token.symbol }}
+                {{ form.token.tokenSymbol }}
               </p>
             </div>
             <div class="flex flex-col">
@@ -151,30 +150,42 @@
       </button>
     </template>
 
-    <PopupSellToken @select="handleSelectToken" />
+    <PopupSellToken :list-token="listTokenData" @select="handleSelectToken" />
   </div>
 </template>
 
 <script lang="ts" setup>
-  // import { type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
-  // import { TradeType } from '@monchain/swap-sdk-core'
-  // import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import { computed } from 'vue'
+  import { createPublicClient, http, type Address, type Hex } from 'viem'
   import { useAccount } from '@wagmi/vue'
-  // import Decimal from 'decimal.js'
-  // import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
-  // import { config } from '~/config/wagmi'
-  import { DEFAULT_SLIPPAGE } from '~/constant'
-  // import swapRouterABI from '~/constant/abi/swapRouter.json'
-  // import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
+  import ethers from 'ethers'
+  import { createConfig, writeContract } from '@wagmi/core'
   import type { IToken } from '~/types'
-  import type { TYPE_BRIDGE } from '~/types/bridge.type'
-  // import { type SwapOutput } from '~/utils/getBestTrade'
+  import { monTestnet } from '~/utils/config/chains'
+  import { mainnet, sepolia } from '@wagmi/core/chains'
+  import ABI_RELAY_FACET from '@/constant/abi/RelayFacet.json'
   import InputBridge from './InputBridge.vue'
   import ChooseNetworkBridge from './ChooseNetworkBridge.vue'
   import PopupSellToken from '../popup/PopupSellToken.vue'
-  // import HeaderFormSwap from './HeaderFormSwap.vue'
-  // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
+  import type { TokenConfig } from '~/types/bridge.type'
   import { ElNotification } from 'element-plus'
+  import { type SwapOutput } from '~/utils/getBestTradeV2'
+  import { TradeType } from '@monchain/swap-sdk-core'
+  import { DEFAULT_SLIPPAGE } from '~/constant'
+  import { useBridgeTransaction } from '~/composables/useBridgeTransaction'
+  import HeaderFormSwap from './HeaderFormSwap.vue'
+  import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
+  import swapRouterABI from '~/constant/abi/swapRouter.json'
+  import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
+  import type { IFormBridge } from '~/types/bridge.type'
+  import { type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
+  import { TradeType } from '@monchain/swap-sdk-core'
+  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import Decimal from 'decimal.js'
+  import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
+  import { config } from '~/config/wagmi'
+  import type { V3Pool } from '@monchain/smart-router'
+
   export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE'
 
   interface IProps {
@@ -185,33 +196,26 @@
     title: 'Bridge'
   })
 
-  const approveAndSend = ref<boolean>(false)
-  const { fromNetwork, toNetwork } = storeToRefs(useBridgeStore())
-  const { isConnected } = useAccount()
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, balance, form } = storeToRefs(useBridgeStore())
-
+  const { fromNetwork, toNetwork, balance, form } = storeToRefs(useBridgeStore())
   const isEditSlippage = ref(false)
+
+  const approveAndSend = ref<boolean>(false)
+  const { address } = useAccount()
+
   const stepBridge = ref<StepBridge>('SELECT_TOKEN')
-  // const sendAmount = ref('')
-  // const sellAmount = ref('')
 
-  // const trades = ref<SmartRouterTrade<TradeType>>()
-
-  // const bestTrade = ref<SwapOutput | undefined>(undefined)
-
+  const bestTrade = ref<SwapOutput | undefined>(undefined)
   const isFetchQuote = ref(false)
 
-  // const isToken0Selected = computed(() => form.value.token0.symbol !== '')
-  // const isToken1Selected = computed(() => form.value.token1.symbol !== '')
-  const isToken2Selected = computed(() => form.value.token?.symbol !== '')
+  const isTokenSelected = computed(() => form.value.token?.tokenSymbol !== '')
   // const isQuoteExist = computed(() => form.value.amountOut && form.value.amountIn)
   // const formatTitle = computed(() => {
   //   return stepBridge.value === 'SELECT_TOKEN' ? _props.title : 'Confirm bridge'
   // })
 
-  // const noRoute = computed(() => !(((bestTrade.value && bestTrade.value?.routes.length) ?? 0) > 0))
+  const noRoute = computed(() => !(((bestTrade.value && bestTrade.value?.routes.length) ?? 0) > 0))
   const notEnoughLiquidity = ref(false)
 
   /*
@@ -225,128 +229,83 @@
    * case 5: SWAPPING! PLEASE WAIT..
    */
   const msgButton = computed(() => {
-    return 'Enter an amount'
-    // if (isSwapping.value) {
-    //   return 'SWAPPING! PLEASE WAIT..'
-    // } else if (!isToken0Selected.value || !isToken1Selected.value) {
-    //   return 'Select a token'
-    // } else if (isFetchQuote.value) {
-    //   return 'Finalizing quote...'
-    // } else if ((!isFetchQuote.value && noRoute.value && isToken0Selected.value && isToken1Selected.value) || notEnoughLiquidity.value) {
-    //   return 'Insufficient liquidity for this trade'
-    // } else if (isToken0Selected.value && isToken1Selected.value) {
-    //   if (stepBridge.value === 'SELECT_TOKEN') {
-    //     return `Swap ${bestTrade.value?.inputAmount.toSignificant(6)} ${form.value.token0.symbol} ⇒ ${bestTrade.value?.outputAmount.toSignificant(6)} ${form.value.token1.symbol}`
-    //   } else {
-    //     if (isSwapping.value) {
-    //       return 'SWAPPING! PLEASE WAIT..'
-    //     } else {
-    //       return isConfirmApprove.value || isConfirmSwap.value ? 'CONFIRM IN WALLET' : 'APPROVE AND SWAP'
-    //     }
-    //   }
-    // } else {
-    //   return 'Enter an amount'
-    // }
+    if (isSwapping.value) {
+      return 'SWAPPING! PLEASE WAIT..'
+    } else if (!isTokenSelected.value) {
+      return 'Select a token'
+    } else if (isFetchQuote.value) {
+      return 'Finalizing quote...'
+    } else if ((!isFetchQuote.value && noRoute.value && isTokenSelected.value) || notEnoughLiquidity.value) {
+      return 'You have insufficient balance'
+    } else if (isTokenSelected.value) {
+      if (stepBridge.value === 'SELECT_TOKEN') {
+        return `SEND ${form.value.amount} ${form.value.token.name}: ${fromNetwork.value.title} ⇒ ${toNetwork.value.title}`
+      } else {
+        if (isSwapping.value) {
+          return 'SWAPPING! PLEASE WAIT..'
+        } else {
+          return isConfirmApprove.value || isConfirmSwap.value ? 'CONFIRM IN WALLET' : 'APPROVE AND SWAP'
+        }
+      }
+    } else {
+      return 'Enter an amount'
+    }
   })
 
   const isDisabledButton = computed(() => {
-    return false
-    // return (
-    //   !isToken2Selected.value ||
-    //   !form.value.amount ||
-    //   !(fromNetwork.value.value === toNetwork.value.value) ||
-    //   isFetchQuote.value ||
-    //   noRoute.value ||
-    //   notEnoughLiquidity.value
-    // )
+    return (
+      !isTokenSelected.value ||
+      !form.value.amount ||
+      !(fromNetwork.value?.network === toNetwork.value?.network) ||
+      isFetchQuote.value ||
+      noRoute.value ||
+      notEnoughLiquidity.value
+    )
   })
 
   const handleSwapOrder = () => {
-    if (fromNetwork.value.value === toNetwork.value.value) return
+    if (stepBridge.value === 'CONFIRM_BRIDGE') return
     ;[fromNetwork.value, toNetwork.value] = [toNetwork.value, fromNetwork.value]
-    // if (stepBridge.value === 'CONFIRM_BRIDGE') return
-    // ;[form.value.token0, form.value.token1] = [form.value.token1, form.value.token0]
-    // handleInput(form.value.amountIn, 'BASE')
+    handleSelectNetwork()
   }
 
-  const typeOpenPopup = ref<TYPE_BRIDGE>('BASE')
-  const handleOpenPopupSelectToken = (type: TYPE_BRIDGE) => {
+  const handleOpenPopupSelectToken = () => {
     if (stepBridge.value === 'CONFIRM_BRIDGE') return
-    typeOpenPopup.value = type
     setOpenPopup('popup-sell-token', true)
   }
 
-  const handleInput = async (amount: string, type: TYPE_BRIDGE) => {
+  const listTokenData = ref<TokenConfig[]>([])
+
+  function handleSelectNetwork() {
+    const query = { network: toNetwork.value?.network, crossChain: 'Y' }
+    const { data } = useFetch<TokenConfig[]>('/api/network/token', { query })
+    listTokenData.value = data.value || []
+  }
+
+  // const poolAddress = ref<string>('')
+  const handleInput = async (amount: string) => {
+    console.log(amount)
     try {
       notEnoughLiquidity.value = false
-      // if (!isToken0Selected.value || !isToken1Selected.value) return
+      if (!isTokenSelected.value) return
       isFetchQuote.value = true
       if (!amount) {
         isFetchQuote.value = false
-        // form.value.amountOut = ''
-        // form.value.amountIn = ''
+        form.value.amount = ''
         isEditSlippage.value = false
         slippage.value = DEFAULT_SLIPPAGE
         return
       }
 
-      if (type === 'SEND') {
-        form.value.amount = amount
-        // const inputAmount = Number(form.value.amount) * ((10 ** Number(form.value.token2.decimals)) as number)
-        // sendAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
-        // const _bestTrade = await getBestTrade({
-        //   token0: form.value.token0.address,
-        //   token1: form.value.token1.address,
-        //   inputAmount: inputAmount,
-        //   type: TradeType.EXACT_INPUT
-        // })
-        // bestTrade.value = _bestTrade
-        // form.value.amountOut = bestTrade.value.outputAmount.toSignificant(6)
-        // form.value.tradingFee = bestTrade.value.tradingFee
-        // form.value.minimumAmountOut = bestTrade.value.minimumAmountOut?.toSignificant(6)
-        // form.value.maximumAmountIn = ''
-        // form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
-        isFetchQuote.value = false
-      }
-
-      // if (type === 'BASE') {
-      // form.value.amountIn = amount
-      // form.value.amountOut = ''
-      // console.log('🚀 ~ handleInput ~ form.value.amountIn:', form.value.amountIn)
-      // const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
-      // console.log('🚀 ~ handleInput ~ inputAmount', inputAmount)
-      // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
-      // const _bestTrade = await getBestTrade({
-      //   token0: form.value.token0.address,
-      //   token1: form.value.token1.address,
-      //   inputAmount: inputAmount,
-      //   type: TradeType.EXACT_INPUT
-      // })
-      // bestTrade.value = _bestTrade
-      // form.value.amountOut = bestTrade.value.outputAmount.toSignificant(6)
-      // form.value.tradingFee = bestTrade.value.tradingFee
-      // form.value.minimumAmountOut = bestTrade.value.minimumAmountOut?.toSignificant(6)
-      // form.value.maximumAmountIn = ''
-      // form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
-      // isFetchQuote.value = false
-      // } else {
-      // form.value.amountOut = amount
-      // form.value.amountIn = ''
-      // const inputAmount = Number(form.value.amountOut) * ((10 ** Number(form.value.token1.decimals)) as number)
-      // const _bestTrade = await getBestTrade({
-      //   token0: form.value.token0.address,
-      //   token1: form.value.token1.address,
-      //   inputAmount: inputAmount,
-      //   type: TradeType.EXACT_OUTPUT
-      // })
-      // bestTrade.value = _bestTrade
-      // form.value.amountIn = bestTrade.value.inputAmount.toSignificant(6)
-      // form.value.tradingFee = bestTrade.value.tradingFee
-      // form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toSignificant(6)
-      // form.value.minimumAmountOut = ''
-      // form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
-      // form.value.fee = _bestTrade.fee
-      // }
+      form.value.amount = amount
+      const inputAmount = Number(form.value.amount) * ((10 ** Number(form.value.token.tokenDecimals)) as number)
+      const _bestTrade = await getBestTradeV2({
+        token0: token.value!,
+        token1: token.value!,
+        inputAmount: inputAmount,
+        type: TradeType.EXACT_OUTPUT
+      })
+      console.log('🚀 ~ handleInput ~ _bestTrade:', _bestTrade)
       isFetchQuote.value = false
     } catch (_error) {
       console.error('🚀 ~ handleInput ~ _error:', _error)
@@ -355,42 +314,9 @@
     }
   }
 
-  const handleSelectToken = (token: IToken) => {
-    // if (typeOpenPopup.value === 'BASE') {
-    //   form.value.token0 = token
-    //   if (token.address === form.value.token1.address) {
-    //     form.value.token1 = { name: '', symbol: '', decimals: 0, icon_url: '', address: '' }
-    //     // form.value.amountIn = ''
-    //   }
-    // }
-    // if (typeOpenPopup.value === 'QUOTE') {
-    //   form.value.token1 = token
-    //   form.value.token0 = token.address === form.value.token0.address ? { address: '', decimals: '', icon_url: '', name: '', symbol: '' } : form.value.token0
-    //   if (token.address === form.value.token0.address) {
-    //     form.value.token0 = { name: '', symbol: '', decimals: 0, icon_url: '', address: '' }
-    //     // form.value.amountOut = ''
-    //   }
-    // }
-
-    if (typeOpenPopup.value === 'SEND') {
-      form.value.token = token
-      // form.value.token0 = token.address === form.value.token0.address ? { address: '', decimals: '', icon_url: '', name: '', symbol: '' } : form.value.token0
-      // if (token.address === form.value.token0.address) {
-      //   form.value.token0 = { name: '', symbol: '', decimals: 0, icon_url: '', address: '' }
-      //   form.value.amountOut = ''
-      // }
-    }
-
-    // if (isToken0Selected.value && isToken1Selected.value) {
-    //   if ((form.value.amountIn && !form.value.amountOut) || (form.value.amountIn && form.value.amountOut)) {
-    //     handleInput(form.value.amountIn, 'BASE')
-    //   } else if (!form.value.amountIn && form.value.amountOut) {
-    //     handleInput(form.value.amountOut, 'QUOTE')
-    //   }
-    // }
+  const handleSelectToken = (token: TokenConfig) => {
+    form.value.token = token
   }
-
-  // const token0IsToken = computed(() => form.value.token0.address !== '')
 
   // const useExactInputMulticall = async (swapOut: SwapOutput) => {
   //   const trade = swapOut as SmartRouterTrade<TradeType>
@@ -463,39 +389,166 @@
   //   }
   // }
 
-  const handleBridge = async () => {
-    approveAndSend.value = !approveAndSend.value
-    bridgeSuccess(15, 'ATOM', 123.566, 'https://explorer.monchain.info')
-    // try {
-    //   if (isDisabledButton.value) return
-    //   // step 1: next step 2
-    //   if (stepBridge.value === 'SELECT_TOKEN') {
-    //     stepBridge.value = 'CONFIRM_BRIDGE'
-    //     return
-    //   }
-    //   // step 2: approve
-    //   if (token0IsToken.value) {
-    //     if (isNeedAllowance0.value) {
-    //       await approveToken(form.value.token0.address as string, CONTRACT_ADDRESS.SWAP_ROUTER_V3, MAX_NUMBER_APPROVE, (status) => {
-    //         if (status === 'SUCCESS') {
-    //           swap()
-    //         }
-    //         isConfirmApprove.value = false
-    //       })
-    //     } else {
-    //       // step 3: swap
-    //       console.info('STEP 3 ')
-    //       await swap()
-    //     }
-    //   } else {
-    //     // step 3: swap
-    //     console.info('STEP 3 ')
-    //     await swap()
-    //   }
-    // } catch (error) {
-    //   console.log('🚀 ~ handleBridge ~ error:', error)
-    // }
+  const publicClient = createPublicClient({
+    chain: monTestnet,
+    transport: http('https://rpc-testnet.monchain.info'),
+    batch: {
+      multicall: {
+        batchSize: 1024 * 200
+      }
+    }
+  })
+  const gasEstimate = await publicClient.getGasPrice()
+
+  // const response = {
+  //   data: {
+  //     requestId: '0x30314a504a383446423053593453414446444e58534644394242000000000000',
+  //     signature: '0x43c9ddbb1db90a0d218bd5c2339ca25ff8539b92d674ef47b2344811b70d977924ee8a0defd0ff9cefaf084a6a0420715b2f0e393c16d7106ae98dd5a9889ae71c',
+  //     iterator: 'SERVICE'
+  //   },
+  //   meta: {
+  //     httpStatusCode: 200,
+  //     code: 'OK',
+  //     message: 'Successfully'
+  //   }
+  // }
+
+  const response: ResponseData = {
+    requestId: '0x30314a504a383446423053593453414446444e58534644394242000000000000',
+    signature: '0x43c9ddbb1db90a0d218bd5c2339ca25ff8539b92d674ef47b2344811b70d977924ee8a0defd0ff9cefaf084a6a0420715b2f0e393c16d7106ae98dd5a9889ae71c',
+    iterator: 'SERVICE'
   }
+  // Transaction parameters
+  const receiverAddress = '0x31fB83Dc60D27C9C4a58a361bc9c48e0Bcfe902B'
+  const destinationChainId = 137
+  const receiverAssetId = address.value as `0x${string}`
+  interface ResponseData {
+    requestId: string
+    iterator: string
+    signature: string
+  }
+
+  const handleBridge = async () => {
+    // approveAndSend.value = !approveAndSend.value
+    bridgeSuccess(15, 'ATOM', 123.566, 'https://explorer.monchain.info')
+
+    const config = createConfig({
+      chains: [mainnet, sepolia],
+      transports: {
+        [mainnet.id]: http(),
+        [sepolia.id]: http()
+      }
+    })
+
+    try {
+      if (!isConnected.value) throw new Error('Wallet not connected')
+      const liFiDiamondAddress: Address = '0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d'
+
+      const bridgeData = {
+        transactionId: response.requestId as string, // Kiểu dữ liệu string
+        bridge: 'relay' as const, // Hằng số kiểu string
+        integrator: response.iterator as string, // Định rõ kiểu dữ liệu
+        referrer: ethers.constants.AddressZero as Address, // Định rõ kiểu Address
+        sendingAssetId: (form.value.token.address || ethers.constants.AddressZero) as Address,
+        receiver: receiverAddress as Address,
+        minAmount: ethers.utils.parseUnits(form.value.amount.toString(), +form.value.token.decimals),
+        destinationChainId: destinationChainId as number, // Chắc chắn kiểu số
+        hasSourceSwaps: false,
+        hasDestinationCall: false
+      }
+
+      const relayData = {
+        requestId: response.requestId as string,
+        nonEVMReceiver: ethers.constants.HashZero as Hex, // Định rõ kiểu Hex
+        receivingAssetId: ethers.utils.hexZeroPad(receiverAssetId, 32) as Address, // Kiểu Address
+        signature: response.signature as Hex // Định rõ kiểu Hex
+      }
+
+      // ✅ Gọi contract bằng wagmi actions
+      const tx = await writeContract(config, {
+        address: liFiDiamondAddress,
+        abi: ABI_RELAY_FACET,
+        functionName: 'startBridgeTokensViaRelay',
+        args: [bridgeData, relayData],
+        value: BigInt(form.value.amount) * BigInt(10 ** +form.value.token.decimals),
+        gas: BigInt(300000), // Định kiểu BigInt
+        gasPrice: gasEstimate as bigint // Đảm bảo kiểu bigint
+      })
+
+      console.log('Transaction sent:', tx)
+    } catch (error) {
+      console.error('Transaction failed:', error)
+    }
+  }
+  // const bridgeData = {
+  //   transactionId: response.data.requestId, // mã request id (api trả về)
+  //   bridge: 'relay', // mã loại bridge,
+  //   integrator: response.data.iterator, // tên itergrator (fix trong ENV)
+  //   referrer: ethers.constants.AddressZero, // mặc định 0x0
+  //   sendingAssetId: token, // địa chỉ token (địa chỉ contract), nếu là native thì để 0x000 (AddressZero)
+  //   receiver: receiverAddress, // = 0x31fB83Dc60D27C9C4a58a361bc9c48e0Bcfe902B đỉa chỉ ví nhận tiền
+  //   minAmount: ethers.utils.parseUnits('1', 6), // số tiền tối thiểu muốn chuyển sang mạng kahcs (=giá trị amount, decimal của token)
+  //   destinationChainId: destinationChainId, // chain id của mạng đích
+  //   hasSourceSwaps: false, // luônlà false
+  //   hasDestinationCall: false // luôn là false
+  // }
+
+  // const relayData = {
+  //   requestId: response.data.requestId, // phải giống request id
+  //   nonEVMReceiver: ethers.constants.HashZero, // luôn là 0x000
+  //   receivingAssetId: ethers.utils.hexZeroPad(receiverAssetId, 32), // địa chỉ token ở mạng đích, nếu là native để 0x000
+  //   signature: response.data.signature //mã signature từ backend trả ra
+  // }
+
+  // // "LiFiDiamond": 0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d,
+  // // Địa chỉ LiFiDiamond từ config
+  // const liFiDiamondAddress = '0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d' // = 0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d  // Thay bằng địa chỉ thực tế
+
+  // // Cấu hình transaction với usePrepareContractWrite
+  // const { config: writeConfig } = usePrepareWriteContract({
+  //   address: liFiDiamondAddress, // Địa chỉ LiFiDiamond
+  //   abi: ABI_RELAY_FACET, // ABI của RelayFacet (.json)
+  //   functionName: 'startBridgeTokensViaRelay', // Tên hàm
+  //   args: [bridgeData, relayData], // Các tham số của hàm
+  //   value: BigInt(Number(form.value.amount) * 10 ** Number(form.value.token.decimals)), // Nếu dùng native token thì thay bằng minAmount (amount * 10^decimals của token)
+  //   gas: 300000, // gasLimit
+  //   gasPrice: gasEstimate // gasPrice
+  // })
+
+  // // Gọi hàm với useContractWrite
+  // const { write, isLoading, isSuccess, isError, data } = useContractWrite(writeConfig)
+  // console.log(write, isLoading, isSuccess, isError, data)
+
+  // try {
+  //   if (isDisabledButton.value) return
+  //   // step 1: next step 2
+  //   if (stepBridge.value === 'SELECT_TOKEN') {
+  //     stepBridge.value = 'CONFIRM_BRIDGE'
+  //     return
+  //   }
+  //   // step 2: approve
+  //   if (token0IsToken.value) {
+  //     if (isNeedAllowance0.value) {
+  //       await approveToken(form.value.token0.address as string, CONTRACT_ADDRESS.SWAP_ROUTER_V3, MAX_NUMBER_APPROVE, (status) => {
+  //         if (status === 'SUCCESS') {
+  //           swap()
+  //         }
+  //         isConfirmApprove.value = false
+  //       })
+  //     } else {
+  //       // step 3: swap
+  //       console.info('STEP 3 ')
+  //       await swap()
+  //     }
+  //   } else {
+  //     // step 3: swap
+  //     console.info('STEP 3 ')
+  //     await swap()
+  //   }
+  // } catch (error) {
+  //   console.log('🚀 ~ handleBridge ~ error:', error)
+  // }
+  // }
 
   // const { approveToken } = useApproveToken()
 
@@ -529,9 +582,9 @@
 
   const bridgeSuccess = (amount: number, token: string, value: number, explorerLink: string) => {
     const message = `
-        <p>${amount} ${token} ⇒ ${value} USDC.</p>
-        <p>View on <a style="text-decoration: underline;" href="${explorerLink}" target="_blank" rel="noopener noreferrer">Mon Explorer</a></p>
-    `
+          <p>${amount} ${token} ⇒ ${value} USDC.</p>
+          <p>View on <a style="text-decoration: underline;" href="${explorerLink}" target="_blank" rel="noopener noreferrer">Mon Explorer</a></p>
+      `
     // const isMobile = window.innerWidth <= 768
     ElNotification({
       title: 'Bridge swapping successfully',
@@ -542,6 +595,86 @@
       position: isDesktop.value ? 'top-right' : 'bottom-right'
     })
   }
+
+  // // Define TypeScript types for better safety
+  // interface ResponseData {
+  //   requestId: string
+  //   iterator: string
+  //   signature: string
+  // }
+
+  // interface BridgeTransactionParams {
+  //   response: ResponseData
+  //   token: string
+  //   receiverAddress: string
+  //   destinationChainId: number
+  //   receiverAssetId: `0x${string}`
+  //   gasEstimate: bigint
+  //   form: IFormBridge
+  // }
+
+  // function useBridgeTransaction({ response, token, receiverAddress, destinationChainId, receiverAssetId, gasEstimate, form }: BridgeTransactionParams) {
+  //   const liFiDiamondAddress: `0x${string}` = '0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d'
+
+  //   // Prepare Bridge Data
+  //   const bridgeData = computed(() => ({
+  //     transactionId: response.requestId,
+  //     bridge: 'relay',
+  //     integrator: response.iterator,
+  //     referrer: zeroAddress,
+  //     sendingAssetId: token,
+  //     receiver: receiverAddress,
+  //     minAmount: parseUnits(form.amount, +form.token.decimals),
+  //     destinationChainId,
+  //     hasSourceSwaps: false,
+  //     hasDestinationCall: false
+  //   }))
+
+  //   // Prepare Relay Data
+  //   const relayData = computed(() => ({
+  //     requestId: response.requestId,
+  //     nonEVMReceiver: zeroHash, // Use viem's zeroHash instead of ethers.constants.HashZero
+  //     receivingAssetId: hexZeroPad(receiverAssetId, 32),
+  //     signature: response.signature
+  //   }))
+
+  //   // Wagmi contract write hook
+  //   const { data, isPending, isError, error, writeContract } = useWriteContract()
+
+  //   // Function to execute transaction
+  //   const writeContractTransaction = async () => {
+  //     try {
+  //       const tx = await writeContract({
+  //         address: liFiDiamondAddress,
+  //         abi: ABI_RELAY_FACET,
+  //         functionName: 'startBridgeTokensViaRelay',
+  //         args: [bridgeData.value, relayData.value],
+  //         value: BigInt(Number(form.amount) * 10 ** Number(form.token.decimals)),
+  //         gas: 300000n,
+  //         gasPrice: gasEstimate
+  //       })
+
+  //       console.log('Transaction sent:', tx)
+  //     } catch (error) {
+  //       console.error('Transaction failed:', error)
+  //     }
+  //   }
+
+  //   return {
+  //     writeContractTransaction,
+  //     data,
+  //     isPending,
+  //     isError,
+  //     error
+  //   }
+  // }
+
+  watch(
+    () => toNetwork.value,
+    () => {
+      form.value.token = {} as TokenConfig
+    }
+  )
 </script>
 
 <style scoped lang="scss">
