@@ -63,6 +63,8 @@
     isSelect: false
   })
 
+  const { resetStore: resetStoreLiquid } = useLiquidityStore()
+  const { resetStore: resetStoreSwap } = useSwapStore()
   const { currentNetwork: network } = storeToRefs(useBaseStore())
   const visible = ref(false)
   const search = ref('')
@@ -99,6 +101,8 @@
         }
         visible.value = false
         await switchChainAsync({ chainId: chainSelected.id })
+        resetStoreLiquid()
+        resetStoreSwap()
       }
       network.value = item
       visible.value = false
