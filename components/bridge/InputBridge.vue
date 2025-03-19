@@ -94,7 +94,6 @@
     default: ''
   })
   const { isConnected } = useAccount()
-  const { toNetwork, listToken } = storeToRefs(useBridgeStore())
   const formattedBalance = computed(() => {
     return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
   })
