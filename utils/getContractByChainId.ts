@@ -7,7 +7,7 @@ export type Addresses = {
 }
 
 export const getAddressFromMap = (address: Addresses, chainId?: number): `0x${string}` => {
-  return chainId && address[chainId as ChainId] ? (address[chainId as ChainId] as `0x${string}`) : (address[ChainId.BSC_TESTNET] as `0x${string}`)
+  return chainId && address[chainId as ChainId] ? (address[chainId as ChainId] as `0x${string}`) : (address[ChainId.MON_TESTNET] as `0x${string}`)
 }
 
 export const getAddressFromMapNoFallback = (address: Addresses, chainId?: number): `0x${string}` | null => {
@@ -15,11 +15,11 @@ export const getAddressFromMapNoFallback = (address: Addresses, chainId?: number
 }
 
 export const getMasterChefV3Address = (chainId?: number) => {
-  return getAddressFromMapNoFallback(addresses.masterChefV3, chainId)
+  return getAddressFromMap(addresses.masterChefV3, chainId)
 }
 
 export const getSwapRouterV3Address = (chainId?: number) => {
-  return getAddressFromMapNoFallback(addresses.swapRouterV3, chainId)
+  return getAddressFromMap(addresses.swapRouterV3, chainId)
 }
 
 export const getFactoryAddress = (chainId?: number) => {
@@ -27,7 +27,7 @@ export const getFactoryAddress = (chainId?: number) => {
 }
 
 export const getNftPositionManagerAddress = (chainId?: number) => {
-  return getAddressFromMapNoFallback(addresses.nftPositionManager, chainId)
+  return getAddressFromMap(addresses.nftPositionManager, chainId)
 }
 
 export const getV3PoolDeployerAddress = (chainId?: number) => {
@@ -36,4 +36,8 @@ export const getV3PoolDeployerAddress = (chainId?: number) => {
 
 export const getPoolInitCodeHash = (chainId?: number) => {
   return getAddressFromMapNoFallback(addresses.poolInitCodeHash, chainId)
+}
+
+export const getSpenderCreatePool = (chainId?: number) => {
+  return getAddressFromMapNoFallback(addresses.nftPositionManager, chainId)
 }

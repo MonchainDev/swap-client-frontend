@@ -1,8 +1,7 @@
 import { Token } from '@monchain/swap-sdk-core'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import { defineStore } from 'pinia'
-import { DEFAULT_SLIPPAGE, NATIVE_TOKEN } from '~/constant'
-import { CONTRACT_ADDRESS } from '~/constant/contract'
+import { DEFAULT_SLIPPAGE, EMPTY_TOKEN, NATIVE_TOKEN } from '~/constant'
 import ABI_TOKEN from '~/constant/contract/contract-token.json'
 import { ChainId } from '~/types'
 import type { IFormSwap } from '~/types/swap.type'
@@ -15,22 +14,15 @@ export const useSwapStore = defineStore('swap', () => {
   const isConfirmApprove = ref<boolean>(false)
   const isConfirmSwap = ref<boolean>(false)
 
-  const { address, chainId } = useAccount()
+  const { address } = useAccount()
+  const { chainId } = useActiveChainId()
 
   const form = ref<IFormSwap>({
     token0: {
-      address: '',
-      decimals: 0,
-      icon_url: '',
-      name: '',
-      symbol: ''
+      ...EMPTY_TOKEN
     },
     token1: {
-      address: '',
-      decimals: 0,
-      icon_url: '',
-      name: '',
-      symbol: ''
+      ...EMPTY_TOKEN
     },
     amountIn: '',
     amountOut: '',
@@ -90,12 +82,14 @@ export const useSwapStore = defineStore('swap', () => {
     }
   })
 
+  const swapRouterV3Address = computed(() => getSwapRouterV3Address(chainId.value))
+
   const { data: allowance1, refetch: refetchAllowance1 } = useReadContract(
     computed(() => ({
       abi: ABI_TOKEN,
       address: token1.value?.wrapped.address,
       functionName: 'allowance',
-      args: [address.value, CONTRACT_ADDRESS.SWAP_ROUTER_V3]
+      args: [address.value, swapRouterV3Address.value]
     }))
   )
 
@@ -104,25 +98,17 @@ export const useSwapStore = defineStore('swap', () => {
       abi: ABI_TOKEN,
       address: token0.value?.wrapped.address,
       functionName: 'allowance',
-      args: [address.value, CONTRACT_ADDRESS.SWAP_ROUTER_V3]
+      args: [address.value, swapRouterV3Address.value]
     }))
   )
 
   const resetStore = () => {
     form.value = {
       token0: {
-        address: '',
-        decimals: 0,
-        icon_url: '',
-        name: '',
-        symbol: ''
+        ...EMPTY_TOKEN
       },
       token1: {
-        address: '',
-        decimals: 0,
-        icon_url: '',
-        name: '',
-        symbol: ''
+        ...EMPTY_TOKEN
       },
       amountIn: '',
       amountOut: '',

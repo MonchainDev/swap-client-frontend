@@ -73,7 +73,6 @@
   import Decimal from 'decimal.js'
   import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
-  import { CONTRACT_ADDRESS } from '~/constant/contract'
   import type { IExchangeRate } from '~/types'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { IPosition } from '~/types/position.type'
@@ -190,6 +189,7 @@
 
   const { showToastMsg } = useShowToastMsg()
   const { address: account } = useAccount()
+  const { chainId } = useActiveChainId()
 
   const stakeLocalSuccess = ref(false)
 
@@ -197,13 +197,16 @@
   const handleClickHarvest = async () => {
     try {
       console.log('Harvest')
+      const contractAddressMasterChef = getMasterChefV3Address(chainId.value)
+      if (!contractAddressMasterChef) throw new Error('Invalid contract address')
+
       if (loadingHarvest.value) return
       loadingHarvest.value = true
 
       const { calldata, value } = MasterChefV3.harvestCallParameters({ to: account.value!, tokenId: props.position.tokenId })
 
       const hash = await sendTransaction(config, {
-        to: CONTRACT_ADDRESS.MASTER_CHEF_V3 as `0x${string}`,
+        to: contractAddressMasterChef,
         data: calldata,
         value: hexToBigInt(value)
       })
@@ -224,7 +227,7 @@
           fromToken: tokenBase,
           toToken: tokenQuote,
           fromAddress: account.value,
-          toAddress: CONTRACT_ADDRESS.MASTER_CHEF_V3,
+          toAddress: contractAddressMasterChef,
           poolAddress,
           rewardAmount: pendingReward,
           transactionType: 'HARVEST'
@@ -249,17 +252,22 @@
   const loadingStake = ref(false)
   const handleStake = async () => {
     try {
+      const contractAddressMasterChef = getMasterChefV3Address(chainId.value)
+      const contractAddressNftPositionManager = getNftPositionManagerAddress(chainId.value)
+      if (!contractAddressNftPositionManager) throw new Error('Invalid contract address')
+      if (!contractAddressMasterChef) throw new Error('Invalid contract address')
+
       if (loadingStake.value) return
       loadingStake.value = true
 
       const { calldata, value } = NonfungiblePositionManager.safeTransferFromParameters({
-        recipient: CONTRACT_ADDRESS.MASTER_CHEF_V3 as `0x${string}`,
+        recipient: contractAddressMasterChef,
         tokenId: props.position.tokenId,
         sender: account.value as `0x${string}`
       })
 
       const hash = await sendTransaction(config, {
-        to: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
+        to: contractAddressNftPositionManager,
         data: calldata,
         value: hexToBigInt(value)
       })
@@ -279,12 +287,12 @@
           fromToken: tokenBase,
           toToken: tokenQuote,
           fromAddress: account.value,
-          toAddress: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES,
+          toAddress: contractAddressNftPositionManager,
           poolAddress,
           rewardAmount: pendingReward,
           transactionType: 'STAKE'
         }
-        await Promise.race([v3PoolAddressPid(), postTransaction(body)])
+        await Promise.race([v3PoolAddressPid(contractAddressMasterChef), postTransaction(body)])
         emit('reload')
       } else {
         showToastMsg('Transaction failed', 'error', hash)
@@ -301,9 +309,9 @@
     }
   }
 
-  async function v3PoolAddressPid() {
+  async function v3PoolAddressPid(address: `0x${string}`) {
     const amount = (await readContract(config, {
-      address: CONTRACT_ADDRESS.MASTER_CHEF_V3 as `0x${string}`,
+      address,
       abi: MasterChefV3.ABI,
       functionName: 'v3PoolAddressPid',
       args: [props.position.poolAddress]

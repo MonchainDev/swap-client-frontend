@@ -196,10 +196,8 @@
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
-  import type { Address } from 'viem'
   import ChartLine from '~/components/chart/ChartLine.vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
-  import { CONTRACT_ADDRESS } from '~/constant/contract'
   import { Bound, ChainId } from '~/types'
   import type { IPosition } from '~/types/position.type'
 
@@ -209,13 +207,16 @@
   const tokenId = computed(() => {
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
   })
-  const { chainId, isConnected, address: account } = useAccount()
+  const { isConnected, address: account } = useAccount()
+  const { chainId } = useActiveChainId()
   const { feeAmount, form, existingPosition, exchangeRateBaseCurrency, exchangeRateQuoteCurrency, baseCurrency, quoteCurrency } =
     storeToRefs(useLiquidityStore())
 
   const { isLoading, position: _position, refetch } = useV3PositionsFromTokenId(tokenId.value)
 
-  const { tokenIds } = useV3TokenIdsByAccount(CONTRACT_ADDRESS.MASTER_CHEF_V3 as Address)
+  const masterChefV3 = computed(() => getMasterChefV3Address(chainId.value))
+
+  const { tokenIds } = useV3TokenIdsByAccount(masterChefV3.value)
   const isStakeMV3 = computed(() => tokenIds.value?.includes(tokenId.value!))
 
   const { data: positionDetail } = useFetch<IPosition>(`/api/position/get/${tokenId.value?.toString()}`, { query: { network: route.params.network } })
@@ -258,20 +259,30 @@
   watchEffect(() => {
     if (unwrapToken0.value && unwrapToken1.value) {
       form.value.token0 = {
+        ...form.value.token0,
         ...unwrapToken0.value,
         icon_url: '',
         name: unwrapToken0.value?.name || '',
         decimals: unwrapToken0.value?.decimals ?? 18,
         symbol: unwrapToken0.value?.symbol ?? '',
-        address: unwrapToken0.value.isNative ? '' : (token0.value?.address as string)
+        address: unwrapToken0.value.isNative ? '' : (token0.value?.address as string),
+        tokenSymbol: unwrapToken0.value?.symbol ?? '',
+        tokenAddress: unwrapToken0.value.isNative ? '' : (token0.value?.address as string),
+        tokenDecimals: unwrapToken0.value?.decimals ?? 18,
+        chainId: unwrapToken0.value.chainId
       }
       form.value.token1 = {
+        ...form.value.token1,
         ...unwrapToken1.value,
         icon_url: '',
         name: unwrapToken1.value?.name || '',
         decimals: unwrapToken1.value?.decimals ?? 18,
         symbol: unwrapToken1.value?.symbol ?? '',
-        address: unwrapToken1.value.isNative ? '' : (token1.value?.address as string)
+        address: unwrapToken1.value.isNative ? '' : (token1.value?.address as string),
+        tokenSymbol: unwrapToken1.value?.symbol ?? '',
+        tokenAddress: unwrapToken1.value.isNative ? '' : (token1.value?.address as string),
+        tokenDecimals: unwrapToken1.value?.decimals ?? 18,
+        chainId: unwrapToken1.value.chainId
       }
     }
   })

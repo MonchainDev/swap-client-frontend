@@ -1,10 +1,9 @@
 import { nonfungiblePositionManagerABI } from '@monchain/v3-sdk'
-import { getContract as viemGetContract, type Abi, type Address, type GetContractReturnType, type PublicClient, type WalletClient } from 'viem'
-import { getAccountV3TokenIds } from './getAccountV3TokenIds'
-import { ChainId, type PositionDetail } from '~/types'
-import { CONTRACT_ADDRESS } from '~/constant/contract'
-import masterChefV3ABI from '~/constant/abi/masterChefV3.json'
 import Decimal from 'decimal.js'
+import { getContract as viemGetContract, type Abi, type Address, type GetContractReturnType, type PublicClient, type WalletClient } from 'viem'
+import masterChefV3ABI from '~/constant/abi/masterChefV3.json'
+import { ChainId, type PositionDetail } from '~/types'
+import { getAccountV3TokenIds } from './getAccountV3TokenIds'
 
 export const getContract = <TAbi extends Abi | readonly unknown[], TWalletClient extends WalletClient>({
   abi,
@@ -36,7 +35,7 @@ export const getContract = <TAbi extends Abi | readonly unknown[], TWalletClient
 }
 
 export const getMasterChefV3Contract = (signer?: WalletClient, chainId?: number) => {
-  const mcv3Address = CONTRACT_ADDRESS.MASTER_CHEF_V3 as `0x${string}`
+  const mcv3Address = getMasterChefV3Address(chainId ?? ChainId.MON_TESTNET)
   return mcv3Address
     ? getContract({
         abi: masterChefV3ABI,
@@ -48,7 +47,7 @@ export const getMasterChefV3Contract = (signer?: WalletClient, chainId?: number)
 }
 
 export const readPositions = async (chainId: number, tokenIds: bigint[]): Promise<PositionDetail[]> => {
-  const nftPositionManagerAddress = CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`
+  const nftPositionManagerAddress = getNftPositionManagerAddress(chainId)
   const client = publicClient({ chainId })
   const masterChefV3 = getMasterChefV3Contract(undefined, chainId)
 
