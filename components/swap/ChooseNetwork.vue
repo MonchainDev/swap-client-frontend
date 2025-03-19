@@ -53,7 +53,8 @@
 <script lang="ts" setup>
   import { useAccount, useSwitchChain } from '@wagmi/vue'
   import { DEFAULT_NETWORK, LIST_NETWORK } from '~/config/networks'
-  import type { INetwork } from '~/types'
+  import type { INetwork, IToken } from '~/types'
+  import { useStorage } from '@vueuse/core'
 
   interface IProps {
     isSelect?: boolean
@@ -73,6 +74,8 @@
     type: Array<string>,
     default: []
   })
+
+  const recentTokens = useStorage<IToken[]>('recent_tokens', [])
 
   const listNetwork = computed(() => {
     return LIST_NETWORK.filter((item) => item.name.toLowerCase().includes(useTrim(search.value.toLowerCase())))
@@ -103,6 +106,7 @@
         await switchChainAsync({ chainId: chainSelected.id })
         resetStoreLiquid()
         resetStoreSwap()
+        recentTokens.value = []
       }
       network.value = item
       visible.value = false
