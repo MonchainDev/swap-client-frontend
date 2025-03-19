@@ -169,7 +169,7 @@
   import PopupSellToken from '../popup/PopupSellToken.vue'
   import type { TokenConfig } from '~/types/bridge.type'
   import { ElNotification } from 'element-plus'
-  import { type SwapOutput } from '~/utils/getBestTradeV2'
+  import { getBestTradeV2, type SwapOutput } from '~/utils/getBestTradeV2'
   import { TradeType } from '@monchain/swap-sdk-core'
   import { DEFAULT_SLIPPAGE } from '~/constant'
   import { useBridgeTransaction } from '~/composables/useBridgeTransaction'
@@ -296,15 +296,49 @@
         slippage.value = DEFAULT_SLIPPAGE
         return
       }
-
+      
+      // đoạn này lấy thông tin token từ chain đích
+      // token0 là token có stable = TRUE của mạng gốc 
+      // token1 là nếu address là 0x000000, thì sẽ lấy theo wrapToken của network, ngược lại lấy địa chỉ của token luôn 
       form.value.amount = amount
       const inputAmount = Number(form.value.amount) * ((10 ** Number(form.value.token.tokenDecimals)) as number)
+      // khởi tạo token0 = new Token() với thông tin token 0
+      // khởi tạo token1 = new Token() với thông tin token 1
+      // tạm thời lấy fee = 1%
+      // outAmount = inAmount * (1 - fee /100)
       const _bestTrade = await getBestTradeV2({
         token0: token.value!,
         token1: token.value!,
-        inputAmount: inputAmount,
+        inputAmount: outAmount,
         type: TradeType.EXACT_OUTPUT
       })
+
+      /*
+      
+      {
+        "contractAddress": "địa chỉ contract lifi trên API network, mạng gốc ở network nào thì lấy theo contract của network đó",
+        "chainId": chain gốc,
+        "destinationChainId": chain đích,
+        "receiverAddress": "địa chỉ ví nhận",
+        "sendingAssetId": "địa chỉ token chuyển đi, luôn lấy theo API",
+        "receiverAssetId": "luôn lấy địa address api",
+        "amountIn": Số tiền nhập vào,
+        "routes": [
+            {
+                "tokenInAddress": "địa chỉ token USDT",
+                "tokenOutAddress": "Địa chỉ token nhận ở mạng đích, nếu address là 0x000000, thì sẽ lấy theo wrapToken của network",
+                "fee": "100",
+                "amountOut": "10000000a",
+                "amountInMaximum": "10000000",
+                "sqrtPriceLimitX96": "10000000"
+
+            }
+        ]
+      }
+      */
+
+      const routes = _bestTrade.routes
+
       console.log('🚀 ~ handleInput ~ _bestTrade:', _bestTrade)
       isFetchQuote.value = false
     } catch (_error) {
