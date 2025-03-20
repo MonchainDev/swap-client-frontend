@@ -116,7 +116,7 @@
 
 <script lang="ts" setup>
   import TableListPool from '~/components/liquidity/TableListPool.vue'
-  import { LIST_NETWORK } from '~/constant'
+  import { LIST_NETWORK } from '~/config/networks'
   import type { IPool, IPoolOrigin } from '~/types/pool.type'
   import type { IResponse } from '~/types/response.type'
 
@@ -131,11 +131,11 @@
 
   const { handleImageError } = useErrorImage()
 
-  const networkSelected = ref<string[]>(LIST_NETWORK.map((item) => item.value))
+  const networkSelected = ref<string[]>(LIST_NETWORK.map((item) => item.network))
   const tokenSelected = ref<string[]>([])
 
   const networkListSelected = computed(() => {
-    return LIST_NETWORK.filter((item) => networkSelected.value.includes(item.value))
+    return LIST_NETWORK.filter((item) => networkSelected.value.includes(item.network))
   })
   const tokenListSelected = computed(() => {
     return listToken.value.filter((item) => tokenSelected.value.includes(item.address))
@@ -144,7 +144,7 @@
   const titleFilterNetwork = computed(() => {
     return networkListSelected.value.length === LIST_NETWORK.length
       ? `All networks (${networkListSelected.value.length})`
-      : networkListSelected.value.map((item) => item.title).join(', ')
+      : networkListSelected.value.map((item) => item.name).join(', ')
   })
 
   const titleFilterToken = computed(() => {
@@ -154,7 +154,7 @@
   // Compute the query string dynamically
   const queryString = computed(() => {
     const params = new URLSearchParams()
-    networkListSelected.value.forEach((network) => params.append('networks', network.value))
+    networkListSelected.value.forEach((network) => params.append('networks', network.network))
     tokenListSelected.value.forEach((token) => params.append('tokens', token.symbol))
     return params.toString()
   })

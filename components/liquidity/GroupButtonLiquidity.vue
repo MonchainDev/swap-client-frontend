@@ -16,7 +16,14 @@
       <BaseButton v-if="isShowBtnEnable1" :loading="props.loading1" size="md" class="w-full text-xl font-semibold" @click="emit('approve', 'QUOTE')"
         >ENABLE {{ tokenB?.symbol }}</BaseButton
       >
-      <BaseButton v-if="isShowBtnAdd" :loading="props.loadingAdd" :disabled="isDisabledAdd" size="md" class="w-full text-xl font-semibold" @click="emit('add')">
+      <BaseButton
+        v-if="isShowBtnAdd"
+        :loading="props.loadingAdd"
+        :disabled="isDisabledAdd"
+        size="md"
+        class="mb-4 w-full text-xl font-semibold"
+        @click="emit('add')"
+      >
         ADD
       </BaseButton>
     </template>
@@ -67,13 +74,13 @@
   const isInsufficientBalanceA = computed(() => {
     const amountA = form.value.amountDeposit0 || 0
     const balanceA = balance0.value?.formatted || 0
-    return new Decimal(amountA).greaterThan(balanceA)
+    return depositADisabled.value ? false : new Decimal(amountA).greaterThan(balanceA)
   })
 
   const isInsufficientBalanceB = computed(() => {
     const amountB = form.value.amountDeposit1 || 0
     const balanceB = balance1.value?.formatted || 0
-    return new Decimal(amountB).greaterThan(balanceB)
+    return depositBDisabled.value ? false : new Decimal(amountB).greaterThan(balanceB)
   })
 
   const titleInsufficientBalance = computed(() => {
@@ -91,11 +98,11 @@
     if (depositADisabled.value && depositBDisabled.value) {
       missingAmounts = true
     } else if (depositADisabled.value && !depositBDisabled.value) {
-      missingAmounts = !amountDeposit1
+      missingAmounts = !parseFloat(amountDeposit1)
     } else if (!depositADisabled.value && depositBDisabled.value) {
-      missingAmounts = !amountDeposit0
+      missingAmounts = !parseFloat(amountDeposit0)
     } else {
-      missingAmounts = !amountDeposit0 || !amountDeposit1
+      missingAmounts = !parseFloat(amountDeposit0) || !parseFloat(amountDeposit1)
     }
     if (route.name === 'liquidity-network-tokenId') {
       return missingAmounts
@@ -110,12 +117,12 @@
 
   const isNeedAllowance0 = computed(() => {
     const allowance = new Decimal(allowance0.value?.toString() || '0').div(10 ** +form.value.token0.decimals)
-    return allowance0.value === BigInt(0) || allowance.lessThan(form.value.amountDeposit0 || 0)
+    return depositADisabled.value ? false : allowance0.value === BigInt(0) || allowance.lessThan(form.value.amountDeposit0 || 0)
   })
 
   const isNeedAllowance1 = computed(() => {
     const allowance = new Decimal(allowance1.value?.toString() || '0').div(10 ** +form.value.token1.decimals)
-    return allowance1.value === BigInt(0) || allowance.lessThan(form.value.amountDeposit1 || 0)
+    return depositBDisabled.value ? false : allowance1.value === BigInt(0) || allowance.lessThan(form.value.amountDeposit1 || 0)
   })
 
   const isShowBtnEnable0 = computed(() => {

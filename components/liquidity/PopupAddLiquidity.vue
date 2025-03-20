@@ -135,6 +135,7 @@
 </template>
 
 <script lang="ts" setup>
+  import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
   import { Percent, type Currency } from '@monchain/swap-sdk-core'
   import { type Position } from '@monchain/v3-sdk'
   import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
@@ -142,13 +143,11 @@
   import Decimal from 'decimal.js'
   import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
-  import { BIPS_BASE } from '~/constant'
-  import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
+  import { BIPS_BASE, MAX_NUMBER_APPROVE } from '~/constant'
   import { Bound, CurrencyField, type IToken } from '~/types'
+  import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { TYPE_SWAP } from '~/types/swap.type'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
-  import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
-  import type { IBodyTxCollect } from '~/types/encrypt.type'
 
   interface IProps {
     valueUpper: string
@@ -350,11 +349,14 @@
   }
 
   const { approveToken } = useApproveToken()
+  const { chainId } = useActiveChainId()
 
   const handleApprove = (type: TYPE_SWAP) => {
+    const contractAddress = getNftPositionManagerAddress(chainId.value)
+    if (!contractAddress) throw new Error('Invalid contract address')
     if (type === 'BASE') {
       loadingApprove0.value = true
-      approveToken(currencyA.value?.address as string, CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER, MAX_NUMBER_APPROVE, (status) => {
+      approveToken(currencyA.value?.address as string, contractAddress, MAX_NUMBER_APPROVE, (status) => {
         if (status === 'SUCCESS') {
           refetchAllowance0()
         }
@@ -362,7 +364,7 @@
       })
     } else {
       loadingApprove1.value = true
-      approveToken(currencyB.value?.address as string, CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER, MAX_NUMBER_APPROVE, (status) => {
+      approveToken(currencyB.value?.address as string, contractAddress, MAX_NUMBER_APPROVE, (status) => {
         if (status === 'SUCCESS') {
           refetchAllowance1()
         }
@@ -420,8 +422,11 @@
         console.log('🚀 ~ handleAddLiquidity ~ value:', value)
         console.log('🚀 ~ handleAddLiquidity ~ calldata:', calldata)
 
+        const contractAddress = getNftPositionManagerAddress(chainId.value)
+        if (!contractAddress) throw new Error('Invalid contract address')
+
         const txHash = await sendTransaction(config, {
-          to: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER as `0x${string}`,
+          to: contractAddress,
           data: calldata,
           value: hexToBigInt(value)
         })
@@ -440,6 +445,7 @@
           showToastMsg('Transaction successful', 'success', txHash)
           emit('reload')
           let body: IBodyTxCollect = {} as IBodyTxCollect
+
           if (props.showInput === false) {
             // page create pool
             typedValue.value = ''
@@ -450,13 +456,13 @@
             step.value = 'INPUT'
             router.push('/liquidity/positions')
             const balance = await readContract(config, {
-              address: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
+              address: contractAddress,
               functionName: 'balanceOf',
               args: [address.value],
               abi: NonfungiblePositionManagerABI
             })
             const tokenId = await readContract(config, {
-              address: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
+              address: contractAddress,
               functionName: 'tokenOfOwnerByIndex',
               args: [address.value, Number(balance) - 1],
               abi: NonfungiblePositionManagerABI
@@ -467,10 +473,10 @@
               poolAddress: poolAddresses.value ? poolAddresses.value[0] : '',
               tokenId: Number(tokenId),
               fromAddress: address.value!,
-              toAddress: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER,
+              toAddress: contractAddress,
               fromToken: positionDetail.value.pool.token0.address,
               toToken: positionDetail.value.pool.token1.address,
-              network: currentNetwork.value.value,
+              network: currentNetwork.value.network,
               transactionType: 'ADD_POSITION'
             }
           } else {
@@ -479,10 +485,10 @@
               poolAddress: poolAddresses.value ? poolAddresses.value[0] : '',
               tokenId: +route.params.tokenId,
               fromAddress: address.value!,
-              toAddress: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER,
+              toAddress: contractAddress,
               fromToken: positionDetail.value.pool.token0.address,
               toToken: positionDetail.value.pool.token1.address,
-              network: currentNetwork.value.value,
+              network: currentNetwork.value.network,
               transactionType: 'INCREASE_LIQUID'
             }
           }

@@ -1,6 +1,4 @@
-export default defineEventHandler(async () => {
-  const config = useRuntimeConfig()
-
-  const data: unknown = await $fetch('/api/v2/tokens', { baseURL: config.BASE_URL_API, method: 'GET' })
-  return data
+export default defineEventHandler(async (event) => {
+  const query = getQuery(event)
+  return await fetchExchange('network/token', 'GET', { params: { network: query?.network } })
 })

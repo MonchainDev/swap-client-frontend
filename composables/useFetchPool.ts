@@ -1,6 +1,5 @@
 import ABI_MON_FACTORY from '@/constant/abi/MonFactory.json'
 import { useReadContract } from '@wagmi/vue'
-import { CONTRACT_ADDRESS } from '~/constant/contract'
 import { FeeAmount } from '~/constant/fee'
 
 export default function useFetchPool() {
@@ -10,10 +9,13 @@ export default function useFetchPool() {
 
   const indexFee = computed(() => listFee.indexOf(feeAmount.value))
 
+  const { chainId } = useActiveChainId()
+  const factoryAddress = computed(() => getFactoryAddress(chainId.value) ?? '0x')
+
   const { data: poolAddressLowest, isPending: isPendingLowest } = useReadContract(
     computed(() => ({
       abi: ABI_MON_FACTORY,
-      address: CONTRACT_ADDRESS.MON_FACTORY as `0x${string}`,
+      address: factoryAddress.value,
       functionName: 'getPool',
       args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, FeeAmount.LOWEST],
       watch: true
@@ -23,7 +25,7 @@ export default function useFetchPool() {
   const { data: poolAddressLow, isPending: isPendingLow } = useReadContract(
     computed(() => ({
       abi: ABI_MON_FACTORY,
-      address: CONTRACT_ADDRESS.MON_FACTORY as `0x${string}`,
+      address: factoryAddress.value,
       functionName: 'getPool',
       args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, FeeAmount.LOW],
       watch: true
@@ -33,7 +35,7 @@ export default function useFetchPool() {
   const { data: poolAddressMedium, isPending: isPendingMedium } = useReadContract(
     computed(() => ({
       abi: ABI_MON_FACTORY,
-      address: CONTRACT_ADDRESS.MON_FACTORY as `0x${string}`,
+      address: factoryAddress.value,
       functionName: 'getPool',
       args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, FeeAmount.MEDIUM],
       watch: true
@@ -43,7 +45,7 @@ export default function useFetchPool() {
   const { data: poolAddressHigh, isPending: isPendingHigh } = useReadContract(
     computed(() => ({
       abi: ABI_MON_FACTORY,
-      address: CONTRACT_ADDRESS.MON_FACTORY as `0x${string}`,
+      address: factoryAddress.value,
       functionName: 'getPool',
       args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, FeeAmount.HIGH],
       watch: true

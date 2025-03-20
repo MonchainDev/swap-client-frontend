@@ -4,26 +4,15 @@ import { CurrencyAmount, TradeType, type Currency, type Token } from '@monchain/
 import { TickMath } from '@monchain/v3-sdk'
 import { Decimal } from 'decimal.js'
 import invariant from 'tiny-invariant'
-import { createPublicClient, http } from 'viem'
+import type { PublicClient } from 'viem'
 import v3SubgraphClient from '~/constant/graphClient'
-import { monTestnet } from './config/chains'
-
-// TODO: thay chain theo network
-const publicClient = createPublicClient({
-  chain: monTestnet,
-  transport: http('https://rpc-testnet.monchain.info'),
-  batch: {
-    multicall: {
-      batchSize: 1024 * 200
-    }
-  }
-})
 
 interface SwapInput {
   token0: Token | Native
   token1: Token | Native
   inputAmount: number
   type: TradeType
+  chainId: number
 }
 
 export interface SwapOutput extends SmartRouterTrade<TradeType> {
@@ -37,7 +26,7 @@ export interface SwapOutput extends SmartRouterTrade<TradeType> {
 
 const BASE_FEE_PERCENT = 10 ** 6
 
-const getBestRoute = async (currencyA: Token | Native, currencyB: Token | Native) => {
+const getBestRoute = async (currencyA: Token | Native, currencyB: Token | Native, publicClient: PublicClient) => {
   return await SmartRouter.getV3CandidatePools({
     onChainProvider: () => publicClient,
     //@ts-ignore
@@ -52,10 +41,12 @@ const _getBestTrade = async (
   tokenIn: Token | Native,
   tokenOut: Token | Native,
   inputAmount: CurrencyAmount<Currency>,
-  tradeType: TradeType
+  tradeType: TradeType,
+  publicClient: PublicClient
 ): Promise<SmartRouterTrade<TradeType>[] | undefined> => {
+  console.log('🚀 ~ publicClient:', publicClient)
   try {
-    const _v3Pools = await getBestRoute(tokenIn, tokenOut)
+    const _v3Pools = await getBestRoute(tokenIn, tokenOut, publicClient)
     console.log('>>> / _v3Pools:', _v3Pools)
     const quoteProvider = SmartRouter.createQuoteProvider({
       onChainProvider: () => publicClient
@@ -81,12 +72,14 @@ const _getBestTrade = async (
   }
 }
 
-export const getBestTradeV2 = async ({ token0, token1, inputAmount, type }: SwapInput): Promise<SwapOutput> => {
+export const getBestTradeV2 = async ({ token0, token1, inputAmount, type, chainId }: SwapInput): Promise<SwapOutput> => {
   try {
     // const listPool: V3Pool[] = []
     // const token0Info = await useGetTokenInfo(token0)
     // const token1Info = await useGetTokenInfo(token1)
+    const client = publicClient({ chainId })
     const token0Currency = token0
+    console.log('🚀 ~ getBestTradeV2 ~ client:', client)
     const token1Currency = token1
     const balances: { [key: string]: { [key: string]: bigint } } = {}
     let tradingFee = 0
@@ -96,7 +89,7 @@ export const getBestTradeV2 = async ({ token0, token1, inputAmount, type }: Swap
     const { slippage } = storeToRefs(useSwapStore())
     const slippageValue = Number(slippage.value)
 
-    const gasEstimate = await publicClient.getGasPrice()
+    const gasEstimate = await client.getGasPrice()
 
     const slippagePercent = new Percent(Number(slippage.value))
 
@@ -107,7 +100,7 @@ export const getBestTradeV2 = async ({ token0, token1, inputAmount, type }: Swap
     if (type === TradeType.EXACT_INPUT) {
       const currencyAmount = CurrencyAmount.fromRawAmount(token0Currency, inputAmount)
       // const bestTrades = await Trade.bestTradeExactIn(listPool, currencyAmount, token1Currency)
-      const bestTrades = await _getBestTrade(token0Currency, token1Currency, currencyAmount, TradeType.EXACT_INPUT)
+      const bestTrades = await _getBestTrade(token0Currency, token1Currency, currencyAmount, TradeType.EXACT_INPUT, client)
 
       let remainAmountIn = currencyAmount
       let totalOutputA: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0n)
@@ -200,7 +193,7 @@ export const getBestTradeV2 = async ({ token0, token1, inputAmount, type }: Swap
     } else {
       const currencyAmount = CurrencyAmount.fromRawAmount(token1Currency, inputAmount)
       //   const bestTrades = await Trade.bestTradeExactOut(listPool, token0Currency, currencyAmount)
-      const bestTrades = await _getBestTrade(token1Currency, token0Currency, currencyAmount, TradeType.EXACT_OUTPUT)
+      const bestTrades = await _getBestTrade(token1Currency, token0Currency, currencyAmount, TradeType.EXACT_OUTPUT, client)
       if (!bestTrades) {
         throw new Error('No trade found')
       }

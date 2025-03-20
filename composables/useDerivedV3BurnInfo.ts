@@ -1,11 +1,10 @@
 import { CurrencyAmount, Percent, type Token } from '@monchain/swap-sdk-core'
 import type { Pool } from '@monchain/v3-sdk'
 import { Position } from '@monchain/v3-sdk'
-import { useAccount } from '@wagmi/vue'
-import { ChainId, type PositionDetail } from '~/types'
+import { type PositionDetail } from '~/types'
 
 export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | undefined>, percent: Ref<string>, asWNATIVE: Ref<boolean>) {
-  const { chainId } = useAccount()
+  const { chainId } = useActiveChainId()
 
   const { form, feeAmount } = storeToRefs(useLiquidityStore())
 
@@ -16,8 +15,8 @@ export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | unde
 
   watchEffect(async () => {
     if (position.value) {
-      token0.value = await getTokenByChainId(position.value.token0 as string, chainId.value! || ChainId.MON_TESTNET)
-      token1.value = await getTokenByChainId(position.value.token1 as string, chainId.value! || ChainId.MON_TESTNET)
+      token0.value = await getTokenByChainId(position.value.token0 as string, chainId.value!)
+      token1.value = await getTokenByChainId(position.value.token1 as string, chainId.value!)
       feeAmount.value = position.value.fee ?? 0
     }
   })
@@ -26,20 +25,30 @@ export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | unde
   watchEffect(() => {
     if (unwrapToken0.value && unwrapToken1.value) {
       form.value.token0 = {
+        ...form.value.token0,
         ...unwrapToken0.value,
         icon_url: '',
         name: unwrapToken0.value?.name || '',
         decimals: unwrapToken0.value?.decimals ?? 18,
         symbol: unwrapToken0.value?.symbol ?? '',
-        address: unwrapToken0.value.isNative ? '' : (token0.value?.address as string)
+        address: unwrapToken0.value.isNative ? '' : (token0.value?.address as string),
+        tokenSymbol: unwrapToken0.value?.symbol ?? '',
+        tokenAddress: unwrapToken0.value.isNative ? '' : (token0.value?.address as string),
+        tokenDecimals: unwrapToken0.value?.decimals ?? 18,
+        chainId: unwrapToken0.value.chainId
       }
       form.value.token1 = {
+        ...form.value.token1,
         ...unwrapToken1.value,
         icon_url: '',
         name: unwrapToken1.value?.name || '',
         decimals: unwrapToken1.value?.decimals ?? 18,
         symbol: unwrapToken1.value?.symbol ?? '',
-        address: unwrapToken1.value.isNative ? '' : (token1.value?.address as string)
+        address: unwrapToken1.value.isNative ? '' : (token1.value?.address as string),
+        tokenSymbol: unwrapToken1.value?.symbol ?? '',
+        tokenAddress: unwrapToken1.value.isNative ? '' : (token1.value?.address as string),
+        tokenDecimals: unwrapToken1.value?.decimals ?? 18,
+        chainId: unwrapToken1.value.chainId
       }
     }
   })

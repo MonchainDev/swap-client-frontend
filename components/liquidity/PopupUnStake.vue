@@ -51,7 +51,6 @@
   import { useAccount } from '@wagmi/vue'
   import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
-  import { CONTRACT_ADDRESS } from '~/constant/contract'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { IPosition } from '~/types/position.type'
   import { MasterChefV3 } from '~/utils/masterChefV3'
@@ -90,6 +89,7 @@
   const { address: account } = useAccount()
   const { showToastMsg } = useShowToastMsg()
   const { setOpenPopup } = useBaseStore()
+  const { chainId } = useActiveChainId()
 
   const handleUnStake = async () => {
     try {
@@ -97,9 +97,11 @@
         loadingUnStake.value = true
 
         const { calldata, value } = MasterChefV3.withdrawCallParameters({ to: account.value!, tokenId: BigInt(props.position?.tokenId) })
+        const contractAddressMasterChef = getMasterChefV3Address(chainId.value)
+        if (!contractAddressMasterChef) throw new Error('Invalid contract address')
 
         const hash = await sendTransaction(config, {
-          to: CONTRACT_ADDRESS.MASTER_CHEF_V3 as `0x${string}`,
+          to: contractAddressMasterChef,
           data: calldata,
           value: hexToBigInt(value)
         })
@@ -119,7 +121,7 @@
             tokenId: tokenId,
             network: network,
             fromAddress: account.value!,
-            toAddress: CONTRACT_ADDRESS.MASTER_CHEF_V3,
+            toAddress: contractAddressMasterChef,
             fromToken: tokenBase,
             toToken: tokenQuote,
             poolAddress: poolAddress,

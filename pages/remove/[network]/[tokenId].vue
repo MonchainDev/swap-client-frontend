@@ -137,18 +137,17 @@
 
 <script lang="ts" setup>
   import { CurrencyAmount, Percent } from '@monchain/swap-sdk-core'
-  import { useAccount } from '@wagmi/vue'
-  import { hexToBigInt, type Address } from 'viem'
-  import { BIPS_BASE } from '~/constant'
-  import { CONTRACT_ADDRESS } from '~/constant/contract'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import { useAccount } from '@wagmi/vue'
+  import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
+  import { BIPS_BASE } from '~/constant'
   // import { NonfungiblePositionManager } from '@monchain/v3-sdk'
-  import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
-  import { WNATIVE } from '~/constant/token'
   import Decimal from 'decimal.js'
-  import { MasterChefV3 } from '~/utils/masterChefV3'
+  import { WNATIVE } from '~/constant/token'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
+  import { MasterChefV3 } from '~/utils/masterChefV3'
+  import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
 
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
@@ -161,7 +160,8 @@
   const percentList = ref(['10', '20', '50', '75'])
   const receiveNative = ref(false)
 
-  const { chainId, address: account } = useAccount()
+  const { chainId } = useActiveChainId()
+  const { address: account } = useAccount()
   const { setOpenPopup } = useBaseStore()
   const { exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
   const { currentNetwork } = storeToRefs(useBaseStore())
@@ -175,7 +175,7 @@
 
   const { position } = useV3PositionsFromTokenId(tokenId.value)
 
-  const { tokenIds } = useV3TokenIdsByAccount(CONTRACT_ADDRESS.MASTER_CHEF_V3 as Address)
+  const { tokenIds } = useV3TokenIdsByAccount(getMasterChefV3Address(chainId.value))
 
   const isStakeMV3 = computed(() => tokenIds.value?.includes(tokenId.value!))
 
@@ -270,7 +270,7 @@
       const allowedSlippage = 50
 
       const interfaceManager = isStakeMV3.value ? MasterChefV3 : NonfungiblePositionManager
-      const addressTo = (isStakeMV3.value ? CONTRACT_ADDRESS.MASTER_CHEF_V3 : CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER) as `0x${string}`
+      const addressTo = isStakeMV3.value ? getMasterChefV3Address(chainId.value) : getNftPositionManagerAddress(chainId.value)
 
       // we fall back to expecting 0 fees in case the fetch fails, which is safe in the
       // vast majority of cases
@@ -312,10 +312,10 @@
           poolAddress: poolAddresses.value ? poolAddresses.value[0] : '',
           tokenId: +route.params.tokenId,
           fromAddress: account.value!,
-          toAddress: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER,
-          fromToken: addressTo,
+          toAddress: addressTo,
+          fromToken: positionSDK.value.pool.token0.address,
           toToken: positionSDK.value.pool.token1.address,
-          network: currentNetwork.value.value,
+          network: currentNetwork.value.network,
           transactionType: 'REMOVE_LIQUID'
         }
         await postTransaction(body)

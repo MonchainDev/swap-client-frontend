@@ -12,9 +12,15 @@
       <template #reference>
         <slot name="reference">
           <div class="flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-[#EFEFFF] px-2">
-            <img :src="network.logo" alt="logo" class="size-6 rounded-lg" />
-            <span class="text-sm font-semibold sm:font-normal">{{ network.title }}</span>
-            <BaseIcon name="arrow" size="16" class="-rotate-90" />
+            <template v-if="isPending">
+              <BaseLoadingButton />
+              <span class="text-sm font-semibold sm:font-normal">Requesting</span>
+            </template>
+            <template v-else>
+              <img :src="network.logo" alt="logo" class="size-6 rounded-lg" />
+              <span class="text-sm font-semibold sm:font-normal">{{ network.name }}</span>
+              <BaseIcon name="arrow" size="16" class="-rotate-90" />
+            </template>
           </div>
         </slot>
       </template>
@@ -26,18 +32,15 @@
           </template>
         </ElInput>
         <ul class="space-y-4">
-          <li v-for="item in listNetwork" :key="item.value">
-            <div
-              class="flex cursor-pointer items-center justify-between gap-3"
-              :class="{ 'pointer-events-none opacity-50': item.disabled }"
-              @click="handleSelectNetwork(item)"
-            >
+          <li v-for="item in listNetwork" :key="item.chainId">
+            <div class="flex cursor-pointer items-center justify-between gap-3" @click="handleSelectNetwork(item)">
               <div class="flex items-center gap-3">
+                <BaseLoadingButton v-if="item.loading" />
                 <img :src="item.logo" alt="logo" class="size-9 rounded-lg" />
-                <span class="text-sm font-semibold text-primary sm:font-normal">{{ item.title }}</span>
+                <span class="text-sm font-semibold text-primary sm:font-normal">{{ item.name }}</span>
               </div>
               <div v-if="isSelect">
-                <BaseIcon :name="useIncludes(networkSelected, item.value) ? 'checkbox-fill' : 'checkbox'" size="24" />
+                <BaseIcon :name="useIncludes(networkSelected, item.network) ? 'checkbox-fill' : 'checkbox'" size="24" />
               </div>
             </div>
           </li>
@@ -48,8 +51,10 @@
 </template>
 
 <script lang="ts" setup>
-  import { DEFAULT_NETWORK, LIST_NETWORK } from '~/constant'
-  import type { INetwork } from '~/types'
+  import { useAccount, useSwitchChain } from '@wagmi/vue'
+  import { DEFAULT_NETWORK, LIST_NETWORK } from '~/config/networks'
+  import type { INetwork, IToken } from '~/types'
+  import { useStorage } from '@vueuse/core'
 
   interface IProps {
     isSelect?: boolean
@@ -59,6 +64,8 @@
     isSelect: false
   })
 
+  const { resetStore: resetStoreLiquid } = useLiquidityStore()
+  const { resetStore: resetStoreSwap } = useSwapStore()
   const { currentNetwork: network } = storeToRefs(useBaseStore())
   const visible = ref(false)
   const search = ref('')
@@ -68,22 +75,39 @@
     default: []
   })
 
+  const recentTokens = useStorage<IToken[]>('recent_tokens', [])
+
   const listNetwork = computed(() => {
-    return LIST_NETWORK.filter((item) => item.title.toLowerCase().includes(useTrim(search.value.toLowerCase())))
+    return LIST_NETWORK.filter((item) => item.name.toLowerCase().includes(useTrim(search.value.toLowerCase())))
   })
 
-  const handleSelectNetwork = (item: INetwork) => {
+  const { chains, switchChainAsync, isPending } = useSwitchChain()
+  const { isConnected } = useAccount()
+
+  const handleSelectNetwork = async (item: INetwork) => {
     if (_props.isSelect) {
-      const index = networkSelected.value.indexOf(item.value)
+      const index = networkSelected.value.indexOf(item.network)
       if (index > -1) {
         networkSelected.value.splice(index, 1)
       } else {
-        networkSelected.value.push(item.value)
+        networkSelected.value.push(item.network)
       }
       if (networkSelected.value.length === 0) {
-        networkSelected.value.push(DEFAULT_NETWORK.value)
+        networkSelected.value.push(DEFAULT_NETWORK.network)
       }
     } else {
+      if (isConnected.value) {
+        const chainSelected = chains.value.find((chain) => chain.id === item.chainId)
+        if (!chainSelected || chainSelected.id === network.value.chainId) {
+          visible.value = false
+          return
+        }
+        visible.value = false
+        await switchChainAsync({ chainId: chainSelected.id })
+        resetStoreLiquid()
+        resetStoreSwap()
+        recentTokens.value = []
+      }
       network.value = item
       visible.value = false
     }

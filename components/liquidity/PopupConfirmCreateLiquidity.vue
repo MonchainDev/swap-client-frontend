@@ -84,18 +84,17 @@
 </template>
 
 <script lang="ts" setup>
+  import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
   import type { Currency } from '@monchain/swap-sdk-core'
   import type { Position } from '@monchain/v3-sdk'
-  import { useAccount } from '@wagmi/vue'
-  import { Bound } from '~/types'
-  import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
   import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
-  import { config } from '~/config/wagmi'
-  import { CONTRACT_ADDRESS } from '~/constant/contract'
+  import { useAccount } from '@wagmi/vue'
   import { hexToBigInt } from 'viem'
+  import { config } from '~/config/wagmi'
   import MonFactoryABI from '~/constant/abi/MonFactory.json'
-  import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
+  import { Bound } from '~/types'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
+  import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
 
   interface IProps {
     position: Position | undefined
@@ -176,6 +175,8 @@
   const { showToastMsg } = useShowToastMsg()
   const { currentNetwork } = storeToRefs(useBaseStore())
 
+  const { chainId } = useActiveChainId()
+
   const handleAddLiquidity = async () => {
     try {
       if (props.position) {
@@ -195,8 +196,12 @@
         })
         console.log('🚀 ~ handleCreatePool ~ value:', value)
         console.log('🚀 ~ handleCreatePool ~ calldata:', calldata)
+
+        const contractAddress = getNftPositionManagerAddress(chainId.value)
+        if (!contractAddress) throw new Error('Invalid contract address')
+
         const txHash = await sendTransaction(config, {
-          to: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER as `0x${string}`,
+          to: contractAddress,
           data: calldata,
           value: hexToBigInt(value)
         })
@@ -207,22 +212,23 @@
         })
         if (status === 'success') {
           emit('reload', txHash)
+          const factoryAddress = getFactoryAddress(chainId.value) ?? '0x'
           const [poolAddress, balance] = await Promise.all([
             readContract(config, {
-              address: CONTRACT_ADDRESS.MON_FACTORY as `0x${string}`,
+              address: factoryAddress,
               functionName: 'getPool',
               args: [props.position.pool.token0.address, props.position.pool.token1.address, props.position.pool.fee],
               abi: MonFactoryABI
             }),
             readContract(config, {
-              address: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
+              address: contractAddress,
               functionName: 'balanceOf',
               args: [address.value],
               abi: NonfungiblePositionManagerABI
             })
           ])
           const tokenId = await readContract(config, {
-            address: CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as `0x${string}`,
+            address: contractAddress,
             functionName: 'tokenOfOwnerByIndex',
             args: [address.value, Number(balance) - 1],
             abi: NonfungiblePositionManagerABI
@@ -237,8 +243,8 @@
             fromToken: baseCurrency.value?.wrapped.address,
             toToken: quoteCurrency.value?.wrapped.address,
             fromAddress: address.value,
-            toAddress: CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER,
-            network: currentNetwork.value.value,
+            toAddress: contractAddress,
+            network: currentNetwork.value.network,
             transactionType: 'ADD_POOL'
           }
           postTransaction(body)

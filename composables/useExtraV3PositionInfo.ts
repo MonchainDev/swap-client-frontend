@@ -3,7 +3,6 @@ import { nearestUsableTick, Pool, Position, TICK_SPACINGS, TickMath, type FeeAmo
 import { useQuery } from '@tanstack/vue-query'
 import type { Address } from 'viem'
 import v3PoolStateABI from '~/constant/abi/v3PoolStateABI.json'
-import { CONTRACT_ADDRESS } from '~/constant/contract'
 import { WNATIVE } from '~/constant/token'
 import { Bound, type PositionDetail } from '~/types'
 
@@ -107,7 +106,7 @@ export default function useExtraV3PositionInfo(positionDetail: PositionDetail) {
         return acc
       }
       const { chainId } = value[0]
-      const v3CoreDeployerAddress = CONTRACT_ADDRESS.DEPLOYER_ADDRESSES as Address
+      const v3CoreDeployerAddress = getV3PoolDeployerAddress(chainId) ?? '0x'
       const addr = PoolCache.getPoolAddress(v3CoreDeployerAddress, ...value)
 
       acc[chainId] = acc[chainId] ?? []

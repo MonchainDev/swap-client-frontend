@@ -1,6 +1,6 @@
 import CONTRACT_TOKEN from '@/constant/contract/contract-token.json'
 import { useWriteContract, useWaitForTransactionReceipt } from '@wagmi/vue'
-import { MAX_NUMBER_APPROVE } from '~/constant/contract'
+import { MAX_NUMBER_APPROVE } from '~/constant'
 import type { TYPE_STATUS } from '~/types'
 
 export function useApproveToken() {

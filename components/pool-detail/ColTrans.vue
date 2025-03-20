@@ -30,9 +30,9 @@
       return `${type} ${baseToken?.symbol ?? ''} for ${quoteToken?.symbol ?? ''}`
     }
     if (props.row.transactionType === 'ADD_POOL') {
-      return `${type} ${baseToken?.symbol ?? ''} + ${quoteToken?.symbol ?? ''}`
+      return type
     }
-    return ''
+    return type
   })
 
   const { data: _data } = useQuery({

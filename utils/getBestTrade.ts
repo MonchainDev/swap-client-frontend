@@ -11,7 +11,7 @@ import { createPublicClient, http, type Address } from 'viem'
 import { useGetPoolLiquidity, useGetPoolSlot } from '~/composables/usePool'
 import { useGetTokenInfo } from '~/composables/useToken'
 import { config } from '~/config/wagmi'
-import { CONTRACT_ADDRESS } from '~/constant/contract'
+import { ChainId } from '~/types'
 import { FEE_ALLOWANCE } from '~/utils/constanst'
 import { monTestnet } from './config/chains'
 
@@ -31,6 +31,7 @@ interface SwapInput {
   token1: string
   inputAmount: number
   type: TradeType
+  chainId?: number
 }
 
 export interface SwapOutput extends SmartRouterTrade<TradeType> {
@@ -44,7 +45,7 @@ export interface SwapOutput extends SmartRouterTrade<TradeType> {
 
 const BASE_FEE_PERCENT = 10 ** 6
 
-export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapInput): Promise<SwapOutput> => {
+export const getBestTrade = async ({ token0, token1, inputAmount, type, chainId }: SwapInput): Promise<SwapOutput> => {
   try {
     const listPool: V3Pool[] = []
     const token0Info = await useGetTokenInfo(token0)
@@ -53,11 +54,13 @@ export const getBestTrade = async ({ token0, token1, inputAmount, type }: SwapIn
     const token1Currency = new Token(token1Info.chainId, token1 as `0x${string}`, token1Info.decimals, token1Info.symbol)
     const balances: { [key: string]: { [key: string]: bigint } } = {}
 
+    const factoryContract = getFactoryAddress(chainId ?? ChainId.MON_TESTNET)
+
     let totalOutputMaximum = CurrencyAmount.fromRawAmount(token1Currency, 0n)
     for (const fee of FEE_ALLOWANCE) {
       const pool = (await readContract(config, {
         abi: ABI_MON_FACTORY,
-        address: CONTRACT_ADDRESS.MON_FACTORY as `0x${string}`,
+        address: factoryContract!,
         functionName: 'getPool',
         args: [token0 as `$0x${string}` as Address, token1 as `$0x${string}` as Address, fee]
       })) as string
