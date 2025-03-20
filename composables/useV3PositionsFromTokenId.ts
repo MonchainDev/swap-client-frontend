@@ -15,7 +15,7 @@ export default function useV3PositionsFromTokenId(tokenId: bigint | undefined) {
     address: positionManager.value?.address as MaybeRef<`0x${string}`>,
     functionName: 'positions',
     args: [tokenId],
-    chainId: chainId.value as 16789 | 11155111 | undefined,
+    chainId: chainId.value,
     queryKey: ['v3PositionsFromTokenId', tokenId],
     query: {
       enabled: !!tokenId
