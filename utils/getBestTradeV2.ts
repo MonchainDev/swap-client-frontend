@@ -5,7 +5,6 @@ import { TickMath } from '@monchain/v3-sdk'
 import { Decimal } from 'decimal.js'
 import invariant from 'tiny-invariant'
 import type { PublicClient } from 'viem'
-import v3SubgraphClient from '~/constant/graphClient'
 
 interface SwapInput {
   token0: Token | Native
@@ -30,7 +29,7 @@ const getBestRoute = async (currencyA: Token | Native, currencyB: Token | Native
   return await SmartRouter.getV3CandidatePools({
     onChainProvider: () => publicClient,
     //@ts-ignore
-    subgraphProvider: () => v3SubgraphClient,
+    subgraphProvider: () => getGraphQLClient(currencyA.chainId),
     currencyA,
     currencyB,
     subgraphFallback: false
