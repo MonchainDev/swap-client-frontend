@@ -8,6 +8,7 @@ export type ReturnTypeGetBalance = {
 }
 
 export interface IFormBridge {
+  token0: TokenConfig
   token: TokenConfig
   amount: string
   chainId?: number

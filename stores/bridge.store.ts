@@ -2,7 +2,7 @@ import { Token } from '@monchain/swap-sdk-core'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import { defineStore } from 'pinia'
 import { DEFAULT_SLIPPAGE, NATIVE_TOKEN } from '~/constant'
-import { CONTRACT_ADDRESS } from '~/constant/contract'
+import CONTRACT_SWAP from '~/constant/contract'
 import ABI_TOKEN from '~/constant/contract/contract-token.json'
 import { ChainId } from '~/types'
 import type { IFormBridge, NetworkConfig, TokenConfig } from '~/types/bridge.type'
@@ -23,6 +23,16 @@ export const useBridgeStore = defineStore('bridge', () => {
   const { address, chainId } = useAccount()
 
   const form = ref<IFormBridge>({
+    token0: {
+      id: 0,
+      tokenAddress: '',
+      tokenDecimals: 0,
+      network: '',
+      tokenSymbol: '',
+      chainId: 0,
+      stable: false,
+      crossChain: false,
+    },
     token: {
       id: 0,
       tokenAddress: '',
@@ -64,17 +74,43 @@ export const useBridgeStore = defineStore('bridge', () => {
     }
   })
 
+    const token1 = computed(() => {
+    if (form.value.token.tokenSymbol === NATIVE_TOKEN.symbol && form.value.token.tokenAddress === '') {
+      return Native.onChain(ChainId.MON_TESTNET)
+    } else {
+      return form.value.token.tokenSymbol
+        ? new Token(
+            ChainId.MON_TESTNET,
+            form.value.token.tokenAddress as `0x${string}`,
+            +form.value.token.tokenDecimals,
+            form.value.token.tokenSymbol,
+            form.value.token.network
+          )
+        : undefined
+    }
+  })
+
   const { data: allowance, refetch: refetchAllowance } = useReadContract(
     computed(() => ({
       abi: ABI_TOKEN,
       address: token.value?.wrapped.address,
       functionName: 'allowance',
-      args: [address.value, CONTRACT_ADDRESS.SWAP_ROUTER_V3]
+      args: [address.value, CONTRACT_SWAP.v3CoreFactoryAddress]
     }))
   )
 
   const resetStore = () => {
     form.value = {
+      token0: {
+        id: 0,
+        tokenAddress: '',
+        tokenDecimals: 0,
+        network: '',
+        tokenSymbol: '',
+        chainId: 0,
+        stable: false,
+        crossChain: false,
+      },
       token: {
         id: 0,
         tokenAddress: '',
@@ -104,6 +140,7 @@ export const useBridgeStore = defineStore('bridge', () => {
     slippage,
     balance,
     token,
+    token1,
     allowance,
     txDeadline,
     isSwapping,

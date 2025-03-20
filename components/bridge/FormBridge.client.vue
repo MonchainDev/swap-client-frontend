@@ -156,35 +156,28 @@
 
 <script lang="ts" setup>
   import { computed } from 'vue'
-  import { createPublicClient, http, type Address, type Hex } from 'viem'
   import { useAccount } from '@wagmi/vue'
-  import ethers from 'ethers'
-  import { createConfig, writeContract } from '@wagmi/core'
-  import type { IToken } from '~/types'
-  import { monTestnet } from '~/utils/config/chains'
-  import { mainnet, sepolia } from '@wagmi/core/chains'
-  import ABI_RELAY_FACET from '@/constant/abi/RelayFacet.json'
+  // import { createPublicClient, http, type Address, type Hex } from 'viem'
+  // import ethers from 'ethers'
+  // import { createConfig, writeContract } from '@wagmi/core'
+  // import { monTestnet } from '~/utils/config/chains'
+  // import { mainnet, sepolia } from '@wagmi/core/chains'
+  // import ABI_RELAY_FACET from '@/constant/abi/RelayFacet.json'
   import InputBridge from './InputBridge.vue'
   import ChooseNetworkBridge from './ChooseNetworkBridge.vue'
   import PopupSellToken from '../popup/PopupSellToken.vue'
   import type { TokenConfig } from '~/types/bridge.type'
   import { ElNotification } from 'element-plus'
-  import { getBestTradeV2, type SwapOutput } from '~/utils/getBestTradeV2'
-  import { TradeType } from '@monchain/swap-sdk-core'
-  import { DEFAULT_SLIPPAGE } from '~/constant'
-  import { useBridgeTransaction } from '~/composables/useBridgeTransaction'
-  import HeaderFormSwap from './HeaderFormSwap.vue'
-  import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
-  import swapRouterABI from '~/constant/abi/swapRouter.json'
-  import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
-  import type { IFormBridge } from '~/types/bridge.type'
-  import { type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
-  import { TradeType } from '@monchain/swap-sdk-core'
-  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
-  import Decimal from 'decimal.js'
-  import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
-  import { config } from '~/config/wagmi'
-  import type { Route, V3Pool } from '@monchain/smart-router'
+  import { type SwapOutput } from '~/utils/getBestTradeV2'
+  // import { DEFAULT_SLIPPAGE } from '~/constant'
+  // import { useBridgeTransaction } from '~/composables/useBridgeTransaction'
+  // import HeaderFormSwap from './HeaderFormSwap.vue'
+  // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
+  // import swapRouterABI from '~/constant/abi/swapRouter.json'
+  // import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
+  // import { TradeType } from '@monchain/swap-sdk-core'
+  // import Decimal from 'decimal.js'
+  // import type { Route, V3Pool, SmartRouterTrade } from '@monchain/smart-router'
 
   export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE'
 
@@ -198,11 +191,11 @@
 
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { fromNetwork, toNetwork, balance, form } = storeToRefs(useBridgeStore())
+  const { fromNetwork, toNetwork, balance, form, isConfirmSwap, isConfirmApprove, isSwapping } = storeToRefs(useBridgeStore())
   const isEditSlippage = ref(false)
 
-  const approveAndSend = ref<boolean>(false)
-  const { address } = useAccount()
+  // const approveAndSend = ref<boolean>(false)
+  const { isConnected } = useAccount()
 
   const stepBridge = ref<StepBridge>('SELECT_TOKEN')
 
@@ -239,7 +232,7 @@
       return 'You have insufficient balance'
     } else if (isTokenSelected.value) {
       if (stepBridge.value === 'SELECT_TOKEN') {
-        return `SEND ${form.value.amount} ${form.value.token.name}: ${fromNetwork.value.title} ⇒ ${toNetwork.value.title}`
+        return `SEND ${form.value.amount} ${form.value.token.network}: ${fromNetwork.value?.network} ⇒ ${toNetwork.value?.network}`
       } else {
         if (isSwapping.value) {
           return 'SWAPPING! PLEASE WAIT..'
@@ -282,6 +275,8 @@
     listTokenData.value = data.value || []
   }
 
+  const { listNetwork } = storeToRefs(useBridgeStore())
+
   // const poolAddress = ref<string>('')
   const handleInput = async (amount: string) => {
     console.log(amount)
@@ -293,25 +288,30 @@
         isFetchQuote.value = false
         form.value.amount = ''
         isEditSlippage.value = false
-        slippage.value = DEFAULT_SLIPPAGE
+        // slippage.value = DEFAULT_SLIPPAGE
         return
       }
-      
+
       // đoạn này lấy thông tin token từ chain đích
-      // token0 là token có stable = TRUE của mạng gốc 
-      // token1 là nếu address là 0x000000, thì sẽ lấy theo wrapToken của network, ngược lại lấy địa chỉ của token luôn 
+      // token0 là token có stable = TRUE của mạng gốc
+      const token0 = listTokenData.value.filter((item) => item.stable)
+      console.log(token0)
+
+      // token1 là nếu address là 0x000000, thì sẽ lấy theo wrapToken của network, ngược lại lấy địa chỉ của token luôn
       form.value.amount = amount
       const inputAmount = Number(form.value.amount) * ((10 ** Number(form.value.token.tokenDecimals)) as number)
       // khởi tạo token0 = new Token() với thông tin token 0
       // khởi tạo token1 = new Token() với thông tin token 1
       // tạm thời lấy fee = 1%
-      // outAmount = inAmount * (1 - fee /100)
-      const _bestTrade = await getBestTradeV2({
-        token0: token.value!,
-        token1: token.value!,
-        inputAmount: outAmount,
-        type: TradeType.EXACT_OUTPUT
-      }) as SwapOutput
+      const outAmount = inputAmount * (1 - 1 / 100)
+      console.log(outAmount)
+
+      // const _bestTrade = (await getBestTradeV2({
+      //   token0: token.value!,
+      //   token1: token.value!,
+      //   inputAmount: outAmount,
+      //   type: TradeType.EXACT_OUTPUT
+      // })) as SwapOutput
 
       /*
       input gọi API sign: http://localhost:8000/api/v1/sign/relay-transfer
@@ -337,40 +337,41 @@
       }
       */
 
-      const trade = _bestTrade as SmartRouterTrade<TradeType>
-      const routes = trade.routes as Route[]
-      for (let i = 0; i < routes.length; i++) {
-        const route = routes[i];
+      // const trade = _bestTrade as SmartRouterTrade<TradeType>
+      // const routes = trade.routes as Route[]
+      // for (let i = 0; i < routes.length; i++) {
+      //   const route = routes[i]
 
-        const liquidity = (route.pools[0] as V3Pool).liquidity.toString()
-      const sqrtRatioX96 = (route.pools[0] as V3Pool).sqrtRatioX96
-      const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
+      //   const liquidity = (route.pools[0] as V3Pool).liquidity.toString()
+      //   const sqrtRatioX96 = (route.pools[0] as V3Pool).sqrtRatioX96
+      //   const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
 
-      const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
-      let nextPrice: Decimal = new Decimal(0)
-      if (zeroToOne) {
-        // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
-        nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
-      } else {
-        // √(Pnew) = (Δy / L) + √(Pcurrent)
-        nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
-      }
-      const sqrtPriceLimitX96 = nextPrice
-        .sqrt()
-        .mul(2 ** 96)
-        .toNumber()
+      //   const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
+      //   let nextPrice: Decimal = new Decimal(0)
+      //   if (zeroToOne) {
+      //     // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
+      //     nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
+      //   } else {
+      //     // √(Pnew) = (Δy / L) + √(Pcurrent)
+      //     nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
+      //   }
+      //   const sqrtPriceLimitX96 = nextPrice
+      //     .sqrt()
+      //     .mul(2 ** 96)
+      //     .toNumber()
 
-        const routeIn = {
-           tokenInAddress: route.inputAmount.currency.wrapped.address,
-           tokenOutAddress: route.outputAmount.currency.wrapped.address,
-           fee: (route.pools[0] as V3Pool).fee,
-           amountOut: route.outputAmount.numerator,
-           amountInMaximum: route.inputAmount.numerator,
-           sqrtPriceLimitX96: sqrtPriceLimitX96
-        }
-      }
+      //   const routeIn = {
+      //     tokenInAddress: route.inputAmount.currency.wrapped.address,
+      //     tokenOutAddress: route.outputAmount.currency.wrapped.address,
+      //     fee: (route.pools[0] as V3Pool).fee,
+      //     amountOut: route.outputAmount.numerator,
+      //     amountInMaximum: route.inputAmount.numerator,
+      //     sqrtPriceLimitX96: sqrtPriceLimitX96
+      //   }
+      //   console.log(routeIn)
+      // }
 
-      console.log('🚀 ~ handleInput ~ _bestTrade:', _bestTrade)
+      // console.log('🚀 ~ handleInput ~ _bestTrade:', _bestTrade)
       isFetchQuote.value = false
     } catch (_error) {
       console.error('🚀 ~ handleInput ~ _error:', _error)
@@ -454,16 +455,16 @@
   //   }
   // }
 
-  const publicClient = createPublicClient({
-    chain: monTestnet,
-    transport: http('https://rpc-testnet.monchain.info'),
-    batch: {
-      multicall: {
-        batchSize: 1024 * 200
-      }
-    }
-  })
-  const gasEstimate = await publicClient.getGasPrice()
+  // const publicClient = createPublicClient({
+  //   chain: monTestnet,
+  //   transport: http('https://rpc-testnet.monchain.info'),
+  //   batch: {
+  //     multicall: {
+  //       batchSize: 1024 * 200
+  //     }
+  //   }
+  // })
+  // const gasEstimate = await publicClient.getGasPrice()
 
   // const response = {
   //   data: {
@@ -478,69 +479,64 @@
   //   }
   // }
 
-  const response: ResponseData = {
-    requestId: '0x30314a504a383446423053593453414446444e58534644394242000000000000',
-    signature: '0x43c9ddbb1db90a0d218bd5c2339ca25ff8539b92d674ef47b2344811b70d977924ee8a0defd0ff9cefaf084a6a0420715b2f0e393c16d7106ae98dd5a9889ae71c',
-    iterator: 'SERVICE'
-  }
+  // const response: ResponseData = {
+  //   requestId: '0x30314a504a383446423053593453414446444e58534644394242000000000000',
+  //   signature: '0x43c9ddbb1db90a0d218bd5c2339ca25ff8539b92d674ef47b2344811b70d977924ee8a0defd0ff9cefaf084a6a0420715b2f0e393c16d7106ae98dd5a9889ae71c',
+  //   iterator: 'SERVICE'
+  // }
   // Transaction parameters
-  const receiverAddress = '0x31fB83Dc60D27C9C4a58a361bc9c48e0Bcfe902B'
-  const destinationChainId = 137
-  const receiverAssetId = address.value as `0x${string}`
-  interface ResponseData {
-    requestId: string
-    iterator: string
-    signature: string
-  }
+  // const receiverAddress = '0x31fB83Dc60D27C9C4a58a361bc9c48e0Bcfe902B'
+  // const destinationChainId = 137
+  // const receiverAssetId = address.value as `0x${string}`
+  // interface ResponseData {
+  //   requestId: string
+  //   iterator: string
+  //   signature: string
+  // }
 
   const handleBridge = async () => {
     // approveAndSend.value = !approveAndSend.value
     bridgeSuccess(15, 'ATOM', 123.566, 'https://explorer.monchain.info')
 
-    const config = createConfig({
-      chains: [mainnet, sepolia],
-      transports: {
-        [mainnet.id]: http(),
-        [sepolia.id]: http()
-      }
-    })
+    // const config = createConfig({
+    //   chains: [mainnet, sepolia],
+    //   transports: {
+    //     [mainnet.id]: http(),
+    //     [sepolia.id]: http()
+    //   }
+    // })
 
     try {
-      if (!isConnected.value) throw new Error('Wallet not connected')
-      const liFiDiamondAddress: Address = '0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d'
-
-      const bridgeData = {
-        transactionId: response.requestId as string, // Kiểu dữ liệu string
-        bridge: 'relay' as const, // Hằng số kiểu string
-        integrator: response.iterator as string, // Định rõ kiểu dữ liệu
-        referrer: ethers.constants.AddressZero as Address, // Định rõ kiểu Address
-        sendingAssetId: (form.value.token.address || ethers.constants.AddressZero) as Address,
-        receiver: receiverAddress as Address,
-        minAmount: ethers.utils.parseUnits(form.value.amount.toString(), +form.value.token.decimals),
-        destinationChainId: destinationChainId as number, // Chắc chắn kiểu số
-        hasSourceSwaps: false,
-        hasDestinationCall: false
-      }
-
-      const relayData = {
-        requestId: response.requestId as string,
-        nonEVMReceiver: ethers.constants.HashZero as Hex, // Định rõ kiểu Hex
-        receivingAssetId: ethers.utils.hexZeroPad(receiverAssetId, 32) as Address, // Kiểu Address
-        signature: response.signature as Hex // Định rõ kiểu Hex
-      }
-
-      // ✅ Gọi contract bằng wagmi actions
-      const tx = await writeContract(config, {
-        address: liFiDiamondAddress,
-        abi: ABI_RELAY_FACET,
-        functionName: 'startBridgeTokensViaRelay',
-        args: [bridgeData, relayData],
-        value: BigInt(form.value.amount) * BigInt(10 ** +form.value.token.decimals),
-        gas: BigInt(300000), // Định kiểu BigInt
-        gasPrice: gasEstimate as bigint // Đảm bảo kiểu bigint
-      })
-
-      console.log('Transaction sent:', tx)
+      // if (!isConnected.value) throw new Error('Wallet not connected')
+      // const liFiDiamondAddress: Address = '0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d'
+      // const bridgeData = {
+      //   transactionId: response.requestId as string, // Kiểu dữ liệu string
+      //   bridge: 'relay' as const, // Hằng số kiểu string
+      //   integrator: response.iterator as string, // Định rõ kiểu dữ liệu
+      //   referrer: ethers.constants.AddressZero as Address, // Định rõ kiểu Address
+      //   sendingAssetId: (form.value.token.tokenAddress || ethers.constants.AddressZero) as Address,
+      //   receiver: receiverAddress as Address,
+      //   minAmount: ethers.utils.parseUnits(form.value.amount.toString(), +form.value.token.tokenDecimals),
+      //   destinationChainId: destinationChainId as number, // Chắc chắn kiểu số
+      //   hasSourceSwaps: false,
+      //   hasDestinationCall: false
+      // }
+      // const relayData = {
+      //   requestId: response.requestId as string,
+      //   nonEVMReceiver: ethers.constants.HashZero as Hex, // Định rõ kiểu Hex
+      //   receivingAssetId: ethers.utils.hexZeroPad(receiverAssetId, 32) as Address, // Kiểu Address
+      //   signature: response.signature as Hex // Định rõ kiểu Hex
+      // }
+      // // ✅ Gọi contract bằng wagmi actions
+      // const tx = await writeContract(config, {
+      //   address: liFiDiamondAddress,
+      //   abi: ABI_RELAY_FACET,
+      //   functionName: 'startBridgeTokensViaRelay',
+      //   args: [bridgeData, relayData],
+      //   value: BigInt(form.value.amount) * BigInt(10 ** +form.value.token.tokenDecimals),
+      //   gas: BigInt(300000), // Định kiểu BigInt
+      //   gasPrice: gasEstimate as bigint // Đảm bảo kiểu bigint
+      // })
     } catch (error) {
       console.error('Transaction failed:', error)
     }
