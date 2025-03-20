@@ -51,6 +51,7 @@
 
 <script lang="ts" setup>
   import type { NetworkConfig } from '~/types/bridge.type'
+  import {ChainId, type INetwork, type IToken} from '~/types'
 
   interface IProps {
     // isSelect?: boolean
@@ -65,10 +66,10 @@
   const { fromNetwork, toNetwork, listNetwork } = storeToRefs(useBridgeStore())
   const visible = ref(false)
   const search = ref('')
-  // const networkSelected = defineModel('networkSelected', {
-  //   type: Array<string>,
-  //   default: []
-  // })
+  const networkSelected = defineModel('networkSelected', {
+    type: Array<string>,
+    default: []
+  })
 
   const emits = defineEmits<{
     'select-network': []
@@ -78,29 +79,29 @@
     return listNetwork.value.filter((item) => item.network.toLowerCase().includes(useTrim(search.value.toLowerCase())))
   })
 
-  // function getLogoByNetwork(network: string): string {
-  //   switch (network) {
-  //     case 'ETH':
-  //       return '/logo-ethereum-chain.png'
-  //     case 'POLYGON':
-  //       return '/logo-polygon-chain.png'
-  //     case 'ARBITRUM':
-  //       return '/logo-liena-chain.png'
-  //     case 'BSC':
-  //       return '/logo-bnb-chain.png'
-  //     case 'MON':
-  //       return '/logo-mon-chain.png'
-  //     case 'LINEA':
-  //       return '/logo-linea-chain.png'
-  //     default:
-  //       return '/logo-mon-chain.png'
-  //   }
-  // }
+  function getLogoByNetwork(network: string): string {
+    switch (network) {
+      case 'ETH':
+        return '/logo-ethereum-chain.png'
+      case 'POLYGON':
+        return '/logo-polygon-chain.png'
+      case 'ARBITRUM':
+        return '/logo-liena-chain.png'
+      case 'BSC':
+        return '/logo-bnb-chain.png'
+      case 'MON':
+        return '/logo-mon-chain.png'
+      case 'LINEA':
+        return '/logo-linea-chain.png'
+      default:
+        return '/logo-mon-chain.png'
+    }
+  }
 
   fromNetwork.value = listNetwork.value[0]
   toNetwork.value = listNetwork.value[0]
 
-  const handleSelectNetwork = (item: NetworkConfig) => {
+  const handleSelectNetwork = (item: INetwork) => {
     if (_props.type === 'FROM') {
       fromNetwork.value = item
       visible.value = false

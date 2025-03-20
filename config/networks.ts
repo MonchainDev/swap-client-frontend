@@ -10,7 +10,8 @@ const DEFAULT_NETWORK: INetwork = {
   graphUrl: 'https://graph-mon.monchain.info/subgraphs/name/v3',
   nativeToken: 'MON',
   wrapToken: 'WMON',
-  wrapTokenAddress: '0xF9012437655F666bcB07f50Cc471f531629342Df'
+  wrapTokenAddress: '0xF9012437655F666bcB07f50Cc471f531629342Df',
+  stableTokenAddress: '0x8071be23b8946dd6a9914f3d6d3ab8938241671f'
 }
 
 const LIST_NETWORK: INetwork[] = [
@@ -25,7 +26,8 @@ const LIST_NETWORK: INetwork[] = [
     graphUrl: 'https://graph-bnb.monchain.info/subgraphs/name/v3',
     nativeToken: 'BNB',
     wrapToken: 'WBNB',
-    wrapTokenAddress: '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd'
+    wrapTokenAddress: '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',
+    stableTokenAddress: '0x2a4b180da0a45a5ae65f230c228de0d4de0b7057'
   },
   {
     name: 'Ethereum',
@@ -37,7 +39,8 @@ const LIST_NETWORK: INetwork[] = [
     graphUrl: 'https://graph-eth.monchain.info/subgraphs/name/v3',
     nativeToken: 'ETH',
     wrapToken: 'WETH',
-    wrapTokenAddress: '0xf531B8F309Be94191af87605CfBf600D71C2cFe0'
+    wrapTokenAddress: '0xf531B8F309Be94191af87605CfBf600D71C2cFe0',
+    stableTokenAddress: ''
   },
   {
     name: 'Polygon',
@@ -49,7 +52,8 @@ const LIST_NETWORK: INetwork[] = [
     graphUrl: 'https://graph-polygon.monchain.info/subgraphs/name/v3',
     nativeToken: 'POL',
     wrapToken: 'WPOL',
-    wrapTokenAddress: '0xA5733b3A8e62A8faF43b0376d5fAF46E89B3033E'
+    wrapTokenAddress: '0xA5733b3A8e62A8faF43b0376d5fAF46E89B3033E',
+    stableTokenAddress: ''
   },
   {
     name: 'Arbitrum Sepolia',
@@ -61,7 +65,8 @@ const LIST_NETWORK: INetwork[] = [
     graphUrl: 'https://graph-arbitrum.monchain.info/subgraphs/name/v3',
     nativeToken: 'ETH',
     wrapToken: 'WETH',
-    wrapTokenAddress: '0x980B62Da83eFf3D4576C647993b0c1D7faf17c73'
+    wrapTokenAddress: '0x980B62Da83eFf3D4576C647993b0c1D7faf17c73',
+    stableTokenAddress: ''
   }
 ]
 

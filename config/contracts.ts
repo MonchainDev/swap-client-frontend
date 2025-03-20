@@ -60,11 +60,20 @@ const swapRouterV3Addresses = {
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, string>
 
+const lifiContractAddresses = {
+  [ChainId.MON_TESTNET]: '0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d',
+  [ChainId.AMOY_POLYGON]: '0x',
+  [ChainId.BSC_TESTNET]: '0x03e078248A4cD85633273d905d4F026C68935d0f',
+  [ChainId.SEPOLIA]: '0x',
+  [ChainId.ARBITRUM_SEPOLIA]: '0x'
+} as const satisfies Record<ChainId, string>
+
 export default {
   nftPositionManager: NFT_POSITION_MANAGER_ADDRESSES,
   v3PoolDeployer: DEPLOYER_ADDRESSES,
   poolInitCodeHash: POOL_INIT_CODE_HASHES,
   factory: FACTORY_ADDRESSES,
   masterChefV3: masterChefV3Addresses,
-  swapRouterV3: swapRouterV3Addresses
+  swapRouterV3: swapRouterV3Addresses,
+  lifiContractAddress: lifiContractAddresses
 }

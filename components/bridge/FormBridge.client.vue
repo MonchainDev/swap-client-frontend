@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="to-network w-1/2">
-        <ChooseNetworkBridge type="TO" @select-network="handleSelectNetwork" />
+        <ChooseNetworkBridge type="TO" @select-network="handleSelectToNetwork" />
       </div>
     </div>
     <div class="mt-3 w-full sm:mt-4">
@@ -23,7 +23,7 @@
         v-model:amount="form.amount"
         :is-selected="isTokenSelected"
         :token="form.token"
-        :balance="balance?.formatted"
+        :balance="balance0.toString()"
         :step-bridge
         class="h-[138px] w-full border border-[#EEEEEE] bg-white sm:h-[100px]"
         @select-token="handleOpenPopupSelectToken"
@@ -150,39 +150,65 @@
       </button>
     </template>
 
-    <PopupSellToken :list-token="listTokenData" @select="handleSelectToken" />
+    <PopupSellToken :list-token="listToken" @select="handleSelectToken" />
   </div>
 </template>
 
 <script lang="ts" setup>
   import { computed } from 'vue'
   import { useAccount } from '@wagmi/vue'
-  // import { createPublicClient, http, type Address, type Hex } from 'viem'
-  // import ethers from 'ethers'
-  // import { createConfig, writeContract } from '@wagmi/core'
+  import {createPublicClient, http, type Address, type Hex, encodeFunctionData, zeroAddress, zeroHash, pad, parseUnits } from 'viem'
+
+  import {createConfig, sendTransaction, waitForTransactionReceipt, writeContract} from '@wagmi/core'
   // import { monTestnet } from '~/utils/config/chains'
   // import { mainnet, sepolia } from '@wagmi/core/chains'
-  // import ABI_RELAY_FACET from '@/constant/abi/RelayFacet.json'
+  import ABI_RELAY_FACET from '@/constant/abi/RelayFacet.json'
+
   import InputBridge from './InputBridge.vue'
   import ChooseNetworkBridge from './ChooseNetworkBridge.vue'
   import PopupSellToken from '../popup/PopupSellToken.vue'
-  import type { TokenConfig } from '~/types/bridge.type'
   import { ElNotification } from 'element-plus'
   import { type SwapOutput } from '~/utils/getBestTradeV2'
-  // import { DEFAULT_SLIPPAGE } from '~/constant'
+  import {ChainId, type INetwork, type IToken} from '~/types'
+  import contractAddress  from '~/config/contracts'
   // import { useBridgeTransaction } from '~/composables/useBridgeTransaction'
   // import HeaderFormSwap from './HeaderFormSwap.vue'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
   // import swapRouterABI from '~/constant/abi/swapRouter.json'
   // import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
-  // import { TradeType } from '@monchain/swap-sdk-core'
-  // import Decimal from 'decimal.js'
-  // import type { Route, V3Pool, SmartRouterTrade } from '@monchain/smart-router'
+  import { Token, TradeType } from '@monchain/swap-sdk-core'
+  import Decimal from 'decimal.js'
+  import type { Route, V3Pool, SmartRouterTrade } from '@monchain/smart-router'
+  import swapRouterABI from "~/constant/abi/swapRouter.json";
+  import {config} from "~/config/wagmi";
+  import {CHAINS, monTestnet} from "~/utils/config/chains";
 
   export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE'
 
   interface IProps {
     title?: string
+  }
+
+  type RouteInput = {
+    tokenInAddress: string,
+    tokenOutAddress: string,
+    fee: number,
+    amountOut: bigint,
+    amountInMaximum: bigint,
+    sqrtPriceLimitX96: bigint
+  }
+
+  type Response = {
+    data: {
+      "requestId": string
+      "signature": string
+      "iterator": string
+    }
+    meta: {
+      httpStatusCode: number
+      code: string
+      message: string
+    }
   }
 
   const _props = withDefaults(defineProps<IProps>(), {
@@ -191,7 +217,7 @@
 
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { fromNetwork, toNetwork, balance, form, isConfirmSwap, isConfirmApprove, isSwapping } = storeToRefs(useBridgeStore())
+  const { fromNetwork, toNetwork, balance, form, isConfirmSwap, isConfirmApprove, isSwapping, listToken, token0, token1, balance0 } = storeToRefs(useBridgeStore())
   const isEditSlippage = ref(false)
 
   // const approveAndSend = ref<boolean>(false)
@@ -228,7 +254,7 @@
       return 'Select a token'
     } else if (isFetchQuote.value) {
       return 'Finalizing quote...'
-    } else if ((!isFetchQuote.value && noRoute.value && isTokenSelected.value) || notEnoughLiquidity.value) {
+    } else if ((isFetchQuote.value && !isTokenSelected.value) || notEnoughLiquidity.value) {
       return 'You have insufficient balance'
     } else if (isTokenSelected.value) {
       if (stepBridge.value === 'SELECT_TOKEN') {
@@ -249,37 +275,41 @@
     return (
       !isTokenSelected.value ||
       !form.value.amount ||
-      !(fromNetwork.value?.network === toNetwork.value?.network) ||
+      // !(fromNetwork.value?.network === toNetwork.value?.network) ||
       isFetchQuote.value ||
-      noRoute.value ||
       notEnoughLiquidity.value
+
     )
   })
 
   const handleSwapOrder = () => {
     if (stepBridge.value === 'CONFIRM_BRIDGE') return
     ;[fromNetwork.value, toNetwork.value] = [toNetwork.value, fromNetwork.value]
-    handleSelectNetwork()
+    handleSelectToNetwork()
   }
 
   const handleOpenPopupSelectToken = () => {
     if (stepBridge.value === 'CONFIRM_BRIDGE') return
     setOpenPopup('popup-sell-token', true)
+    console.info('tokens: ', listToken.value)
   }
 
-  const listTokenData = ref<TokenConfig[]>([])
+  const stableDestinationChainIdToken = ref<IToken>()
 
-  function handleSelectNetwork() {
-    const query = { network: toNetwork.value?.network, crossChain: 'Y' }
-    const { data } = useFetch<TokenConfig[]>('/api/network/token', { query })
-    listTokenData.value = data.value || []
+  const feeBridge = 1; // 1%
+
+  async function handleSelectToNetwork() {
+    const query = {network: toNetwork.value?.network!, crossChain: 'Y'}
+    const {data} = await useFetch<IToken[]>('/api/network/token', {query})
+
+    stableDestinationChainIdToken.value = data.value?.find(item => item.stable)
+
+    console.info('stableDestinationChainIdToken.value', stableDestinationChainIdToken.value)
   }
-
-  const { listNetwork } = storeToRefs(useBridgeStore())
 
   // const poolAddress = ref<string>('')
   const handleInput = async (amount: string) => {
-    console.log(amount)
+    console.log('handle input', amount)
     try {
       notEnoughLiquidity.value = false
       if (!isTokenSelected.value) return
@@ -292,84 +322,38 @@
         return
       }
 
-      // đoạn này lấy thông tin token từ chain đích
-      // token0 là token có stable = TRUE của mạng gốc
-      const token0 = listTokenData.value.filter((item) => item.stable)
-      console.log(token0)
-
-      // token1 là nếu address là 0x000000, thì sẽ lấy theo wrapToken của network, ngược lại lấy địa chỉ của token luôn
-      form.value.amount = amount
-      const inputAmount = Number(form.value.amount) * ((10 ** Number(form.value.token.tokenDecimals)) as number)
-      // khởi tạo token0 = new Token() với thông tin token 0
-      // khởi tạo token1 = new Token() với thông tin token 1
-      // tạm thời lấy fee = 1%
-      const outAmount = inputAmount * (1 - 1 / 100)
-      console.log(outAmount)
-
-      // const _bestTrade = (await getBestTradeV2({
-      //   token0: token.value!,
-      //   token1: token.value!,
-      //   inputAmount: outAmount,
-      //   type: TradeType.EXACT_OUTPUT
-      // })) as SwapOutput
-
-      /*
-      input gọi API sign: http://localhost:8000/api/v1/sign/relay-transfer
-      {
-        "contractAddress": "địa chỉ contract lifi trên API network, mạng gốc ở network nào thì lấy theo contract của network đó",
-        "chainId": chain gốc,
-        "destinationChainId": chain đích,
-        "receiverAddress": "địa chỉ ví nhận",
-        "sendingAssetId": "địa chỉ token chuyển đi, luôn lấy theo API",
-        "receiverAssetId": "luôn lấy địa address api",
-        "amountIn": Số tiền nhập vào dạng wei,
-        "routes": [
-            {
-                "tokenInAddress": "địa chỉ token USDT",
-                "tokenOutAddress": "Địa chỉ token nhận ở mạng đích, nếu address là 0x000000, thì sẽ lấy theo wrapToken của network",
-                "fee": "100",
-                "amountOut": "10000000a",
-                "amountInMaximum": "10000000",
-                "sqrtPriceLimitX96": "10000000"
-
-            }
-        ]
+      const amountInWei = parseUnits(amount, form.value.token.tokenDecimals)
+      if (new Decimal(balance0.value!).lt(new Decimal(amountInWei.toString()))) {
+        console.log('balance0', balance0.value)
+        // notEnoughLiquidity.value = true
       }
-      */
+      form.value.amount = amount
 
-      // const trade = _bestTrade as SmartRouterTrade<TradeType>
-      // const routes = trade.routes as Route[]
-      // for (let i = 0; i < routes.length; i++) {
-      //   const route = routes[i]
 
-      //   const liquidity = (route.pools[0] as V3Pool).liquidity.toString()
-      //   const sqrtRatioX96 = (route.pools[0] as V3Pool).sqrtRatioX96
-      //   const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
+      console.log('token0', token0.value)
+      console.log('token1', token1.value)
 
-      //   const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
-      //   let nextPrice: Decimal = new Decimal(0)
-      //   if (zeroToOne) {
-      //     // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
-      //     nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
-      //   } else {
-      //     // √(Pnew) = (Δy / L) + √(Pcurrent)
-      //     nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
-      //   }
-      //   const sqrtPriceLimitX96 = nextPrice
-      //     .sqrt()
-      //     .mul(2 ** 96)
-      //     .toNumber()
+      const token0BestTradeInput = new Token(
+          stableDestinationChainIdToken.value?.chainId! as number,
+          stableDestinationChainIdToken.value?.tokenAddress as `0x${string}`,
+          stableDestinationChainIdToken.value?.tokenDecimals!,
+          stableDestinationChainIdToken.value?.tokenSymbol!,
+          stableDestinationChainIdToken.value?.name!
+      )
+      console.info('token0BestTradeInput', token0BestTradeInput)
 
-      //   const routeIn = {
-      //     tokenInAddress: route.inputAmount.currency.wrapped.address,
-      //     tokenOutAddress: route.outputAmount.currency.wrapped.address,
-      //     fee: (route.pools[0] as V3Pool).fee,
-      //     amountOut: route.outputAmount.numerator,
-      //     amountInMaximum: route.inputAmount.numerator,
-      //     sqrtPriceLimitX96: sqrtPriceLimitX96
-      //   }
-      //   console.log(routeIn)
-      // }
+      const token1BestTradeInput = new Token(
+          token1.value?.chainId!,
+          (token1.value?.wrapped.address === '0x0000000000000000000000000000000000000000'
+              ? toNetwork.value?.wrapTokenAddress
+              : token1.value?.wrapped.address!) as `0x${string}`,
+          +token1.value?.decimals!,
+          token1.value?.symbol!,
+          token1.value?.name!
+      )
+      console.info('token1BestTradeInput', token1BestTradeInput)
+
+
 
       // console.log('🚀 ~ handleInput ~ _bestTrade:', _bestTrade)
       isFetchQuote.value = false
@@ -377,10 +361,12 @@
       console.error('🚀 ~ handleInput ~ _error:', _error)
       isFetchQuote.value = false
       notEnoughLiquidity.value = true
+    } finally {
+      isFetchQuote.value = false
     }
   }
 
-  const handleSelectToken = (token: TokenConfig) => {
+  const handleSelectToken = (token: IToken) => {
     form.value.token = token
   }
 
@@ -498,36 +484,143 @@
     // approveAndSend.value = !approveAndSend.value
     bridgeSuccess(15, 'ATOM', 123.566, 'https://explorer.monchain.info')
 
-    // const config = createConfig({
-    //   chains: [mainnet, sepolia],
-    //   transports: {
-    //     [mainnet.id]: http(),
-    //     [sepolia.id]: http()
-    //   }
-    // })
 
     try {
-      // if (!isConnected.value) throw new Error('Wallet not connected')
-      // const liFiDiamondAddress: Address = '0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d'
-      // const bridgeData = {
-      //   transactionId: response.requestId as string, // Kiểu dữ liệu string
-      //   bridge: 'relay' as const, // Hằng số kiểu string
-      //   integrator: response.iterator as string, // Định rõ kiểu dữ liệu
-      //   referrer: ethers.constants.AddressZero as Address, // Định rõ kiểu Address
-      //   sendingAssetId: (form.value.token.tokenAddress || ethers.constants.AddressZero) as Address,
-      //   receiver: receiverAddress as Address,
-      //   minAmount: ethers.utils.parseUnits(form.value.amount.toString(), +form.value.token.tokenDecimals),
-      //   destinationChainId: destinationChainId as number, // Chắc chắn kiểu số
-      //   hasSourceSwaps: false,
-      //   hasDestinationCall: false
+      const amount = form.value.amount as string
+      // khởi tạo token0 = new Token() với thông tin token 0
+      // khởi tạo token1 = new Token() với thông tin token 1
+      // tạm thời lấy fee = 1%
+      const outputAmountSubFee = Number(form.value.amount) * (1 - feeBridge /100)
+      const outputAmountInWei = outputAmountSubFee * (10 ** Number(form.value.token.tokenDecimals))
+      const token0BestTradeInput = new Token(
+          stableDestinationChainIdToken.value?.chainId! as number,
+          stableDestinationChainIdToken.value?.tokenAddress as `0x${string}`,
+          stableDestinationChainIdToken.value?.tokenDecimals!,
+          stableDestinationChainIdToken.value?.tokenSymbol!,
+          stableDestinationChainIdToken.value?.name!
+      )
+      console.log('token0BestTradeInput', token0BestTradeInput)
+
+      const token1BestTradeInput = new Token(
+          token1.value?.chainId! as number,
+          (token1.value?.wrapped.address === '0x0000000000000000000000000000000000000000'
+              ? toNetwork.value?.wrapTokenAddress
+              : token1.value?.wrapped.address!) as `0x${string}`,
+          +token1.value?.decimals!,
+          token1.value?.symbol!,
+          token1.value?.name!
+      )
+      console.log('token1BestTradeInput', token1BestTradeInput)
+
+      const _bestTrade = (await getBestTradeV2({
+        token0: token0BestTradeInput,
+        token1: token1BestTradeInput,
+        inputAmount: outputAmountInWei,
+        type: TradeType.EXACT_OUTPUT,
+        chainId: token1BestTradeInput.chainId!
+      })) as SwapOutput
+
+      console.info('_bestTrade: ', _bestTrade)
+
+      const { address, isConnected } = useAccount()
+
+      const routes: RouteInput[] = []
+      const trade = _bestTrade as SmartRouterTrade<TradeType>
+      const routesBestTrade = trade.routes as Route[]
+      for (let i = 0; i < routesBestTrade.length; i++) {
+        const route = routesBestTrade[i]
+
+        const liquidity = (route.pools[0] as V3Pool).liquidity.toString()
+        const sqrtRatioX96 = (route.pools[0] as V3Pool).sqrtRatioX96
+        const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
+
+        const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
+        let nextPrice: Decimal = new Decimal(0)
+        if (zeroToOne) {
+          // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
+          nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
+        } else {
+          // √(Pnew) = (Δy / L) + √(Pcurrent)
+          nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
+        }
+        const sqrtPriceLimitX96 = nextPrice
+            .sqrt()
+            .mul(2 ** 96)
+            .toNumber()
+
+        routes.push({
+          tokenInAddress: route.inputAmount.currency.wrapped.address,
+          tokenOutAddress: route.outputAmount.currency.wrapped.address,
+          fee: (route.pools[0] as V3Pool).fee as number,
+          amountOut: route.outputAmount.numerator,
+          amountInMaximum: route.inputAmount.numerator,
+          sqrtPriceLimitX96: BigInt(sqrtPriceLimitX96)
+        })
+      }
+
+      const body = {
+        contractAddress: contractAddress.lifiContractAddress[fromNetwork.value!.chainId],
+        chainId: fromNetwork.value?.chainId as number,
+        destinationChainId: toNetwork.value?.chainId as number,
+        receiverAddress: address,
+        sendingAssetId: token0.value!.address,
+        receiverAssetId: token1.value!.address,
+        amountIn: +amount * (10 ** Number(form.value.token.tokenDecimals)),
+        routes: routes
+      }
+
+      // const response = {
+      //   data: {
+      //     requestId: '0x30314a504a383446423053593453414446444e58534644394242000000000000',
+      //     signature: '0x43c9ddbb1db90a0d218bd5c2339ca25ff8539b92d674ef47b2344811b70d977924ee8a0defd0ff9cefaf084a6a0420715b2f0e393c16d7106ae98dd5a9889ae71c',
+      //     iterator: 'SERVICE'
+      //   },
+      //   meta: {
+      //     httpStatusCode: 200,
+      //     code: 'OK',
+      //     message: 'Successfully'
+      //   }
       // }
-      // const relayData = {
-      //   requestId: response.requestId as string,
-      //   nonEVMReceiver: ethers.constants.HashZero as Hex, // Định rõ kiểu Hex
-      //   receivingAssetId: ethers.utils.hexZeroPad(receiverAssetId, 32) as Address, // Kiểu Address
-      //   signature: response.signature as Hex // Định rõ kiểu Hex
-      // }
-      // // ✅ Gọi contract bằng wagmi actions
+      const res: Response = (await $fetch('/api/v1/sign/relay-transfer', { body: body, method: 'POST' })) as Response
+      console.info(res)
+      if (res.meta.httpStatusCode !== 200) {
+        // xử lý lỗi
+        return
+      }
+
+
+      if (!isConnected.value) throw new Error('Wallet not connected')
+      const liFiDiamondAddress = contractAddress.lifiContractAddress[fromNetwork.value!.chainId]
+      const bridgeData = {
+        transactionId: res.data.requestId, // Kiểu dữ liệu string
+        bridge: 'relay' as const, // Hằng số kiểu string
+        integrator: res.data.iterator as string, // Định rõ kiểu dữ liệu
+        referrer: zeroAddress, // Định rõ kiểu Address
+        sendingAssetId: (form.value.token.tokenAddress || zeroAddress) as Address,
+        receiver: address,
+        minAmount: parseUnits(form.value.amount.toString(), +form.value.token.tokenDecimals),
+        destinationChainId: toNetwork.value?.chainId as number, // Chắc chắn kiểu số
+        hasSourceSwaps: false,
+        hasDestinationCall: false
+      }
+      const relayData = {
+        requestId: res.data.requestId as string,
+        nonEVMReceiver: zeroHash , // Định rõ kiểu Hex
+        receivingAssetId: pad(token1.value!.address, { size: 32 }), // Kiểu Address
+        signature: res.data.signature as Hex // Định rõ kiểu Hex
+      }
+
+      const publicClient = createPublicClient({
+        chain: CHAINS[fromNetwork.value!.chainId],
+        transport: http(fromNetwork.value!.rpc),
+        batch: {
+          multicall: {
+            batchSize: 1024 * 200
+          }
+        }
+      })
+      const gasEstimate = await publicClient.getGasPrice()
+      // ✅ Gọi contract bằng wagmi actions
       // const tx = await writeContract(config, {
       //   address: liFiDiamondAddress,
       //   abi: ABI_RELAY_FACET,
@@ -537,44 +630,37 @@
       //   gas: BigInt(300000), // Định kiểu BigInt
       //   gasPrice: gasEstimate as bigint // Đảm bảo kiểu bigint
       // })
+
+      const datas = [bridgeData, relayData]
+
+      const calldata = encodeFunctionData({
+        abi: ABI_RELAY_FACET,
+        functionName: 'startBridgeTokensViaRelay',
+        args: datas
+      })
+
+      if (!liFiDiamondAddress) throw new Error('Invalid lifi contract address')
+
+      const txHash = await sendTransaction(config, {
+        to: liFiDiamondAddress,
+        data: calldata,
+        value: BigInt(form.value.amount) * BigInt(10 ** +form.value.token.tokenDecimals),
+        gas: BigInt(300000), // Định kiểu BigInt
+        gasPrice: gasEstimate as bigint // Đảm bảo kiểu bigint
+      })
+
+      const { status } = await waitForTransactionReceipt(config, {
+        hash: txHash,
+
+        pollingInterval: 2000
+      })
+
+
+
     } catch (error) {
       console.error('Transaction failed:', error)
     }
   }
-  // const bridgeData = {
-  //   transactionId: response.data.requestId, // mã request id (api trả về)
-  //   bridge: 'relay', // mã loại bridge,
-  //   integrator: response.data.iterator, // tên itergrator (fix trong ENV)
-  //   referrer: ethers.constants.AddressZero, // mặc định 0x0
-  //   sendingAssetId: token, // địa chỉ token (địa chỉ contract), nếu là native thì để 0x000 (AddressZero)
-  //   receiver: receiverAddress, // = 0x31fB83Dc60D27C9C4a58a361bc9c48e0Bcfe902B đỉa chỉ ví nhận tiền
-  //   minAmount: ethers.utils.parseUnits('1', 6), // số tiền tối thiểu muốn chuyển sang mạng kahcs (=giá trị amount, decimal của token)
-  //   destinationChainId: destinationChainId, // chain id của mạng đích
-  //   hasSourceSwaps: false, // luônlà false
-  //   hasDestinationCall: false // luôn là false
-  // }
-
-  // const relayData = {
-  //   requestId: response.data.requestId, // phải giống request id
-  //   nonEVMReceiver: ethers.constants.HashZero, // luôn là 0x000
-  //   receivingAssetId: ethers.utils.hexZeroPad(receiverAssetId, 32), // địa chỉ token ở mạng đích, nếu là native để 0x000
-  //   signature: response.data.signature //mã signature từ backend trả ra
-  // }
-
-  // // "LiFiDiamond": 0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d,
-  // // Địa chỉ LiFiDiamond từ config
-  // const liFiDiamondAddress = '0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d' // = 0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d  // Thay bằng địa chỉ thực tế
-
-  // // Cấu hình transaction với usePrepareContractWrite
-  // const { config: writeConfig } = usePrepareWriteContract({
-  //   address: liFiDiamondAddress, // Địa chỉ LiFiDiamond
-  //   abi: ABI_RELAY_FACET, // ABI của RelayFacet (.json)
-  //   functionName: 'startBridgeTokensViaRelay', // Tên hàm
-  //   args: [bridgeData, relayData], // Các tham số của hàm
-  //   value: BigInt(Number(form.value.amount) * 10 ** Number(form.value.token.decimals)), // Nếu dùng native token thì thay bằng minAmount (amount * 10^decimals của token)
-  //   gas: 300000, // gasLimit
-  //   gasPrice: gasEstimate // gasPrice
-  // })
 
   // // Gọi hàm với useContractWrite
   // const { write, isLoading, isSuccess, isError, data } = useContractWrite(writeConfig)
@@ -733,7 +819,7 @@
   watch(
     () => toNetwork.value,
     () => {
-      form.value.token = {} as TokenConfig
+      form.value.token = {} as IToken
     }
   )
 </script>

@@ -22,9 +22,9 @@
     }))
   )
 
-  const { data } = useFetch<NetworkConfig[]>(`/api/network/all`)
-  const { listNetwork } = storeToRefs(useBridgeStore())
-  listNetwork.value = data.value || []
+  // const { data } = useFetch<NetworkConfig[]>(`/api/network/all`)
+  // const { listNetwork } = storeToRefs(useBridgeStore())
+  // listNetwork.value = data.value || []
 </script>
 
 <style scoped lang="scss">

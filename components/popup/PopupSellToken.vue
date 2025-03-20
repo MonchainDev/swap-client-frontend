@@ -68,13 +68,12 @@
 
 <script lang="ts" setup>
   import { useAccount } from '@wagmi/vue'
-  // import type { IToken } from '~/types'
-  import type { TokenConfig } from '~/types/bridge.type'
+  import type { IToken } from '~/types'
 
   interface IProps {
     showNetwork?: boolean
     isSelect?: boolean
-    listToken: TokenConfig[]
+    listToken: IToken[]
   }
 
   const _props = withDefaults(defineProps<IProps>(), {
@@ -83,7 +82,7 @@
   })
 
   const emit = defineEmits<{
-    select: [token: TokenConfig]
+    select: [token: IToken]
   }>()
 
   const tokenSelected = defineModel('tokenSelected', {
@@ -112,7 +111,7 @@
     loading.value = false
   }, 600)
 
-  const handleClickToken = (item: TokenConfig) => {
+  const handleClickToken = (item: IToken) => {
     if (_props.isSelect) {
       const index = tokenSelected.value.indexOf(item.tokenAddress)
       if (index > -1) {
