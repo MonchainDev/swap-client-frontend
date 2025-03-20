@@ -150,7 +150,7 @@
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
 
   definePageMeta({
-    middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
+    middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware', 'validate-network-middleware']
   })
 
   const route = useRoute('remove-network-tokenId')

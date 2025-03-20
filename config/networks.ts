@@ -65,4 +65,6 @@ const LIST_NETWORK: INetwork[] = [
   }
 ]
 
-export { DEFAULT_NETWORK, LIST_NETWORK }
+const NETWORK_SUPPORTED = Object.fromEntries(LIST_NETWORK.map((network) => [network.network, true])) as Record<string, boolean>
+
+export { DEFAULT_NETWORK, LIST_NETWORK, NETWORK_SUPPORTED }

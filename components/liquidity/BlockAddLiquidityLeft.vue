@@ -40,10 +40,11 @@
 </template>
 
 <script lang="ts" setup>
-  import type { Token } from '@monchain/swap-sdk-core'
   import Decimal from 'decimal.js'
-  import { WMON } from '~/constant/token'
+  import { EMPTY_TOKEN } from '~/constant'
+  import { NATIVE, WNATIVE } from '~/constant/token'
   import { CurrencyField, type IToken } from '~/types'
+  import type { UnsafeCurrency } from '~/types/currency.type'
   import type { TYPE_SWAP } from '~/types/swap.type'
 
   const { form, independentField, typedValue, balance0, balance1, listTokenOfRange, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
@@ -101,26 +102,25 @@
   const handleSelectToken = (token: IToken) => {
     const isBase = typeCurrent.value === 'BASE'
 
-    const empty: IToken = { name: '', symbol: '', decimals: 0, icon_url: '', address: '' }
-
-    const isNative = token.address === ''
-    const wrapNative = WMON[currentNetwork.value.chainId as keyof typeof WMON]
+    const native = NATIVE[currentNetwork.value.chainId]
+    const isNative = token.symbol.toUpperCase() === native.symbol || token.address === zeroAddress
+    const wrapNative = WNATIVE[currentNetwork.value.chainId]
     const isWrapNative = token.address === wrapNative.address
 
-    const isWrappedNativeMatch = (currency: Native | Token | undefined, isNativeCheck: boolean, isWrapNativeCheck: boolean) => {
+    const isWrappedNativeMatch = (currency: UnsafeCurrency, isNativeCheck: boolean, isWrapNativeCheck: boolean) => {
       return (isNativeCheck && currency?.wrapped?.address === wrapNative.address) || (isWrapNativeCheck && currency?.isNative)
     }
 
     if (isWrappedNativeMatch(isBase ? quoteCurrency.value : baseCurrency.value, isNative, isWrapNative)) {
       form.value.token0 = token
-      form.value.token1 = empty
+      form.value.token1 = { ...EMPTY_TOKEN }
       return
     }
 
     const [primary, secondary]: ['token0' | 'token1', 'token0' | 'token1'] = isBase ? ['token0', 'token1'] : ['token1', 'token0']
 
     form.value[primary] = token
-    form.value[secondary] = token.address === form.value[secondary].address ? empty : form.value[secondary]
+    form.value[secondary] = token.address === form.value[secondary].address ? { ...EMPTY_TOKEN } : form.value[secondary]
 
     listTokenOfRange.value = [form.value.token0, form.value.token1]
 
