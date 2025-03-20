@@ -108,7 +108,6 @@
         resetStoreSwap()
         recentTokens.value = []
       }
-      network.value = item
       visible.value = false
     }
   }
