@@ -110,9 +110,8 @@
   import Decimal from 'decimal.js'
   import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
   import { config } from '~/config/wagmi'
-  import { DEFAULT_SLIPPAGE } from '~/constant'
+  import { DEFAULT_SLIPPAGE, EMPTY_TOKEN, MAX_NUMBER_APPROVE } from '~/constant'
   import swapRouterABI from '~/constant/abi/swapRouter.json'
-  import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import type { IToken } from '~/types'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { TYPE_SWAP } from '~/types/swap.type'
@@ -250,7 +249,8 @@
           token0: token0.value!,
           token1: token1.value!,
           inputAmount: inputAmount,
-          type: TradeType.EXACT_INPUT
+          type: TradeType.EXACT_INPUT,
+          chainId: currentNetwork.value.chainId
         })
         console.log('🚀 ~ handleInput ~ _bestTrade:', _bestTrade)
 
@@ -266,11 +266,15 @@
         form.value.amountOut = amount
         form.value.amountIn = ''
         const inputAmount = Number(form.value.amountOut) * ((10 ** Number(form.value.token1.decimals)) as number)
+        /**
+         * TODO: chain id is chain of wallet, not chain of state pinia
+         */
         const _bestTrade = await getBestTradeV2({
           token0: token0.value!,
           token1: token1.value!,
           inputAmount: inputAmount,
-          type: TradeType.EXACT_OUTPUT
+          type: TradeType.EXACT_OUTPUT,
+          chainId: currentNetwork.value.chainId // chainId of wallet
         })
         if (_bestTrade) {
           bestTrade.value = _bestTrade
@@ -294,14 +298,14 @@
     if (typeOpenPopup.value === 'BASE') {
       form.value.token0 = token
       if (token.address === form.value.token1.address) {
-        form.value.token1 = { name: '', symbol: '', decimals: 0, icon_url: '', address: '' }
+        form.value.token1 = { ...EMPTY_TOKEN }
         form.value.amountIn = ''
       }
     } else {
       form.value.token1 = token
-      form.value.token0 = token.address === form.value.token0.address ? { address: '', decimals: '', icon_url: '', name: '', symbol: '' } : form.value.token0
+      form.value.token0 = token.address === form.value.token0.address ? { ...EMPTY_TOKEN } : form.value.token0
       if (token.address === form.value.token0.address) {
-        form.value.token0 = { name: '', symbol: '', decimals: 0, icon_url: '', address: '' }
+        form.value.token0 = { ...EMPTY_TOKEN }
         form.value.amountOut = ''
       }
     }
@@ -328,6 +332,7 @@
   })
 
   const { address, isConnected } = useAccount()
+  const { chainId } = useActiveChainId()
 
   const token0IsToken = computed(() => form.value.token0.address !== '')
 
@@ -380,8 +385,11 @@
       args: [datas]
     })
 
+    const contractSwapRouterV3 = getSwapRouterV3Address(chainId.value)
+    if (!contractSwapRouterV3) throw new Error('Invalid contract address')
+
     const txHash = await sendTransaction(config, {
-      to: CONTRACT_ADDRESS.SWAP_ROUTER_V3 as `0x${string}`,
+      to: contractSwapRouterV3,
       data: calldata,
       value: hexToBigInt('0x0')
     })
@@ -395,7 +403,7 @@
     if (status === 'success') {
       const { showToastMsg } = useShowToastMsg()
       showToastMsg('Swap successful', 'success', txHash)
-      await postTx(txHash)
+      await postTx(txHash, contractSwapRouterV3)
       console.info('Transaction successful', 'success', txHash)
     } else {
       ElMessage.error('Transaction failed')
@@ -415,7 +423,8 @@
       if (token0IsToken.value) {
         if (isNeedAllowance0.value) {
           isConfirmApprove.value = true
-          await approveToken(form.value.token0.address as string, CONTRACT_ADDRESS.SWAP_ROUTER_V3, MAX_NUMBER_APPROVE, (status) => {
+          const contractSwapRouterV3 = getSwapRouterV3Address(chainId.value)!
+          await approveToken(form.value.token0.address as string, contractSwapRouterV3, MAX_NUMBER_APPROVE, (status) => {
             if (status === 'SUCCESS') {
               swap()
             }
@@ -459,7 +468,7 @@
       isSwapping.value = false
     }
   }
-  async function postTx(txHash: string) {
+  async function postTx(txHash: string, toAddress: string) {
     const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
 
     const body: IBodyTxCollect = {
@@ -467,11 +476,11 @@
       amount: inputAmount,
       feeAmount: Number(form.value.tradingFee ?? 0),
       fromAddress: address.value,
-      toAddress: CONTRACT_ADDRESS.SWAP_ROUTER_V3,
+      toAddress,
       fromToken: token0.value?.wrapped.address,
       toToken: token1.value?.wrapped.address,
       transactionType: 'SWAP',
-      network: currentNetwork.value.value,
+      network: currentNetwork.value.network,
       poolAddress: poolAddress.value
     }
     await postTransaction(body)

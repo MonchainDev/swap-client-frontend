@@ -1,10 +1,7 @@
-import { Token } from '@monchain/swap-sdk-core'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import { defineStore } from 'pinia'
-import { DEFAULT_SLIPPAGE, NATIVE_TOKEN } from '~/constant'
-import { CONTRACT_ADDRESS } from '~/constant/contract'
+import { DEFAULT_SLIPPAGE, EMPTY_TOKEN } from '~/constant'
 import ABI_TOKEN from '~/constant/contract/contract-token.json'
-import { ChainId } from '~/types'
 import type { IFormSwap } from '~/types/swap.type'
 
 export const useSwapStore = defineStore('swap', () => {
@@ -15,22 +12,15 @@ export const useSwapStore = defineStore('swap', () => {
   const isConfirmApprove = ref<boolean>(false)
   const isConfirmSwap = ref<boolean>(false)
 
-  const { address, chainId } = useAccount()
+  const { address } = useAccount()
+  const { chainId } = useActiveChainId()
 
   const form = ref<IFormSwap>({
     token0: {
-      address: '',
-      decimals: 0,
-      icon_url: '',
-      name: '',
-      symbol: ''
+      ...EMPTY_TOKEN
     },
     token1: {
-      address: '',
-      decimals: 0,
-      icon_url: '',
-      name: '',
-      symbol: ''
+      ...EMPTY_TOKEN
     },
     amountIn: '',
     amountOut: '',
@@ -42,60 +32,34 @@ export const useSwapStore = defineStore('swap', () => {
     tradingFee: 0
   })
 
-  const { data: balance0, refetch: _refetchBalance0 } = useBalance(
+  const { data: balance0 } = useBalance(
     computed(() => ({
       address: address.value,
-      token: form.value.token0.address as MaybeRef<`0x${string}`>,
+      token: (form.value.token0.address?.toLowerCase() === zeroAddress ? '' : form.value.token0.address) as `0x${string}`,
       watch: true
     }))
   )
 
-  const { data: balance1, refetch: _refetchBalance1 } = useBalance(
+  const { data: balance1 } = useBalance(
     computed(() => ({
       address: address.value,
-      token: form.value.token1.address as MaybeRef<`0x${string}`>,
+      token: (form.value.token1.address?.toLowerCase() === zeroAddress ? '' : form.value.token1.address) as `0x${string}`,
       watch: true
     }))
   )
 
-  const token0 = computed(() => {
-    if (form.value.token0.symbol === NATIVE_TOKEN.symbol && form.value.token0.address === '') {
-      return Native.onChain(ChainId.MON_TESTNET)
-    } else {
-      return form.value.token0.symbol
-        ? new Token(
-            ChainId.MON_TESTNET,
-            form.value.token0.address as `0x${string}`,
-            +form.value.token0.decimals,
-            form.value.token0.symbol,
-            form.value.token0.name
-          )
-        : undefined
-    }
-  })
+  const token0 = computed(() => useCurrency(form.value.token0.address as string, chainId.value!).token.value)
 
-  const token1 = computed(() => {
-    if (form.value.token1.symbol === NATIVE_TOKEN.symbol && form.value.token1.address === '') {
-      return Native.onChain(ChainId.MON_TESTNET)
-    } else {
-      return form.value.token1.symbol
-        ? new Token(
-            ChainId.MON_TESTNET,
-            form.value.token1.address as `0x${string}`,
-            +form.value.token1.decimals,
-            form.value.token1.symbol,
-            form.value.token1.name
-          )
-        : undefined
-    }
-  })
+  const token1 = computed(() => useCurrency(form.value.token1.address as string, chainId.value!).token.value)
+
+  const swapRouterV3Address = computed(() => getSwapRouterV3Address(chainId.value))
 
   const { data: allowance1, refetch: refetchAllowance1 } = useReadContract(
     computed(() => ({
       abi: ABI_TOKEN,
       address: token1.value?.wrapped.address,
       functionName: 'allowance',
-      args: [address.value, CONTRACT_ADDRESS.SWAP_ROUTER_V3]
+      args: [address.value, swapRouterV3Address.value]
     }))
   )
 
@@ -104,25 +68,17 @@ export const useSwapStore = defineStore('swap', () => {
       abi: ABI_TOKEN,
       address: token0.value?.wrapped.address,
       functionName: 'allowance',
-      args: [address.value, CONTRACT_ADDRESS.SWAP_ROUTER_V3]
+      args: [address.value, swapRouterV3Address.value]
     }))
   )
 
   const resetStore = () => {
     form.value = {
       token0: {
-        address: '',
-        decimals: 0,
-        icon_url: '',
-        name: '',
-        symbol: ''
+        ...EMPTY_TOKEN
       },
       token1: {
-        address: '',
-        decimals: 0,
-        icon_url: '',
-        name: '',
-        symbol: ''
+        ...EMPTY_TOKEN
       },
       amountIn: '',
       amountOut: '',

@@ -1,10 +1,8 @@
 import type { BigintIsh, Currency, Token } from '@monchain/swap-sdk-core'
 import { Pool, type FeeAmount } from '@monchain/v3-sdk'
-import { useAccount, useReadContract } from '@wagmi/vue'
+import { useReadContract } from '@wagmi/vue'
 import type { Address } from 'viem'
 import v3PoolStateABI from '~/constant/abi/v3PoolStateABI.json'
-import { CONTRACT_ADDRESS } from '~/constant/contract'
-import { ChainId } from '~/types'
 
 // Classes are expensive to instantiate, so this caches the recently instantiated pools.
 // This avoids re-instantiating pools as the other pools in the same request are loaded.
@@ -70,9 +68,7 @@ class PoolCache {
 export default function usePools() {
   const { feeAmount, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
 
-  const { chainId: chainNetwork } = useAccount()
-
-  const chainId = computed(() => chainNetwork.value ?? ChainId.MON_TESTNET)
+  const { chainId } = useActiveChainId()
 
   const poolKeys = computed((): [Currency | undefined | null, Currency | undefined | null, FeeAmount | undefined][] => {
     return [[baseCurrency.value, quoteCurrency.value, feeAmount.value]]
@@ -94,7 +90,7 @@ export default function usePools() {
   })
 
   const poolAddresses = computed(() => {
-    const v3CoreDeployerAddress = chainId.value && (CONTRACT_ADDRESS.DEPLOYER_ADDRESSES as `0x${string}`)
+    const v3CoreDeployerAddress = chainId.value && getV3PoolDeployerAddress(chainId.value)
     if (!v3CoreDeployerAddress) return new Array(poolTokens.value.length)
     return poolTokens.value.map((value) => value && PoolCache.getPoolAddress(v3CoreDeployerAddress, ...value))
   })

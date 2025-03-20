@@ -1,34 +1,24 @@
 import ABI_TOKEN from '@/constant/contract/contract-token.json'
-import type { Price } from '@monchain/swap-sdk-core'
-import { Token } from '@monchain/swap-sdk-core'
+import type { Price, Token } from '@monchain/swap-sdk-core'
 import type { Position } from '@monchain/v3-sdk'
 import { useQuery } from '@tanstack/vue-query'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import Decimal from 'decimal.js'
 import { defineStore } from 'pinia'
-import { NATIVE_TOKEN } from '~/constant'
-import { LIST_ADDRESS_FEE } from '~/constant/contract'
+import { EMPTY_TOKEN } from '~/constant'
 import { FeeAmount } from '~/constant/fee'
 import { ZOOM_LEVELS } from '~/constant/zoom-level'
-import { ChainId, CurrencyField, type IExchangeRate, type IToken, type ZoomLevels } from '~/types'
+import { CurrencyField, type IExchangeRate, type IToken, type ZoomLevels } from '~/types'
 import type { IFormCreatePosition } from '~/types/position.type'
 
 export const useLiquidityStore = defineStore('liquidity', () => {
   const currentStep = ref(2)
   const form = ref<IFormCreatePosition>({
     token0: {
-      address: '',
-      decimals: 0,
-      icon_url: '',
-      name: '',
-      symbol: ''
+      ...EMPTY_TOKEN
     },
     token1: {
-      address: '',
-      decimals: 0,
-      icon_url: '',
-      name: '',
-      symbol: ''
+      ...EMPTY_TOKEN
     },
     minPrice: '',
     maxPrice: '',
@@ -52,41 +42,15 @@ export const useLiquidityStore = defineStore('liquidity', () => {
   // array of Set price range
   const listTokenOfRange = ref<IToken[]>([])
 
+  const { chainId } = useActiveChainId()
+
   const zoomLevel = computed(() => {
     return feeAmount.value ? ZOOM_LEVELS[feeAmount.value as FeeAmount] : ZOOM_LEVELS[FeeAmount.LOWEST]
   })
 
-  const baseCurrency = computed(() => {
-    if (form.value.token0.symbol === NATIVE_TOKEN.symbol && form.value.token0.address === '') {
-      return Native.onChain(ChainId.MON_TESTNET)
-    } else {
-      return form.value.token0.symbol
-        ? new Token(
-            ChainId.MON_TESTNET,
-            form.value.token0.address as `0x${string}`,
-            +form.value.token0.decimals,
-            form.value.token0.symbol,
-            form.value.token0.name
-          )
-        : undefined
-    }
-  })
+  const baseCurrency = computed(() => useCurrency(form.value.token0.address as string, chainId.value!).token.value)
 
-  const quoteCurrency = computed(() => {
-    if (form.value.token1.symbol === NATIVE_TOKEN.symbol && form.value.token1.address === '') {
-      return Native.onChain(ChainId.MON_TESTNET)
-    } else {
-      return form.value.token1.symbol
-        ? new Token(
-            ChainId.MON_TESTNET,
-            form.value.token1.address as `0x${string}`,
-            +form.value.token1.decimals,
-            form.value.token1.symbol,
-            form.value.token1.name
-          )
-        : undefined
-    }
-  })
+  const quoteCurrency = computed(() => useCurrency(form.value.token1.address as string, chainId.value!).token.value)
 
   function switchTokens() {
     ;[form.value.token0, form.value.token1] = [form.value.token1, form.value.token0]
@@ -143,7 +107,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
   const { data: balance0, refetch: refetchBalance0 } = useBalance(
     computed(() => ({
       address: address.value,
-      token: form.value.token0.address as MaybeRef<`0x${string}`>,
+      token: (form.value.token0.address?.toLowerCase() === zeroAddress ? '' : form.value.token0.address) as `0x${string}`,
       watch: true
     }))
   )
@@ -151,17 +115,19 @@ export const useLiquidityStore = defineStore('liquidity', () => {
   const { data: balance1, refetch: refetchBalance1 } = useBalance(
     computed(() => ({
       address: address.value,
-      token: form.value.token1.address as MaybeRef<`0x${string}`>,
+      token: (form.value.token1.address?.toLowerCase() === zeroAddress ? '' : form.value.token1.address) as `0x${string}`,
       watch: true
     }))
   )
+
+  const spenderAddress = computed(() => getSpenderCreatePool(chainId.value))
 
   const { data: allowance0, refetch: refetchAllowance0 } = useReadContract(
     computed(() => ({
       abi: ABI_TOKEN,
       address: baseCurrency.value?.wrapped.address,
       functionName: 'allowance',
-      args: [address.value, LIST_ADDRESS_FEE.SPENDER_CREATE_POOL]
+      args: [address.value, spenderAddress.value]
     }))
   )
 
@@ -170,7 +136,7 @@ export const useLiquidityStore = defineStore('liquidity', () => {
       abi: ABI_TOKEN,
       address: quoteCurrency.value?.wrapped.address,
       functionName: 'allowance',
-      args: [address.value, LIST_ADDRESS_FEE.SPENDER_CREATE_POOL]
+      args: [address.value, spenderAddress.value]
     }))
   )
 
@@ -178,18 +144,10 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     resetFiled()
     form.value = {
       token0: {
-        address: '',
-        decimals: 0,
-        icon_url: '',
-        name: '',
-        symbol: ''
+        ...EMPTY_TOKEN
       },
       token1: {
-        address: '',
-        decimals: 0,
-        icon_url: '',
-        name: '',
-        symbol: ''
+        ...EMPTY_TOKEN
       },
       minPrice: '',
       maxPrice: '',

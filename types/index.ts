@@ -1,32 +1,42 @@
 import type { Address } from 'viem'
 
 export interface IToken {
-  circulating_market_cap?: string
+  id: number
+  tokenSymbol: string
+  tokenAddress: string
+  tokenDecimals: number
+  network: string
+  chainId: number
+  stable: boolean
+  crossChain: boolean
   icon_url: string
-  name: string
-  decimals: string | number
-  symbol: string
+  // interface old
   address: string
-  type?: string
-  holders?: string
-  exchange_rate?: string
-  total_supply?: string
+  decimals: number
+  symbol: string
+  name: string
 }
 
 export interface INetwork {
-  title: string
+  name: string
   logo: string
-  value: string
   chainId: ChainId
-  disabled?: boolean
+  id: number
+  network: string
+  rpc: string
+  graphUrl: string
+  nativeToken: string
+  wrapToken: string
+  wrapTokenAddress: string
+  loading?: boolean
 }
 
 export enum ChainId {
   BSC_TESTNET = 97,
   MON_TESTNET = 16789,
   SEPOLIA = 11155111,
-  POLYGON = 137,
-  LINEA = 80001
+  ARBITRUM_SEPOLIA = 421614,
+  AMOY_POLYGON = 80002
 }
 
 export enum CurrencyField {

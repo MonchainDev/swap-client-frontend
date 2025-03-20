@@ -102,14 +102,14 @@
 </template>
 
 <script lang="ts" setup>
-  import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
+  import { MAX_NUMBER_APPROVE } from '~/constant'
   import { ZOOM_LEVELS } from '~/constant/zoom-level'
   import { Bound, CurrencyField, type ZoomLevels } from '~/types'
 
+  import { priceToClosestTick } from '@monchain/v3-sdk'
+  import Decimal from 'decimal.js'
   import { FeeAmount } from '~/constant/fee'
   import type { TYPE_SWAP } from '~/types/swap.type'
-  import Decimal from 'decimal.js'
-  import { priceToClosestTick } from '@monchain/v3-sdk'
 
   export type INPUT_PRICE = 'MIN' | 'MAX'
   interface IProps {
@@ -186,24 +186,25 @@
       .toString()
   })
 
-  const handleChangePriceRange = (type: INPUT_PRICE, amount: string) => {
+  const handleChangePriceRange = (type: INPUT_PRICE, _amount: string) => {
     if (type === 'MIN') {
-      if (buttonRangePercent.value === 100) {
-        buttonRangePercent.value = amount !== '0' ? null : buttonRangePercent.value
-      } else {
-        buttonRangePercent.value = null
-      }
+      // if (buttonRangePercent.value === 100) {
+      //   buttonRangePercent.value = amount !== '0' ? null : buttonRangePercent.value
+      // } else {
+      //   buttonRangePercent.value = null
+      // }
       dispatchRangeTypedValue('MIN', +form.value.minPrice!)
     } else {
-      if (buttonRangePercent.value === 100) {
-        buttonRangePercent.value = amount !== '∞' ? null : buttonRangePercent.value
-      } else {
-        buttonRangePercent.value = null
-      }
+      // if (buttonRangePercent.value === 100) {
+      //   buttonRangePercent.value = amount !== '∞' ? null : buttonRangePercent.value
+      // } else {
+      //   buttonRangePercent.value = null
+      // }
 
-      buttonRangePercent.value = amount !== '∞' ? null : buttonRangePercent.value
+      // buttonRangePercent.value = amount !== '∞' ? null : buttonRangePercent.value
       dispatchRangeTypedValue('MAX', +form.value.maxPrice!)
     }
+    buttonRangePercent.value = null
   }
 
   const { price, invertPrice, tokenA, position, ticksAtLimit, tickSpaceLimits, formattedAmounts, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange } =
@@ -348,11 +349,15 @@
   }
 
   const { approveToken } = useApproveToken()
+  const { chainId } = useActiveChainId()
 
   const handleApprove = (type: TYPE_SWAP) => {
+    const contractAddress = getNftPositionManagerAddress(chainId.value)
+    if (!contractAddress) throw new Error('Invalid contract address')
+
     if (type === 'BASE') {
       loadingApprove0.value = true
-      approveToken(tokenA.value?.address as string, CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER, MAX_NUMBER_APPROVE, (status) => {
+      approveToken(tokenA.value?.address as string, contractAddress, MAX_NUMBER_APPROVE, (status) => {
         if (status === 'SUCCESS') {
           refetchAllowance0()
         }
@@ -360,7 +365,7 @@
       })
     } else {
       loadingApprove1.value = true
-      approveToken(tokenB.value?.address as string, CONTRACT_ADDRESS.NONFUNGIBLE_POSITION_MANAGER, MAX_NUMBER_APPROVE, (status) => {
+      approveToken(tokenB.value?.address as string, contractAddress, MAX_NUMBER_APPROVE, (status) => {
         if (status === 'SUCCESS') {
           refetchAllowance1()
         }

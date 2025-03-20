@@ -17,8 +17,6 @@ import {
   type Hex
 } from 'viem'
 
-const POOL_INIT_CODE_HASH = '0xec014d553cf8e227ff815e13561fc490e9f91efce2d91baf2293cbd6a7ba98cb' as `0x${string}`
-
 export function computePoolAddress({
   deployerAddress,
   tokenA,
@@ -35,8 +33,8 @@ export function computePoolAddress({
   const [token0, token1] = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
 
   const salt = keccak256(encodeAbiParameters(parseAbiParameters(['address, address, uint24']), [token0.address, token1.address, fee]))
-
-  return getCreate2Address(deployerAddress, salt, initCodeHashManualOverride ?? POOL_INIT_CODE_HASH)
+  const poolInitCodeHash = getPoolInitCodeHash(token0.chainId)
+  return getCreate2Address(deployerAddress, salt, initCodeHashManualOverride ?? poolInitCodeHash!)
 }
 
 function getCreate2Address(from_: GetCreate2AddressOptions['from'], salt_: GetCreate2AddressOptions['salt'], initCodeHash: Hex) {

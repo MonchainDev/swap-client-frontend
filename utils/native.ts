@@ -1,3 +1,4 @@
+import invariant from 'tiny-invariant'
 import type { Currency, Token } from '@monchain/swap-sdk-core'
 import { NativeCurrency } from '@monchain/swap-sdk-core'
 import { NATIVE, WNATIVE } from '~/constant/token'
@@ -18,6 +19,7 @@ export class Native extends NativeCurrency {
     if (chainId in this.cache) {
       return this.cache[chainId]
     }
+    invariant(!!NATIVE[chainId as keyof typeof NATIVE], 'NATIVE_CURRENCY')
     const { decimals, name, symbol } = NATIVE[chainId as keyof typeof NATIVE]
 
     return (this.cache[chainId] = new Native({ chainId, decimals, symbol, name }))

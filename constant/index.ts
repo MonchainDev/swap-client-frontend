@@ -1,6 +1,6 @@
-import { ChainId, type INetwork, type IToken, type ZoomLevels } from '~/types'
-import { ZOOM_LEVELS } from './zoom-level'
+import { type IToken, type ZoomLevels } from '~/types'
 import { FeeAmount } from './fee'
+import { ZOOM_LEVELS } from './zoom-level'
 
 const DEFAULT_SLIPPAGE = '1'
 const DECIMALS_NATIVE = 18
@@ -10,7 +10,15 @@ const NATIVE_TOKEN: IToken = {
   symbol: 'MON',
   decimals: 18,
   icon_url: 'https://cryptologos.cc/logos/compound-comp-logo.png?v=040',
-  address: ''
+  address: '',
+  id: 0,
+  tokenSymbol: 'MON',
+  tokenAddress: '',
+  tokenDecimals: 18,
+  network: 'MON',
+  chainId: 16789,
+  stable: true,
+  crossChain: false
 }
 
 const WRAPPED_NATIVE_TOKEN: IToken = {
@@ -18,52 +26,31 @@ const WRAPPED_NATIVE_TOKEN: IToken = {
   symbol: 'WMON',
   decimals: 18,
   icon_url: 'https://cryptologos.cc/logos/compound-comp-logo.png?v=040',
-  address: '0xF76eF13fb6B775e4609C921cAA1BD9307E338276'
+  address: '0xF76eF13fb6B775e4609C921cAA1BD9307E338276',
+  id: 0,
+  tokenSymbol: 'WMON',
+  tokenAddress: '0xF76eF13fb6B775e4609C921cAA1BD9307E338276',
+  tokenDecimals: 18,
+  network: 'MON',
+  chainId: 16789,
+  stable: false,
+  crossChain: false
 }
 
-const LIST_NETWORK: INetwork[] = [
-  {
-    title: 'BNB Chain',
-    logo: '/logo-bnb-chain.png',
-    value: 'BNB',
-    chainId: ChainId.BSC_TESTNET,
-    disabled: false
-  },
-  {
-    title: 'Ethereum',
-    logo: '/logo-ethereum-chain.png',
-    value: 'ETH',
-    chainId: ChainId.SEPOLIA,
-    disabled: true
-  },
-  {
-    title: 'Polygon',
-    logo: '/logo-polygon-chain.png',
-    value: 'MATIC',
-    chainId: ChainId.POLYGON,
-    disabled: true
-  },
-  {
-    title: 'Mon Chain',
-    logo: '/logo-mon-chain.png',
-    value: 'MON',
-    chainId: ChainId.MON_TESTNET,
-    disabled: false
-  },
-  {
-    title: 'Linea Chain',
-    logo: '/logo-liena-chain.png',
-    value: 'LINEA',
-    chainId: ChainId.LINEA,
-    disabled: true
-  }
-]
-
-const DEFAULT_NETWORK: INetwork = {
-  title: 'Mon Chain',
-  logo: '/logo-mon-chain.png',
-  value: 'MON',
-  chainId: ChainId.MON_TESTNET
+const EMPTY_TOKEN: IToken = {
+  name: '',
+  symbol: '',
+  decimals: 0,
+  icon_url: '',
+  address: '',
+  id: 0,
+  tokenSymbol: '',
+  tokenAddress: '',
+  tokenDecimals: 0,
+  network: '',
+  chainId: 0,
+  stable: false,
+  crossChain: false
 }
 
 const QUICK_ACTION_CONFIGS: Record<FeeAmount | string, { [percentage: number]: ZoomLevels }> = {
@@ -163,16 +150,18 @@ const BIPS_BASE = 10000n
 const FAST_INTERVAL = 10000
 const SLOW_INTERVAL = 60000
 
+const MAX_NUMBER_APPROVE = '115792089237316195423570985008687907853269984665640564039457584007913129639935'
+
 export {
-  DEFAULT_SLIPPAGE,
-  DECIMALS_NATIVE,
-  NATIVE_TOKEN,
-  WRAPPED_NATIVE_TOKEN,
-  LIST_NETWORK,
-  DEFAULT_NETWORK,
-  QUICK_ACTION_CONFIGS,
-  LIST_FEE_AMOUNT,
   BIPS_BASE,
+  DECIMALS_NATIVE,
+  DEFAULT_SLIPPAGE,
+  EMPTY_TOKEN,
+  FAST_INTERVAL,
+  LIST_FEE_AMOUNT,
+  NATIVE_TOKEN,
+  QUICK_ACTION_CONFIGS,
   SLOW_INTERVAL,
-  FAST_INTERVAL
+  WRAPPED_NATIVE_TOKEN,
+  MAX_NUMBER_APPROVE
 }

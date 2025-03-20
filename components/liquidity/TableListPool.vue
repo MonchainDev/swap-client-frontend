@@ -11,7 +11,7 @@
             <span class="text-base font-semibold">{{ row.baseSymbol }} / {{ row.quoteSymbol }}</span>
             <div class="flex items-center gap-1">
               <img :src="getNetwork(row.network)?.logo" alt="logo" class="h-[14px] w-[14px]" />
-              <span class="text-xs text-gray-8">{{ getNetwork(row.network)?.title }}</span>
+              <span class="text-xs text-gray-8">{{ getNetwork(row.network)?.name }}</span>
             </div>
           </div>
         </NuxtLink>
@@ -66,7 +66,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { LIST_NETWORK } from '~/constant'
+  import { LIST_NETWORK } from '~/config/networks'
   import type { IPool } from '~/types/pool.type'
 
   interface IProps {
@@ -80,7 +80,7 @@
   })
 
   const getNetwork = (networkName: string) => {
-    return LIST_NETWORK.find((item) => item.value === networkName)
+    return LIST_NETWORK.find((item) => item.network === networkName)
   }
 
   const formatDollar = (tvl: number | string) => {

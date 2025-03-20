@@ -16,7 +16,7 @@
         <div class="flex flex-col gap-[6px]">
           <span class="text-sm">Total Tokens locked (TVL)</span>
           <div class="flex items-center gap-3">
-            <span class="text-xl font-semibold">$0</span>
+            <span class="text-xl font-semibold">${{ (pool.tvl ?? 0).toFixed(2) }}</span>
             <span class="flex items-center gap-1 rounded-[10px] bg-[#E8FFEB] px-2 py-[2px]">
               <BaseIcon name="arrow-fill" size="12" class="rotate-180 text-success" />
               <span class="text-sm font-semibold text-success">0%</span>
@@ -64,8 +64,8 @@
       </div>
       <div class="rounded-lg bg-white px-6 py-4 shadow-md">
         <BaseTab v-model:model="tabActive" :list="listTab" />
-        <div class="mt-7">
-          <component :is="component" />
+        <div v-loading="isLoading" class="mt-7">
+          <component :is="component" v-if="!isLoading" :chart-data="chartData" />
         </div>
       </div>
     </div>
@@ -80,11 +80,43 @@
   import ChartVolume from '../chart/ChartVolume.vue'
   import ChartFee from '../chart/ChartFee.vue'
   import ChartTvl from '../chart/ChartTvl.vue'
+  import v3SubgraphClient from '~/constant/graphClient'
+  import { gql } from 'graphql-request'
+  import { useQuery } from '@tanstack/vue-query'
   const enum TabValue {
     VOLUME = 'VOLUME',
     LIQUIDITY = 'LIQUIDITY',
     FEE = 'FEE',
     TVL = 'TVL'
+  }
+
+  export interface poolDayDatas {
+    date: number
+    feeUSD: string
+    tvlUSD: string
+    volumeUSD: string
+    liquidity: string
+    token0Price: string
+    token1Price: string
+    pool: {
+      totalValueLockedToken0: string
+      token0: {
+        symbol: string
+      }
+      token1: {
+        symbol: string
+      }
+    }
+  }
+
+  export interface IDataChart {
+    date: string
+    value: string
+    token0Price: string
+    token1Price: string
+    token0Symbol: string
+    token1Symbol: string
+    totalValueLockedToken0: string
   }
 
   interface IProps {
@@ -158,6 +190,78 @@
   const price1 = computed(() => {
     return parseFloat(price0.value) > 0 ? new Decimal(1).div(price0.value).toSignificantDigits(6).toString() : '0'
   })
+
+  const { data, isLoading } = useQuery({
+    queryKey: computed(() => ['poolData', props.pool.poolAddress]),
+    queryFn: () => getPoolData(props.pool.poolAddress),
+    enabled: computed(() => !!props.pool.poolAddress)
+  })
+
+  const chartData = computed((): IDataChart[] => {
+    const valueMap = {
+      [TabValue.VOLUME]: 'volumeUSD',
+      [TabValue.LIQUIDITY]: 'liquidity',
+      [TabValue.FEE]: 'feesUSD',
+      [TabValue.TVL]: 'tvlUSD'
+    }
+
+    const selectedValue = valueMap[tabActive.value]
+
+    return data.value?.poolDayDatas
+      ? data.value?.poolDayDatas
+          .map((item: poolDayDatas) => ({
+            date: new Date(item.date * 1000).toLocaleDateString(),
+            value: item[selectedValue as keyof poolDayDatas]?.toString(),
+            token0Price: item.token0Price ?? '0',
+            token1Price: item.token1Price ?? '0',
+            token0Symbol: item.pool.token0.symbol,
+            token1Symbol: item.pool.token1.symbol,
+            totalValueLockedToken0: item.pool.totalValueLockedToken0 ?? '0'
+          }))
+          //@ts-ignore
+          .sort((a: IDataChart, b: IDataChart) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      : []
+  })
+
+  // Hàm thực thi query với pool address
+  async function getPoolData(poolAddress: string) {
+    try {
+      // Định nghĩa query với variable
+      const query = gql`
+        query MyQuery($poolAddress: String!) {
+          poolDayDatas(first: 30, orderBy: date, orderDirection: desc, where: { pool: $poolAddress }) {
+            id
+            liquidity
+            volumeUSD
+            feesUSD
+            tvlUSD
+            date
+            token0Price
+            token1Price
+            pool {
+              totalValueLockedToken0
+              token0 {
+                symbol
+              }
+              token1 {
+                symbol
+              }
+            }
+          }
+        }
+      `
+      const variables = {
+        poolAddress: poolAddress
+      }
+      const data = await v3SubgraphClient.request<{ poolDayDatas: poolDayDatas[] }>(query, variables)
+      console.log('🚀 ~ getPoolData ~ data:', data.poolDayDatas)
+      // console.log('Kết quả:', JSON.stringify(data, null, 2))
+      return data
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
+  }
 </script>
 
 <style lang="scss" scoped></style>

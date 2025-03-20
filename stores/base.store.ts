@@ -1,12 +1,13 @@
+import { useQuery } from '@tanstack/vue-query'
 import { defineStore } from 'pinia'
-import { DEFAULT_NETWORK } from '~/constant'
-import type { INetwork, IToken } from '~/types'
+import { DEFAULT_NETWORK, LIST_NETWORK } from '~/config/networks'
+import type { IToken } from '~/types'
 import type { POPUP_NAME } from '~/types/popup.type'
 
 export const useBaseStore = defineStore('base', () => {
   const listToken = ref<IToken[]>([])
   const nativeBalance = ref<string>('0')
-  const currentNetwork = ref<INetwork>({ ...DEFAULT_NETWORK })
+  // const currentNetwork = ref<INetwork>({ ...DEFAULT_NETWORK })
 
   const breakpoints = useBreakpoints(
     { large: 768 } // Will enable SSR mode and render like if the screen was 768px wide
@@ -26,6 +27,32 @@ export const useBaseStore = defineStore('base', () => {
       })
     }
   }
+
+  const { chainId } = useActiveChainId()
+
+  const currentNetwork = computed(() => {
+    return LIST_NETWORK.find((item) => item.chainId === chainId.value) || DEFAULT_NETWORK
+  })
+
+  useQuery({
+    queryKey: computed(() => ['token-list', currentNetwork.value.chainId]),
+    queryFn: async () => {
+      const { data } = await useFetch<IToken[]>('/api/v2/tokens', { query: { network: currentNetwork.value.network } })
+      const tokenList = Array.isArray(data.value)
+        ? data.value.map((item) => ({
+            ...item,
+            logo: '',
+            address: item.tokenAddress,
+            symbol: item.tokenSymbol,
+            decimals: item.tokenDecimals,
+            name: item.tokenSymbol
+          }))
+        : []
+      listToken.value = tokenList
+      return data.value
+    },
+    enabled: computed(() => !!currentNetwork.value.chainId)
+  })
 
   return { popup, setOpenPopup, listToken, nativeBalance, isDesktop, currentNetwork }
 })

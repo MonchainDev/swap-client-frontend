@@ -1,14 +1,14 @@
 // composables/useV3TokenIdsByAccount.ts
-import { ref, computed, watch } from 'vue'
+import masterChefV3ABI from '@/constant/abi/masterChefV3.json'
 import { readContracts } from '@wagmi/core'
 import { useAccount, useReadContract } from '@wagmi/vue'
 import type { Address } from 'viem'
-import masterChefV3ABI from '@/constant/abi/masterChefV3.json'
-import { ChainId } from '~/types'
+import { computed, ref, watch } from 'vue'
 import { config } from '~/config/wagmi'
 
 export function useV3TokenIdsByAccount(contractAddress?: Address) {
-  const { chainId, address: account } = useAccount()
+  const { address: account } = useAccount()
+  const { chainId } = useActiveChainId()
 
   const {
     isLoading: balanceLoading,
@@ -21,7 +21,7 @@ export function useV3TokenIdsByAccount(contractAddress?: Address) {
     functionName: 'balanceOf',
     args: account.value ? [account.value] : undefined,
     //@ts-ignore
-    chainId: chainId.value ?? ChainId.MON_TESTNET,
+    chainId: chainId.value,
     query: {
       enabled: computed(() => !!account.value && !!contractAddress)
     }

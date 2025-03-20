@@ -1,13 +1,13 @@
-import { CONTRACT_ADDRESS } from '~/constant/contract'
+import addresses from '@/config/contracts'
+import { useReadContract } from '@wagmi/vue'
+import type { Abi } from 'viem'
 import nonfungiblePositionManagerABI from '~/constant/abi/nonfungiblePositionManagerABI.json'
-import type { Abi, Address } from 'viem'
-import { useAccount, useReadContract } from '@wagmi/vue'
-import type { PositionDetail } from '~/types'
+import type { ChainId, PositionDetail } from '~/types'
 
 export default function useV3PositionsFromTokenId(tokenId: bigint | undefined) {
-  const { contract: positionManager } = useContract(CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as Address, nonfungiblePositionManagerABI as Abi)
+  const { chainId } = useActiveChainId()
 
-  const { chainId } = useAccount()
+  const { contract: positionManager } = useContract(addresses.nftPositionManager[chainId.value as ChainId], nonfungiblePositionManagerABI as Abi)
 
   const { isLoading, data, status, refetch } = useReadContract({
     abi: positionManager.value?.abi,

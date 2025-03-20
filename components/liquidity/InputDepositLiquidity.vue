@@ -44,7 +44,7 @@
           </div>
         </div>
       </template>
-      <div class="flex flex-1 flex-col items-end gap-1">
+      <div v-if="!props.locked" class="flex flex-1 flex-col items-end gap-1">
         <ElInput
           v-model="amount"
           placeholder="0"

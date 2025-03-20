@@ -1,14 +1,17 @@
-import type { Pool } from '@monchain/v3-sdk'
-import type { Abi, Address } from 'viem'
-import { CONTRACT_ADDRESS } from '~/constant/contract'
-import nonfungiblePositionManagerABI from '~/constant/abi/nonfungiblePositionManagerABI.json'
-import { useReadContract, useBlockNumber } from '@wagmi/vue'
+import addresses from '@/config/contracts'
 import { CurrencyAmount } from '@monchain/swap-sdk-core'
+import type { Pool } from '@monchain/v3-sdk'
+import { useBlockNumber, useReadContract } from '@wagmi/vue'
+import type { Abi, Address } from 'viem'
+import nonfungiblePositionManagerABI from '~/constant/abi/nonfungiblePositionManagerABI.json'
+import type { ChainId } from '~/types'
 
 const MAX_UINT128 = 2n ** 128n - 1n
 
 export default function useV3PositionFees(pool: Ref<Pool, undefined>, tokenId: Ref<bigint | undefined>, asWNATIVE = false) {
-  const { contract: positionManager } = useContract(CONTRACT_ADDRESS.NFT_POSITION_MANAGER_ADDRESSES as Address, nonfungiblePositionManagerABI as Abi)
+  const { chainId } = useActiveChainId()
+
+  const { contract: positionManager } = useContract(addresses.nftPositionManager[chainId.value as ChainId], nonfungiblePositionManagerABI as Abi)
 
   const { data: owner } = useReadContract(
     computed(() => ({
