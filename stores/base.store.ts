@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/vue-query'
 import { defineStore } from 'pinia'
-import { DEFAULT_NETWORK } from '~/config/networks'
-import type { INetwork, IToken } from '~/types'
+import { DEFAULT_NETWORK, LIST_NETWORK } from '~/config/networks'
+import type { IToken } from '~/types'
 import type { POPUP_NAME } from '~/types/popup.type'
 
 export const useBaseStore = defineStore('base', () => {
   const listToken = ref<IToken[]>([])
   const nativeBalance = ref<string>('0')
-  const currentNetwork = ref<INetwork>({ ...DEFAULT_NETWORK })
+  // const currentNetwork = ref<INetwork>({ ...DEFAULT_NETWORK })
 
   const breakpoints = useBreakpoints(
     { large: 768 } // Will enable SSR mode and render like if the screen was 768px wide
@@ -27,6 +27,12 @@ export const useBaseStore = defineStore('base', () => {
       })
     }
   }
+
+  const { chainId } = useActiveChainId()
+
+  const currentNetwork = computed(() => {
+    return LIST_NETWORK.find((item) => item.chainId === chainId.value) || DEFAULT_NETWORK
+  })
 
   useQuery({
     queryKey: computed(() => ['token-list', currentNetwork.value.chainId]),

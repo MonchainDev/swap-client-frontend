@@ -17,7 +17,7 @@ const POOL_INIT_CODE_HASH_BASE = '0xec014d553cf8e227ff815e13561fc490e9f91efce2d9
 const POOL_INIT_CODE_HASHES = {
   [ChainId.MON_TESTNET]: POOL_INIT_CODE_HASH_BASE,
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0x',
+  [ChainId.BSC_TESTNET]: POOL_INIT_CODE_HASH_BASE,
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, Hash>
