@@ -54,6 +54,16 @@ export const useBridgeStore = defineStore('bridge', () => {
         queryFn: async () => {
             const query = {network: fromNetwork.value?.network, crossChain: 'Y'}
             const {data} = await useFetch<IToken[]>('/api/network/token', {query})
+            listToken.value = Array.isArray(data.value)
+                ? data.value.map((item) => ({
+                    ...item,
+                    logo: '',
+                    address: item.tokenAddress,
+                    symbol: item.tokenSymbol,
+                    decimals: item.tokenDecimals,
+                    name: item.tokenSymbol
+                }))
+                : []
             const tokenSymbol = data.value?.find(item => item.tokenSymbol === form.value.token.tokenSymbol)
             console.info('token0', tokenSymbol)
             token0.value = form.value.token.tokenSymbol
@@ -73,7 +83,6 @@ export const useBridgeStore = defineStore('bridge', () => {
                     watch: true
                 }))
             )
-            console.info('bl0: ', bl0)
             balance0.value = Number(bl0.value!.formatted)
             return token0
         },
@@ -85,6 +94,16 @@ export const useBridgeStore = defineStore('bridge', () => {
         queryFn: async () => {
             const query = {network: toNetwork.value?.network, crossChain: 'Y'}
             const {data} = await useFetch<IToken[]>('/api/network/token', {query})
+            listToken.value = Array.isArray(data.value)
+                ? data.value.map((item) => ({
+                    ...item,
+                    logo: '',
+                    address: item.tokenAddress,
+                    symbol: item.tokenSymbol,
+                    decimals: item.tokenDecimals,
+                    name: item.tokenSymbol
+                }))
+                : []
             const tokenSymbol = data.value?.find(item => item.tokenSymbol === form.value.token.tokenSymbol)
             console.info('token1', tokenSymbol)
             token1.value = form.value.token.tokenSymbol

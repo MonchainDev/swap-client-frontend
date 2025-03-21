@@ -227,7 +227,7 @@
   // const bestTrade = ref<SwapOutput | undefined>(undefined)
   const isFetchQuote = ref(false)
 
-  const isTokenSelected = computed(() => form.value.token?.tokenSymbol !== '')
+  const isTokenSelected = computed(() => !!form.value.token.tokenSymbol)
   // const isQuoteExist = computed(() => form.value.amountOut && form.value.amountIn)
   // const formatTitle = computed(() => {
   //   return stepBridge.value === 'SELECT_TOKEN' ? _props.title : 'Confirm bridge'
@@ -289,7 +289,6 @@
   const handleOpenPopupSelectToken = () => {
     if (stepBridge.value === 'CONFIRM_BRIDGE') return
     setOpenPopup('popup-sell-token', true)
-    console.info('tokens: ', listToken.value)
   }
 
   const stableDestinationChainIdToken = ref<IToken>()
@@ -363,6 +362,7 @@
 
   const handleSelectToken = (token: IToken) => {
     form.value.token = token
+    console.log(form.value.token, 'token selected')
   }
 
   // const useExactInputMulticall = async (swapOut: SwapOutput) => {
