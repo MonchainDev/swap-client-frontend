@@ -222,9 +222,13 @@
     timestamp: string
     amount0: string
     amount1: string
-    token0: IToken
-    token1: IToken
+    token0?: IToken
+    token1?: IToken
     type: TabValue.ADD | TabValue.REMOVE | TabValue.SWAP | TabValue.COLLECT
+    pool?: {
+      token0: IToken
+      token1: IToken
+    }
   }
 
   interface IMintTransaction {
@@ -527,9 +531,9 @@
     const amount0 = formatNumberWithDigits(row.amount0, 2)
     const amount1 = formatNumberWithDigits(row.amount1, 2)
     if (row.type === TabValue.ADD || row.type === TabValue.COLLECT) {
-      return `+${amount0} ${row.token0.symbol}, +${amount1} ${row.token1.symbol}`
+      return `+${amount0} ${row.token0?.symbol}, +${amount1} ${row.token1?.symbol}`
     }
-    return `-${amount0} ${row.token0.symbol}, -${amount1} ${row.token1.symbol}`
+    return `-${amount0} ${row.token0?.symbol}, -${amount1} ${row.token1?.symbol}`
   }
 
   async function getPoolData(positionId: string) {
@@ -635,7 +639,9 @@
 
       return [
         ...burns.flatMap((burn) => burn.transaction.burns.map((tx) => ({ ...tx, type: TabValue.REMOVE }))),
-        ...collects.flatMap((collect) => collect.transaction.collects.map((tx) => ({ ...tx, type: TabValue.COLLECT }))),
+        ...collects.flatMap((collect) =>
+          collect.transaction.collects.map((tx) => ({ ...tx, token0: tx.pool?.token0, token1: tx.pool?.token1, type: TabValue.COLLECT }))
+        ),
         ...mints.flatMap((mint) => mint.transaction.mints.map((tx) => ({ ...tx, type: TabValue.ADD }))),
         ...swaps.flatMap((swap) => swap.transaction.swaps.map((tx) => ({ ...tx, type: TabValue.SWAP })))
       ]
