@@ -70,6 +70,14 @@ const LIST_NETWORK: INetwork[] = [
   }
 ]
 
+const NETWORK_NAMES: Record<ChainId, string> = {
+  [ChainId.MON_TESTNET]: 'Mon Chain',
+  [ChainId.BSC_TESTNET]: 'BNB Chain',
+  [ChainId.SEPOLIA]: 'Ethereum',
+  [ChainId.AMOY_POLYGON]: 'Polygon',
+  [ChainId.ARBITRUM_SEPOLIA]: 'Arbitrum Sepolia'
+}
+
 const NETWORK_SUPPORTED = Object.fromEntries(LIST_NETWORK.map((network) => [network.network, true])) as Record<string, boolean>
 
-export { DEFAULT_NETWORK, LIST_NETWORK, NETWORK_SUPPORTED }
+export { DEFAULT_NETWORK, LIST_NETWORK, NETWORK_SUPPORTED, NETWORK_NAMES }
