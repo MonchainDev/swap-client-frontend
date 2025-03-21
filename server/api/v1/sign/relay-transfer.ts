@@ -1,3 +1,5 @@
+import { fetchBridge } from "~/server/utils/fetchBridge"
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   try {

@@ -28,8 +28,8 @@
           <BaseIcon name="search" class="text-primary" size="20" />
         </template>
         <template v-if="showNetwork" #suffix>
-          <div class="flex min-w-[136px] items-center gap-[9px] rounded-lg bg-white p-[6px] sm:hidden">
-            <!-- <img :src="network.logo" alt="logo" class="size-6 rounded-lg" /> -->
+          <div class="flex min-w-[136px] items-center justify-end gap-[9px] rounded-lg bg-white p-[6px] sm:hidden">
+            <img :src="toNetwork?.logo" alt="logo" class="size-6 rounded-lg" />
             <span class="text-xs font-semibold text-primary">{{ toNetwork?.network }}</span>
           </div>
         </template>
@@ -43,14 +43,14 @@
             <li
               v-for="item in data"
               :key="item.tokenAddress"
-              class="mb-3 flex h-[52px] cursor-pointer items-center justify-between gap-3 pl-8 first:mt-3 last:mb-0 hover:bg-gray-3 sm:pl-4"
+              class="mb-3 flex h-[52px] cursor-pointer items-center justify-between gap-3 px-8 first:mt-3 last:mb-0 hover:bg-gray-3 sm:px-4"
               @click="handleClickToken(item)"
             >
               <div class="grid h-[68px] cursor-pointer grid-cols-[40px_1fr] items-center gap-3">
-                <!-- <img :src="item.icon_url || ''" alt="logo token" class="size-10 rounded-full object-cover" @error="handleImageError($event)" /> -->
+                <img :src="item.icon_url || ''" alt="logo token" class="size-10 rounded-full object-cover" @error="handleImageError($event)" />
                 <div class="flex flex-col">
-                  <span class="text-base font-medium">{{ item.network }}</span>
-                  <span class="text-xs text-gray-8">{{ item.tokenSymbol }}</span>
+                  <span class="text-base font-medium">{{ item.tokenSymbol }}</span>
+                  <!-- <span class="text-xs text-gray-8">{{ item.network }}</span> -->
                 </div>
               </div>
               <div v-if="isConnected" class="text-sm">
@@ -124,7 +124,7 @@
       setOpenPopup('popup-sell-token', false)
     }
   }
-  // const { handleImageError } = useErrorImage()
+  const { handleImageError } = useErrorImage()
 </script>
 
 <style lang="scss" scoped>

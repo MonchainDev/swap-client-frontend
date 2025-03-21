@@ -1,13 +1,13 @@
-import {Token} from '@monchain/swap-sdk-core'
-import {useAccount, useBalance, useReadContract} from '@wagmi/vue'
-import {defineStore} from 'pinia'
-import {DEFAULT_SLIPPAGE, NATIVE_TOKEN} from '~/constant'
+import { Token } from '@monchain/swap-sdk-core'
+import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
+import { defineStore } from 'pinia'
+import { DEFAULT_SLIPPAGE, EMPTY_TOKEN } from '~/constant'
 import CONTRACT_SWAP from '~/constant/contract'
 import ABI_TOKEN from '~/constant/contract/contract-token.json'
-import {ChainId, type INetwork, type IToken} from '~/types'
-import {DEFAULT_NETWORK, LIST_NETWORK} from '~/config/networks'
-import type {IFormBridge} from '~/types/bridge.type'
-import {useQuery} from "@tanstack/vue-query";
+import { type ChainId, type INetwork, type IToken } from '~/types'
+import { DEFAULT_NETWORK, LIST_NETWORK } from '~/config/networks'
+import type { IFormBridge } from '~/types/bridge.type'
+import { useQuery } from "@tanstack/vue-query";
 
 export const useBridgeStore = defineStore('bridge', () => {
     const listNetwork = ref<INetwork[]>([])
@@ -29,24 +29,10 @@ export const useBridgeStore = defineStore('bridge', () => {
 
     const form = ref<IFormBridge>({
         token0: {
-            id: 0,
-            tokenAddress: '',
-            tokenDecimals: 0,
-            network: '',
-            tokenSymbol: '',
-            chainId: 0,
-            stable: false,
-            crossChain: false,
+            ...EMPTY_TOKEN
         },
         token: {
-            id: 0,
-            tokenAddress: '',
-            tokenDecimals: 0,
-            network: '',
-            tokenSymbol: '',
-            chainId: 0,
-            stable: false,
-            crossChain: false,
+            ...EMPTY_TOKEN
         },
         amount: '',
         chainId: chainId.value,
@@ -66,17 +52,17 @@ export const useBridgeStore = defineStore('bridge', () => {
     useQuery({
         queryKey: computed(() => ['token0', form.value?.token.tokenSymbol]),
         queryFn: async () => {
-            const query = {network: fromNetwork.value?.network!, crossChain: 'Y'}
+            const query = {network: fromNetwork.value?.network, crossChain: 'Y'}
             const {data} = await useFetch<IToken[]>('/api/network/token', {query})
             const tokenSymbol = data.value?.find(item => item.tokenSymbol === form.value.token.tokenSymbol)
             console.info('token0', tokenSymbol)
             token0.value = form.value.token.tokenSymbol
                 ? new Token(
-                    fromNetwork.value?.chainId!,
+                    fromNetwork.value?.chainId as ChainId,
                     tokenSymbol?.tokenAddress as `0x${string}`,
-                    tokenSymbol?.tokenDecimals!,
-                    tokenSymbol?.tokenSymbol!,
-                    tokenSymbol?.name!
+                    +tokenSymbol!.tokenDecimals,
+                    tokenSymbol!.tokenSymbol!,
+                    tokenSymbol?.name
                 )
                 : undefined
 
@@ -97,17 +83,17 @@ export const useBridgeStore = defineStore('bridge', () => {
     useQuery({
         queryKey: computed(() => ['token1', form.value?.token.tokenSymbol]),
         queryFn: async () => {
-            const query = {network: toNetwork.value?.network!, crossChain: 'Y'}
+            const query = {network: toNetwork.value?.network, crossChain: 'Y'}
             const {data} = await useFetch<IToken[]>('/api/network/token', {query})
             const tokenSymbol = data.value?.find(item => item.tokenSymbol === form.value.token.tokenSymbol)
             console.info('token1', tokenSymbol)
             token1.value = form.value.token.tokenSymbol
                 ? new Token(
-                    toNetwork.value?.chainId!,
+                    toNetwork.value?.chainId as ChainId,
                     tokenSymbol?.tokenAddress as `0x${string}`,
-                    tokenSymbol?.tokenDecimals!,
-                    tokenSymbol?.tokenSymbol!,
-                    tokenSymbol?.name!
+                    +tokenSymbol!.tokenDecimals,
+                    tokenSymbol!.tokenSymbol,
+                    tokenSymbol?.name
                 )
                 : undefined
             return token1
@@ -125,9 +111,9 @@ export const useBridgeStore = defineStore('bridge', () => {
     )
 
     useQuery({
-        queryKey: computed(() => ['token-list', toNetwork.value?.chainId!]),
+        queryKey: computed(() => ['token-list', toNetwork.value?.chainId as ChainId]),
         queryFn: async () => {
-            const query = {network: toNetwork.value?.network!, crossChain: 'Y'}
+            const query = {network: toNetwork.value?.network, crossChain: 'Y'}
             const {data} = await useFetch<IToken[]>('/api/network/token', {query})
             listToken.value = Array.isArray(data.value)
                 ? data.value.map((item) => ({
@@ -147,24 +133,10 @@ export const useBridgeStore = defineStore('bridge', () => {
     const resetStore = () => {
         form.value = {
             token0: {
-                id: 0,
-                tokenAddress: '',
-                tokenDecimals: 0,
-                network: '',
-                tokenSymbol: '',
-                chainId: 0,
-                stable: false,
-                crossChain: false,
+                ...EMPTY_TOKEN
             },
             token: {
-                id: 0,
-                tokenAddress: '',
-                tokenDecimals: 0,
-                network: '',
-                tokenSymbol: '',
-                chainId: 0,
-                stable: false,
-                crossChain: false,
+                ...EMPTY_TOKEN
             },
             amount: '',
             chainId: chainId.value,

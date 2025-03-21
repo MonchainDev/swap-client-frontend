@@ -22,13 +22,13 @@
     <div class="flex min-h-12 items-center gap-2">
       <template v-if="isSelected">
         <div class="flex max-w-[150px] cursor-pointer items-center gap-[10px]" @click="emits('select-token')">
-          <img alt="logo" class="size-9 rounded-full sm:size-6" @error="handleImageError($event)" />
+          <img :src="token.icon_url" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError($event)" />
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
               <span class="font-medium">{{ token.tokenSymbol }}</span>
               <BaseIcon v-if="stepBridge === 'SELECT_TOKEN'" name="arrow" size="18" class="text-secondary -rotate-90" />
             </div>
-            <h4 class="line-clamp-1 text-xs text-[#6F6A79] sm:hidden">{{ token.network }}</h4>
+            <!-- <h4 class="line-clamp-1 text-xs text-[#6F6A79] sm:hidden">{{ token.name }}</h4> -->
           </div>
         </div>
       </template>
@@ -62,16 +62,14 @@
 </template>
 
 <script lang="ts" setup>
-  // import type { IToken } from '~/types'
-  // import { ref, onMounted } from 'vue'
+  import type { IToken } from '~/types'
   import { useAccount } from '@wagmi/vue'
-  import type { TokenConfig } from '~/types/bridge.type'
   import type { StepBridge } from './FormBridge.client.vue'
   import Decimal from 'decimal.js'
 
   interface IProps {
     isSelected: boolean
-    token: TokenConfig
+    token: IToken
     balance: string | undefined
     stepBridge: StepBridge
   }

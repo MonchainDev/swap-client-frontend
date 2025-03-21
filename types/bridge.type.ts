@@ -1,4 +1,4 @@
-// import type { IToken } from '~/types/index'
+import type { IToken } from '~/types/index'
 
 export type ReturnTypeGetBalance = {
   decimals: number
@@ -8,8 +8,8 @@ export type ReturnTypeGetBalance = {
 }
 
 export interface IFormBridge {
-  token0: TokenConfig
-  token: TokenConfig
+  token0: IToken
+  token: IToken
   amount: string
   chainId?: number
   priceImpact: string
