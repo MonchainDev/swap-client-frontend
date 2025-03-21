@@ -71,9 +71,9 @@
     default: []
   })
 
-  const emits = defineEmits<{
-    'select-network': []
-  }>()
+  // const emits = defineEmits<{
+  //   'select-network': []
+  // }>()
 
   const listNetworks = computed(() => {
     return LIST_NETWORK.filter((item) => item.network.toLowerCase().includes(useTrim(search.value.toLowerCase())))
@@ -82,13 +82,20 @@
   fromNetwork.value = listNetwork.value[0] || DEFAULT_NETWORK
   toNetwork.value = listNetwork.value[1] || DEFAULT_NETWORK
 
+  // async function handleSelectToNetwork() {
+  //   const query = { network: toNetwork.value?.network, crossChain: 'Y' }
+  //   const { data } = await useFetch<IToken[]>('/api/network/token', { query })
+  //   stableDestinationChainIdToken.value = data.value?.find((item) => item.stable)
+  // }
+  // handleSelectToNetwork()
+
   const handleSelectNetwork = (item: INetwork) => {
     if (_props.type === 'FROM') {
       fromNetwork.value = item
       visible.value = false
     } else {
       toNetwork.value = item
-      emits('select-network')
+      // emits('select-network')
       visible.value = false
     }
   }

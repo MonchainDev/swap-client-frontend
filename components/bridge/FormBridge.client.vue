@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="to-network w-1/2">
-        <ChooseNetworkBridge type="TO" @select-network="handleSelectToNetwork" />
+        <ChooseNetworkBridge type="TO" />
       </div>
     </div>
     <div class="mt-3 w-full sm:mt-4">
@@ -216,7 +216,8 @@
 
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { fromNetwork, toNetwork, form, isConfirmSwap, isConfirmApprove, isSwapping, listToken, token0, token1, balance0 } = storeToRefs(useBridgeStore())
+  const { fromNetwork, stableDestinationChainIdToken, toNetwork, form, isConfirmSwap, isConfirmApprove, isSwapping, listToken, token0, token1, balance0 } =
+    storeToRefs(useBridgeStore())
   const isEditSlippage = ref(false)
 
   // const approveAndSend = ref<boolean>(false)
@@ -257,7 +258,7 @@
       return 'You have insufficient balance'
     } else if (isTokenSelected.value) {
       if (stepBridge.value === 'SELECT_TOKEN') {
-        return `SEND ${form.value.amount} ${form.value.token.network}: ${fromNetwork.value?.network} ⇒ ${toNetwork.value?.network}`
+        return `SEND ${form.value.amount} ${form.value.token.name}: ${fromNetwork.value?.network} ⇒ ${toNetwork.value?.network}`
       } else {
         if (isSwapping.value) {
           return 'SWAPPING! PLEASE WAIT..'
@@ -283,7 +284,7 @@
   const handleSwapOrder = () => {
     if (stepBridge.value === 'CONFIRM_BRIDGE') return
     ;[fromNetwork.value, toNetwork.value] = [toNetwork.value, fromNetwork.value]
-    handleSelectToNetwork()
+    // handleSelectToNetwork()
   }
 
   const handleOpenPopupSelectToken = () => {
@@ -291,18 +292,12 @@
     setOpenPopup('popup-sell-token', true)
   }
 
-  const stableDestinationChainIdToken = ref<IToken>()
-
   const feeBridge = 1 // 1%
 
-  async function handleSelectToNetwork() {
-    const query = { network: toNetwork.value?.network, crossChain: 'Y' }
-    const { data } = await useFetch<IToken[]>('/api/network/token', { query })
-
-    stableDestinationChainIdToken.value = data.value?.find((item) => item.stable)
-
-    console.info('stableDestinationChainIdToken.value', stableDestinationChainIdToken.value)
-  }
+  // async function handleSelectToNetwork() {
+  //   stableDestinationChainIdToken.value = listToken.value?.find((item) => item.stable)
+  //   console.info('stableDestinationChainIdToken.value', stableDestinationChainIdToken.value)
+  // }
 
   // const poolAddress = ref<string>('')
   const handleInput = async (amount: string) => {
@@ -477,7 +472,7 @@
 
   const handleBridge = async () => {
     // approveAndSend.value = !approveAndSend.value
-    bridgeSuccess(15, 'ATOM', 123.566, 'https://explorer.monchain.info')
+    // bridgeSuccess(15, 'ATOM', 123.566, 'https://explorer.monchain.info')
 
     try {
       const amount = form.value.amount as string
@@ -553,12 +548,12 @@
       }
 
       const body = {
-        contractAddress: contractAddress.lifiContractAddress[fromNetwork.value!.chainId],
-        chainId: fromNetwork.value?.chainId as number,
-        destinationChainId: toNetwork.value?.chainId as number,
+        contractAddress: contractAddress.lifiContractAddress[fromNetwork.value?.chainId as ChainId],
+        chainId: fromNetwork.value?.chainId as ChainId,
+        destinationChainId: toNetwork.value?.chainId as ChainId,
         receiverAddress: address,
-        sendingAssetId: token0.value!.address,
-        receiverAssetId: token1.value!.address,
+        sendingAssetId: token0.value?.address,
+        receiverAssetId: token1.value?.address,
         amountIn: +amount * 10 ** Number(form.value.token.tokenDecimals),
         routes: routes
       }
@@ -576,7 +571,7 @@
       //   }
       // }
       const res = (await $fetch('/api/v1/sign/relay-transfer', { body: body, method: 'POST' })) as unknown as Response
-      console.info(res)
+      console.info(res, 'response data')
       if (res.meta.httpStatusCode !== 200) {
         // xử lý lỗi
         return
@@ -733,6 +728,7 @@
       position: isDesktop.value ? 'top-right' : 'bottom-right'
     })
   }
+  console.log(bridgeSuccess)
 
   // // Define TypeScript types for better safety
   // interface ResponseData {
@@ -811,6 +807,7 @@
     () => toNetwork.value,
     () => {
       form.value.token = {} as IToken
+      form.value.amount = ''
     }
   )
 </script>

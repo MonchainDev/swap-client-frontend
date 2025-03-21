@@ -16,6 +16,7 @@ export const useBridgeStore = defineStore('bridge', () => {
     const toNetwork = ref<INetwork>()
     const token0 = ref<Token>()
     const token1 = ref<Token>()
+    const stableDestinationChainIdToken = ref<IToken>()
 
     const slippage = ref<string>(DEFAULT_SLIPPAGE.toString())
     const activeSlippageAuto = ref<boolean>(true)
@@ -144,6 +145,7 @@ export const useBridgeStore = defineStore('bridge', () => {
                     name: item.tokenSymbol
                 }))
                 : []
+            stableDestinationChainIdToken.value = listToken.value?.find((item) => item.stable)
             return data.value
         },
         enabled: computed(() => !!toNetwork.value?.chainId)
@@ -178,6 +180,7 @@ export const useBridgeStore = defineStore('bridge', () => {
         toNetwork,
         listNetwork,
         listToken,
+        stableDestinationChainIdToken,
         slippage,
         balance,
         token0,

@@ -10,7 +10,6 @@
 <script lang="ts" setup>
   import { useAccount, useBalance } from '@wagmi/vue'
   import FormBridgeClient from '~/components/bridge/FormBridge.client.vue'
-  import type { NetworkConfig } from '~/types/bridge.type'
 
   const { address } = useAccount()
 
@@ -21,10 +20,6 @@
       watch: true // Auto-update on wallet changes
     }))
   )
-
-  // const { data } = useFetch<NetworkConfig[]>(`/api/network/all`)
-  // const { listNetwork } = storeToRefs(useBridgeStore())
-  // listNetwork.value = data.value || []
 </script>
 
 <style scoped lang="scss">
