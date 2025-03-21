@@ -10,7 +10,6 @@
 <script lang="ts" setup>
   import { useAccount, useBalance } from '@wagmi/vue'
   import FormBridgeClient from '~/components/bridge/FormBridge.client.vue'
-  import type { NetworkConfig } from '~/types/bridge.type'
 
   const { address } = useAccount()
 
