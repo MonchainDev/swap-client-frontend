@@ -28,6 +28,7 @@ export interface INetwork {
   nativeToken: string
   wrapToken: string
   wrapTokenAddress: string
+  stableTokenAddress: string
   loading?: boolean
 }
 
