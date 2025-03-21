@@ -83,6 +83,8 @@
 
   const { chains, switchChainAsync, isPending } = useSwitchChain()
   const { isConnected } = useAccount()
+  const route = useRoute('add-currency')
+  const router = useRouter()
 
   const handleSelectNetwork = async (item: INetwork) => {
     if (_props.isSelect) {
@@ -104,8 +106,18 @@
         }
         visible.value = false
         await switchChainAsync({ chainId: chainSelected.id })
-        resetStoreLiquid()
-        resetStoreSwap()
+
+        if (route.name === 'add-currency') {
+          // replace route with out query
+          router.replace({ name: route.name }).then(() => {
+            resetStoreLiquid()
+            resetStoreSwap()
+          })
+        } else {
+          resetStoreLiquid()
+          resetStoreSwap()
+        }
+
         recentTokens.value = []
       }
       visible.value = false

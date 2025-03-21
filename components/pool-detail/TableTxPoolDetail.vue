@@ -4,10 +4,12 @@
       <span class="text-2xl font-semibold leading-7">Transactions</span>
       <BaseTab v-model:model="tabActive" :list="listTab" />
     </div>
-    <BaseTable class="table-tx mt-[26px]" :data="data ?? []">
+    <BaseTable v-loading="isLoading" class="table-tx mt-[26px]" :data="dataTable">
       <ElTableColumn label="Tran.">
         <template #default="{ row }">
-          <ColTrans :row="row" />
+          <div>
+            <span class="font-semibold">{{ row.type }} {{ row.token0.symbol }} for {{ row.token1.symbol }}</span>
+          </div>
         </template>
       </ElTableColumn>
 
@@ -27,9 +29,33 @@
 </template>
 
 <script lang="ts" setup>
+  import { useQuery } from '@tanstack/vue-query'
+  import { gql } from 'graphql-request'
   import type { ITab } from '~/types/component.type'
   import type { IPool } from '~/types/pool.type'
-  import type { ITransaction } from '~/types/transaction.type'
+
+  interface ITx {
+    id: string
+    amount0: string
+    amount1: string
+    amountUSD: string
+    timestamp: number
+    origin: string
+    token0: { symbol: string }
+    token1: { symbol: string }
+    type: TabValue.ADD | TabValue.REMOVE | TabValue.SWAP
+  }
+
+  interface Pool {
+    swaps: { transaction: { swaps: ITx[] } }[]
+    mints: { transaction: { mints: ITx[] } }[]
+    burns: { transaction: { burns: ITx[] } }[]
+  }
+
+  interface PoolsResponse {
+    pools: Pool[]
+  }
+
   const enum TabValue {
     ALL = 'ALL',
     SWAP = 'SWAP',
@@ -68,17 +94,134 @@
 
   const tabActive = ref<TabValue>(TabValue.ALL)
 
-  const { address: poolAddress, network } = useRoute('info-network-address').params
+  const { address: poolAddress } = useRoute('info-network-address').params
 
-  /**
-   * TODO: Get token symbol, amount base / quote
-   */
-  const { data } = useFetch<ITransaction[]>(`/api/transaction/list`, { query: { network: network?.toUpperCase(), poolAddress } })
+  // /**
+  //  * TODO: Get token symbol, amount base / quote
+  //  */
+  // const { data } = useFetch<ITransaction[]>(`/api/transaction/list`, { query: { network: network?.toUpperCase(), poolAddress } })
 
-  // const getAmount = (row: ITransaction) => {
-  //   const baseToken = listToken.value.find((token) => token.address?.toLocaleLowerCase() === row.fromToken.toLocaleLowerCase())
+  // // const getAmount = (row: ITransaction) => {
+  // //   const baseToken = listToken.value.find((token) => token.address?.toLocaleLowerCase() === row.fromToken.toLocaleLowerCase())
 
-  // }
+  // // }
+  const { chainId } = useActiveChainId()
+
+  async function getPoolData(poolAddress: string) {
+    try {
+      console.log('🚀 ~ getPoolData ~ poolAddress:', chainId.value)
+
+      const client = getGraphQLClient(chainId.value!)
+      // Định nghĩa query với variable
+      const query = gql`
+        query MyQuery($poolAddress: String!) {
+          pools(where: { id: $poolAddress }) {
+            swaps {
+              transaction {
+                swaps {
+                  id
+                  timestamp
+                  amountUSD
+                  amount0
+                  amount1
+                  origin
+                  token0 {
+                    symbol
+                  }
+                  token1 {
+                    symbol
+                  }
+                }
+              }
+            }
+            mints {
+              transaction {
+                mints {
+                  id
+                  amount0
+                  amount1
+                  amountUSD
+                  timestamp
+                  token0 {
+                    symbol
+                  }
+                  token1 {
+                    symbol
+                  }
+                  origin
+                }
+              }
+            }
+            burns {
+              transaction {
+                burns {
+                  id
+                  amount0
+                  amount1
+                  amountUSD
+                  timestamp
+                  origin
+                  token0 {
+                    symbol
+                  }
+                  token1 {
+                    symbol
+                  }
+                }
+              }
+            }
+          }
+        }
+      `
+      const variables = {
+        poolAddress: poolAddress
+      }
+      const data = await client.request<PoolsResponse>(query, variables)
+      console.log('🚀 ~ getPoolData ~ data:', data.pools)
+      // console.log('Kết quả:', JSON.stringify(data, null, 2))
+      return data
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
+  }
+
+  const { data, isLoading } = useQuery({
+    queryKey: computed(() => ['txs-pool', poolAddress]),
+    queryFn: () => getPoolData(poolAddress),
+    enabled: computed(() => !!poolAddress)
+  })
+
+  const mintsData = computed(() => {
+    return data.value?.pools[0].mints.flatMap((m) => m.transaction.mints.map((item) => ({ ...item, type: TabValue.ADD }))) || []
+  })
+
+  const burnsData = computed(() => {
+    return data.value?.pools[0].burns.flatMap((m) => m.transaction.burns.map((item) => ({ ...item, type: TabValue.REMOVE }))) || []
+  })
+
+  const swapsData = computed(() => {
+    return data.value?.pools[0].swaps.flatMap((m) => m.transaction.swaps.map((item) => ({ ...item, type: TabValue.SWAP }))) || []
+  })
+
+  const allData = computed(() => {
+    return [...mintsData.value, ...burnsData.value, ...swapsData.value]
+  })
+
+  const dataTable = computed(() => {
+    switch (tabActive.value) {
+      case TabValue.ALL:
+        return allData.value
+      case TabValue.SWAP:
+        return swapsData.value
+      case TabValue.ADD:
+        return mintsData.value
+      case TabValue.REMOVE:
+        return burnsData.value
+      default:
+        return allData.value
+    }
+  })
 </script>
 
 <style lang="scss" scoped>

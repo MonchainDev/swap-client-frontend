@@ -33,7 +33,7 @@
             <span class="text-xs text-gray-7">0</span>
           </div>
         </div>
-        <NuxtLink :to="`/add/${props.pool.tokenBase}/${props.pool.tokenQuote}/${props.pool.fee}`">
+        <NuxtLink :to="`/add/${props.pool.tokenBase}/${props.pool.tokenQuote}/${props.pool.fee}?chain=${props.pool.network}`">
           <BaseButton class="mt-6 flex w-full items-center" size="sm">
             <BaseIcon name="plus" size="18" />
             <span>Add Liquidity</span>

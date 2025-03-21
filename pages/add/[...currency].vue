@@ -18,14 +18,48 @@
 </template>
 
 <script lang="ts" setup>
+  import { FeeAmount } from '@monchain/v3-sdk'
+
   definePageMeta({
-    middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware', 'get-currency-from-url-middleware']
+    middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware', 'validate-network-middleware']
   })
 
-  const { form } = storeToRefs(useLiquidityStore())
+  const { listToken } = storeToRefs(useBaseStore())
+  const { form, feeAmount, listTokenOfRange } = storeToRefs(useLiquidityStore())
 
   const isToken0Selected = computed(() => form.value.token0.symbol !== '')
   const isToken1Selected = computed(() => form.value.token1.symbol !== '')
+
+  const { params } = useRoute('add-currency')
+
+  watchEffect(() => {
+    let currencies: string[] = []
+    if ('currency' in params) {
+      currencies = params.currency as string[]
+    }
+
+    if (currencies && currencies.length) {
+      const [currencyA, currencyB, feeAmountFromUrl] = currencies
+
+      if (currencyA && currencyB) {
+        const tokenA = listToken.value.find(
+          (item) => item.symbol.toLowerCase() === currencyA.toLowerCase() || item.address.toLocaleLowerCase() === currencyA.toLowerCase()
+        )
+        const tokenB = listToken.value.find(
+          (item) => item.symbol.toLowerCase() === currencyB.toLowerCase() || item.address.toLocaleLowerCase() === currencyB.toLowerCase()
+        )
+        if (tokenA && tokenB) {
+          form.value.token0 = tokenA
+          form.value.token1 = tokenB
+          listTokenOfRange.value = [tokenA, tokenB]
+        }
+      }
+      if (feeAmountFromUrl) {
+        const value = feeAmountFromUrl && Object.values(FeeAmount).includes(parseFloat(feeAmountFromUrl))
+        feeAmount.value = value ? parseFloat(feeAmountFromUrl) : 0
+      }
+    }
+  })
 </script>
 
 <style lang="scss"></style>

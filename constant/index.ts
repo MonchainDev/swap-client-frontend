@@ -5,38 +5,6 @@ import { ZOOM_LEVELS } from './zoom-level'
 const DEFAULT_SLIPPAGE = '1'
 const DECIMALS_NATIVE = 18
 
-const NATIVE_TOKEN: IToken = {
-  name: 'Mon',
-  symbol: 'MON',
-  decimals: 18,
-  icon_url: 'https://cryptologos.cc/logos/compound-comp-logo.png?v=040',
-  address: '',
-  id: 0,
-  tokenSymbol: 'MON',
-  tokenAddress: '',
-  tokenDecimals: 18,
-  network: 'MON',
-  chainId: 16789,
-  stable: true,
-  crossChain: false
-}
-
-const WRAPPED_NATIVE_TOKEN: IToken = {
-  name: 'Mon',
-  symbol: 'WMON',
-  decimals: 18,
-  icon_url: 'https://cryptologos.cc/logos/compound-comp-logo.png?v=040',
-  address: '0xF76eF13fb6B775e4609C921cAA1BD9307E338276',
-  id: 0,
-  tokenSymbol: 'WMON',
-  tokenAddress: '0xF76eF13fb6B775e4609C921cAA1BD9307E338276',
-  tokenDecimals: 18,
-  network: 'MON',
-  chainId: 16789,
-  stable: false,
-  crossChain: false
-}
-
 const EMPTY_TOKEN: IToken = {
   name: '',
   symbol: '',
@@ -152,16 +120,4 @@ const SLOW_INTERVAL = 60000
 
 const MAX_NUMBER_APPROVE = '115792089237316195423570985008687907853269984665640564039457584007913129639935'
 
-export {
-  BIPS_BASE,
-  DECIMALS_NATIVE,
-  DEFAULT_SLIPPAGE,
-  EMPTY_TOKEN,
-  FAST_INTERVAL,
-  LIST_FEE_AMOUNT,
-  NATIVE_TOKEN,
-  QUICK_ACTION_CONFIGS,
-  SLOW_INTERVAL,
-  WRAPPED_NATIVE_TOKEN,
-  MAX_NUMBER_APPROVE
-}
+export { BIPS_BASE, DECIMALS_NATIVE, DEFAULT_SLIPPAGE, EMPTY_TOKEN, FAST_INTERVAL, LIST_FEE_AMOUNT, MAX_NUMBER_APPROVE, QUICK_ACTION_CONFIGS, SLOW_INTERVAL }

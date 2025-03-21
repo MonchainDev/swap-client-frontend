@@ -9,3 +9,4 @@ export type POPUP_NAME =
   | 'popup-confirm-remove'
   | 'popup-confirm-create-liquidity'
   | 'popup-unstake'
+  | 'popup-wrong-network'

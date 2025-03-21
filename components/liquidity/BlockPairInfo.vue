@@ -80,7 +80,6 @@
   import ChartVolume from '../chart/ChartVolume.vue'
   import ChartFee from '../chart/ChartFee.vue'
   import ChartTvl from '../chart/ChartTvl.vue'
-  import v3SubgraphClient from '~/constant/graphClient'
   import { gql } from 'graphql-request'
   import { useQuery } from '@tanstack/vue-query'
   const enum TabValue {
@@ -130,6 +129,7 @@
   })
 
   // const route = useRoute('liquidity-pool-network-address')
+  const { chainId } = useActiveChainId()
 
   const listTab: ITab[] = [
     {
@@ -226,6 +226,7 @@
   // Hàm thực thi query với pool address
   async function getPoolData(poolAddress: string) {
     try {
+      const client = getGraphQLClient(chainId.value!)
       // Định nghĩa query với variable
       const query = gql`
         query MyQuery($poolAddress: String!) {
@@ -253,7 +254,7 @@
       const variables = {
         poolAddress: poolAddress
       }
-      const data = await v3SubgraphClient.request<{ poolDayDatas: poolDayDatas[] }>(query, variables)
+      const data = await client.request<{ poolDayDatas: poolDayDatas[] }>(query, variables)
       console.log('🚀 ~ getPoolData ~ data:', data.poolDayDatas)
       // console.log('Kết quả:', JSON.stringify(data, null, 2))
       return data

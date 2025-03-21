@@ -18,19 +18,19 @@ export async function getTokenByChainId(tokenAddress: string, chainId: number) {
 
   const [decimal, name, symbol] = await Promise.all([
     readContract(config, {
-      chainId: chainId as 16789 | 11155111 | undefined,
+      chainId: chainId,
       address: tokenAddress as `0x${string}`,
       functionName: 'decimals',
       abi: TokenAbi as Abi
     }),
     readContract(config, {
-      chainId: chainId as 16789 | 11155111 | undefined,
+      chainId: chainId,
       address: tokenAddress as `0x${string}`,
       functionName: 'name',
       abi: TokenAbi as Abi
     }),
     readContract(config, {
-      chainId: chainId as 16789 | 11155111 | undefined,
+      chainId: chainId,
       address: tokenAddress as `0x${string}`,
       functionName: 'symbol',
       abi: TokenAbi as Abi

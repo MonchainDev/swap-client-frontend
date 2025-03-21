@@ -201,6 +201,10 @@
   import { Bound, ChainId } from '~/types'
   import type { IPosition } from '~/types/position.type'
 
+  definePageMeta({
+    middleware: ['validate-network-middleware']
+  })
+
   const route = useRoute('liquidity-network-tokenId')
   const { setOpenPopup } = useBaseStore()
 

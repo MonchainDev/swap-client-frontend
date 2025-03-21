@@ -7,7 +7,7 @@ const DEPLOYER_ADDRESSES_BASE = '0xEFBA107c5ede093f6A0CfE3E53acf2715D94E32e'
 const DEPLOYER_ADDRESSES = {
   [ChainId.MON_TESTNET]: DEPLOYER_ADDRESSES_BASE,
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0xea1c0c1478A748a6bDBA0E9288e269af0cC4A221',
+  [ChainId.BSC_TESTNET]: '0xea1c0c1478a748a6bdba0e9288e269af0cc4a221',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, Address>
@@ -27,7 +27,7 @@ const NFT_POSITION_MANAGER_ADDRESS_BASE = '0x3beEDf6cE77CBdD85f04E1B5Cdd82c04d85
 const NFT_POSITION_MANAGER_ADDRESSES = {
   [ChainId.MON_TESTNET]: NFT_POSITION_MANAGER_ADDRESS_BASE,
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0x4C3638248749ab3644A63eD0a8c0eE86b2189dC9',
+  [ChainId.BSC_TESTNET]: '0x89342a352f198f4b5726d4B1a6CbA187098EfdE0',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, Address>
@@ -47,7 +47,7 @@ const FACTORY_ADDRESSES = {
 const masterChefV3Addresses = {
   [ChainId.MON_TESTNET]: '0x49aE1Bb3C0d9bceE09611282A295aC0180494C04',
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0x',
+  [ChainId.BSC_TESTNET]: '0x3fFBCe2e4c0C023e43C1f529FC052a3eAb0Dc5A1',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, string>
@@ -55,7 +55,7 @@ const masterChefV3Addresses = {
 const swapRouterV3Addresses = {
   [ChainId.MON_TESTNET]: '0x737A8fc40BCCa63dAE76BB1f300D31078fe9a79D',
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0xE18c090D3368dd6A5DF0086D403bFCfc6F3bE2a5',
+  [ChainId.BSC_TESTNET]: '0xd4D2a2D6fdD9DD28a6B9f74c1d4C42F0FE9cc6BE',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, string>

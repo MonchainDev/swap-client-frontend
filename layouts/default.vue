@@ -10,6 +10,7 @@
     <TheFooter />
     <TheHeaderMobile />
     <PopupConnectWallet />
+    <PopupWrongNetwork />
   </div>
 </template>
 

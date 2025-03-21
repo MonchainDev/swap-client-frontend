@@ -16,21 +16,21 @@ export function useTokenByChainId(tokenAddress: string | `0x${string}`, chainId:
   //   const token: ERC20Token | undefined = address && chainId ? tokens[chainId][address] : undefined
 
   const { data: decimals } = useReadContract({
-    chainId: chainId as MaybeRef<16789 | 11155111 | undefined>,
+    chainId: chainId,
     address: tokenAddress as `0x${string}`,
     functionName: 'decimals',
     abi: TokenAbi as Abi
   })
 
   const { data: name } = useReadContract({
-    chainId: chainId as MaybeRef<16789 | 11155111 | undefined>,
+    chainId: chainId,
     address: tokenAddress as `0x${string}`,
     functionName: 'name',
     abi: TokenAbi as Abi
   })
 
   const { data: symbol } = useReadContract({
-    chainId: chainId as MaybeRef<16789 | 11155111 | undefined>,
+    chainId: chainId,
     address: tokenAddress as `0x${string}`,
     functionName: 'symbol',
     abi: TokenAbi as Abi
