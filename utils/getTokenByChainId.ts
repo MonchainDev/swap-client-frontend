@@ -5,8 +5,8 @@ import { readContract } from '@wagmi/core'
 import { config } from '~/config/wagmi'
 import TokenAbi from '~/constant/abi/token.json'
 export async function getTokenByChainId(tokenAddress: string, chainId: number) {
-  console.log('🚀 ~ useTokenByChainId ~ chainId:', chainId)
-  console.log('🚀 ~ useTokenByChainId ~ tokenAddress:', tokenAddress)
+  // console.log('🚀 ~ useTokenByChainId ~ chainId:', chainId)
+  // console.log('🚀 ~ useTokenByChainId ~ tokenAddress:', tokenAddress)
 
   /**
    * Khi nao co list all token thi mo lai comment

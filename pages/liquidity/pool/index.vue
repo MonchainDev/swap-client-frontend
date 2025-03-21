@@ -70,11 +70,11 @@
           </ChooseNetwork>
           <div
             class="flex h-[42px] w-[280px] cursor-pointer items-center justify-between gap-1 rounded-lg border border-solid border-gray-4 pl-4 pr-1"
-            @click="setOpenPopup('popup-select-token')"
+            @click="setOpenPopup('popup-selected-token-multiple')"
           >
             <div class="flex items-center gap-2">
               <div class="flex">
-                <template v-if="tokenListSelected.length > 3">
+                <template v-if="tokenListSelected && tokenListSelected.length > 3">
                   <div class="flex">
                     <img
                       v-for="(_i, index) in 3"
@@ -111,12 +111,16 @@
       <TableListPool :data="formattedData" :loading="status === 'pending'" />
     </div>
   </div>
-  <PopupSelectToken v-model:token-selected="tokenSelected" :show-network="false" is-select />
+  <!-- <PopupSelectToken v-model:token-selected="tokenSelected" :show-network="false" is-select /> -->
+  <PopupSelectTokenMultiple :list-token="listToken ?? []" :token-selected="tokenSelected" @change="handleSelectToken" @remove-all="tokenSelected = []" />
 </template>
 
 <script lang="ts" setup>
+  import { useQuery } from '@tanstack/vue-query'
   import TableListPool from '~/components/liquidity/TableListPool.vue'
   import { LIST_NETWORK } from '~/config/networks'
+  import { WNATIVE } from '~/constant/token'
+  import type { ChainId, IToken } from '~/types'
   import type { IPool, IPoolOrigin } from '~/types/pool.type'
   import type { IResponse } from '~/types/response.type'
 
@@ -127,18 +131,41 @@
   const tabActive = ref<'ALL' | 'POSITION'>('ALL')
 
   const { setOpenPopup } = useBaseStore()
-  const { listToken } = storeToRefs(useBaseStore())
+  // const { listToken } = storeToRefs(useBaseStore())
 
   const { handleImageError } = useErrorImage()
 
   const networkSelected = ref<string[]>(LIST_NETWORK.map((item) => item.network))
-  const tokenSelected = ref<string[]>([])
+  const tokenSelected = ref<IToken[]>([])
+
+  watchEffect(() => {
+    // reset token selected when change network
+    if (networkSelected.value.length) {
+      tokenSelected.value = []
+    }
+  })
+
+  const { data: listToken } = useQuery({
+    queryKey: ['token-with-networks', networkSelected.value],
+    queryFn: async () => {
+      const listCall = networkSelected.value.map((network) => {
+        return $fetch<IToken[]>('/api/v2/tokens', {
+          params: {
+            network
+          }
+        })
+      })
+      const result = await Promise.all(listCall)
+      return result.flat() || []
+    },
+    enabled: networkSelected.value.length > 0
+  })
 
   const networkListSelected = computed(() => {
     return LIST_NETWORK.filter((item) => networkSelected.value.includes(item.network))
   })
   const tokenListSelected = computed(() => {
-    return listToken.value.filter((item) => tokenSelected.value.includes(item.address))
+    return listToken.value?.filter((item) => tokenSelected.value.some((selected) => selected.id === item.id))
   })
 
   const titleFilterNetwork = computed(() => {
@@ -148,14 +175,19 @@
   })
 
   const titleFilterToken = computed(() => {
-    return tokenListSelected.value.length === 0 ? 'All tokens' : tokenListSelected.value.map((item) => item.symbol).join(', ')
+    return tokenListSelected.value?.length === 0 ? 'All tokens' : tokenListSelected.value?.map((item) => item.tokenSymbol).join(', ')
   })
 
   // Compute the query string dynamically
   const queryString = computed(() => {
     const params = new URLSearchParams()
     networkListSelected.value.forEach((network) => params.append('networks', network.network))
-    tokenListSelected.value.forEach((token) => params.append('tokens', token.symbol))
+    tokenListSelected.value?.forEach((token) => {
+      const address =
+        token.tokenAddress === '' || token.tokenAddress.toLowerCase() === zeroAddress ? WNATIVE[token.chainId as ChainId].address : token.tokenAddress
+      params.append('tokens', address)
+    })
+
     return params.toString()
   })
 
@@ -198,6 +230,19 @@
     }
     return []
   })
+
+  const handleSelectToken = (token: IToken, type: 'add' | 'remove') => {
+    if (type === 'add') {
+      const index = tokenSelected.value.findIndex((item) => item.id === token.id)
+      if (index === -1) {
+        tokenSelected.value.push(token)
+      } else {
+        tokenSelected.value = tokenSelected.value.filter((item) => item.id !== token.id)
+      }
+    } else {
+      tokenSelected.value = tokenSelected.value.filter((item) => item.id !== token.id)
+    }
+  }
 </script>
 
 <style lang="scss" scoped></style>

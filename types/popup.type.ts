@@ -10,3 +10,4 @@ export type POPUP_NAME =
   | 'popup-confirm-create-liquidity'
   | 'popup-unstake'
   | 'popup-wrong-network'
+  | 'popup-selected-token-multiple'

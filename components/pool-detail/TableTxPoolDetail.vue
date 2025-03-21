@@ -7,21 +7,33 @@
     <BaseTable v-loading="isLoading" class="table-tx mt-[26px]" :data="dataTable">
       <ElTableColumn label="Tran.">
         <template #default="{ row }">
-          <div>
-            <span class="font-semibold">{{ row.type }} {{ row.token0.symbol }} for {{ row.token1.symbol }}</span>
-          </div>
+          <a
+            :href="`https://explorer.monchain.info/tx/${row.id}`"
+            target="_blank"
+            class="cursor-pointer text-sm font-semibold hover:text-hyperlink hover:underline"
+            >{{ row.type }} {{ row.token0.symbol }} for {{ row.token1.symbol }}</a
+          >
         </template>
       </ElTableColumn>
 
-      <ElTableColumn label="Value" align="right" />
+      <ElTableColumn label="Value" align="right">
+        <template #default="{ row }">
+          <div class="flex flex-col">
+            <span class="font-semibold"> ${{ formatNumberWithDigits(row.amountUSD) }}</span>
+            <span class="text-gray-6"
+              >({{ formatNumberWithDigits(row.amount0) }} {{ row.token0.symbol }}, {{ formatNumberWithDigits(row.amount1) }} {{ row.token1.symbol }})</span
+            >
+          </div>
+        </template>
+      </ElTableColumn>
       <ElTableColumn label="Account" align="right">
         <template #default="{ row }">
-          <div class="text-success">{{ sliceString(row.fromAddress, 8, 4) }}</div>
+          <div class="text-success">{{ sliceString(row.origin, 8, 4) }}</div>
         </template>
       </ElTableColumn>
       <ElTableColumn label="Time" align="right">
         <template #default="{ row }">
-          <div class="pr-3">{{ useTimeAgo(row.createdAt, { showSecond: true }) }}</div>
+          <div class="pr-3">{{ useTimeAgo(row.timestamp, { showSecond: true }) }}</div>
         </template>
       </ElTableColumn>
     </BaseTable>
@@ -177,8 +189,7 @@
         poolAddress: poolAddress
       }
       const data = await client.request<PoolsResponse>(query, variables)
-      console.log('🚀 ~ getPoolData ~ data:', data.pools)
-      // console.log('Kết quả:', JSON.stringify(data, null, 2))
+
       return data
     } catch (error) {
       console.error(error)
@@ -193,15 +204,21 @@
   })
 
   const mintsData = computed(() => {
-    return data.value?.pools[0].mints.flatMap((m) => m.transaction.mints.map((item) => ({ ...item, type: TabValue.ADD }))) || []
+    return (
+      data.value?.pools[0].mints.flatMap((m) => m.transaction.mints.map((item) => ({ ...item, type: TabValue.ADD, timestamp: item.timestamp * 1000 }))) || []
+    )
   })
 
   const burnsData = computed(() => {
-    return data.value?.pools[0].burns.flatMap((m) => m.transaction.burns.map((item) => ({ ...item, type: TabValue.REMOVE }))) || []
+    return (
+      data.value?.pools[0].burns.flatMap((m) => m.transaction.burns.map((item) => ({ ...item, type: TabValue.REMOVE, timestamp: item.timestamp * 1000 }))) || []
+    )
   })
 
   const swapsData = computed(() => {
-    return data.value?.pools[0].swaps.flatMap((m) => m.transaction.swaps.map((item) => ({ ...item, type: TabValue.SWAP }))) || []
+    return (
+      data.value?.pools[0].swaps.flatMap((m) => m.transaction.swaps.map((item) => ({ ...item, type: TabValue.SWAP, timestamp: item.timestamp * 1000 }))) || []
+    )
   })
 
   const allData = computed(() => {
