@@ -117,6 +117,8 @@
 <script lang="ts" setup>
   import TableListPool from '~/components/liquidity/TableListPool.vue'
   import { LIST_NETWORK } from '~/config/networks'
+  import { WNATIVE } from '~/constant/token'
+  import type { ChainId } from '~/types'
   import type { IPool, IPoolOrigin } from '~/types/pool.type'
   import type { IResponse } from '~/types/response.type'
 
@@ -155,7 +157,10 @@
   const queryString = computed(() => {
     const params = new URLSearchParams()
     networkListSelected.value.forEach((network) => params.append('networks', network.network))
-    tokenListSelected.value.forEach((token) => params.append('tokens', token.symbol))
+    tokenListSelected.value.forEach((token) => {
+      const address = token.address === '' || token.address.toLowerCase() === zeroAddress ? WNATIVE[token.chainId as ChainId].address : token.address
+      params.append('tokens', address)
+    })
     return params.toString()
   })
 
