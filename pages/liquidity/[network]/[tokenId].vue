@@ -160,18 +160,22 @@
 
     <div class="mt-6 rounded-lg bg-white pb-6 shadow-md">
       <span class="block pl-6 pt-8 text-2xl font-semibold leading-7">History</span>
-      <BaseTable :data="listTransaction ?? undefined" :loading="statusListTx === 'pending'" class="table-history mt-[26px]">
+      <BaseTable :data="dataTxs" :loading="loadingTxs" class="table-history mt-[26px]">
         <ElTableColumn label="Timestamp">
           <template #default="{ row }">
-            <div>{{ useDateFormat(row.createdAt, 'MM/DD/YYYY h:mm:ss A') }}</div>
+            <div>{{ useDateFormat(row.timestamp * 1000, 'MM/DD/YYYY h:mm:ss A') }}</div>
           </template>
         </ElTableColumn>
         <ElTableColumn label="Action">
           <template #default="{ row }">
-            <div class="capitalize">{{ getTran(row.transactionType) }}</div>
+            {{ getTran(row.type) }}
           </template>
         </ElTableColumn>
-        <ElTableColumn label="Token Transferred" align="right" />
+        <ElTableColumn label="Token Transferred" align="right">
+          <template #default="{ row }">
+            <span class="font-semibold">{{ getTokenTransferred(row) }}</span>
+          </template>
+        </ElTableColumn>
       </BaseTable>
     </div>
   </div>
@@ -194,12 +198,65 @@
   import { type Currency, type Price, type Token } from '@monchain/swap-sdk-core'
   import type { FeeAmount, Pool } from '@monchain/v3-sdk'
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
+  import { useQuery } from '@tanstack/vue-query'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
+  import { gql } from 'graphql-request'
   import ChartLine from '~/components/chart/ChartLine.vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
   import { Bound, ChainId } from '~/types'
   import type { IPosition } from '~/types/position.type'
+
+  const enum TabValue {
+    COLLECT = 'COLLECT',
+    SWAP = 'SWAP',
+    ADD = 'ADD',
+    REMOVE = 'REMOVE'
+  }
+  interface IToken {
+    symbol: string
+  }
+
+  interface ITx {
+    id: string
+    timestamp: string
+    amount0: string
+    amount1: string
+    token0: IToken
+    token1: IToken
+    type: TabValue.ADD | TabValue.REMOVE | TabValue.SWAP | TabValue.COLLECT
+  }
+
+  interface IMintTransaction {
+    mints: ITx[]
+  }
+
+  interface ISwapTransaction {
+    swaps: ITx[]
+  }
+
+  interface IBurnTransaction {
+    burns: ITx[]
+  }
+
+  interface ICollectTransaction {
+    collects: ITx[]
+  }
+
+  interface ITransaction {
+    burns: { transaction: IBurnTransaction }[]
+    collects: { transaction: ICollectTransaction }[]
+    mints: { transaction: IMintTransaction }[]
+    swaps: { transaction: ISwapTransaction }[]
+  }
+
+  interface IPositionTx {
+    transaction: ITransaction
+  }
+
+  interface IPositionsData {
+    positions: IPositionTx[]
+  }
 
   definePageMeta({
     middleware: ['validate-network-middleware']
@@ -224,10 +281,6 @@
   const isStakeMV3 = computed(() => tokenIds.value?.includes(tokenId.value!))
 
   const { data: positionDetail } = useFetch<IPosition>(`/api/position/get/${tokenId.value?.toString()}`, { query: { network: route.params.network } })
-
-  const { data: listTransaction, status: statusListTx } = useFetch<Array<Record<string, unknown>>>('/api/transaction/list', {
-    query: { network: route.params.network, poolAddress: positionDetail.value?.poolAddress, tokenId: tokenId.value?.toString() }
-  })
 
   const liquidity = computed(() => _position.value?.liquidity)
   const tickLower = computed(() => _position.value?.tickLower)
@@ -455,9 +508,138 @@
     }
   }
 
-  const getTran = (transactionType: string) => {
-    const type = transactionType ? transactionType.split('_').join(' ').toLowerCase() : ''
-    return type
+  const getTran = (type: TabValue) => {
+    switch (type) {
+      case TabValue.ADD:
+        return 'Add Liquidity'
+      case TabValue.REMOVE:
+        return 'Remove Liquidity'
+      case TabValue.SWAP:
+        return 'Swap'
+      case TabValue.COLLECT:
+        return 'Collect fee'
+      default:
+        return ''
+    }
+  }
+
+  const getTokenTransferred = (row: ITx) => {
+    const amount0 = formatNumberWithDigits(row.amount0, 2)
+    const amount1 = formatNumberWithDigits(row.amount1, 2)
+    if (row.type === TabValue.ADD || row.type === TabValue.COLLECT) {
+      return `+${amount0} ${row.token0.symbol}, +${amount1} ${row.token1.symbol}`
+    }
+    return `-${amount0} ${row.token0.symbol}, -${amount1} ${row.token1.symbol}`
+  }
+
+  async function getPoolData(positionId: string) {
+    try {
+      const client = getGraphQLClient(chainId.value!)
+      // Định nghĩa query với variable
+      const query = gql`
+        query MyQuery($positionId: String!) {
+          positions(where: { id: $positionId }) {
+            transaction {
+              burns {
+                transaction {
+                  burns {
+                    id
+                    timestamp
+                    amount0
+                    amount1
+                    token0 {
+                      symbol
+                    }
+                    token1 {
+                      symbol
+                    }
+                  }
+                }
+              }
+              collects {
+                transaction {
+                  collects {
+                    id
+                    amount0
+                    amount1
+                    timestamp
+                    pool {
+                      token0 {
+                        symbol
+                      }
+                      token1 {
+                        symbol
+                      }
+                    }
+                  }
+                }
+              }
+              mints {
+                transaction {
+                  mints {
+                    id
+                    amount0
+                    amount1
+                    timestamp
+                    token0 {
+                      symbol
+                    }
+                    token1 {
+                      symbol
+                    }
+                  }
+                }
+              }
+              swaps {
+                transaction {
+                  swaps {
+                    id
+                    amount0
+                    amount1
+                    timestamp
+                    token0 {
+                      symbol
+                    }
+                    token1 {
+                      symbol
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      `
+      const variables = {
+        positionId
+      }
+      const data = await client.request<IPositionsData>(query, variables)
+
+      return data
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
+  }
+
+  const { data: dataTxs, isLoading: loadingTxs } = useQuery({
+    queryKey: computed(() => ['txs-position-detail', route.params.tokenId]),
+    queryFn: async () => flattenTransactions(await getPoolData(route.params.tokenId)),
+    enabled: computed(() => !!route.params.tokenId)
+  })
+
+  const flattenTransactions = (data: IPositionsData): ITx[] => {
+    if (!data.positions.length) return []
+    return data.positions.flatMap((position) => {
+      const { burns, collects, mints, swaps } = position.transaction
+
+      return [
+        ...burns.flatMap((burn) => burn.transaction.burns.map((tx) => ({ ...tx, type: TabValue.REMOVE }))),
+        ...collects.flatMap((collect) => collect.transaction.collects.map((tx) => ({ ...tx, type: TabValue.COLLECT }))),
+        ...mints.flatMap((mint) => mint.transaction.mints.map((tx) => ({ ...tx, type: TabValue.ADD }))),
+        ...swaps.flatMap((swap) => swap.transaction.swaps.map((tx) => ({ ...tx, type: TabValue.SWAP })))
+      ]
+    })
   }
 </script>
 
