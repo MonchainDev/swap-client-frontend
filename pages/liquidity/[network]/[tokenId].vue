@@ -149,7 +149,7 @@
             <span class="text-xs text-gray-8">Max</span>
             <span class="text-base font-semibold">{{ maxAmount }} </span>
           </div>
-          <ChartLine />
+          <ChartLine v-if="dataChart?.length" :data="dataChart" />
           <div class="flex flex-col gap-1">
             <span class="text-xs text-gray-8">Current price</span>
             <span class="text-base font-semibold">{{ currentPrice }}</span>
@@ -536,7 +536,7 @@
     return `-${amount0} ${row.token0?.symbol}, -${amount1} ${row.token1?.symbol}`
   }
 
-  async function getPoolData(positionId: string) {
+  async function getListTxPosition(positionId: string) {
     try {
       const client = getGraphQLClient(chainId.value!)
       // Định nghĩa query với variable
@@ -628,7 +628,7 @@
 
   const { data: dataTxs, isLoading: loadingTxs } = useQuery({
     queryKey: computed(() => ['txs-position-detail', route.params.tokenId]),
-    queryFn: async () => flattenTransactions(await getPoolData(route.params.tokenId)),
+    queryFn: async () => flattenTransactions(await getListTxPosition(route.params.tokenId)),
     enabled: computed(() => !!route.params.tokenId)
   })
 
@@ -647,6 +647,40 @@
       ]
     })
   }
+
+  async function getDataChart(poolAddress: string | undefined) {
+    try {
+      const client = getGraphQLClient(chainId.value!)
+      // Định nghĩa query với variable
+      const query = gql`
+        query MyQuery($poolAddress: String!) {
+          poolHourDatas(
+            where: { pool: $poolAddress }
+            first: 168 # 168 giờ = 7 ngày
+            orderBy: periodStartUnix
+            orderDirection: desc
+          ) {
+            periodStartUnix
+            token0Price # Giá hiện tại và lịch sử giá
+          }
+        }
+      `
+      const variables = {
+        poolAddress
+      }
+      const data = await client.request<{ poolHourDatas: { periodStartUnix: number; token0Price: string }[] }>(query, variables)
+      return data.poolHourDatas.sort((a, b) => a.periodStartUnix - b.periodStartUnix)
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
+  }
+
+  const { data: dataChart } = useQuery({
+    queryKey: computed(() => ['chart-position-detail', positionDetail.value?.poolAddress]),
+    queryFn: () => getDataChart(positionDetail.value?.poolAddress),
+    enabled: computed(() => !!positionDetail.value?.poolAddress)
+  })
 </script>
 
 <style lang="scss" scoped>
