@@ -1,10 +1,5 @@
 <template>
-  <a
-    :href="`https://explorer.monchain.info/tx/${row.transactionHash}`"
-    target="_blank"
-    class="cursor-pointer text-sm font-semibold hover:text-hyperlink hover:underline"
-    >{{ getTran }}</a
-  >
+  <a target="_blank" class="cursor-pointer text-sm font-semibold hover:text-hyperlink hover:underline">{{ getTran }}</a>
 </template>
 
 <script lang="ts" setup>

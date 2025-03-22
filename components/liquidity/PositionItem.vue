@@ -218,7 +218,7 @@
         pollingInterval: 2000
       })
       if (status === 'success') {
-        showToastMsg('Harvested! Your funds ORB earnings have been sent to your wallet', 'success', hash)
+        showToastMsg('Harvested! Your funds ORB earnings have been sent to your wallet', 'success', getUrlScan(chainId.value, 'tx', hash))
         const { tokenId, network, tokenBase, tokenQuote, poolAddress, pendingReward } = props.position
         const body: IBodyTxCollect = {
           transactionHash: hash,
@@ -235,7 +235,7 @@
         await postTransaction(body)
         emit('reload')
       } else {
-        showToastMsg('Transaction failed', 'error', hash)
+        showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash))
       }
       loadingHarvest.value = false
     } catch (error) {
@@ -277,7 +277,7 @@
         pollingInterval: 2000
       })
       if (status === 'success') {
-        showToastMsg('Staked! Your funds have heen staked in the farm', 'success', hash)
+        showToastMsg('Staked! Your funds have heen staked in the farm', 'success', getUrlScan(chainId.value, 'tx', hash))
 
         const { tokenId, network, tokenBase, tokenQuote, poolAddress, pendingReward } = props.position
         const body: IBodyTxCollect = {
@@ -295,7 +295,7 @@
         await Promise.race([v3PoolAddressPid(contractAddressMasterChef), postTransaction(body)])
         emit('reload')
       } else {
-        showToastMsg('Transaction failed', 'error', hash)
+        showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash))
       }
       loadingStake.value = false
     } catch (error) {

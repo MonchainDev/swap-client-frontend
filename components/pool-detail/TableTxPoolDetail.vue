@@ -8,7 +8,7 @@
       <ElTableColumn label="Tran.">
         <template #default="{ row }">
           <a
-            :href="`https://explorer.monchain.info/tx/${row.id}`"
+            :href="getUrlScan(chainIdByNetwork, 'tx', row.id)"
             target="_blank"
             class="cursor-pointer text-sm font-semibold hover:text-hyperlink hover:underline"
             >{{ row.type }} {{ row.token0.symbol }} for {{ row.token1.symbol }}</a
@@ -43,6 +43,8 @@
 <script lang="ts" setup>
   import { useQuery } from '@tanstack/vue-query'
   import { gql } from 'graphql-request'
+  import { LIST_NETWORK } from '~/config/networks'
+  import type { ChainId } from '~/types'
   import type { ITab } from '~/types/component.type'
   import type { IPool } from '~/types/pool.type'
 
@@ -75,8 +77,6 @@
     REMOVE = 'REMOVE'
   }
 
-  // const route = useRoute('liquidity-pool-network-address')
-
   const listTab: ITab[] = [
     {
       title: 'All',
@@ -106,7 +106,15 @@
 
   const tabActive = ref<TabValue>(TabValue.ALL)
 
-  const { address: poolAddress } = useRoute('info-network-address').params
+  const { address: poolAddress, network: networkPoolInfo } = useRoute('info-network-address').params
+
+  const { network: networkPoolDetail } = useRoute('liquidity-pool-network-address').params
+
+  const chainIdByNetwork = computed(() => {
+    const networkUrl = networkPoolInfo || networkPoolDetail
+    const chainId = LIST_NETWORK.find((item) => item.network.toUpperCase() === networkUrl.toUpperCase())?.chainId
+    return chainId as ChainId
+  })
 
   // /**
   //  * TODO: Get token symbol, amount base / quote

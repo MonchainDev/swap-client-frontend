@@ -456,7 +456,7 @@
 
     if (status === 'success') {
       const { showToastMsg } = useShowToastMsg()
-      showToastMsg('Swap successful', 'success', txHash)
+      showToastMsg('Swap successful', 'success', getUrlScan(chainId.value, 'tx', txHash))
       await postTx(txHash, contractSwapRouterV3)
       console.info('Transaction successful', 'success', txHash)
     } else {

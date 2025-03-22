@@ -27,9 +27,9 @@ export default function useCollectFee() {
       })
 
       if (status === 'success') {
-        showToastMsg('Transaction receipt', 'success', txHash)
+        showToastMsg('Transaction receipt', 'success', getUrlScan(chainId.value, 'tx', txHash))
       } else {
-        showToastMsg('Transaction failed', 'error', txHash)
+        showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash))
       }
     } catch (error) {
       console.error(error)

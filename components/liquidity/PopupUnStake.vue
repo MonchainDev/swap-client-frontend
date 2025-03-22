@@ -113,7 +113,7 @@
           pollingInterval: 2000
         })
         if (status === 'success') {
-          showToastMsg('Unstaked! Your funds ORB earnings have been sent to your wallet', 'success', hash)
+          showToastMsg('Unstaked! Your funds ORB earnings have been sent to your wallet', 'success', getUrlScan(chainId.value, 'tx', hash))
           const { tokenId, network, tokenBase, tokenQuote, poolAddress, pendingReward } = props.position
 
           const body: IBodyTxCollect = {
@@ -132,7 +132,7 @@
           emit('reload')
           setOpenPopup('popup-unstake', false)
         } else {
-          showToastMsg('Transaction failed', 'error', hash)
+          showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash))
         }
       }
     } catch (error) {
