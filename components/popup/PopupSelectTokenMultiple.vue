@@ -1,23 +1,20 @@
 <template>
-  <BasePopup name="popup-selected-token-multiple" :is-show-footer="false" :fullscreen="!isDesktop" width="540" :title="titlePopup" @close="search = ''">
+  <BasePopup
+    name="popup-selected-token-multiple"
+    :is-show-footer="false"
+    :fullscreen="!isDesktop"
+    width="540"
+    :title="titlePopup"
+    @close="search = ''"
+    @open="handleOpen"
+  >
     <template v-if="!isDesktop" #close>
       <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-select-token', false)" />
     </template>
 
     <div class="popup-select-token">
       <div class="relative mt-1 flex flex-col gap-3 px-8 pb-6 shadow sm:px-4">
-        <ElInput
-          v-model="search"
-          autofocus
-          placeholder="Search by token or address..."
-          class="input-search w-full"
-          @input="
-            () => {
-              loading = true
-              handleSearchToken()
-            }
-          "
-        >
+        <ElInput v-model="search" autofocus placeholder="Search by token or address..." class="input-search w-full" @input="handleSearchToken">
           <template #prefix>
             <BaseIcon name="search" class="text-primary" size="20" />
           </template>
@@ -82,34 +79,26 @@
 
 <script lang="ts" setup>
   import { NETWORK_NAMES } from '~/config/networks'
-  import type { ChainId, IToken } from '~/types'
+  import type { ChainId, INetwork, IToken } from '~/types'
 
   interface IProps {
-    listToken: IToken[]
     tokenSelected: IToken[]
+    networkSelected: INetwork[]
   }
 
   const props = withDefaults(defineProps<IProps>(), {
-    listToken: () => [],
-    tokenSelected: () => []
+    tokenSelected: () => [],
+    networkSelected: () => []
   })
 
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
   const search = ref('')
   const loading = ref(false)
-
-  const data = computed(() => {
-    return props.listToken.filter((item) => {
-      return (
-        item.tokenSymbol.toLowerCase().includes(search.value.toLowerCase()) || item.tokenAddress?.toLowerCase().includes(search.value.toLowerCase())
-        // || item.address?.toLowerCase().includes(search.value.toLowerCase())
-      )
-    })
-  })
+  const data = ref<IToken[]>([])
 
   const tokenRecentFilter = computed(() => {
-    return props.listToken.filter((item) => props.tokenSelected.some((selected) => selected.id === item.id))
+    return data.value.filter((item) => props.tokenSelected.some((selected) => selected.id === item.id))
   })
 
   const titlePopup = computed(() => {
@@ -117,8 +106,8 @@
   })
 
   const handleSearchToken = useDebounce(() => {
-    loading.value = false
-  }, 600)
+    init()
+  }, 500)
 
   const emit = defineEmits<{
     change: [item: IToken, type: 'add' | 'remove']
@@ -153,6 +142,22 @@
   }
 
   const { handleImageError } = useErrorImage()
+
+  const init = async () => {
+    try {
+      loading.value = true
+      const params = new URLSearchParams()
+      props.networkSelected.forEach((network) => params.append('network', network.network))
+      params.append('token', useTrim(search.value))
+      data.value = (await $fetch(`/api/network/token-info-search?${params.toString()}`)) ?? []
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const handleOpen = () => {
+    init()
+  }
 </script>
 
 <style lang="scss" scoped>

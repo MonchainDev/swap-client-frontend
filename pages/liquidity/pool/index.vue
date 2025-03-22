@@ -74,12 +74,12 @@
           >
             <div class="flex items-center gap-2">
               <div class="flex">
-                <template v-if="tokenListSelected && tokenListSelected.length > 3">
+                <template v-if="tokenSelected && tokenSelected.length > 3">
                   <div class="flex">
                     <img
                       v-for="(_i, index) in 3"
                       :key="index"
-                      :src="tokenListSelected[index].icon_url || ''"
+                      :src="tokenSelected[index].icon_url || ''"
                       alt="logo"
                       class="border-sky-500 size-6 rounded-full border-[2px] border-solid border-white [&:not(:first-child)]:-ml-3"
                       @error="handleImageError($event)"
@@ -87,12 +87,12 @@
                     <div
                       class="-ml-3 flex size-6 items-center justify-center rounded-full border-[2px] border-solid border-white bg-[#CCE0FF] text-xs font-bold text-hyperlink"
                     >
-                      +{{ tokenListSelected.length - 3 }}
+                      +{{ tokenSelected.length - 3 }}
                     </div>
                   </div>
                 </template>
                 <template v-else>
-                  <template v-for="item in tokenListSelected" :key="item">
+                  <template v-for="item in tokenSelected" :key="item">
                     <img
                       :src="item.icon_url || ''"
                       alt="logo"
@@ -112,11 +112,15 @@
     </div>
   </div>
   <!-- <PopupSelectToken v-model:token-selected="tokenSelected" :show-network="false" is-select /> -->
-  <PopupSelectTokenMultiple :list-token="listToken ?? []" :token-selected="tokenSelected" @change="handleSelectToken" @remove-all="tokenSelected = []" />
+  <PopupSelectTokenMultiple
+    :network-selected="networkListSelected"
+    :token-selected="tokenSelected"
+    @change="handleSelectToken"
+    @remove-all="tokenSelected = []"
+  />
 </template>
 
 <script lang="ts" setup>
-  import { useQuery } from '@tanstack/vue-query'
   import TableListPool from '~/components/liquidity/TableListPool.vue'
   import { LIST_NETWORK } from '~/config/networks'
   import { WNATIVE } from '~/constant/token'
@@ -145,27 +149,8 @@
     }
   })
 
-  const { data: listToken } = useQuery({
-    queryKey: ['token-with-networks', networkSelected.value],
-    queryFn: async () => {
-      const listCall = networkSelected.value.map((network) => {
-        return $fetch<IToken[]>('/api/v2/tokens', {
-          params: {
-            network
-          }
-        })
-      })
-      const result = await Promise.all(listCall)
-      return result.flat() || []
-    },
-    enabled: networkSelected.value.length > 0
-  })
-
   const networkListSelected = computed(() => {
     return LIST_NETWORK.filter((item) => networkSelected.value.includes(item.network))
-  })
-  const tokenListSelected = computed(() => {
-    return listToken.value?.filter((item) => tokenSelected.value.some((selected) => selected.id === item.id))
   })
 
   const titleFilterNetwork = computed(() => {
@@ -175,14 +160,14 @@
   })
 
   const titleFilterToken = computed(() => {
-    return tokenListSelected.value?.length === 0 ? 'All tokens' : tokenListSelected.value?.map((item) => item.tokenSymbol).join(', ')
+    return tokenSelected.value?.length === 0 ? 'All tokens' : tokenSelected.value?.map((item) => item.tokenSymbol).join(', ')
   })
 
   // Compute the query string dynamically
   const queryString = computed(() => {
     const params = new URLSearchParams()
     networkListSelected.value.forEach((network) => params.append('networks', network.network))
-    tokenListSelected.value?.forEach((token) => {
+    tokenSelected.value?.forEach((token) => {
       const address =
         token.tokenAddress === '' || token.tokenAddress.toLowerCase() === zeroAddress ? WNATIVE[token.chainId as ChainId].address : token.tokenAddress
       params.append('tokens', address)
