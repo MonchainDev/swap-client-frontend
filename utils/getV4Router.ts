@@ -74,6 +74,7 @@ const _getBestTrade = async (
 const getV4Router = async (
   tokenIn: Token | Native,
   tokenOut: Token | Native,
+  quoteCurrency: Token | Native,
   amount: CurrencyAmount<Token | Native>,
   tradeType: TradeType,
   publicClient: PublicClient
@@ -86,7 +87,7 @@ const getV4Router = async (
     })
     console.log('🚀 ~ getV4Router ~ v3Pools:', v3Pools)
     const pools = [...v3Pools]
-    const trade = await V4Router.getBestTrade(amount, tokenOut, tradeType, {
+    const trade = await V4Router.getBestTrade(amount, quoteCurrency, tradeType, {
       gasPriceWei: () => publicClient.getGasPrice(),
       candidatePools: pools
     })
@@ -102,9 +103,6 @@ const getV4Router = async (
 
 export const getBestTradeV4 = async ({ token0, token1, inputAmount, type, chainId }: SwapInput): Promise<SwapOutput> => {
   try {
-    // const listPool: V3Pool[] = []
-    // const token0Info = await useGetTokenInfo(token0)
-    // const token1Info = await useGetTokenInfo(token1)
     const client = publicClient({ chainId })
     const token0Currency = token0
     console.log('🚀 ~ getBestTradeV2 ~ client:', client)
@@ -123,13 +121,10 @@ export const getBestTradeV4 = async ({ token0, token1, inputAmount, type, chainI
 
     let priceImpact: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0)
 
-    // const zeroToOne = token0Currency.sortsBefore(token1Currency)
-
     if (type === TradeType.EXACT_INPUT) {
       const currencyAmount = CurrencyAmount.fromRawAmount(token0Currency, inputAmount)
-      // const bestTrades = await Trade.bestTradeExactIn(listPool, currencyAmount, token1Currency)
-      // const bestTrades = await _getBestTrade(token0Currency, token1Currency, currencyAmount, TradeType.EXACT_INPUT, client)
-      const bestTrades = await getV4Router(token0Currency, token1Currency, currencyAmount, TradeType.EXACT_INPUT, client)
+
+      const bestTrades = await getV4Router(token0Currency, token1Currency, token1Currency, currencyAmount, TradeType.EXACT_INPUT, client)
       let remainAmountIn = currencyAmount
       let totalOutputA: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0n)
       let spotOutputAmount: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token1Currency, 0)
@@ -144,27 +139,21 @@ export const getBestTradeV4 = async ({ token0, token1, inputAmount, type, chainI
         const liquidity = pool.liquidity
 
         console.log('🚀 ~ getBestTrade ~ balances:', balances)
-        // const balanceToken0 = Math.floor(Number(balances[token0][bestTrade.swaps[0].route.pools[0].address]))
 
         // Tính số token output trước khi swap với giá hiện tại
         const currentPrice = new Decimal(pool.sqrtRatioX96.toString()).div(2 ** 96).pow(2)
         const minPrice = currentPrice.mul(1 - slippageValue / 100)
         const _maxInputLiquidity = Math.floor(Number(liquidity) * (1 / minPrice.sqrt().toNumber() - 1 / currentPrice.sqrt().toNumber()))
-        // const maxInputForPool = balanceToken0
 
         const fee = pool.fee
         console.info(pool.address, fee.toString())
 
-        // const balance1 = Math.floor(Number(balances[token1][bestTrade.swaps[0].route.pools[0].address]))
-        // const maxInput = CurrencyAmount.fromRawAmount(token0Currency, maxInputForPool)
-        // console.log('🚀 ~ getBestTrade ~ maxInput:', maxInput)
-
         const recalInputAmount = remainAmountIn
-        // if (remainAmountIn.greaterThan(maxInput)) {
-        //   recalInputAmount = maxInput
-        // }
-        const bestTradeInAmount = await Trade.bestTradeExactIn(bestTrade.routes[0].pools as V3Pool[], recalInputAmount, token1Currency)
 
+        const bestTradeInAmount = await Trade.bestTradeExactIn(bestTrade.routes[0].pools as V3Pool[], recalInputAmount, token1Currency)
+        if (!bestTradeInAmount.length) {
+          throw new Error('bestTradeExactIn not found')
+        }
         // if (bestTradeInAmount[0].outputAmount.greaterThan(balance1)) {
         //   continue
         // }
@@ -183,6 +172,7 @@ export const getBestTradeV4 = async ({ token0, token1, inputAmount, type, chainI
         spotOutputAmount = spotOutputAmount.add(midPrice.quote(recalInputAmount))
 
         routeOuts.push({
+          //@ts-ignore
           type: PoolType.V3,
           pools: bestTradeInAmount[0].swaps[0].route.pools,
           path: bestTradeInAmount[0].swaps[0].route.tokenPath,
@@ -222,7 +212,7 @@ export const getBestTradeV4 = async ({ token0, token1, inputAmount, type, chainI
       const currencyAmount = CurrencyAmount.fromRawAmount(token1Currency, inputAmount)
       //   const bestTrades = await Trade.bestTradeExactOut(listPool, token0Currency, currencyAmount)
       // const bestTrades = await _getBestTrade(token1Currency, token0Currency, currencyAmount, TradeType.EXACT_OUTPUT, client)
-      const bestTrades = await getV4Router(token1Currency, token0Currency, currencyAmount, TradeType.EXACT_OUTPUT, client)
+      const bestTrades = await getV4Router(token0Currency, token1Currency, token0Currency, currencyAmount, TradeType.EXACT_OUTPUT, client)
       if (!bestTrades) {
         throw new Error('No trade found')
       }
@@ -257,6 +247,10 @@ export const getBestTradeV4 = async ({ token0, token1, inputAmount, type, chainI
 
         const bestTradeInAmount = await Trade.bestTradeExactOut(bestTrade.routes[0].pools as V3Pool[], token0Currency, recalOutputAmount)
 
+        if (!bestTradeInAmount.length) {
+          throw new Error('bestTradeExactOut not found')
+        }
+
         totalInputA = totalInputA.add(bestTradeInAmount[0].inputAmount)
         newTradeList.push(...(bestTradeInAmount as Trade<Currency, Token, TradeType>[]))
         remainOutputAmount = remainOutputAmount.subtract(recalOutputAmount)
@@ -270,6 +264,7 @@ export const getBestTradeV4 = async ({ token0, token1, inputAmount, type, chainI
         spotInputAmount = spotInputAmount.add(midPrice.invert().quote(recalOutputAmount))
 
         routeOuts.push({
+          //@ts-ignore
           type: PoolType.V3,
           pools: bestTradeInAmount[0].swaps[0].route.pools,
           path: bestTradeInAmount[0].swaps[0].route.tokenPath,
