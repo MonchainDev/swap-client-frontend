@@ -23,7 +23,7 @@
         v-model:amount="form.amount"
         :is-selected="isTokenSelected"
         :token="form.token"
-        :balance="balance0.toString()"
+        :balance="balance0?.formatted.toString()"
         :step-bridge
         class="h-[138px] w-full border border-[#EEEEEE] bg-white sm:h-[100px]"
         @select-token="handleOpenPopupSelectToken"
@@ -150,7 +150,7 @@
       </button>
     </template>
 
-    <PopupSellToken :list-token="listToken" @select="handleSelectToken" />
+    <PopupSellToken :list-token="listTokenFrom ?? []" @select="handleSelectToken" />
   </div>
 </template>
 
@@ -216,7 +216,7 @@
 
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { fromNetwork, stableDestinationChainIdToken, toNetwork, form, isConfirmSwap, isConfirmApprove, isSwapping, listToken, token0, token1, balance0 } =
+  const { fromNetwork, stableDestinationChainIdToken, toNetwork, form, isConfirmSwap, isConfirmApprove, isSwapping, token0, token1, balance0, listTokenFrom } =
     storeToRefs(useBridgeStore())
   const isEditSlippage = ref(false)
 
@@ -282,7 +282,7 @@
   })
 
   const handleSwapOrder = () => {
-    if (stepBridge.value === 'CONFIRM_BRIDGE') return
+    if (stepBridge.value === 'CONFIRM_BRIDGE' || !fromNetwork.value || !toNetwork.value) return
     ;[fromNetwork.value, toNetwork.value] = [toNetwork.value, fromNetwork.value]
     // handleSelectToNetwork()
   }
@@ -315,7 +315,7 @@
       }
 
       const amountInWei = parseUnits(amount, form.value.token.tokenDecimals)
-      if (new Decimal(balance0.value!).lt(new Decimal(amountInWei.toString()))) {
+      if (balance0.value?.formatted && new Decimal(balance0.value.formatted).lt(new Decimal(amountInWei.toString()))) {
         console.log('balance0', balance0.value)
         // notEnoughLiquidity.value = true
       }
@@ -335,9 +335,7 @@
 
       const token1BestTradeInput = new Token(
         token1.value?.chainId as ChainId,
-        (token1.value?.wrapped.address === '0x0000000000000000000000000000000000000000'
-          ? toNetwork.value?.wrapTokenAddress
-          : token1.value?.wrapped.address) as `0x${string}`,
+        (token1.value?.tokenAddress === zeroAddress ? toNetwork.value?.wrapTokenAddress : token1.value?.tokenAddress) as `0x${string}`,
         +token1.value!.decimals,
         token1.value!.symbol!,
         token1.value?.name
@@ -481,6 +479,7 @@
       // tạm thời lấy fee = 1%
       const outputAmountSubFee = Number(form.value.amount) * (1 - feeBridge / 100)
       const outputAmountInWei = outputAmountSubFee * 10 ** Number(form.value.token.tokenDecimals)
+
       const token0BestTradeInput = new Token(
         stableDestinationChainIdToken.value?.chainId as ChainId,
         stableDestinationChainIdToken.value?.tokenAddress as `0x${string}`,
@@ -492,16 +491,14 @@
 
       const token1BestTradeInput = new Token(
         token1.value?.chainId as ChainId,
-        (token1.value?.wrapped.address === '0x0000000000000000000000000000000000000000'
-          ? toNetwork.value?.wrapTokenAddress
-          : token1.value?.wrapped.address) as `0x${string}`,
+        (token1.value?.tokenAddress === zeroAddress ? toNetwork.value?.wrapTokenAddress : token1.value?.tokenAddress) as `0x${string}`,
         +token1.value!.decimals,
         token1.value!.symbol,
         token1.value?.name
       )
       console.log('token1BestTradeInput', token1BestTradeInput)
 
-      const _bestTrade = (await getBestTradeV2({
+      const _bestTrade = (await getBestTradeBridge({
         token0: token0BestTradeInput,
         token1: token1BestTradeInput,
         inputAmount: outputAmountInWei,
@@ -557,6 +554,7 @@
         amountIn: +amount * 10 ** Number(form.value.token.tokenDecimals),
         routes: routes
       }
+      console.log('🚀 ~ handleBridge ~ body:', body)
 
       // const response = {
       //   data: {
@@ -594,7 +592,7 @@
       const relayData = {
         requestId: res.data.requestId as string,
         nonEVMReceiver: zeroHash, // Định rõ kiểu Hex
-        receivingAssetId: pad(token1.value!.address, { size: 32 }), // Kiểu Address
+        receivingAssetId: pad(token1.value?.tokenAddress as `0x${string}`, { size: 32 }), // Kiểu Address
         signature: res.data.signature as Hex // Định rõ kiểu Hex
       }
 
