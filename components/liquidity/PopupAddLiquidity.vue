@@ -442,7 +442,7 @@
           refetchBalance0()
           refetchBalance1()
           setOpenPopup('popup-add-liquidity', false)
-          showToastMsg('Transaction successful', 'success', txHash)
+          showToastMsg('Transaction successful', 'success', getUrlScan(chainId.value, 'tx', txHash))
           emit('reload')
           let body: IBodyTxCollect = {} as IBodyTxCollect
 
@@ -494,7 +494,7 @@
           }
           await postTransaction(body)
         } else {
-          showToastMsg('Transaction failed', 'error', txHash)
+          showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash))
         }
       }
     } catch (error: unknown) {

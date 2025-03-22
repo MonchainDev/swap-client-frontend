@@ -249,7 +249,7 @@
           }
           postTransaction(body)
         } else {
-          showToastMsg('Transaction failed', 'error', txHash)
+          showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash))
         }
       }
     } catch (error: unknown) {

@@ -245,7 +245,7 @@
         const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
         console.log('🚀 ~ handleInput ~ inputAmount', inputAmount)
         // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
-        const _bestTrade = await getBestTradeV2({
+        const _bestTrade = await getBestTradeV4({
           token0: token0.value!,
           token1: token1.value!,
           inputAmount: inputAmount,
@@ -269,7 +269,7 @@
         /**
          * TODO: chain id is chain of wallet, not chain of state pinia
          */
-        const _bestTrade = await getBestTradeV2({
+        const _bestTrade = await getBestTradeV4({
           token0: token0.value!,
           token1: token1.value!,
           inputAmount: inputAmount,
@@ -336,45 +336,98 @@
 
   const token0IsToken = computed(() => form.value.token0.address !== '')
 
+  function encodePath(tokens: string[], fees: number[]): `0x${string}` {
+    if (tokens.length !== fees.length + 1) {
+      throw new Error('Invalid path: tokens and fees mismatch')
+    }
+
+    let path = '0x'
+    for (let i = 0; i < fees.length; i++) {
+      path += tokens[i].slice(2)
+      path += fees[i].toString(16).padStart(6, '0')
+    }
+    path += tokens[tokens.length - 1].slice(2)
+    return path as `0x${string}`
+  }
+
   const useExactInputMulticall = async (swapOut: SmartRouterTrade<TradeType>) => {
     const trade = swapOut
     const datas: Hex[] = []
 
     for (const route of trade.routes) {
-      const tokenIn = route.path[0].wrapped.address
-      const tokenOut = route.path[1].wrapped.address
-      const liquidity = (route.pools[0] as V3Pool).liquidity.toString()
-      const sqrtRatioX96 = (route.pools[0] as V3Pool).sqrtRatioX96
-      const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
+      console.log('🚀 ~ useExactInputMulticall ~ route:', route)
 
-      const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
-      let nextPrice: Decimal = new Decimal(0)
-      if (zeroToOne) {
-        // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
-        nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
-      } else {
-        // √(Pnew) = (Δy / L) + √(Pcurrent)
-        nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
+      if (route.path.length < 2 || route.pools.length !== route.path.length - 1) {
+        throw new Error('Invalid route: path and pools mismatch')
       }
-      const sqrtPriceLimitX96 = nextPrice
-        .sqrt()
-        .mul(2 ** 96)
-        .toNumber()
 
-      const fee = (route.pools[0] as V3Pool).fee
       const recipient = address.value
       const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
-      const amount = bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? route.inputAmount.numerator : route.outputAmount.numerator
+
+      const amount = bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? route.inputAmount.numerator.toString() : route.outputAmount.numerator.toString()
       const amountLimit =
         bestTrade.value?.tradeType === TradeType.EXACT_INPUT
           ? Math.floor((Number(route.outputAmount.numerator) * (100 - Number(slippage.value))) / 100)
           : Math.floor((Number(route.inputAmount.numerator) * (100 + Number(slippage.value))) / 100)
-      const params = [tokenIn, tokenOut, fee, recipient, deadline, amount, amountLimit, sqrtPriceLimitX96]
-      const encodedData = encodeFunctionData({
-        abi: swapRouterABI,
-        functionName: bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? 'exactInputSingle' : 'exactOutputSingle',
-        args: [params]
-      })
+      // Tính sqrtPriceLimitX96 dựa trên pool đầu tiên
+      const firstPool = route.pools[0] as V3Pool
+      const liquidity = firstPool.liquidity.toString()
+      const sqrtRatioX96 = firstPool.sqrtRatioX96
+      const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
+      const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
+      let nextPrice: Decimal = new Decimal(0)
+
+      if (zeroToOne) {
+        nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
+      } else {
+        nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
+      }
+      const sqrtPriceLimitX96 = BigInt(
+        nextPrice
+          .sqrt()
+          .mul(2 ** 96)
+          .toFixed(0)
+      )
+      let encodedData: `0x${string}`
+      if (route.path.length === 2 && route.pools.length === 1) {
+        const tokenIn = route.path[0].wrapped.address
+        const tokenOut = route.path[1].wrapped.address
+        const fee = (route.pools[0] as V3Pool).fee
+
+        const params = [tokenIn, tokenOut, fee, recipient, deadline, BigInt(amount), BigInt(amountLimit), sqrtPriceLimitX96]
+
+        encodedData = encodeFunctionData({
+          abi: swapRouterABI,
+          functionName: bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? 'exactInputSingle' : 'exactOutputSingle',
+          args: [params]
+        })
+      } else {
+        const path = encodePath(
+          route.path.map((token) => token.wrapped.address),
+          route.pools.map((pool) => (pool as V3Pool).fee)
+        )
+
+        const params = {
+          path,
+          recipient,
+          deadline,
+          ...(bestTrade.value?.tradeType === TradeType.EXACT_INPUT
+            ? {
+                amountIn: BigInt(amount),
+                amountOutMinimum: BigInt(amountLimit)
+              }
+            : {
+                amountOut: BigInt(amount),
+                amountInMaximum: BigInt(amountLimit)
+              })
+        }
+
+        encodedData = encodeFunctionData({
+          abi: swapRouterABI,
+          functionName: bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? 'exactInput' : 'exactOutput',
+          args: [params]
+        })
+      }
 
       datas.push(encodedData)
     }
@@ -384,6 +437,7 @@
       functionName: 'multicall',
       args: [datas]
     })
+    console.log('🚀 ~ useExactInputMulticall ~ calldata:', calldata)
 
     const contractSwapRouterV3 = getSwapRouterV3Address(chainId.value)
     if (!contractSwapRouterV3) throw new Error('Invalid contract address')
@@ -402,7 +456,7 @@
 
     if (status === 'success') {
       const { showToastMsg } = useShowToastMsg()
-      showToastMsg('Swap successful', 'success', txHash)
+      showToastMsg('Swap successful', 'success', getUrlScan(chainId.value, 'tx', txHash))
       await postTx(txHash, contractSwapRouterV3)
       console.info('Transaction successful', 'success', txHash)
     } else {
@@ -424,7 +478,7 @@
         if (isNeedAllowance0.value) {
           isConfirmApprove.value = true
           const contractSwapRouterV3 = getSwapRouterV3Address(chainId.value)!
-          await approveToken(form.value.token0.address as string, contractSwapRouterV3, MAX_NUMBER_APPROVE, (status) => {
+          await approveToken(token0.value?.wrapped.address as string, contractSwapRouterV3, MAX_NUMBER_APPROVE, (status) => {
             if (status === 'SUCCESS') {
               swap()
             }

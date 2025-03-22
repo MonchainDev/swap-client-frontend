@@ -8,7 +8,7 @@
       <ElTableColumn label="Tran.">
         <template #default="{ row }">
           <a
-            :href="`https://explorer.monchain.info/tx/${row.id}`"
+            :href="getUrlScan(chainIdByNetwork, 'tx', row.id)"
             target="_blank"
             class="cursor-pointer text-sm font-semibold hover:text-hyperlink hover:underline"
             >{{ row.type }} {{ row.token0.symbol }} for {{ row.token1.symbol }}</a
@@ -43,6 +43,8 @@
 <script lang="ts" setup>
   import { useQuery } from '@tanstack/vue-query'
   import { gql } from 'graphql-request'
+  import { LIST_NETWORK } from '~/config/networks'
+  import type { ChainId } from '~/types'
   import type { ITab } from '~/types/component.type'
   import type { IPool } from '~/types/pool.type'
 
@@ -75,8 +77,6 @@
     REMOVE = 'REMOVE'
   }
 
-  // const route = useRoute('liquidity-pool-network-address')
-
   const listTab: ITab[] = [
     {
       title: 'All',
@@ -100,13 +100,21 @@
     pool: IPool
   }
 
-  const _props = withDefaults(defineProps<IProps>(), {
+  const props = withDefaults(defineProps<IProps>(), {
     pool: () => ({}) as IPool
   })
 
   const tabActive = ref<TabValue>(TabValue.ALL)
 
-  const { address: poolAddress } = useRoute('info-network-address').params
+  const { address: poolAddress, network: networkPoolInfo } = useRoute('info-network-address').params
+
+  const { network: networkPoolDetail } = useRoute('liquidity-pool-network-address').params
+
+  const chainIdByNetwork = computed(() => {
+    const networkUrl = networkPoolInfo || networkPoolDetail
+    const chainId = LIST_NETWORK.find((item) => item.network.toUpperCase() === networkUrl.toUpperCase())?.chainId
+    return chainId as ChainId
+  })
 
   // /**
   //  * TODO: Get token symbol, amount base / quote
@@ -117,13 +125,10 @@
   // //   const baseToken = listToken.value.find((token) => token.address?.toLocaleLowerCase() === row.fromToken.toLocaleLowerCase())
 
   // // }
-  const { chainId } = useActiveChainId()
 
   async function getPoolData(poolAddress: string) {
     try {
-      console.log('🚀 ~ getPoolData ~ poolAddress:', chainId.value)
-
-      const client = getGraphQLClient(chainId.value!)
+      const client = getGraphQLClient(props.pool.chainId)
       // Định nghĩa query với variable
       const query = gql`
         query MyQuery($poolAddress: String!) {
@@ -200,7 +205,8 @@
   const { data, isLoading } = useQuery({
     queryKey: computed(() => ['txs-pool', poolAddress]),
     queryFn: () => getPoolData(poolAddress),
-    enabled: computed(() => !!poolAddress)
+    enabled: computed(() => !!poolAddress),
+    retry: 2
   })
 
   const mintsData = computed(() => {

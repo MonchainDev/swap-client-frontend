@@ -305,7 +305,7 @@
 
       if (status === 'success') {
         percent.value = ''
-        showToastMsg('Transaction receipt', 'success', txHash)
+        showToastMsg('Transaction receipt', 'success', getUrlScan(chainId.value, 'tx', txHash))
         setOpenPopup('popup-confirm-remove', false)
         const body: IBodyTxCollect = {
           transactionHash: txHash,
@@ -321,7 +321,7 @@
         await postTransaction(body)
         router.push({ name: 'liquidity-network-tokenId', params: { tokenId: route.params.tokenId, network: route.params.network } })
       } else {
-        showToastMsg('Transaction failed', 'error', txHash)
+        showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash))
       }
     } catch (error) {
       console.error(error)
