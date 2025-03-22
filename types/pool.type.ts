@@ -24,6 +24,7 @@ export interface IPool {
   rewardApr: number
   liquidity: number
   currentPrice: number
+  chainId: number
 }
 
 export interface IPoolOrigin {

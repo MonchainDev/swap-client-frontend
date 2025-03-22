@@ -100,7 +100,7 @@
     pool: IPool
   }
 
-  const _props = withDefaults(defineProps<IProps>(), {
+  const props = withDefaults(defineProps<IProps>(), {
     pool: () => ({}) as IPool
   })
 
@@ -117,13 +117,10 @@
   // //   const baseToken = listToken.value.find((token) => token.address?.toLocaleLowerCase() === row.fromToken.toLocaleLowerCase())
 
   // // }
-  const { chainId } = useActiveChainId()
 
   async function getPoolData(poolAddress: string) {
     try {
-      console.log('🚀 ~ getPoolData ~ poolAddress:', chainId.value)
-
-      const client = getGraphQLClient(chainId.value!)
+      const client = getGraphQLClient(props.pool.chainId)
       // Định nghĩa query với variable
       const query = gql`
         query MyQuery($poolAddress: String!) {
@@ -200,7 +197,8 @@
   const { data, isLoading } = useQuery({
     queryKey: computed(() => ['txs-pool', poolAddress]),
     queryFn: () => getPoolData(poolAddress),
-    enabled: computed(() => !!poolAddress)
+    enabled: computed(() => !!poolAddress),
+    retry: 2
   })
 
   const mintsData = computed(() => {

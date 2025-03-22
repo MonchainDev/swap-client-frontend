@@ -129,7 +129,6 @@
   })
 
   // const route = useRoute('liquidity-pool-network-address')
-  const { chainId } = useActiveChainId()
 
   const listTab: ITab[] = [
     {
@@ -194,7 +193,8 @@
   const { data, isLoading } = useQuery({
     queryKey: computed(() => ['poolData', props.pool.poolAddress]),
     queryFn: () => getPoolData(props.pool.poolAddress),
-    enabled: computed(() => !!props.pool.poolAddress)
+    enabled: computed(() => !!props.pool.poolAddress),
+    retry: 2
   })
 
   const chartData = computed((): IDataChart[] => {
@@ -226,7 +226,7 @@
   // Hàm thực thi query với pool address
   async function getPoolData(poolAddress: string) {
     try {
-      const client = getGraphQLClient(chainId.value!)
+      const client = getGraphQLClient(props.pool.chainId)
       // Định nghĩa query với variable
       const query = gql`
         query MyQuery($poolAddress: String!) {
