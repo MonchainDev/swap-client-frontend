@@ -114,7 +114,14 @@
       first || useTrim(search.value) === ''
         ? await $fetch<IToken[]>('/api/network/token', { params: query })
         : await $fetch<IToken[]>('/api/network/token-info', { params: query })
-    data.value = rs.map((item) => ({ ...item, icon_url: item.icon_url ?? '', address: item.tokenAddress, name: item.tokenSymbol, symbol: item.tokenSymbol }))
+    data.value = rs.map((item) => ({
+      ...item,
+      icon_url: item.icon_url ?? '',
+      address: item.tokenAddress,
+      name: item.tokenSymbol,
+      symbol: item.tokenSymbol,
+      decimals: item.tokenDecimals
+    }))
     loading.value = false
   }
 
