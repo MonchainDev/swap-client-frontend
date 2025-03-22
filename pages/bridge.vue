@@ -20,10 +20,6 @@
       watch: true // Auto-update on wallet changes
     }))
   )
-
-  // const { data } = useFetch<NetworkConfig[]>(`/api/network/all`)
-  // const { listNetwork } = storeToRefs(useBridgeStore())
-  // listNetwork.value = data.value || []
 </script>
 
 <style scoped lang="scss">
