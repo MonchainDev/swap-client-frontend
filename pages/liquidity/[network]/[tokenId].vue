@@ -76,7 +76,7 @@
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-                <span class="text-[22px] font-semibold leading-7">{{ unwrappedToken(positionValueUpper?.currency)?.symbol }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ positionValueUpper?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">{{ formattedValueUpper }}</span>
@@ -302,8 +302,8 @@
   const token0 = ref<Token>()
   const token1 = ref<Token>()
 
-  const unwrapToken0 = computed(() => unwrappedToken(token0.value))
-  const unwrapToken1 = computed(() => unwrappedToken(token1.value))
+  // const unwrapToken0 = computed(() => unwrappedToken(token0.value))
+  // const unwrapToken1 = computed(() => unwrappedToken(token1.value))
 
   watchEffect(async () => {
     if (_position.value) {
@@ -318,43 +318,43 @@
 
   // if pool has aNATIVE, set token0 or 1 to NATIVE
   watchEffect(() => {
-    if (unwrapToken0.value && unwrapToken1.value) {
+    if (token0.value && token1.value) {
       form.value.token0 = {
         ...form.value.token0,
-        ...unwrapToken0.value,
+        ...token0.value,
         icon_url: '',
-        name: unwrapToken0.value?.name || '',
-        decimals: unwrapToken0.value?.decimals ?? 18,
-        symbol: unwrapToken0.value?.symbol ?? '',
-        address: unwrapToken0.value.isNative ? '' : (token0.value?.address as string),
-        tokenSymbol: unwrapToken0.value?.symbol ?? '',
-        tokenAddress: unwrapToken0.value.isNative ? '' : (token0.value?.address as string),
-        tokenDecimals: unwrapToken0.value?.decimals ?? 18,
-        chainId: unwrapToken0.value.chainId
+        name: token0.value?.name || '',
+        decimals: token0.value?.decimals ?? 18,
+        symbol: token0.value?.symbol ?? '',
+        address: token0.value.isNative ? zeroAddress : (token0.value?.address as string),
+        tokenSymbol: token0.value?.symbol ?? '',
+        tokenAddress: token0.value.isNative ? zeroAddress : (token0.value?.address as string),
+        tokenDecimals: token0.value?.decimals ?? 18,
+        chainId: token0.value.chainId
       }
       form.value.token1 = {
         ...form.value.token1,
-        ...unwrapToken1.value,
+        ...token1.value,
         icon_url: '',
-        name: unwrapToken1.value?.name || '',
-        decimals: unwrapToken1.value?.decimals ?? 18,
-        symbol: unwrapToken1.value?.symbol ?? '',
-        address: unwrapToken1.value.isNative ? '' : (token1.value?.address as string),
-        tokenSymbol: unwrapToken1.value?.symbol ?? '',
-        tokenAddress: unwrapToken1.value.isNative ? '' : (token1.value?.address as string),
-        tokenDecimals: unwrapToken1.value?.decimals ?? 18,
-        chainId: unwrapToken1.value.chainId
+        name: token1.value?.name || '',
+        decimals: token1.value?.decimals ?? 18,
+        symbol: token1.value?.symbol ?? '',
+        address: token1.value.isNative ? '' : (token1.value?.address as string),
+        tokenSymbol: token1.value?.symbol ?? '',
+        tokenAddress: token1.value.isNative ? '' : (token1.value?.address as string),
+        tokenDecimals: token1.value?.decimals ?? 18,
+        chainId: token1.value.chainId
       }
     }
   })
 
-  const currency0 = computed(() => (token0.value ? unwrappedToken(token0.value) : undefined))
-  const currency1 = computed(() => (token1.value ? unwrappedToken(token1.value) : undefined))
+  const currency0 = computed(() => (token0.value ? token0.value : undefined))
+  const currency1 = computed(() => (token1.value ? token1.value : undefined))
 
   const { pool } = usePools()
 
   const receiveWNATIVE = ref(false)
-  const { feeValue0, feeValue1, owner } = useV3PositionFees(pool as Ref<Pool>, tokenId, receiveWNATIVE.value)
+  const { feeValue0, feeValue1, owner } = useV3PositionFees(pool as Ref<Pool>, receiveWNATIVE.value)
 
   const feeValueUpper = computed(() => (inverted.value ? feeValue0.value : feeValue1.value))
   const feeValueLower = computed(() => (inverted.value ? feeValue1.value : feeValue0.value))

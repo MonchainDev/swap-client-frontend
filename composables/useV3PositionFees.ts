@@ -8,8 +8,13 @@ import type { ChainId } from '~/types'
 
 const MAX_UINT128 = 2n ** 128n - 1n
 
-export default function useV3PositionFees(pool: Ref<Pool, undefined>, tokenId: Ref<bigint | undefined>, asWNATIVE = false) {
+export default function useV3PositionFees(pool: Ref<Pool, undefined>, asWNATIVE = false) {
   const { chainId } = useActiveChainId()
+
+  const { tokenId: tokenIdRemove } = useRoute('remove-network-tokenId').params
+  const { tokenId: tokenIdPosition } = useRoute('liquidity-network-tokenId').params
+
+  const tokenId = computed(() => tokenIdRemove || tokenIdPosition)
 
   const { contract: positionManager } = useContract(addresses.nftPositionManager[chainId.value as ChainId], nonfungiblePositionManagerABI as Abi)
 
