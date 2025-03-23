@@ -42,7 +42,7 @@
     return formatDate(props.chartData[maxIndex.value].date)
   })
   const maxValue = computed(() => {
-    return formatNumberAbbreviation(data.value[maxIndex.value])
+    return formatNumberAbbreviation(parseFloat(Number(data.value[maxIndex.value] ?? 0).toFixed(2)))
   })
 
   // Find the index of the maximum value for annotation
@@ -76,8 +76,8 @@
           mouseMove: (event, chartContext, config) => {
             const { dataPointIndex } = config
             if (dataPointIndex >= 0) {
-              // hoveredData.value.date = formatDate(props.chartData[dataPointIndex].date)
-              // hoveredData.value.volume = formatNumberAbbreviation(data.value[dataPointIndex])
+              hoveredData.value.date = formatDate(props.chartData[dataPointIndex].date)
+              hoveredData.value.volume = formatNumberAbbreviation(parseFloat(Number(data.value[dataPointIndex] ?? 0).toFixed(2)))
             }
           },
           mouseLeave: () => {

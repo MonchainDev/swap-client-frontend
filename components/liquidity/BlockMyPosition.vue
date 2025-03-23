@@ -45,9 +45,9 @@
           <span class="font-semibold">{{ formattedData.length }} positions</span>
           <BaseTab v-model:model="tabActive" :list="listTab" />
         </div>
-        <div v-loading="status === 'pending'" class="mt-6 h-[235px]" :class="{ 'rounded-lg bg-gray-1': formattedData.length === 0 }">
-          <ElScrollbar>
-            <template v-if="formattedData.length">
+        <div v-loading="status === 'pending'" class="mt-6 h-[235px]">
+          <template v-if="formattedData.length">
+            <ElScrollbar>
               <MyPositionItem
                 v-for="item in formattedData"
                 :key="item.tokenId"
@@ -62,11 +62,13 @@
                   }
                 "
               />
-            </template>
-            <template v-else>
+            </ElScrollbar>
+          </template>
+          <template v-else>
+            <div class="flex h-full items-center justify-center rounded-lg bg-gray-1">
               <BaseIcon name="trash" size="80" />
-            </template>
-          </ElScrollbar>
+            </div>
+          </template>
         </div>
       </div>
     </div>
