@@ -32,8 +32,8 @@
           <div class="flex flex-col gap-[6px]">
             <span class="text-sm">Network</span>
             <div class="flex items-center gap-[10px] text-xl font-semibold">
-              <img src="/logo-mon-chain.png" alt="logo" class="size-5 rounded-full" />
-              <span>Mon chain</span>
+              <img :src="networkOfPool?.logo" alt="logo" class="size-5" />
+              <span>{{ networkOfPool?.name }}</span>
             </div>
           </div>
         </div>
@@ -204,6 +204,7 @@
   import { gql } from 'graphql-request'
   import ChartLine from '~/components/chart/ChartLine.vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
+  import { LIST_NETWORK } from '~/config/networks'
   import { Bound, ChainId } from '~/types'
   import type { IPosition } from '~/types/position.type'
 
@@ -267,11 +268,18 @@
   })
 
   const route = useRoute('liquidity-network-tokenId')
+
   const { setOpenPopup } = useBaseStore()
 
   const tokenId = computed(() => {
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
   })
+
+  const networkOfPool = computed(() => {
+    const networkUrl = route.params.network
+    return LIST_NETWORK.find((item) => item.network.toUpperCase() === networkUrl.toUpperCase())
+  })
+
   const { isConnected, address: account } = useAccount()
   const { chainId } = useActiveChainId()
   const { feeAmount, form, existingPosition, exchangeRateBaseCurrency, exchangeRateQuoteCurrency, baseCurrency, quoteCurrency } =
@@ -308,7 +316,9 @@
   watchEffect(async () => {
     if (_position.value) {
       token0.value = await getTokenByChainId(token0Address.value as string, chainId.value || ChainId.MON_TESTNET)
+      console.log('🚀 ~ watchEffect ~ token0:', token0.value)
       token1.value = await getTokenByChainId(token1Address.value as string, chainId.value || ChainId.MON_TESTNET)
+      console.log('🚀 ~ watchEffect ~ token1:', token1.value)
 
       feeAmount.value = fee.value ?? 0
     }
