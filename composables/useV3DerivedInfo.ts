@@ -87,6 +87,10 @@ export default function useV3DerivedInfo() {
   watch(
     () => pool.value?.fee,
     (fee, oldFee) => {
+      /**
+       * Nếu dùng watchEffect thì sẽ bị bug sau khi mở popup confirm create or add liquidity thì sẽ bị reset lại min và max price
+       * Có thể do pool được tính lại sau khi mở popup
+       */
       if (fee !== oldFee) {
         const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
         if (currentPrice) {
