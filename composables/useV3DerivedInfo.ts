@@ -74,14 +74,31 @@ export default function useV3DerivedInfo() {
   })
 
   // set min and max price default if pool exits
-  watchEffect(() => {
-    if (pool.value?.fee) {
-      const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
-      if (currentPrice) {
-        dispatchRangeTypedValue('BOTH', currentPrice, ZOOM_LEVELS[pool.value.fee])
+  // watchEffect(() => {
+  //   if (pool.value?.fee) {
+  //     const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
+  //     console.log('🚀 ~ watchEffect ~ currentPrice:', currentPrice)
+  //     if (currentPrice) {
+  //       dispatchRangeTypedValue('BOTH', currentPrice, ZOOM_LEVELS[pool.value.fee])
+  //     }
+  //   }
+  // })
+
+  watch(
+    () => pool.value?.fee,
+    (fee, oldFee) => {
+      /**
+       * Nếu dùng watchEffect thì sẽ bị bug sau khi mở popup confirm create or add liquidity thì sẽ bị reset lại min và max price
+       * Có thể do pool được tính lại sau khi mở popup
+       */
+      if (fee !== oldFee) {
+        const currentPrice = price.value ? parseFloat((invertPrice.value ? price.value.invert() : price.value).toSignificant(8)) : undefined
+        if (currentPrice) {
+          dispatchRangeTypedValue('BOTH', currentPrice, ZOOM_LEVELS[fee as FeeAmount])
+        }
       }
     }
-  })
+  )
 
   // check for invalid price input (converts to invalid ratio)
   const invalidPrice = computed(() => {

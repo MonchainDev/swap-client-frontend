@@ -42,20 +42,48 @@
       </div>
       <div class="rounded-lg bg-white p-6 shadow-sm">
         <div class="flex justify-between">
-          <span class="font-semibold">0 positions</span>
+          <span class="font-semibold">{{ formattedData.length }} positions</span>
           <BaseTab v-model:model="tabActive" :list="listTab" />
         </div>
-        <div class="mt-6 flex h-[235px] items-center justify-center rounded-lg bg-gray-1">
-          <BaseIcon name="trash" size="80" />
+        <div v-loading="status === 'pending'" class="mt-6 h-[235px]">
+          <template v-if="formattedData.length">
+            <ElScrollbar>
+              <MyPositionItem
+                v-for="item in formattedData"
+                :key="item.tokenId"
+                :list-exchange-rate="listExchangeRate"
+                :position="item"
+                @reload="refetch"
+                @unstake="
+                  (pos, price) => {
+                    positionCurrent = pos
+                    positionCurrent.priceUdtTotal = price
+                    setOpenPopup('popup-unstake')
+                  }
+                "
+              />
+            </ElScrollbar>
+          </template>
+          <template v-else>
+            <div class="flex h-full items-center justify-center rounded-lg bg-gray-1">
+              <BaseIcon name="trash" size="80" />
+            </div>
+          </template>
         </div>
       </div>
     </div>
   </div>
+  <PopupUnStake :position="positionCurrent" @reload="refetch" />
 </template>
 
 <script lang="ts" setup>
+  import { useQuery } from '@tanstack/vue-query'
+  import { useAccount } from '@wagmi/vue'
+  import type { IExchangeRate } from '~/types'
   import type { ITab } from '~/types/component.type'
   import type { IPool } from '~/types/pool.type'
+  import type { IPosition, IPositionOrigin } from '~/types/position.type'
+  import PopupUnStake from './PopupUnStake.vue'
 
   const enum TabValue {
     ALL = 'ALL',
@@ -72,6 +100,9 @@
     pool: () => ({}) as IPool
   })
 
+  const { address } = useAccount()
+  const { setOpenPopup } = useBaseStore()
+
   const listTab: ITab[] = [
     { title: 'All', value: TabValue.ALL },
     { title: 'Active', value: TabValue.ACTIVE },
@@ -80,6 +111,87 @@
   ]
 
   const tabActive = ref<TabValue>(TabValue.ALL)
+  const positionCurrent = ref<IPosition | undefined>(undefined)
+
+  // const { data, status, refresh } = await useLazyFetch<IResponse<IPositionOrigin[]>>(
+  //   () => `/api/position/list?poolAddress=${props.pool.poolAddress.toLowerCase()}&createdBy=${address.value?.toLowerCase()}`,
+  //   {
+  //     key: [props.pool.poolAddress, address.value],
+  //     immediate: true,
+  //     onResponse: ({ response }) => {
+  //       if (response._data?.content.length) {
+  //         const list: string[] = response._data?.content.map((item: IPositionOrigin) => item.basesymbol && item.quotesymbol)
+  //         const listUnique = Array.from(new Set(list))
+  //         fetchExchangeRate(listUnique)
+  //       }
+  //     }
+  //   }
+  // )
+
+  const { data, refetch, status } = useQuery({
+    queryKey: [props.pool.poolAddress, address.value],
+    queryFn: async () => {
+      const result = await $fetch<IPositionOrigin[]>(
+        `/api/position/list?poolAddress=${props.pool.poolAddress.toLowerCase()}&createdBy=${address.value?.toLowerCase()}`
+      )
+      if (result.length) {
+        const baseSymbol = result.map((item: IPositionOrigin) => item.basesymbol)
+        const quoteSymbol = result.map((item: IPositionOrigin) => item.quotesymbol)
+        const listUnique = Array.from(new Set([...baseSymbol, ...quoteSymbol]))
+        fetchExchangeRate(listUnique)
+      }
+      return result
+    },
+    enabled: computed(() => !!address.value && !!props.pool.poolAddress)
+  })
+
+  const formattedData = computed((): IPosition[] => {
+    console.log(data.value)
+
+    if (data.value?.length) {
+      //@ts-ignore
+      return data.value.map((data) => {
+        return {
+          poolAddress: data.pooladdress,
+          tokenBase: data.tokenbase,
+          tokenQuote: data.tokenquote,
+          baseSymbol: data.basesymbol,
+          quoteSymbol: data.quotesymbol,
+          fee: data.fee,
+          network: data.network,
+          tickLower: data.ticklower,
+          priceLower: data.pricelower,
+          tickUpper: data.tickupper,
+          priceUpper: data.priceupper,
+          tokenId: data.tokenid,
+          baseDecimals: data.basedecimals,
+          quoteDecimals: data.quotedecimals,
+          createdBy: data.createdby,
+          createdAt: data.createdat,
+          updatedAt: data.updatedat,
+          feeApr: data.feeapr,
+          rewardApr: data.rewardapr,
+          baseQuantity: data.baseqtty,
+          quoteQuantity: data.quoteqtty,
+          poolType: data.pooltype,
+          positionStatus: data.positionstatus,
+          pendingReward: data.pendingreward ?? 0,
+          moonPerSecond: data.moonpersecond ?? 0
+        }
+      })
+    }
+    return []
+  })
+
+  const listExchangeRate = ref<IExchangeRate[]>([])
+  const fetchExchangeRate = async (currencies: string[]) => {
+    const params = new URLSearchParams()
+    if (currencies.length) {
+      currencies.forEach((currency) => params.append('currencies', currency))
+      const response = await useFetch<IExchangeRate[]>(`/api/exchange-rate/all?${params.toString()}`)
+      listExchangeRate.value = response.data.value ?? []
+    }
+  }
 </script>
 
 <style lang="scss" scoped></style>

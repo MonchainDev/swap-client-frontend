@@ -73,7 +73,7 @@
           window.open(`https://link.trustwallet.com/open_url?coin_id=60&url=${window.location.href}`, '_blank')
         }
       } else if (type === 'METAMASK') {
-        if (window?.ethereum?.isMetaMask) {
+        if (window?.ethereum?._metamask) {
           await connectAsync({ connector: connectors[0], chainId: chainId.value })
         } else {
           window.open(`https://metamask.app.link/dapp/${window.location.href}`, '_blank')

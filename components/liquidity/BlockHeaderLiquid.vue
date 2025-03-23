@@ -22,8 +22,8 @@
       <div class="flex flex-col gap-[6px]">
         <span class="text-sm">Network</span>
         <div class="flex items-center gap-[10px] text-xl font-semibold">
-          <img src="/logo-mon-chain.png" alt="logo" class="size-5" />
-          <span>Mon chain</span>
+          <img :src="networkOfPool?.logo" alt="logo" class="size-5" />
+          <span>{{ networkOfPool?.name }}</span>
         </div>
       </div>
       <div class="flex flex-col gap-[6px]">
@@ -41,6 +41,7 @@
 </template>
 
 <script lang="ts" setup>
+  import { LIST_NETWORK } from '~/config/networks'
   import type { IPool } from '~/types/pool.type'
 
   interface IProps {
@@ -49,6 +50,14 @@
 
   const _props = withDefaults(defineProps<IProps>(), {
     pool: () => ({}) as IPool
+  })
+  const { network: networkPoolInfo } = useRoute('info-network-address').params
+
+  const { network: networkPoolDetail } = useRoute('liquidity-pool-network-address').params
+
+  const networkOfPool = computed(() => {
+    const networkUrl = networkPoolInfo || networkPoolDetail
+    return LIST_NETWORK.find((item) => item.network.toUpperCase() === networkUrl.toUpperCase())
   })
 </script>
 

@@ -223,7 +223,7 @@
     return params.toString()
   })
 
-  const { data, status, refresh } = await useLazyFetch<IResponse<IPositionOrigin[]>>(() => `/api/position/list?${queryString.value}`, {
+  const { data, status, refresh } = await useLazyFetch<IResponse<IPositionOrigin[]>>(() => `/api/position/list/search?${queryString.value}`, {
     key: queryString.value,
     immediate: true,
     onResponse: ({ response }) => {

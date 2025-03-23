@@ -51,12 +51,12 @@
     return formatDate(props.chartData[maxIndex.value].date)
   })
   const maxValue = computed(() => {
-    return formatNumberAbbreviation(data.value[maxIndex.value])
+    return formatNumberAbbreviation(parseFloat(Number(data.value[maxIndex.value] ?? 0).toFixed(2)))
   })
 
   const hoveredData = ref({
-    date: maxDate,
-    volume: maxValue
+    date: maxDate.value,
+    volume: maxValue.value
   })
   const chartOptions = computed((): ApexOptions => {
     return {
@@ -68,6 +68,19 @@
         },
         zoom: {
           enabled: false
+        },
+        events: {
+          mouseMove: (event, chartContext, config) => {
+            const { dataPointIndex } = config
+            if (dataPointIndex >= 0) {
+              hoveredData.value.date = formatDate(props.chartData[dataPointIndex].date)
+              hoveredData.value.volume = formatNumberAbbreviation(parseFloat(Number(data.value[dataPointIndex] ?? 0).toFixed(2)))
+            }
+          },
+          mouseLeave: () => {
+            hoveredData.value.date = maxDate.value
+            hoveredData.value.volume = maxValue.value
+          }
         }
       },
       dataLabels: {
