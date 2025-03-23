@@ -4,10 +4,14 @@ import axios from 'axios'
 export const fetchBridge = async <T>(url: string, method: Method, opt?: AxiosRequestConfig): Promise<T> => {
   try {
     const config = useRuntimeConfig()
-    const baseURL = config.BASE_URL_BRIDGE_API
+    const baseURL = config.BASE_URL_BRIDGE_API || 'https://api-bridge.monchain.info'
 
     const request = axios.create({
-      baseURL: baseURL
+      baseURL: baseURL,
+    })
+    request.interceptors.response.use((response) => {
+      console.log('response', response);
+      return response
     })
 
     const data = await request({
@@ -19,7 +23,11 @@ export const fetchBridge = async <T>(url: string, method: Method, opt?: AxiosReq
       data: opt?.data
     })
     return data.data as T
-  } catch (error) {
-    return Promise.reject(error)
+  } catch (error: any) {
+    return Promise.reject({
+      code: error?.config?.code,
+      status: error?.config?.status || 500,
+      url: error?.config?.url || url,
+    })
   }
 }

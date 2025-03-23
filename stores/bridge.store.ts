@@ -1,5 +1,5 @@
 import { Token } from '@monchain/swap-sdk-core'
-import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
+import { useAccount, useBalance, useReadContract, useConfig } from '@wagmi/vue'
 import { defineStore } from 'pinia'
 import { DEFAULT_SLIPPAGE, EMPTY_TOKEN } from '~/constant'
 import CONTRACT_SWAP from '~/constant/contract'
@@ -7,171 +7,174 @@ import ABI_TOKEN from '~/constant/contract/contract-token.json'
 import { type ChainId, type INetwork, type IToken } from '~/types'
 import { DEFAULT_NETWORK, LIST_NETWORK } from '~/config/networks'
 import type { IFormBridge } from '~/types/bridge.type'
-import { useQuery } from "@tanstack/vue-query";
+import { getBalance } from '@wagmi/core'
 
 export const useBridgeStore = defineStore('bridge', () => {
-    const listNetwork = ref<INetwork[]>([])
-    const listToken = ref<IToken[]>([])
-    const fromNetwork = ref<INetwork>()
-    const toNetwork = ref<INetwork>()
-    const token0 = ref<Token>()
-    const token1 = ref<Token>()
+  const listNetwork = ref<INetwork[]>([...LIST_NETWORK])
+  const listToken = ref<IToken[]>([])
+  const fromNetwork = ref<INetwork>(DEFAULT_NETWORK)
+  const toNetwork = ref<INetwork>()
+  const token0 = ref<Token>()
+  const token1 = ref<Token>()
 
-    const slippage = ref<string>(DEFAULT_SLIPPAGE.toString())
-    const activeSlippageAuto = ref<boolean>(true)
-    const txDeadline = ref<string>('30')
-    const isSwapping = ref<boolean>(false)
-    const isConfirmApprove = ref<boolean>(false)
-    const isConfirmSwap = ref<boolean>(false)
-    const balance0 = ref<number>(0)
+  const slippage = ref<string>(DEFAULT_SLIPPAGE.toString())
+  const activeSlippageAuto = ref<boolean>(true)
+  const txDeadline = ref<string>('30')
+  const isSwapping = ref<boolean>(false)
+  const isConfirmApprove = ref<boolean>(false)
+  const isConfirmSwap = ref<boolean>(false)
+  const balance0 = ref<number>(0)
 
-    const {address, chainId} = useAccount()
+  const { address, chainId } = useAccount()
+  const config = useConfig()
 
-    const form = ref<IFormBridge>({
-        token0: {
-            ...EMPTY_TOKEN
-        },
-        token: {
-            ...EMPTY_TOKEN
-        },
-        amount: '',
-        chainId: chainId.value,
-        priceImpact: '',
-        fee: 0,
-        tradingFee: 0
-    })
+  const form = ref<IFormBridge>({
+    token0: {
+      ...EMPTY_TOKEN
+    },
+    token: {
+      ...EMPTY_TOKEN
+    },
+    amount: '',
+    chainId: chainId.value,
+    priceImpact: '',
+    fee: 0,
+    tradingFee: 0
+  })
 
-    const {data: balance, refetch: _refetchBalance} = useBalance(
-        computed(() => ({
-            address: address.value,
-            token: form.value.token.tokenAddress as MaybeRef<`0x${string}`>,
-            watch: true
-        }))
-    )
+  const { data: balance, refetch: _refetchBalance } = useBalance(
+    computed(() => ({
+      address: address.value,
+      token: form.value.token.tokenAddress as MaybeRef<`0x${string}`>,
+      watch: true
+    }))
+  )
 
-    useQuery({
-        queryKey: computed(() => ['token0', form.value?.token.tokenSymbol]),
-        queryFn: async () => {
-            const query = {network: fromNetwork.value?.network, crossChain: 'Y'}
-            const {data} = await useFetch<IToken[]>('/api/network/token', {query})
-            const tokenSymbol = data.value?.find(item => item.tokenSymbol === form.value.token.tokenSymbol)
-            console.info('token0', tokenSymbol)
-            token0.value = form.value.token.tokenSymbol
-                ? new Token(
-                    fromNetwork.value?.chainId as ChainId,
-                    tokenSymbol?.tokenAddress as `0x${string}`,
-                    +tokenSymbol!.tokenDecimals,
-                    tokenSymbol!.tokenSymbol!,
-                    tokenSymbol?.name
-                )
-                : undefined
+  watch(
+    () => form.value?.token?.tokenSymbol,
+    async (formTokenSymbol) => {
+      if (!formTokenSymbol) return
+      // Token 0
+      const query = { network: fromNetwork.value?.network, crossChain: 'Y' }
+      const { data } = await useFetch<IToken[]>('/api/network/token', { query })
+      const _token0 = data.value?.find((item) => item.tokenSymbol === formTokenSymbol)
+      console.info('token0', _token0)
+      token0.value = formTokenSymbol
+        ? new Token(
+            fromNetwork.value?.chainId as ChainId,
+            _token0?.tokenAddress as `0x${string}`,
+            +_token0!.tokenDecimals,
+            _token0!.tokenSymbol!,
+            _token0?.name
+          )
+        : undefined
 
-            const { data: bl0 } = useBalance(
-                computed(() => ({
-                    address: address.value,
-                    token: (token0.value?.address?.toLowerCase() === zeroAddress ? '' : token0.value!.address) as `0x${string}`,
-                    watch: true
-                }))
-            )
-            console.info('bl0: ', bl0)
-            balance0.value = Number(bl0.value!.formatted)
-            return token0
-        },
-        enabled: computed(() => !!form.value?.token.tokenSymbol)
-    })
+      if (!address.value) {
+        console.error('Address is required')
+        return
+      }
+      balance0.value = Number(await getBalanceToken(address.value, token0.value?.address as `0x${string}`))
 
-    useQuery({
-        queryKey: computed(() => ['token1', form.value?.token.tokenSymbol]),
-        queryFn: async () => {
-            const query = {network: toNetwork.value?.network, crossChain: 'Y'}
-            const {data} = await useFetch<IToken[]>('/api/network/token', {query})
-            const tokenSymbol = data.value?.find(item => item.tokenSymbol === form.value.token.tokenSymbol)
-            console.info('token1', tokenSymbol)
-            token1.value = form.value.token.tokenSymbol
-                ? new Token(
-                    toNetwork.value?.chainId as ChainId,
-                    tokenSymbol?.tokenAddress as `0x${string}`,
-                    +tokenSymbol!.tokenDecimals,
-                    tokenSymbol!.tokenSymbol,
-                    tokenSymbol?.name
-                )
-                : undefined
-            return token1
-        },
-        enabled: computed(() => !!form.value?.token.tokenSymbol)
-    })
+      console.log('>>> / balance0.value:', balance0.value)
 
-    const {data: allowance, refetch: refetchAllowance} = useReadContract(
-        computed(() => ({
-            abi: ABI_TOKEN,
-            address: token0.value?.address,
-            functionName: 'allowance',
-            args: [address.value, CONTRACT_SWAP.v3CoreFactoryAddress]
-        }))
-    )
-
-    useQuery({
-        queryKey: computed(() => ['token-list', toNetwork.value?.chainId as ChainId]),
-        queryFn: async () => {
-            const query = {network: toNetwork.value?.network, crossChain: 'Y'}
-            const {data} = await useFetch<IToken[]>('/api/network/token', {query})
-            listToken.value = Array.isArray(data.value)
-                ? data.value.map((item) => ({
-                    ...item,
-                    logo: '',
-                    address: item.tokenAddress,
-                    symbol: item.tokenSymbol,
-                    decimals: item.tokenDecimals,
-                    name: item.tokenSymbol
-                }))
-                : []
-            return data.value
-        },
-        enabled: computed(() => !!toNetwork.value?.chainId)
-    })
-
-    const resetStore = () => {
-        form.value = {
-            token0: {
-                ...EMPTY_TOKEN
-            },
-            token: {
-                ...EMPTY_TOKEN
-            },
-            amount: '',
-            chainId: chainId.value,
-            priceImpact: '',
-            fee: 0,
-            tradingFee: 0
-        }
-        isConfirmApprove.value = false
-        isConfirmSwap.value = false
-        isSwapping.value = false
+      // Token 1
+      const token1Res = await $fetch<IToken[]>('/api/network/token', {
+        query: { network: toNetwork.value?.network, crossChain: 'Y' }
+      })
+      console.log('token1Res', token1Res)
+      const _token1 = token1Res?.find((item) => item.tokenSymbol === formTokenSymbol)
+      console.info('token1', _token1)
+      token1.value = formTokenSymbol
+        ? new Token(toNetwork.value?.chainId as ChainId, _token1?.tokenAddress as `0x${string}`, +_token1!.tokenDecimals, _token1!.tokenSymbol, _token1?.name)
+        : undefined
     }
+  )
 
-    listNetwork.value = [...LIST_NETWORK]
-    fromNetwork.value = DEFAULT_NETWORK
-
-
-
-    return {
-        fromNetwork,
-        toNetwork,
-        listNetwork,
-        listToken,
-        slippage,
-        balance,
-        token0,
-        token1,
-        allowance,
-        txDeadline,
-        isSwapping,
-        isConfirmApprove,
-        isConfirmSwap,
-        activeSlippageAuto,
-        form,
-        refetchAllowance,
-        balance0,
-        resetStore
+  async function getBalanceToken(address: `0x${string}`, token: string) {
+    try {
+      const _address = address.toLowerCase() as `0x${string}`
+      const tokenBalance = await getBalance(config, {
+        address: _address,
+        token: (token === zeroAddress ? '' : token) as `0x${string}`
+      })
+      return BigInt(tokenBalance.value)
+    } catch (error) {
+      console.error('Error get balance', error)
+      return BigInt(0)
     }
+  }
+
+  const { data: allowance, refetch: refetchAllowance } = useReadContract(
+    computed(() => ({
+      abi: ABI_TOKEN,
+      address: token0.value?.address,
+      functionName: 'allowance',
+      args: [address.value, CONTRACT_SWAP.v3CoreFactoryAddress]
+    }))
+  )
+
+  const { data: listTokenRs } = useLazyFetch<IToken[]>('/api/network/token', {
+    query: computed(() => ({ network: toNetwork.value?.network, crossChain: 'Y' })),
+    onResponse({ response: { _data } }) {
+      listToken.value = Array.isArray(_data)
+        ? _data.map((item) => ({
+            ...item,
+            logo: '',
+            address: item.tokenAddress,
+            symbol: item.tokenSymbol,
+            decimals: item.tokenDecimals,
+            name: item.tokenSymbol
+          }))
+        : []
+    },
+    watch: [() => !!toNetwork.value?.network],
+    immediate: false
+  })
+
+  const {data: listNetworkRs} = useLazyFetch<INetwork[]>('/api/network/all', {
+    onResponse({ response: { _data } }) {
+      listNetwork.value = _data || []
+    },
+  })
+
+  const resetStore = () => {
+    form.value = {
+      token0: {
+        ...EMPTY_TOKEN
+      },
+      token: {
+        ...EMPTY_TOKEN
+      },
+      amount: '',
+      chainId: chainId.value,
+      priceImpact: '',
+      fee: 0,
+      tradingFee: 0
+    }
+    isConfirmApprove.value = false
+    isConfirmSwap.value = false
+    isSwapping.value = false
+  }
+
+  return {
+    fromNetwork,
+    toNetwork,
+    listNetwork,
+    listToken,
+    slippage,
+    balance,
+    token0,
+    token1,
+    allowance,
+    txDeadline,
+    isSwapping,
+    isConfirmApprove,
+    isConfirmSwap,
+    activeSlippageAuto,
+    form,
+    refetchAllowance,
+    balance0,
+    resetStore,
+    listTokenRs
+  }
 })

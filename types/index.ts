@@ -30,6 +30,7 @@ export interface INetwork {
   wrapTokenAddress: string
   stableTokenAddress: string
   loading?: boolean
+  lifiContractAddress?: string | null
 }
 
 export enum ChainId {

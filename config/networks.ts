@@ -11,7 +11,8 @@ const DEFAULT_NETWORK: INetwork = {
   nativeToken: 'MON',
   wrapToken: 'WMON',
   wrapTokenAddress: '0xF9012437655F666bcB07f50Cc471f531629342Df',
-  stableTokenAddress: '0x8071be23b8946dd6a9914f3d6d3ab8938241671f'
+  stableTokenAddress: '0x8071be23b8946dd6a9914f3d6d3ab8938241671f',
+  lifiContractAddress: null
 }
 
 const LIST_NETWORK: INetwork[] = [
@@ -27,7 +28,8 @@ const LIST_NETWORK: INetwork[] = [
     nativeToken: 'BNB',
     wrapToken: 'WBNB',
     wrapTokenAddress: '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',
-    stableTokenAddress: '0x2a4b180da0a45a5ae65f230c228de0d4de0b7057'
+    stableTokenAddress: '0x2a4b180da0a45a5ae65f230c228de0d4de0b7057',
+    lifiContractAddress: null
   },
   {
     name: 'Ethereum',
@@ -40,7 +42,9 @@ const LIST_NETWORK: INetwork[] = [
     nativeToken: 'ETH',
     wrapToken: 'WETH',
     wrapTokenAddress: '0xf531B8F309Be94191af87605CfBf600D71C2cFe0',
-    stableTokenAddress: ''
+    stableTokenAddress: '',
+    lifiContractAddress: null
+
   },
   {
     name: 'Polygon',
@@ -53,7 +57,9 @@ const LIST_NETWORK: INetwork[] = [
     nativeToken: 'POL',
     wrapToken: 'WPOL',
     wrapTokenAddress: '0xA5733b3A8e62A8faF43b0376d5fAF46E89B3033E',
-    stableTokenAddress: ''
+    stableTokenAddress: '',
+    lifiContractAddress: null
+
   },
   {
     name: 'Arbitrum Sepolia',
@@ -66,7 +72,9 @@ const LIST_NETWORK: INetwork[] = [
     nativeToken: 'ETH',
     wrapToken: 'WETH',
     wrapTokenAddress: '0x980B62Da83eFf3D4576C647993b0c1D7faf17c73',
-    stableTokenAddress: ''
+    stableTokenAddress: '',
+    lifiContractAddress: null
+
   }
 ]
 
