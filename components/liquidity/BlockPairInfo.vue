@@ -255,8 +255,6 @@
         poolAddress: poolAddress
       }
       const data = await client.request<{ poolDayDatas: poolDayDatas[] }>(query, variables)
-      console.log('🚀 ~ getPoolData ~ data:', data.poolDayDatas)
-      // console.log('Kết quả:', JSON.stringify(data, null, 2))
       return data
     } catch (error) {
       console.error(error)
