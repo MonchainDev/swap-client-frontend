@@ -9,6 +9,7 @@
           :token="form.token0"
           :balance="balance0?.formatted"
           :step-swap
+          :amount-usd="amountUsd"
           type="BASE"
           class="h-[138px] bg-[#EFEFFF] sm:h-[120px]"
           @select-token="handleOpenPopupSelectToken"
@@ -47,7 +48,7 @@
             </div>
             <div class="flex flex-col text-right">
               <span class="text-[32px] font-semibold leading-7">{{ form.amountIn }}</span>
-              <span class="text-sm font-semibold text-gray-6">≈ $150.6</span>
+              <span class="text-sm font-semibold text-gray-6">≈ ${{ amountUsd }}</span>
             </div>
           </div>
           <div class="relative flex items-center justify-between gap-2 pt-[38px]">
@@ -130,7 +131,8 @@
   const { setOpenPopup } = useBaseStore()
   const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
 
-  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, allowance0, balance0, balance1, form, token0, token1 } = storeToRefs(useSwapStore())
+  const { isSwapping, isConfirmApprove, exchangeRateBaseCurrency, slippage, isConfirmSwap, allowance0, balance0, balance1, form, token0, token1 } =
+    storeToRefs(useSwapStore())
 
   const isEditSlippage = ref(false)
   const stepSwap = ref<StepSwap>('SELECT_TOKEN')
@@ -148,6 +150,12 @@
   const isQuoteExist = computed(() => form.value.amountOut && form.value.amountIn)
   const formatTitle = computed(() => {
     return stepSwap.value === 'SELECT_TOKEN' ? _props.title : 'Confirm swap'
+  })
+
+  const amountUsd = computed(() => {
+    const quantity = new Decimal(form.value.amountIn || 0)
+    const rate = exchangeRateBaseCurrency.value
+    return quantity && rate ? formatNumber(quantity.mul(rate).toSignificantDigits(6, Decimal.ROUND_DOWN).toString()) : '0'
   })
 
   const noRoute = computed(() => !(((bestTrade.value && bestTrade.value?.routes.length) ?? 0) > 0))
