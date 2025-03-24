@@ -280,7 +280,7 @@
           bestTrade.value = _bestTrade
           form.value.amountIn = bestTrade.value.inputAmount.toSignificant(6)
           form.value.tradingFee = bestTrade.value.tradingFee
-          form.value.maximumAmountIn = bestTrade.value?.outputAmountWithGasAdjusted?.toSignificant(6)
+          form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toSignificant(6)
           form.value.minimumAmountOut = ''
           form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
           form.value.fee = _bestTrade.fee
