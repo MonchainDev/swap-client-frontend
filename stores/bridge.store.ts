@@ -131,10 +131,10 @@ export const useBridgeStore = defineStore('bridge', () => {
     immediate: false
   })
 
-  const {data: listNetworkRs} = useLazyFetch<INetwork[]>('/api/network/all', {
+  const { data: _listNetworkRs } = useLazyFetch<INetwork[]>('/api/network/all', {
     onResponse({ response: { _data } }) {
       listNetwork.value = _data || []
-    },
+    }
   })
 
   const resetStore = () => {

@@ -155,34 +155,33 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed } from 'vue'
   import { useAccount } from '@wagmi/vue'
-  import { createPublicClient, http, type Address, type Hex, encodeFunctionData, zeroAddress, zeroHash, pad, parseUnits } from 'viem'
+  import { type Address, type Hex, createPublicClient, encodeFunctionData, http, pad, parseUnits, zeroAddress, zeroHash } from 'viem'
+  import { computed } from 'vue'
 
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   // import { monTestnet } from '~/utils/config/chains'
   // import { mainnet, sepolia } from '@wagmi/core/chains'
   import ABI_RELAY_FACET from '@/constant/abi/RelayFacet.json'
 
-  import InputBridge from './InputBridge.vue'
-  import ChooseNetworkBridge from './ChooseNetworkBridge.vue'
-  import PopupSellToken from '../popup/PopupSellToken.vue'
   import { ElNotification } from 'element-plus'
-  import { type SwapOutput } from '~/utils/getBestTradeV2'
-  import { type ChainId, type IToken } from '~/types'
   import contractAddress from '~/config/contracts'
+  import { type ChainId, type IToken } from '~/types'
+  import { type SwapOutput } from '~/utils/getBestTradeV2'
+  import PopupSellToken from '../popup/PopupSellToken.vue'
+  import ChooseNetworkBridge from './ChooseNetworkBridge.vue'
+  import InputBridge from './InputBridge.vue'
   // import { useBridgeTransaction } from '~/composables/useBridgeTransaction'
   // import HeaderFormSwap from './HeaderFormSwap.vue'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
   // import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
+  import { type Route, type SmartRouterTrade, type SubgraphProvider, type V3Pool, SmartRouter } from '@monchain/smart-router'
   import { CurrencyAmount, Token, TradeType } from '@monchain/swap-sdk-core'
   import Decimal from 'decimal.js'
-  import { type Route, type V3Pool, type SmartRouterTrade, SmartRouter, SwapRouter } from '@monchain/smart-router'
   // import swapRouterABI from "~/constant/abi/swapRouter.json";
+  import { GraphQLClient } from 'graphql-request'
   import { config } from '~/config/wagmi'
   import { CHAINS } from '~/utils/config/chains'
-  import { GraphQLClient } from 'graphql-request'
-  import { writeContract } from '@wagmi/core'
 
   export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE'
 
@@ -303,7 +302,7 @@
     console.info('stableDestinationChainIdToken.value', stableDestinationChainIdToken.value)
   }
 
-  const { address: receiverAddress, chainId } = useAccount()
+  const { address: receiverAddress } = useAccount()
 
   const handleInput = async (amount: string) => {
     console.log('handle input', amount)
@@ -350,7 +349,7 @@
       const getBestRoute = () =>
         SmartRouter.getV3CandidatePools({
           onChainProvider: () => _publicClient,
-          subgraphProvider: () => v3SubgraphClient as any,
+          subgraphProvider: () => v3SubgraphClient as SubgraphProvider,
           currencyA: inputStableToken,
           currencyB: token1.value!,
           subgraphFallback: true
