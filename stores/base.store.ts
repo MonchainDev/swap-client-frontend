@@ -31,8 +31,12 @@ export const useBaseStore = defineStore('base', () => {
 
   const { chainId } = useActiveChainId()
 
-  const currentNetwork = computed(() => {
-    return LIST_NETWORK.find((item) => item.chainId === chainId.value) || DEFAULT_NETWORK
+  const currentNetwork = ref<INetwork>(DEFAULT_NETWORK)
+
+  watchEffect(() => {
+    console.info('Chain ID has changed', chainId.value)
+    const item = LIST_NETWORK.find((item) => item.chainId === chainId.value) || DEFAULT_NETWORK
+    currentNetwork.value = item
   })
 
   useQuery({
@@ -55,5 +59,5 @@ export const useBaseStore = defineStore('base', () => {
     enabled: computed(() => !!currentNetwork.value.chainId)
   })
 
-  return { popup, setOpenPopup, listToken, nativeBalance, isDesktop, currentNetwork, networkLocated }
+  return { popup, setOpenPopup, listToken, nativeBalance, isDesktop, currentNetwork, networkLocated, chainId }
 })

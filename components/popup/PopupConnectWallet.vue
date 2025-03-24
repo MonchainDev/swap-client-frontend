@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { useChainId, useConnect } from '@wagmi/vue'
+  import { useSwitchChain, useChainId, useConnect } from '@wagmi/vue'
   import type { WalletType } from '~/types/connect.type'
 
   declare global {
@@ -35,7 +35,7 @@
     }
   }
 
-  const { isDesktop } = storeToRefs(useBaseStore())
+  const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
   const { connectors, connectAsync } = useConnect()
   const chainId = useChainId()
 
@@ -58,6 +58,7 @@
       type: 'COINBASE'
     }
   ]
+  const { switchChainAsync } = useSwitchChain()
 
   const typeConnect = ref<WalletType | null>(null)
   const handleConnect = async (type: WalletType) => {
@@ -85,9 +86,7 @@
           window.open(`https://go.cb-w.com/dapp?cb_url=${window.location.href}`, '_blank')
         }
       }
-      // else {
-      //   await connectAsync({ connector: connectors[2], chainId: chainId.value })
-      // }
+      await switchChainAsync({ chainId: currentNetwork.value.chainId })
       setOpenPopup('popup-connect', false)
       typeConnect.value = null
     } catch (error) {

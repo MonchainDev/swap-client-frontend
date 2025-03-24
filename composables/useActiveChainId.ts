@@ -1,10 +1,10 @@
 import { useAccount } from '@wagmi/vue'
-import { ChainId } from '~/types'
+// import { ChainId } from '~/types'
 
 export default function useActiveChainId() {
   const { chainId } = useAccount()
 
-  const defaultChainId = computed(() => ChainId.MON_TESTNET)
+  // const defaultChainId = computed(() => ChainId.MON_TESTNET)
 
-  return { chainId: chainId.value ? chainId : defaultChainId }
+  return { chainId }
 }
