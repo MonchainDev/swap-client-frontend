@@ -7,10 +7,10 @@ export const fetchBridge = async <T>(url: string, method: Method, opt?: AxiosReq
     const baseURL = config.BASE_URL_BRIDGE_API || 'https://api-bridge.monchain.info'
 
     const request = axios.create({
-      baseURL: baseURL,
+      baseURL: baseURL
     })
     request.interceptors.response.use((response) => {
-      console.log('response', response);
+      console.log('response', response)
       return response
     })
 
@@ -27,7 +27,7 @@ export const fetchBridge = async <T>(url: string, method: Method, opt?: AxiosReq
     return Promise.reject({
       code: error?.config?.code,
       status: error?.config?.status || 500,
-      url: error?.config?.url || url,
+      url: error?.config?.url || url
     })
   }
 }

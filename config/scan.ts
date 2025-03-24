@@ -2,8 +2,8 @@ import { ChainId } from '~/types'
 
 const URL_SCAN = {
   [ChainId.MON_TESTNET]: {
-    tx: 'https://explorer.monchain.info/tx',
-    address: 'https://explorer.monchain.info/address'
+    tx: 'https://dev.explorer.monchain.info/tx',
+    address: 'https://dev.explorer.monchain.info/address'
   },
   [ChainId.AMOY_POLYGON]: {
     tx: 'https://amoy.polygonscan.com/tx',

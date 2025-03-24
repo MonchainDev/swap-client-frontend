@@ -254,7 +254,7 @@ export const getBestTradeV4 = async ({ token0, token1, inputAmount, type, chainI
         totalInputA = totalInputA.add(bestTradeInAmount[0].inputAmount)
         newTradeList.push(...(bestTradeInAmount as Trade<Currency, Token, TradeType>[]))
         remainOutputAmount = remainOutputAmount.subtract(recalOutputAmount)
-        tradingFee += (Number(fee.toString()) / BASE_FEE_PERCENT) * Number(recalOutputAmount.numerator)
+        tradingFee += (Number(fee.toString()) / BASE_FEE_PERCENT) * Number(totalInputA.numerator)
         const percent = (Number(recalOutputAmount.toExact()) / Number(currencyAmount.toExact())) * 100
 
         // cal price impact

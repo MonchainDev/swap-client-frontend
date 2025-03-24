@@ -45,7 +45,7 @@
     <div class="flex justify-between">
       <span class="text-sm">Price Impact</span>
       <div class="flex flex-col items-end text-sm">
-        <span class="font-bold"> {{ form.priceImpact }}%</span>
+        <span class="font-bold"> {{ Math.abs(Number(form.priceImpact || 0)) }}%</span>
       </div>
     </div>
     <template v-if="editSlippage">
@@ -148,11 +148,16 @@
     }
   })
 
+  const emit = defineEmits<{
+    'change-slippage': []
+  }>()
+
   const handleChangeSlippage = (value: string, byPassError = false) => {
     if (isErrorSlippage.value && !byPassError) return
     settingSlippage.value = value
     slippage.value = value
     editSlippage.value = false
+    emit('change-slippage')
   }
 
   function formatNumberInput(value: string, _isSplit = true) {

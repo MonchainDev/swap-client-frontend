@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-[22px]">
+  <div class="mt-12 flex flex-col gap-[22px]">
     <span class="text-2xl font-semibold leading-7">My Positions</span>
     <div class="grid grid-cols-[374px_1fr] gap-6">
       <div class="rounded-lg bg-white px-6 pb-6 pt-4 shadow-sm">
@@ -45,7 +45,7 @@
           <span class="font-semibold">{{ formattedData.length }} positions</span>
           <BaseTab v-model:model="tabActive" :list="listTab" />
         </div>
-        <div v-loading="status === 'pending'" class="mt-6 h-[235px]">
+        <div v-loading="isLoading" class="mt-6 h-[235px]">
           <template v-if="formattedData.length">
             <ElScrollbar>
               <MyPositionItem
@@ -128,7 +128,7 @@
   //   }
   // )
 
-  const { data, refetch, status } = useQuery({
+  const { data, refetch, isLoading } = useQuery({
     queryKey: [props.pool.poolAddress, address.value],
     queryFn: async () => {
       const result = await $fetch<IPositionOrigin[]>(

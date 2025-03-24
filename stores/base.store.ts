@@ -31,8 +31,19 @@ export const useBaseStore = defineStore('base', () => {
 
   const { chainId } = useActiveChainId()
 
-  const currentNetwork = computed(() => {
-    return LIST_NETWORK.find((item) => item.chainId === chainId.value) || DEFAULT_NETWORK
+  const currentNetwork = ref<INetwork>(DEFAULT_NETWORK)
+
+  watchEffect(() => {
+    console.info('Chain ID has changed', chainId.value)
+    if (chainId.value === currentNetwork.value.chainId) return
+    const item = LIST_NETWORK.find((item) => item.chainId === chainId.value) || DEFAULT_NETWORK
+    currentNetwork.value = item
+    // swap and liquidity store can install after base store, so we need to check if the store is installed
+
+    // if (useLiquidityStore && useLiquidityStore() && typeof useLiquidityStore()?.resetStore === 'function') {
+    //   console.log('after resetLiquidStore')
+    //   useLiquidityStore()?.resetStore()
+    // }
   })
 
   useQuery({
@@ -55,5 +66,5 @@ export const useBaseStore = defineStore('base', () => {
     enabled: computed(() => !!currentNetwork.value.chainId)
   })
 
-  return { popup, setOpenPopup, listToken, nativeBalance, isDesktop, currentNetwork, networkLocated }
+  return { popup, setOpenPopup, listToken, nativeBalance, isDesktop, currentNetwork, networkLocated, chainId }
 })

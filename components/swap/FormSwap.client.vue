@@ -9,7 +9,7 @@
           :token="form.token0"
           :balance="balance0?.formatted"
           :step-swap
-          :locked="isFetchQuote"
+          :amount-usd="amountUsd"
           type="BASE"
           class="h-[138px] bg-[#EFEFFF] sm:h-[120px]"
           @select-token="handleOpenPopupSelectToken"
@@ -30,7 +30,6 @@
           :token="form.token1"
           :balance="balance1?.formatted"
           :step-swap
-          :locked="isFetchQuote"
           type="QUOTE"
           class="h-[124px] bg-[#F3F8FF] sm:h-[100px]"
           @select-token="handleOpenPopupSelectToken"
@@ -49,7 +48,7 @@
             </div>
             <div class="flex flex-col text-right">
               <span class="text-[32px] font-semibold leading-7">{{ form.amountIn }}</span>
-              <span class="text-sm font-semibold text-gray-6">≈ $150.6</span>
+              <span class="text-sm font-semibold text-gray-6">≈ ${{ amountUsd }}</span>
             </div>
           </div>
           <div class="relative flex items-center justify-between gap-2 pt-[38px]">
@@ -68,7 +67,7 @@
     </div>
 
     <template v-if="isQuoteExist">
-      <InfoSwap v-model:edit-slippage="isEditSlippage" :step-swap />
+      <InfoSwap v-model:edit-slippage="isEditSlippage" :step-swap @change-slippage="handleInput(typedValue, currentTypeInput)" />
     </template>
 
     <template v-if="!isEditSlippage">
@@ -132,7 +131,8 @@
   const { setOpenPopup } = useBaseStore()
   const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
 
-  const { isSwapping, isConfirmApprove, slippage, isConfirmSwap, allowance0, balance0, balance1, form, token0, token1 } = storeToRefs(useSwapStore())
+  const { isSwapping, isConfirmApprove, exchangeRateBaseCurrency, slippage, isConfirmSwap, allowance0, balance0, balance1, form, token0, token1 } =
+    storeToRefs(useSwapStore())
 
   const isEditSlippage = ref(false)
   const stepSwap = ref<StepSwap>('SELECT_TOKEN')
@@ -150,6 +150,12 @@
   const isQuoteExist = computed(() => form.value.amountOut && form.value.amountIn)
   const formatTitle = computed(() => {
     return stepSwap.value === 'SELECT_TOKEN' ? _props.title : 'Confirm swap'
+  })
+
+  const amountUsd = computed(() => {
+    const quantity = new Decimal(form.value.amountIn || 0)
+    const rate = exchangeRateBaseCurrency.value
+    return quantity && rate ? formatNumber(quantity.mul(rate).toSignificantDigits(6, Decimal.ROUND_DOWN).toString()) : '0'
   })
 
   const noRoute = computed(() => !(((bestTrade.value && bestTrade.value?.routes.length) ?? 0) > 0))
@@ -224,9 +230,16 @@
   }
 
   const poolAddress = ref<string>('')
+  const typedValue = ref('')
+  const currentTypeInput = ref<TYPE_SWAP>('BASE')
+
+  let latestRequestId = 0
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
+    const requestId = ++latestRequestId
     try {
       notEnoughLiquidity.value = false
+      typedValue.value = amount
+      currentTypeInput.value = type
       if (!isToken0Selected.value || !isToken1Selected.value) return
       isFetchQuote.value = true
       if (!amount) {
@@ -254,6 +267,11 @@
         })
         console.log('🚀 ~ handleInput ~ _bestTrade:', _bestTrade)
 
+        if (requestId !== latestRequestId) {
+          console.log('🚀 ~ handleInput ~ Aborting: newer request detected')
+          return
+        }
+
         bestTrade.value = _bestTrade
         poolAddress.value = (_bestTrade?.routes[0].pools[0] as V3Pool)?.address ?? ''
         form.value.amountOut = _bestTrade.outputAmount.toSignificant(6)
@@ -276,11 +294,17 @@
           type: TradeType.EXACT_OUTPUT,
           chainId: currentNetwork.value.chainId // chainId of wallet
         })
+
+        if (requestId !== latestRequestId) {
+          console.log('🚀 ~ handleInput ~ Aborting: newer request detected')
+          return
+        }
+
         if (_bestTrade) {
           bestTrade.value = _bestTrade
           form.value.amountIn = bestTrade.value.inputAmount.toSignificant(6)
           form.value.tradingFee = bestTrade.value.tradingFee
-          form.value.maximumAmountIn = bestTrade.value?.outputAmountWithGasAdjusted?.toSignificant(6)
+          form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toSignificant(6)
           form.value.minimumAmountOut = ''
           form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
           form.value.fee = _bestTrade.fee
@@ -289,8 +313,12 @@
       isFetchQuote.value = false
     } catch (_error) {
       console.error('🚀 ~ handleInput ~ _error:', _error)
-      isFetchQuote.value = false
-      notEnoughLiquidity.value = true
+      // Kiểm tra requestId trước khi xử lý lỗi
+      if (requestId === latestRequestId) {
+        console.error('🚀 ~ handleInput ~ _error:', _error)
+        isFetchQuote.value = false
+        notEnoughLiquidity.value = true
+      }
     }
   }
 

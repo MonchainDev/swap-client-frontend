@@ -53,7 +53,7 @@
           @focus="emits('focus-input', type)"
           @input="handleInput"
         />
-        <span v-if="type === 'BASE'" class="text-sm font-semibold text-gray-6">≈ {{ amountUsd }}</span>
+        <span v-if="type === 'BASE'" class="text-sm font-semibold text-gray-6">≈ ${{ amountUsd }}</span>
       </div>
     </div>
   </div>
@@ -66,6 +66,7 @@
   import type { TYPE_SWAP } from '~/types/swap.type'
   import type { StepSwap } from './FormSwap.client.vue'
   import Decimal from 'decimal.js'
+  import { EMPTY_TOKEN } from '~/constant'
 
   interface IProps {
     isSelected: boolean
@@ -73,16 +74,18 @@
     type: TYPE_SWAP
     balance: string | undefined
     stepSwap: StepSwap
-    locked: boolean
+    locked?: boolean
+    amountUsd?: string
   }
 
   const props = withDefaults(defineProps<IProps>(), {
     isSelected: false,
-    token: () => ({ name: '', symbol: '', icon_url: '', address: '', decimals: 0 }),
+    token: () => ({ ...EMPTY_TOKEN }),
     type: 'BASE',
     balance: '0',
     stepSwap: 'SELECT_TOKEN',
-    locked: false
+    locked: false,
+    amountUsd: '0'
   })
 
   const emits = defineEmits<{
@@ -101,11 +104,6 @@
 
   const formattedBalance = computed(() => {
     return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
-  })
-
-  const amountUsd = computed(() => {
-    const random = Math.random()
-    return amount.value ? (random > 0.01 ? '$' + random.toFixed(2) : '<$0.01') : '$0'
   })
 
   const handleClick = () => {

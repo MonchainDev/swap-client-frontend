@@ -98,17 +98,18 @@
         networkSelected.value.push(DEFAULT_NETWORK.network)
       }
     } else {
+      const chainSelected = chains.value.find((chain) => chain.id === item.chainId)
+      if (!chainSelected || chainSelected.id === network.value.chainId) {
+        visible.value = false
+        return
+      }
+
       if (isConnected.value) {
-        const chainSelected = chains.value.find((chain) => chain.id === item.chainId)
-        if (!chainSelected || chainSelected.id === network.value.chainId) {
-          visible.value = false
-          return
-        }
         visible.value = false
         await switchChainAsync({ chainId: chainSelected.id })
 
         if (route.name === 'add-currency') {
-          // replace route with out query
+          // replace route without query
           router.replace({ name: route.name }).then(() => {
             resetStoreLiquid()
             resetStoreSwap()
@@ -119,6 +120,8 @@
         }
 
         recentTokens.value = []
+      } else {
+        network.value = { ...item }
       }
       visible.value = false
     }

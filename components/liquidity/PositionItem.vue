@@ -189,7 +189,10 @@
 
   const { showToastMsg } = useShowToastMsg()
   const { address: account } = useAccount()
-  const { chainId } = useActiveChainId()
+
+  const chainId = computed(() => {
+    return LIST_NETWORK.find((item) => item.network === props.position.network)?.chainId
+  })
 
   const stakeLocalSuccess = ref(false)
 
@@ -208,7 +211,8 @@
       const hash = await sendTransaction(config, {
         to: contractAddressMasterChef,
         data: calldata,
-        value: hexToBigInt(value)
+        value: hexToBigInt(value),
+        chainId: chainId.value
       })
 
       console.log('🚀 ~ handleClickHarvest ~ hash:', hash)
@@ -269,7 +273,8 @@
       const hash = await sendTransaction(config, {
         to: contractAddressNftPositionManager,
         data: calldata,
-        value: hexToBigInt(value)
+        value: hexToBigInt(value),
+        chainId: chainId.value
       })
 
       const { status } = await waitForTransactionReceipt(config, {
