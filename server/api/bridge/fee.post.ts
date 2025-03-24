@@ -1,12 +1,8 @@
-import axios from 'axios'
-
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
-    console.log('>>> / body:', body)
-
-    const rs = await axios.post(`https://api-bridge.monchain.info/api/v1/sign/relay-transfer`, body)
-    return rs.data
+    const rs = await fetchBridge(`/api/v1/fee/relay-transfer`, 'POST', { data: body })
+    return rs
   } catch (error: unknown) {
     return createError({
       statusCode: 400,
