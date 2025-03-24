@@ -352,6 +352,7 @@
 
   const useExactInputMulticall = async (swapOut: SmartRouterTrade<TradeType>) => {
     const trade = swapOut
+    console.info(' (FormSwap.client.vue:355) trade', trade)
     const datas: Hex[] = []
 
     for (const route of trade.routes) {
@@ -390,11 +391,12 @@
       )
       let encodedData: `0x${string}`
       if (route.path.length === 2 && route.pools.length === 1) {
-        const tokenIn = route.path[0].wrapped.address
-        const tokenOut = route.path[1].wrapped.address
+        const tokenIn = route.inputAmount.currency.wrapped.address
+        const tokenOut = route.outputAmount.currency.wrapped.address
         const fee = (route.pools[0] as V3Pool).fee
 
         const params = [tokenIn, tokenOut, fee, recipient, deadline, BigInt(amount), BigInt(amountLimit), sqrtPriceLimitX96]
+        console.info(' (FormSwap.client.vue:398) params', params)
 
         encodedData = encodeFunctionData({
           abi: swapRouterABI,
