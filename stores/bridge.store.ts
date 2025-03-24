@@ -12,7 +12,8 @@ import { getBalance } from '@wagmi/core'
 export const useBridgeStore = defineStore('bridge', () => {
   const listNetwork = ref<INetwork[]>([...LIST_NETWORK])
   const listToken = ref<IToken[]>([])
-  const fromNetwork = ref<INetwork>(DEFAULT_NETWORK)
+  const listTokenFrom = ref<IToken[]>([])
+  const fromNetwork = ref<INetwork>()
   const toNetwork = ref<INetwork>()
   const token0 = ref<Token>()
   const token1 = ref<Token>()
@@ -26,6 +27,7 @@ export const useBridgeStore = defineStore('bridge', () => {
   const balance0 = ref<number>(0)
 
   const { address, chainId } = useAccount()
+  const { setOpenPopup } = useBaseStore()
   const config = useConfig()
 
   const form = ref<IFormBridge>({
@@ -71,6 +73,7 @@ export const useBridgeStore = defineStore('bridge', () => {
 
       if (!address.value) {
         console.error('Address is required')
+        setOpenPopup('popup-connect')
         return
       }
       balance0.value = Number(await getBalanceToken(address.value, token0.value?.address as `0x${string}`))
@@ -131,6 +134,24 @@ export const useBridgeStore = defineStore('bridge', () => {
     immediate: false
   })
 
+  const { data: listTokenFromRs } = useLazyFetch<IToken[]>('/api/network/token', {
+    query: computed(() => ({ network: fromNetwork.value?.network, crossChain: 'Y' })),
+    onResponse({ response: { _data } }) {
+      listTokenFrom.value = Array.isArray(_data)
+        ? _data.map((item) => ({
+            ...item,
+            logo: '',
+            address: item.tokenAddress,
+            symbol: item.tokenSymbol,
+            decimals: item.tokenDecimals,
+            name: item.tokenSymbol
+          }))
+        : []
+    },
+    watch: [() => !!fromNetwork.value?.network],
+    immediate: true
+  })
+
   const { data: _listNetworkRs } = useLazyFetch<INetwork[]>('/api/network/all', {
     onResponse({ response: { _data } }) {
       listNetwork.value = _data || []
@@ -161,6 +182,7 @@ export const useBridgeStore = defineStore('bridge', () => {
     toNetwork,
     listNetwork,
     listToken,
+    listTokenFrom,
     slippage,
     balance,
     token0,

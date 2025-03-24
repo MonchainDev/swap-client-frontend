@@ -77,10 +77,10 @@
       <div class="flex justify-between">
         <span class="text-sm text-primary"> You Receive </span>
         <div class="flex flex-col gap-1 text-right">
-          <p class="receive">0.0</p>
-          <div class="flex items-center gap-1">
+          <p class="receive">{{ amountOut }}</p>
+          <div class="flex items-center gap-1" v-if="address">
             <img src="/public/logo.png" alt="logo" class="size-4 rounded-full" />
-            <span class="line-clamp-1 text-xs text-[#6F6A79]">(0x4612...A707)</span>
+            <span class="line-clamp-1 text-xs text-[#6F6A79]">({{ formatAddress(address) }})</span>
           </div>
         </div>
       </div>
@@ -90,30 +90,26 @@
       </div>
       <div class="mt-3 flex justify-between">
         <span class="text-sm text-primary"> Fee </span>
-        <div class="text-end text-sm font-medium text-primary">
-          <span>0.0595 BNB</span> + <span>0.00001 ETH</span> +
+        <div class="text-end text-sm font-medium text-primary" v-if="fee.network !== '0' || fee.protocol !== '0' || fee.bridge !== '0'">
+          <span>{{ fee.network }} {{ fee.networkSymbol }}</span> + <span>{{ fee.protocol }} {{ fee.protocolSymbol }}</span> +
           <el-tooltip popper-class="tooltip-fee-bridge" append-to="body" placement="top-end" effect="light">
             <template #content>
               <div class="flex flex-col gap-2">
-                <div class="flex justify-between">
+                <div class="flex justify-between" v-if="fee.protocol">
                   <span class="text-sm text-[#6E6E6E]">Protocol Fee</span>
-                  <span class="text-sm text-[#1C1C1C]">0.150001 BNB</span>
+                  <span class="text-sm text-[#1C1C1C]">{{ fee.protocol }} {{ fee.protocolSymbol }}</span>
                 </div>
-                <div class="flex justify-between">
+                <div class="flex justify-between" v-if="fee.bridge">
                   <span class="text-sm text-[#6E6E6E]">deBridge Fee</span>
-                  <span class="text-sm text-[#1C1C1C]">0.00005272 ETH</span>
+                  <span class="text-sm text-[#1C1C1C]">{{ fee.bridge }} {{ fee.bridgeSymbol }}</span>
                 </div>
-                <div class="flex justify-between">
+                <div class="flex justify-between" v-if="fee.network">
                   <span class="text-sm text-[#6E6E6E]">Market Maker Gas</span>
-                  <span class="text-sm text-[#1C1C1C]">12300.00005272</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-[#6E6E6E]">Cost</span>
-                  <span class="text-sm text-[#1C1C1C]">ATOM</span>
+                  <span class="text-sm text-[#1C1C1C]">{{ fee.network }} {{ fee.networkSymbol }}</span>
                 </div>
               </div>
             </template>
-            <span class="border-b border-dashed border-gray-4">140.0 ATOM</span>
+            <span class="border-b border-dashed border-gray-4">{{ fee.bridge }} {{ fee.bridgeSymbol }}</span>
           </el-tooltip>
         </div>
       </div>
@@ -159,15 +155,14 @@
   import { type Address, type Hex, createPublicClient, encodeFunctionData, http, pad, parseUnits, zeroAddress, zeroHash } from 'viem'
   import { computed } from 'vue'
 
-  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   // import { monTestnet } from '~/utils/config/chains'
   // import { mainnet, sepolia } from '@wagmi/core/chains'
   import ABI_RELAY_FACET from '@/constant/abi/RelayFacet.json'
 
   import { ElNotification } from 'element-plus'
-  import contractAddress from '~/config/contracts'
+  import ABI_TOKEN from '~/constant/contract/contract-token.json'
   import { type ChainId, type IToken } from '~/types'
-  import { type SwapOutput } from '~/utils/getBestTradeV2'
   import PopupSellToken from '../popup/PopupSellToken.vue'
   import ChooseNetworkBridge from './ChooseNetworkBridge.vue'
   import InputBridge from './InputBridge.vue'
@@ -175,13 +170,14 @@
   // import HeaderFormSwap from './HeaderFormSwap.vue'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
   // import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
-  import { type Route, type SmartRouterTrade, type SubgraphProvider, type V3Pool, SmartRouter } from '@monchain/smart-router'
+  import { type Route, type SmartRouterTrade, type V3Pool, SmartRouter } from '@monchain/smart-router'
   import { CurrencyAmount, Token, TradeType } from '@monchain/swap-sdk-core'
   import Decimal from 'decimal.js'
   // import swapRouterABI from "~/constant/abi/swapRouter.json";
   import { GraphQLClient } from 'graphql-request'
   import { config } from '~/config/wagmi'
   import { CHAINS } from '~/utils/config/chains'
+  import { MAX_NUMBER_APPROVE } from '~/constant'
 
   export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE'
 
@@ -193,9 +189,9 @@
     tokenInAddress: string
     tokenOutAddress: string
     fee: number
-    amountOut: bigint
-    amountInMaximum: bigint
-    sqrtPriceLimitX96: bigint
+    amountOut: number
+    amountInMaximum: number
+    sqrtPriceLimitX96: number
   }
 
   type Response = {
@@ -217,12 +213,13 @@
 
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { fromNetwork, toNetwork, form, isConfirmSwap, isConfirmApprove, isSwapping, listToken, token0, token1, balance0, listNetwork } =
+  const { fromNetwork, toNetwork, form, isConfirmSwap, isConfirmApprove, isSwapping, listToken, token0, token1, balance0, listNetwork, listTokenFrom } =
     storeToRefs(useBridgeStore())
   const isEditSlippage = ref(false)
 
   // const approveAndSend = ref<boolean>(false)
-  const { isConnected } = useAccount()
+  const { isConnected, address } = useAccount()
+  const { approveToken } = useApproveToken()
 
   const stepBridge = ref<StepBridge>('SELECT_TOKEN')
 
@@ -232,6 +229,15 @@
   const isTokenSelected = computed(() => form.value.token?.tokenSymbol !== '')
   const notEnoughLiquidity = ref(false)
   const amountOut = ref('')
+  const fee = reactive({
+    network: '0', // value native token
+    networkSymbol: '', // symbol native token
+    networkDecimals: 18,
+    protocol: '0', // fee usdt (stable ở mạng đích)
+    protocolSymbol: '', // symbol usdt (stable ở mạng đích)
+    bridge: '0', //  fee tier (orb)
+    bridgeSymbol: '' // symbol orb
+  })
 
   /*
    * Message button
@@ -278,7 +284,7 @@
   })
 
   const handleSwapOrder = () => {
-    if (stepBridge.value === 'CONFIRM_BRIDGE') return
+    if (stepBridge.value === 'CONFIRM_BRIDGE') return // @ts-ignore
     ;[fromNetwork.value, toNetwork.value] = [toNetwork.value, fromNetwork.value]
     handleSelectToNetwork()
   }
@@ -291,8 +297,6 @@
 
   const stableDestinationChainIdToken = ref<IToken>()
 
-  const feeBridge = 1 // 1%
-
   async function handleSelectToNetwork() {
     const query = { network: toNetwork.value?.network, crossChain: 'Y' }
     const { data } = await useFetch<IToken[]>('/api/network/token', { query })
@@ -304,6 +308,16 @@
 
   const { address: receiverAddress } = useAccount()
 
+  /**
+   * token0: token from network A
+   * token1: token from network B
+   * stableTokenInDestinationChain: stable token in destination chain
+   *
+   * VD: swap token ORB  from MONCHAIN to BSC
+   * token0: ORB in MONCHAIN
+   * token1: ORB in BSC
+   * stableTokenInDestinationChain: USDT in BSC
+   */
   const handleInput = async (amount: string) => {
     console.log('handle input', amount)
     try {
@@ -330,6 +344,12 @@
       console.log('amountInWei', amountInWei)
 
       const stableTokenInDestinationChain = listToken.value.find((token) => token.stable && token.chainId === toNetwork.value?.chainId)
+      const nativeTokenInSourceChain = listTokenFrom.value.find((token) => token.address === zeroAddress && token.chainId === fromNetwork.value?.chainId)
+      if (!nativeTokenInSourceChain) {
+        isFetchQuote.value = false
+        console.error('No stable token in source chain')
+        return
+      }
       if (!stableTokenInDestinationChain) {
         isFetchQuote.value = false
         console.error('No stable token in destination chain')
@@ -349,7 +369,7 @@
       const getBestRoute = () =>
         SmartRouter.getV3CandidatePools({
           onChainProvider: () => _publicClient,
-          subgraphProvider: () => v3SubgraphClient as SubgraphProvider,
+          subgraphProvider: () => v3SubgraphClient as any,
           currencyA: inputStableToken,
           currencyB: token1.value!,
           subgraphFallback: true
@@ -377,60 +397,158 @@
         console.error('No trade found')
         return
       }
+      buildBodyForBridge(_trade)
+      const getFeeRs = await $fetch<unknown>('/api/bridge/fee', {
+        method: 'POST',
+        body: JSON.stringify(bridgeBody.value)
+      })
+      console.log('>>> / getFeeRs:', getFeeRs)
+      const { feeNetwork, feeProtocolAmount, feeProtocolDecimals } = getFeeRs.data
+      // TODO: update 18 to native token fromNetwork decimals
+      fee.network = Decimal(feeNetwork || 0)
+        .div(10 ** 18)
+        .toFixed()
+      fee.networkSymbol = nativeTokenInSourceChain.symbol
+      fee.networkDecimals = nativeTokenInSourceChain.decimals
+      fee.protocol = Decimal(feeProtocolAmount || 0)
+        .div(10 ** feeProtocolDecimals)
+        .toSignificantDigits(feeProtocolDecimals)
+        .toFixed()
+      fee.protocolSymbol = stableTokenInDestinationChain.tokenSymbol
 
-      const routes: RouteInput[] = []
-      const routesBestTrade = _trade.routes as Route[]
-      for (let i = 0; i < routesBestTrade.length; i++) {
-        const route = routesBestTrade[i]
-
-        const liquidity = (route.pools[0] as V3Pool).liquidity.toString()
-        const sqrtRatioX96 = (route.pools[0] as V3Pool).sqrtRatioX96
-        const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
-
-        const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
-        let nextPrice: Decimal = new Decimal(0)
-        if (zeroToOne) {
-          // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
-          nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
-        } else {
-          // √(Pnew) = (Δy / L) + √(Pcurrent)
-          nextPrice = new Decimal(_trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
-        }
-        const sqrtPriceLimitX96 = nextPrice
-          .sqrt()
-          .mul(2 ** 96)
-          .toNumber()
-
-        routes.push({
-          tokenInAddress: route.inputAmount.currency.wrapped.address,
-          tokenOutAddress: route.outputAmount.currency.wrapped.address,
-          fee: (route.pools[0] as V3Pool).fee as number,
-          amountOut: Number(route.outputAmount.numerator),
-          amountInMaximum: Number(route.inputAmount.numerator),
-          sqrtPriceLimitX96: sqrtPriceLimitX96
-        })
+      // TODO: Check lai cho nay nhe
+      if (!_trade.routes.length) {
+        console.error('No route found')
+        return
       }
-      amountOut.value = _trade.outputAmount.toExact()
+      const outputAmount = _trade.routes[0].outputAmount
+      const BASE_FEE_PERCENT = 10 ** 6
+      let feeBridge = 0
+      for (const pool of _trade.routes[0].pools) {
+        if ('fee' in pool === false) {
+          throw new Error('Fee should not be in pool')
+        }
+        feeBridge += (Number(pool?.fee || 0) / BASE_FEE_PERCENT) * Number(outputAmount.numerator / outputAmount.denominator)
+      }
+      fee.bridge = Decimal(feeBridge)
+        .div(10 ** token0.value!.decimals)
+        .toFixed()
+      fee.bridgeSymbol = token0.value?.symbol || '---'
 
-      // Call to bridge contract
-      const lifiContractAddress = listNetwork.value.find((item) => item.chainId === fromNetwork.value?.chainId)?.lifiContractAddress as `0x${string}`
-      if (!lifiContractAddress) {
-        console.error('No lifi contract address')
+      //
+      amountOut.value = Decimal(outputAmount.toSignificant(token0.value!.decimals)).sub(Decimal(fee.bridge)).toFixed()
+      //
+      //  Check allowance
+      //
+      const allowance = (await readContract(config, {
+        abi: ABI_TOKEN,
+        address: token0.value?.wrapped.address as `0x${string}`,
+        functionName: 'allowance',
+        args: [address.value, getLifiContractAddress()]
+      })) as bigint
+      if (BigInt(allowance) < BigInt(amountInWei)) {
+        stepBridge.value = 'CONFIRM_BRIDGE'
+      }
+    } catch (_error) {
+      console.error('🚀 ~ handleInput ~ _error:', _error)
+      isFetchQuote.value = false
+      notEnoughLiquidity.value = true
+    } finally {
+      isFetchQuote.value = false
+    }
+  }
+
+  const bridgeBody = ref<Record<string, unknown> | null>(null)
+  function buildBodyForBridge(_trade: SmartRouterTrade<TradeType>) {
+    const routes: RouteInput[] = []
+    const routesBestTrade = _trade.routes as Route[]
+    for (let i = 0; i < routesBestTrade.length; i++) {
+      const route = routesBestTrade[i]
+
+      const liquidity = (route.pools[0] as V3Pool).liquidity.toString()
+      const sqrtRatioX96 = (route.pools[0] as V3Pool).sqrtRatioX96
+      const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
+
+      const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
+      let nextPrice: Decimal = new Decimal(0)
+      if (zeroToOne) {
+        // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
+        nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(_trade.inputAmount.numerator.toString())).pow(2)
+      } else {
+        // √(Pnew) = (Δy / L) + √(Pcurrent)
+        nextPrice = new Decimal(_trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
+      }
+      const sqrtPriceLimitX96 = nextPrice
+        .sqrt()
+        .mul(2 ** 96)
+        .toNumber()
+
+      routes.push({
+        tokenInAddress: route.inputAmount.currency.wrapped.address,
+        tokenOutAddress: route.outputAmount.currency.wrapped.address,
+        fee: (route.pools[0] as V3Pool).fee as number,
+        amountOut: Number(route.outputAmount.numerator),
+        amountInMaximum: Number(route.inputAmount.numerator),
+        sqrtPriceLimitX96: sqrtPriceLimitX96
+      })
+    }
+
+    // Call to bridge contract
+    const lifiContractAddress = getLifiContractAddress()
+    bridgeBody.value = {
+      contractAddress: lifiContractAddress,
+      chainId: fromNetwork.value.chainId,
+      destinationChainId: toNetwork.value!.chainId as number,
+      receiverAddress: receiverAddress.value,
+      sendingAssetId: token0.value?.address as `0x${string}`,
+      receiverAssetId: token1.value?.address as `0x${string}`,
+      amountIn: Number(_trade.inputAmount.numerator),
+      routes: routes
+    }
+  }
+  /**
+   * Get lifi contract address from FROM_NETWORK
+   */
+  const getLifiContractAddress = () => {
+    const lifiContractAddress = listNetwork.value.find((item) => item.chainId === fromNetwork.value?.chainId)?.lifiContractAddress as `0x${string}`
+    if (!lifiContractAddress) {
+      throw new Error('Invalid lifi contract address')
+    }
+    return lifiContractAddress
+  }
+
+  const handleSelectToken = (token: IToken) => {
+    form.value.token = token
+  }
+
+  const handleApprove = async () => {
+    try {
+      isConfirmApprove.value = true
+      await approveToken(token0.value?.address as string, getLifiContractAddress(), MAX_NUMBER_APPROVE, (status) => {
+        if (status === 'SUCCESS') {
+          isConfirmApprove.value = false
+          handleSwap()
+        }
+      })
+    } catch (error) {
+      console.error('Approve failed:', error)
+    } finally {
+      isConfirmApprove.value = false
+    }
+  }
+
+  const handleSwap = async () => {
+    try {
+      isSwapping.value = true
+      if (!bridgeBody.value) {
+        console.error('No bridge body')
         return
       }
       const swapResult = await $fetch('/api/bridge/sign/relay-transfer', {
         method: 'POST',
-        body: {
-          contractAddress: lifiContractAddress,
-          chainId: fromNetwork.value.chainId,
-          destinationChainId: toNetwork.value!.chainId as number,
-          receiverAddress: receiverAddress.value,
-          sendingAssetId: token0.value?.address as `0x${string}`,
-          receiverAssetId: token1.value?.address as `0x${string}`,
-          amountIn: Number(_trade.inputAmount.numerator),
-          routes: routes
-        }
+        body: JSON.stringify(bridgeBody.value)
       })
+      console.log('BODY', bridgeBody.value)
 
       // Call to lifi contract
       const bridgeData = {
@@ -438,7 +556,7 @@
         bridge: 'relay' as const, // Hằng số kiểu string
         integrator: swapResult.data.iterator as string, // Định rõ kiểu dữ liệu
         referrer: zeroAddress, // Định rõ kiểu Address
-        sendingAssetId: (form.value.token.tokenAddress || zeroAddress) as Address,
+        sendingAssetId: (token0.value?.address || zeroAddress) as Address,
         receiver: receiverAddress.value,
         minAmount: parseUnits(form.value.amount.toString(), +form.value.token.tokenDecimals),
         destinationChainId: toNetwork.value?.chainId as number, // Chắc chắn kiểu số
@@ -463,16 +581,27 @@
       })
       const gasEstimate = await publicClientFrom.getGasPrice()
       const datas = [bridgeData, relayData]
+      console.log('>>> / bridgeData, relayData:', datas)
+
       const calldata = encodeFunctionData({
         abi: ABI_RELAY_FACET,
         functionName: 'startBridgeTokensViaRelay',
         args: datas
       })
 
+      // Nếu trường hợp FROM là đồng Native thì mới truyền amount vào value
+      // Nếu không thì truyền 0
+      const value = token0.value?.address === zeroAddress ? BigInt(form.value.amount) * BigInt(10 ** +token0.value.decimals) : BigInt(0)
+      const valueWithFee = BigInt(
+        Decimal(value.toString())
+          .add(Decimal(fee.network).times(10 ** fee.networkDecimals))
+          .toNumber()
+      )
+
       const txHash = await sendTransaction(config, {
-        to: lifiContractAddress,
+        to: getLifiContractAddress(),
         data: calldata,
-        value: BigInt(form.value.amount) * BigInt(10 ** +form.value.token.tokenDecimals),
+        value: valueWithFee, // value = value + fee network
         gas: BigInt(300000), // Định kiểu BigInt
         gasPrice: gasEstimate as bigint // Đảm bảo kiểu bigint
       })
@@ -482,268 +611,31 @@
         pollingInterval: 2000
       })
 
-      console.log(status)
+      if (status === 'success') {
+        bridgeSuccess(+form.value.amount, token0.value?.symbol || '', +form.value.amount, `https://dev.explorer.${toNetwork.value?.network}.info/tx/${txHash}`)
+      }
 
       isFetchQuote.value = false
-    } catch (_error) {
-      console.error('🚀 ~ handleInput ~ _error:', _error)
-      isFetchQuote.value = false
-      notEnoughLiquidity.value = true
+    } catch (error) {
+      console.error('Transaction failed:', error)
     } finally {
-      isFetchQuote.value = false
+      isSwapping.value = false
     }
-  }
-
-  const handleSelectToken = (token: IToken) => {
-    form.value.token = token
   }
 
   const handleBridge = async () => {
     // approveAndSend.value = !approveAndSend.value
-    bridgeSuccess(15, 'ATOM', 123.566, 'https://explorer.monchain.info')
-
-    try {
-      const amount = form.value.amount as string
-      // khởi tạo token0 = new Token() với thông tin token 0
-      // khởi tạo token1 = new Token() với thông tin token 1
-      // tạm thời lấy fee = 1%
-      const outputAmountSubFee = Number(form.value.amount) * (1 - feeBridge / 100)
-      const outputAmountInWei = outputAmountSubFee * 10 ** Number(form.value.token.tokenDecimals)
-      const token0BestTradeInput = new Token(
-        stableDestinationChainIdToken.value?.chainId as ChainId,
-        stableDestinationChainIdToken.value?.tokenAddress as `0x${string}`,
-        +stableDestinationChainIdToken.value!.tokenDecimals,
-        stableDestinationChainIdToken.value!.tokenSymbol,
-        stableDestinationChainIdToken.value?.name
-      )
-      console.log('token0BestTradeInput', token0BestTradeInput)
-
-      const token1BestTradeInput = new Token(
-        token1.value?.chainId as ChainId,
-        (token1.value?.wrapped.address === '0x0000000000000000000000000000000000000000'
-          ? toNetwork.value?.wrapTokenAddress
-          : token1.value?.wrapped.address) as `0x${string}`,
-        +token1.value!.decimals,
-        token1.value!.symbol,
-        token1.value?.name
-      )
-      console.log('token1BestTradeInput', token1BestTradeInput)
-
-      const _bestTrade = (await getBestTradeV2({
-        token0: token0BestTradeInput,
-        token1: token1BestTradeInput,
-        inputAmount: outputAmountInWei,
-        type: TradeType.EXACT_OUTPUT,
-        chainId: token1BestTradeInput.chainId!
-      })) as SwapOutput
-
-      console.info('_bestTrade: ', _bestTrade)
-
-      const { address, isConnected } = useAccount()
-
-      const routes: RouteInput[] = []
-      const trade = _bestTrade as SmartRouterTrade<TradeType>
-      const routesBestTrade = trade.routes as Route[]
-      for (let i = 0; i < routesBestTrade.length; i++) {
-        const route = routesBestTrade[i]
-
-        const liquidity = (route.pools[0] as V3Pool).liquidity.toString()
-        const sqrtRatioX96 = (route.pools[0] as V3Pool).sqrtRatioX96
-        const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
-
-        const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
-        let nextPrice: Decimal = new Decimal(0)
-        if (zeroToOne) {
-          // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
-          nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
-        } else {
-          // √(Pnew) = (Δy / L) + √(Pcurrent)
-          nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
-        }
-        const sqrtPriceLimitX96 = nextPrice
-          .sqrt()
-          .mul(2 ** 96)
-          .toNumber()
-
-        routes.push({
-          tokenInAddress: route.inputAmount.currency.wrapped.address,
-          tokenOutAddress: route.outputAmount.currency.wrapped.address,
-          fee: (route.pools[0] as V3Pool).fee as number,
-          amountOut: route.outputAmount.numerator,
-          amountInMaximum: route.inputAmount.numerator,
-          sqrtPriceLimitX96: BigInt(sqrtPriceLimitX96)
-        })
-      }
-
-      const body = {
-        contractAddress: contractAddress.lifiContractAddress[fromNetwork.value!.chainId],
-        chainId: fromNetwork.value?.chainId as number,
-        destinationChainId: toNetwork.value?.chainId as number,
-        receiverAddress: address,
-        sendingAssetId: token0.value!.address,
-        receiverAssetId: token1.value!.address,
-        amountIn: +amount * 10 ** Number(form.value.token.tokenDecimals),
-        routes: routes
-      }
-
-      // const response = {
-      //   data: {
-      //     requestId: '0x30314a504a383446423053593453414446444e58534644394242000000000000',
-      //     signature: '0x43c9ddbb1db90a0d218bd5c2339ca25ff8539b92d674ef47b2344811b70d977924ee8a0defd0ff9cefaf084a6a0420715b2f0e393c16d7106ae98dd5a9889ae71c',
-      //     iterator: 'SERVICE'
-      //   },
-      //   meta: {
-      //     httpStatusCode: 200,
-      //     code: 'OK',
-      //     message: 'Successfully'
-      //   }
-      // }
-      const res = (await $fetch('/api/v1/sign/relay-transfer', { body: body, method: 'POST' })) as unknown as Response
-      console.info(res)
-      if (res.meta.httpStatusCode !== 200) {
-        // xử lý lỗi
-        return
-      }
-
-      if (!isConnected.value) throw new Error('Wallet not connected')
-      const liFiDiamondAddress = contractAddress.lifiContractAddress[fromNetwork.value!.chainId]
-      const bridgeData = {
-        transactionId: res.data.requestId, // Kiểu dữ liệu string
-        bridge: 'relay' as const, // Hằng số kiểu string
-        integrator: res.data.iterator as string, // Định rõ kiểu dữ liệu
-        referrer: zeroAddress, // Định rõ kiểu Address
-        sendingAssetId: (form.value.token.tokenAddress || zeroAddress) as Address,
-        receiver: address,
-        minAmount: parseUnits(form.value.amount.toString(), +form.value.token.tokenDecimals),
-        destinationChainId: toNetwork.value?.chainId as number, // Chắc chắn kiểu số
-        hasSourceSwaps: false,
-        hasDestinationCall: false
-      }
-      const relayData = {
-        requestId: res.data.requestId as string,
-        nonEVMReceiver: zeroHash, // Định rõ kiểu Hex
-        receivingAssetId: pad(token1.value!.address, { size: 32 }), // Kiểu Address
-        signature: res.data.signature as Hex // Định rõ kiểu Hex
-      }
-
-      const publicClient = createPublicClient({
-        chain: CHAINS[fromNetwork.value!.chainId],
-        transport: http(fromNetwork.value!.rpc),
-        batch: {
-          multicall: {
-            batchSize: 1024 * 200
-          }
-        }
-      })
-      const gasEstimate = await publicClient.getGasPrice()
-      // ✅ Gọi contract bằng wagmi actions
-      // const tx = await writeContract(config, {
-      //   address: liFiDiamondAddress,
-      //   abi: ABI_RELAY_FACET,
-      //   functionName: 'startBridgeTokensViaRelay',
-      //   args: [bridgeData, relayData],
-      //   value: BigInt(form.value.amount) * BigInt(10 ** +form.value.token.tokenDecimals),
-      //   gas: BigInt(300000), // Định kiểu BigInt
-      //   gasPrice: gasEstimate as bigint // Đảm bảo kiểu bigint
-      // })
-
-      const datas = [bridgeData, relayData]
-
-      const calldata = encodeFunctionData({
-        abi: ABI_RELAY_FACET,
-        functionName: 'startBridgeTokensViaRelay',
-        args: datas
-      })
-
-      if (!liFiDiamondAddress) throw new Error('Invalid lifi contract address')
-
-      const txHash = await sendTransaction(config, {
-        to: liFiDiamondAddress,
-        data: calldata,
-        value: BigInt(form.value.amount) * BigInt(10 ** +form.value.token.tokenDecimals),
-        gas: BigInt(300000), // Định kiểu BigInt
-        gasPrice: gasEstimate as bigint // Đảm bảo kiểu bigint
-      })
-
-      const { status } = await waitForTransactionReceipt(config, {
-        hash: txHash,
-        pollingInterval: 2000
-      })
-
-      console.log(status)
-    } catch (error) {
-      console.error('Transaction failed:', error)
+    // bridgeSuccess(15, 'ATOM', 123.566, 'https://explorer.monchain.info')
+    if (!isConfirmApprove.value) {
+      await handleApprove()
+    } else if (!isConfirmSwap.value) {
+      await handleSwap()
     }
   }
 
-  // // Gọi hàm với useContractWrite
-  // const { write, isLoading, isSuccess, isError, data } = useContractWrite(writeConfig)
-  // console.log(write, isLoading, isSuccess, isError, data)
-
-  // try {
-  //   if (isDisabledButton.value) return
-  //   // step 1: next step 2
-  //   if (stepBridge.value === 'SELECT_TOKEN') {
-  //     stepBridge.value = 'CONFIRM_BRIDGE'
-  //     return
-  //   }
-  //   // step 2: approve
-  //   if (token0IsToken.value) {
-  //     if (isNeedAllowance0.value) {
-  //       await approveToken(form.value.token0.address as string, CONTRACT_ADDRESS.SWAP_ROUTER_V3, MAX_NUMBER_APPROVE, (status) => {
-  //         if (status === 'SUCCESS') {
-  //           swap()
-  //         }
-  //         isConfirmApprove.value = false
-  //       })
-  //     } else {
-  //       // step 3: swap
-  //       console.info('STEP 3 ')
-  //       await swap()
-  //     }
-  //   } else {
-  //     // step 3: swap
-  //     console.info('STEP 3 ')
-  //     await swap()
-  //   }
-  // } catch (error) {
-  //   console.log('🚀 ~ handleBridge ~ error:', error)
-  // }
-  // }
-
-  // const { approveToken } = useApproveToken()
-
-  // const isNeedAllowance0 = computed(() => {
-  //   const allowance = new Decimal(allowance0.value?.toString() || '0').div(10 ** +form.value.token0.decimals)
-  //   return allowance0.value === BigInt(0) || allowance.lessThan(0)
-  // })
-
-  // const swap = async () => {
-  //   try {
-  //     isConfirmApprove.value = false
-  //     isSwapping.value = true
-  //     await useExactInputMulticall(bestTrade.value as SwapOutput)
-  //     isSwapping.value = false
-  //     stepBridge.value = 'SELECT_TOKEN'
-  //     // form.value.amountIn = ''
-  //     // form.value.amountOut = ''
-  //     form.value.tradingFee = 0
-  //   } catch (error) {
-  //     console.log('🚀 ~ swap ~ error:', error)
-  //     console.info(' (FormSwap.client.vue:319) sign sao sao sao saii  xong r ne')
-  //     isConfirmSwap.value = false
-  //     isSwapping.value = false
-  //     el1?.close()
-  //   }
-  // }
-
-  // const el1: ReturnType<typeof ElNotification> | null = null
-
-  // const { handleImageError } = useErrorImage()
-
   const bridgeSuccess = (amount: number, token: string, value: number, explorerLink: string) => {
     const message = `
-          <p>${amount} ${token} ⇒ ${value} USDC.</p>
+          <p>${amount} ${token} ⇒ ${value} ${token}.</p>
           <p>View on <a style="text-decoration: underline;" href="${explorerLink}" target="_blank" rel="noopener noreferrer">Mon Explorer</a></p>
       `
     // const isMobile = window.innerWidth <= 768
