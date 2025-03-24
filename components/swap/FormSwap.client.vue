@@ -9,7 +9,6 @@
           :token="form.token0"
           :balance="balance0?.formatted"
           :step-swap
-          :locked="isFetchQuote"
           type="BASE"
           class="h-[138px] bg-[#EFEFFF] sm:h-[120px]"
           @select-token="handleOpenPopupSelectToken"
@@ -30,7 +29,6 @@
           :token="form.token1"
           :balance="balance1?.formatted"
           :step-swap
-          :locked="isFetchQuote"
           type="QUOTE"
           class="h-[124px] bg-[#F3F8FF] sm:h-[100px]"
           @select-token="handleOpenPopupSelectToken"
@@ -226,7 +224,10 @@
   const poolAddress = ref<string>('')
   const typedValue = ref('')
   const currentTypeInput = ref<TYPE_SWAP>('BASE')
+
+  let latestRequestId = 0
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
+    const requestId = ++latestRequestId
     try {
       notEnoughLiquidity.value = false
       typedValue.value = amount
@@ -258,6 +259,11 @@
         })
         console.log('🚀 ~ handleInput ~ _bestTrade:', _bestTrade)
 
+        if (requestId !== latestRequestId) {
+          console.log('🚀 ~ handleInput ~ Aborting: newer request detected')
+          return
+        }
+
         bestTrade.value = _bestTrade
         poolAddress.value = (_bestTrade?.routes[0].pools[0] as V3Pool)?.address ?? ''
         form.value.amountOut = _bestTrade.outputAmount.toSignificant(6)
@@ -280,6 +286,12 @@
           type: TradeType.EXACT_OUTPUT,
           chainId: currentNetwork.value.chainId // chainId of wallet
         })
+
+        if (requestId !== latestRequestId) {
+          console.log('🚀 ~ handleInput ~ Aborting: newer request detected')
+          return
+        }
+
         if (_bestTrade) {
           bestTrade.value = _bestTrade
           form.value.amountIn = bestTrade.value.inputAmount.toSignificant(6)
@@ -293,8 +305,12 @@
       isFetchQuote.value = false
     } catch (_error) {
       console.error('🚀 ~ handleInput ~ _error:', _error)
-      isFetchQuote.value = false
-      notEnoughLiquidity.value = true
+      // Kiểm tra requestId trước khi xử lý lỗi
+      if (requestId === latestRequestId) {
+        console.error('🚀 ~ handleInput ~ _error:', _error)
+        isFetchQuote.value = false
+        notEnoughLiquidity.value = true
+      }
     }
   }
 

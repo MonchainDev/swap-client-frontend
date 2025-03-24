@@ -73,7 +73,7 @@
     type: TYPE_SWAP
     balance: string | undefined
     stepSwap: StepSwap
-    locked: boolean
+    locked?: boolean
   }
 
   const props = withDefaults(defineProps<IProps>(), {
