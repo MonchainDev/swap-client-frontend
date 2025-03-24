@@ -74,7 +74,14 @@
           window.open(`https://link.trustwallet.com/open_url?coin_id=60&url=${window.location.href}`, '_blank')
         }
       } else if (type === 'METAMASK') {
-        if (window?.ethereum?._metamask) {
+        const isInstalled1 = window?.ethereum?.isMetaMask && !window?.ethereum?.isTrust
+        const isInstalled2 = window?.ethereum?.providers
+          ? (window?.ethereum?.providers as { isMetaMask: boolean | undefined; isTrust: boolean | undefined }[]).some(
+              (provider) => provider.isMetaMask && !provider.isTrust
+            )
+          : isInstalled1
+
+        if (isInstalled1 && isInstalled2) {
           await connectAsync({ connector: connectors[0], chainId: chainId.value })
         } else {
           window.open(`https://metamask.app.link/dapp/${window.location.href}`, '_blank')
