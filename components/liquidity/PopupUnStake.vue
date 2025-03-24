@@ -50,6 +50,7 @@
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import { hexToBigInt } from 'viem'
+  import { LIST_NETWORK } from '~/config/networks'
   import { config } from '~/config/wagmi'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { IPosition } from '~/types/position.type'
@@ -89,7 +90,11 @@
   const { address: account } = useAccount()
   const { showToastMsg } = useShowToastMsg()
   const { setOpenPopup } = useBaseStore()
-  const { chainId } = useActiveChainId()
+  // const { chainId } = useActiveChainId()
+
+  const chainId = computed(() => {
+    return LIST_NETWORK.find((item) => item.network === props.position?.network)?.chainId
+  })
 
   const handleUnStake = async () => {
     try {
@@ -103,7 +108,8 @@
         const hash = await sendTransaction(config, {
           to: contractAddressMasterChef,
           data: calldata,
-          value: hexToBigInt(value)
+          value: hexToBigInt(value),
+          chainId: chainId.value
         })
 
         console.log('🚀 ~ handleUnStake ~ hash:', hash)

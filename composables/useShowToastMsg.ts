@@ -16,7 +16,7 @@ export default function useShowToastMsg() {
         h('div', { class: 'flex items-start gap-3' }, [
           h('div', { class: ' w-6' }, [h('img', { src: `${icons[type]}`, class: 'size-6' })]),
           h('div', { class: 'flex flex-col gap-2 flex-1' }, [
-            h('div', { class: 'text-sm text-primary font-semibold line-clamp-2' }, title),
+            h('div', { class: 'text-sm text-primary font-semibold line-clamp-3' }, title),
             href
               ? h('span', { class: 'text-sm text-primary flex gap-1' }, [
                   h('span', {}, 'View on'),
