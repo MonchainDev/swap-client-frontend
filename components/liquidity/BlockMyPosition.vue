@@ -45,7 +45,7 @@
           <span class="font-semibold">{{ formattedData.length }} positions</span>
           <BaseTab v-model:model="tabActive" :list="listTab" />
         </div>
-        <div v-loading="status === 'pending'" class="mt-6 h-[235px]">
+        <div v-loading="isLoading" class="mt-6 h-[235px]">
           <template v-if="formattedData.length">
             <ElScrollbar>
               <MyPositionItem
@@ -128,7 +128,7 @@
   //   }
   // )
 
-  const { data, refetch, status } = useQuery({
+  const { data, refetch, isLoading } = useQuery({
     queryKey: [props.pool.poolAddress, address.value],
     queryFn: async () => {
       const result = await $fetch<IPositionOrigin[]>(
