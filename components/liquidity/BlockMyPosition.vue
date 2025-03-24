@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-[22px]">
+  <div class="mt-12 flex flex-col gap-[22px]">
     <span class="text-2xl font-semibold leading-7">My Positions</span>
     <div class="grid grid-cols-[374px_1fr] gap-6">
       <div class="rounded-lg bg-white px-6 pb-6 pt-4 shadow-sm">
