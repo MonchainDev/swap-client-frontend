@@ -7,7 +7,7 @@ const DEPLOYER_ADDRESSES_BASE = '0xEFBA107c5ede093f6A0CfE3E53acf2715D94E32e'
 const DEPLOYER_ADDRESSES = {
   [ChainId.MON_TESTNET]: DEPLOYER_ADDRESSES_BASE,
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0xA2735CD027d3280208Bc8A358bA638d9a34a4e5e',
+  [ChainId.BSC_TESTNET]: '0xea1c0c1478a748a6bdba0e9288e269af0cc4a221',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, Address>
@@ -27,7 +27,7 @@ const NFT_POSITION_MANAGER_ADDRESS_BASE = '0x3beEDf6cE77CBdD85f04E1B5Cdd82c04d85
 const NFT_POSITION_MANAGER_ADDRESSES = {
   [ChainId.MON_TESTNET]: NFT_POSITION_MANAGER_ADDRESS_BASE,
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0xCf0184B9BB3CdD33dFDF78E132e5E3D29c9bc209',
+  [ChainId.BSC_TESTNET]: '0x89342a352f198f4b5726d4B1a6CbA187098EfdE0',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, Address>
@@ -39,7 +39,7 @@ const FACTORY_ADDRESS_BASE = '0xF04f6ACf17C9e884D5eBE4aa6804cFD16CdEe32B'
 const FACTORY_ADDRESSES = {
   [ChainId.MON_TESTNET]: FACTORY_ADDRESS_BASE,
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0xE74F82117cC021100a98320038427F991C88b8bD',
+  [ChainId.BSC_TESTNET]: '0x00e843420A311f972F68C32d905921d17772B6A6',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, Address>
@@ -47,7 +47,7 @@ const FACTORY_ADDRESSES = {
 const masterChefV3Addresses = {
   [ChainId.MON_TESTNET]: '0x49aE1Bb3C0d9bceE09611282A295aC0180494C04',
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0x579CEB200954c0470b3f2FfE1069eef749d00F8b',
+  [ChainId.BSC_TESTNET]: '0x3fFBCe2e4c0C023e43C1f529FC052a3eAb0Dc5A1',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, string>
@@ -63,7 +63,7 @@ const swapRouterV3Addresses = {
 const lifiContractAddresses = {
   [ChainId.MON_TESTNET]: '0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d',
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0x579CEB200954c0470b3f2FfE1069eef749d00F8b',
+  [ChainId.BSC_TESTNET]: '0x03e078248A4cD85633273d905d4F026C68935d0f',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, string>
