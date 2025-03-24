@@ -148,11 +148,16 @@
     }
   })
 
+  const emit = defineEmits<{
+    'change-slippage': []
+  }>()
+
   const handleChangeSlippage = (value: string, byPassError = false) => {
     if (isErrorSlippage.value && !byPassError) return
     settingSlippage.value = value
     slippage.value = value
     editSlippage.value = false
+    emit('change-slippage')
   }
 
   function formatNumberInput(value: string, _isSplit = true) {

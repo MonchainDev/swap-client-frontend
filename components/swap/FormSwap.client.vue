@@ -68,7 +68,7 @@
     </div>
 
     <template v-if="isQuoteExist">
-      <InfoSwap v-model:edit-slippage="isEditSlippage" :step-swap />
+      <InfoSwap v-model:edit-slippage="isEditSlippage" :step-swap @change-slippage="handleInput(typedValue, currentTypeInput)" />
     </template>
 
     <template v-if="!isEditSlippage">
@@ -224,9 +224,13 @@
   }
 
   const poolAddress = ref<string>('')
+  const typedValue = ref('')
+  const currentTypeInput = ref<TYPE_SWAP>('BASE')
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
     try {
       notEnoughLiquidity.value = false
+      typedValue.value = amount
+      currentTypeInput.value = type
       if (!isToken0Selected.value || !isToken1Selected.value) return
       isFetchQuote.value = true
       if (!amount) {
