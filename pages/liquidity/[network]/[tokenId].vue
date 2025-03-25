@@ -139,6 +139,7 @@
   import { gql } from 'graphql-request'
   import ChartLine from '~/components/chart/ChartLine.vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
+  import { LIST_NETWORK } from '~/config/networks'
   import { Bound, ChainId } from '~/types'
   import type { IPosition } from '~/types/position.type'
 
@@ -210,13 +211,18 @@
   })
 
   const { isConnected, address: account } = useAccount()
-  const { chainId } = useActiveChainId()
+  // const { chainId } = useActiveChainId()
   const { feeAmount, form, existingPosition, exchangeRateBaseCurrency, exchangeRateQuoteCurrency, baseCurrency, quoteCurrency } =
     storeToRefs(useLiquidityStore())
 
+  const networkOfPool = computed(() => {
+    const networkUrl = route.params.network
+    return LIST_NETWORK.find((item) => item.network.toUpperCase() === networkUrl.toUpperCase())
+  })
+
   const { isLoading, position: _position, refetch } = useV3PositionsFromTokenId(tokenId.value)
 
-  const masterChefV3 = computed(() => getMasterChefV3Address(chainId.value))
+  const masterChefV3 = computed(() => getMasterChefV3Address(networkOfPool.value?.chainId))
 
   const { tokenIds } = useV3TokenIdsByAccount(masterChefV3.value)
   const isStakeMV3 = computed(() => tokenIds.value?.includes(tokenId.value!))
@@ -244,9 +250,9 @@
 
   watchEffect(async () => {
     if (_position.value) {
-      token0.value = await getTokenByChainId(token0Address.value as string, chainId.value || ChainId.MON_TESTNET)
+      token0.value = await getTokenByChainId(token0Address.value as string, networkOfPool.value?.chainId || ChainId.MON_TESTNET)
       console.log('🚀 ~ watchEffect ~ token0:', token0.value)
-      token1.value = await getTokenByChainId(token1Address.value as string, chainId.value || ChainId.MON_TESTNET)
+      token1.value = await getTokenByChainId(token1Address.value as string, networkOfPool.value?.chainId || ChainId.MON_TESTNET)
       console.log('🚀 ~ watchEffect ~ token1:', token1.value)
 
       feeAmount.value = fee.value ?? 0
@@ -453,7 +459,7 @@
 
   async function getListTxPosition(positionId: string) {
     try {
-      const client = getGraphQLClient(chainId.value!)
+      const client = getGraphQLClient(networkOfPool.value!.chainId)
       // Định nghĩa query với variable
       const query = gql`
         query MyQuery($positionId: String!) {
@@ -565,7 +571,7 @@
 
   async function getDataChart(poolAddress: string | undefined) {
     try {
-      const client = getGraphQLClient(chainId.value!)
+      const client = getGraphQLClient(networkOfPool.value!.chainId)
       // Định nghĩa query với variable
       const query = gql`
         query MyQuery($poolAddress: String!) {
