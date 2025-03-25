@@ -162,7 +162,7 @@
 
   import { ElNotification } from 'element-plus'
   import ABI_TOKEN from '~/constant/contract/contract-token.json'
-  import { type ChainId, type IToken } from '~/types'
+  import { ChainId, type IToken } from '~/types'
   import PopupSellToken from '../popup/PopupSellToken.vue'
   import ChooseNetworkBridge from './ChooseNetworkBridge.vue'
   import InputBridge from './InputBridge.vue'
@@ -178,6 +178,7 @@
   import { config } from '~/config/wagmi'
   import { CHAINS } from '~/utils/config/chains'
   import { MAX_NUMBER_APPROVE } from '~/constant'
+  import { URL_GRAPH } from '~/config/graphql'
 
   export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE'
 
@@ -219,7 +220,7 @@
 
   // const approveAndSend = ref<boolean>(false)
   const { isConnected, address, address: receiverAddress } = useAccount()
-  const { chains, switchChain } = useSwitchChain()
+  const { switchChain } = useSwitchChain()
   const { approveToken } = useApproveToken()
 
   const stepBridge = ref<StepBridge>('SELECT_TOKEN')
@@ -287,19 +288,14 @@
     console.info('tokens: ', listToken.value)
   }
 
-  const stableSourceChainIdToken = ref<IToken>()
-
   async function handleSelectToNetwork() {
     if (!fromNetwork.value) {
-      console.error('Not found destination network')
+      console.error('Not found source network')
       return
     }
-    const query = { network: fromNetwork.value?.network, crossChain: 'Y' }
-    const { data } = await useFetch<IToken[]>('/api/network/token', { query })
-
-    stableSourceChainIdToken.value = data.value?.find((item) => item.stable)
-    console.info('stableSourceChainIdToken.value', stableSourceChainIdToken.value)
-    stableSourceChainIdToken.value && switchChain({ chainId: stableSourceChainIdToken.value?.chainId })
+    ElMessage.success(`Switch to ${fromNetwork.value.network}`)
+    form.value.amount = ''
+    switchChain({ chainId: fromNetwork.value?.chainId })
   }
 
   /**
@@ -345,26 +341,25 @@
       console.log('amountInWei', amountInWei)
 
       const stableTokenInSourceChain = listTokenFrom.value.find((token) => token.stable && token.chainId === fromNetwork.value?.chainId)
-      const stableTokenInDestinationChain = listToken.value.find((token) => token.stable && token.chainId === toNetwork.value?.chainId)
       const nativeTokenInSourceChain = listTokenFrom.value.find((token) => token.address === zeroAddress && token.chainId === fromNetwork.value?.chainId)
-      if (!nativeTokenInSourceChain) {
+      const stableTokenInDestinationChain = listToken.value.find((token) => token.stable && token.chainId === toNetwork.value?.chainId)
+      const nativeTokenInDestinationChain = listToken.value.find((token) => token.address === zeroAddress && token.chainId === toNetwork.value?.chainId)
+      if (!nativeTokenInSourceChain || !stableTokenInSourceChain || !stableTokenInDestinationChain || !nativeTokenInDestinationChain) {
         isFetchQuote.value = false
-        console.error('No stable token in source chain')
+        !nativeTokenInSourceChain && console.error('No native token in source chain')
+        !stableTokenInSourceChain && console.error('No stable token in source chain')
+        !nativeTokenInDestinationChain && console.error('No native token in destination chain')
+        !stableTokenInDestinationChain && console.error('No stable token in destination chain')
         return
       }
-      if (!stableTokenInDestinationChain) {
+      if (!token0.value || !token1.value || !toNetwork.value || !fromNetwork.value) {
         isFetchQuote.value = false
-        console.error('No stable token in destination chain')
+        !token0.value && console.error('No token0 value')
+        !token1.value && console.error('No token1 value')
+        !toNetwork.value && console.error('No toNetwork value')
+        !fromNetwork.value && console.error('No fromNetwork value')
         return
       }
-      console.log('stableTokenInDestinationChain', stableTokenInDestinationChain)
-      const inputStableToken = new Token(
-        stableTokenInDestinationChain.chainId as ChainId,
-        stableTokenInDestinationChain.address as `0x${string}`,
-        +stableTokenInDestinationChain.decimals,
-        stableTokenInDestinationChain.symbol,
-        stableTokenInDestinationChain.name
-      )
 
       if (token0.value?.address === stableTokenInSourceChain?.address) {
         console.log('[Bridge] token0 is stable token', stableTokenInDestinationChain)
@@ -375,15 +370,58 @@
         stepBridge.value = 'SELECT_TOKEN'
         await calculateFee(bridgeBody.value, nativeTokenInSourceChain, stableTokenInDestinationChain)
       } else {
+        let currencyA: Token
+        let currencyB: Token
+        if (token1.value?.address === zeroAddress) {
+          // Incase:
+          /**
+           * Nếu Token1 (token_to) là đồng native thì gọi best-trade với:
+           *  - currencyA: Stable token in source chain (VD: USDT in MONCHAIN)
+           *  - currencyB: Wrap native token in destinationchain (VD: WBNB in BSC)  => Lấy từ list network_to
+           *  - TradeType: EXACT_OUTPUT
+           */
+          currencyA = new Token(
+            stableTokenInSourceChain.chainId as ChainId,
+            stableTokenInSourceChain.address as `0x${string}`,
+            +stableTokenInSourceChain.decimals,
+            stableTokenInSourceChain.symbol,
+            stableTokenInSourceChain.name
+          )
+          currencyB = new Token(
+            toNetwork.value.chainId as ChainId,
+            toNetwork.value.wrapTokenAddress as `0x${string}`,
+            +nativeTokenInDestinationChain.decimals,
+            toNetwork.value.wrapToken, // Symbol
+            toNetwork.value.wrapToken // Name
+          )
+        } else {
+          // Incase:
+          /**
+           * Nếu Token1 (token_to) không phải là đồng native thì gọi best-trade với:
+           *  - currencyA: stable token in destination chain (VD: USDT in BSC)
+           *  - currencyB: Token1 (token_to)
+           *  - TradeType: EXACT_OUTPUT
+           */
+          currencyA = new Token(
+            stableTokenInDestinationChain.chainId as ChainId,
+            stableTokenInDestinationChain.address as `0x${string}`,
+            +stableTokenInDestinationChain.decimals,
+            stableTokenInDestinationChain.symbol,
+            stableTokenInDestinationChain.name
+          )
+          currencyB = token1.value
+        }
+        console.log('currencyA', currencyA)
+        console.log('currencyB', currencyB)
         // Get best trade
-        const v3SubgraphClient = new GraphQLClient('https://graph-bsc.monchain.info/subgraphs/name/v4')
+        const v3SubgraphClient = new GraphQLClient(URL_GRAPH[ChainId.BSC_TESTNET])
         const _publicClient = publicClient({ chainId: toNetwork.value!.chainId })
         const getBestRoute = () =>
           SmartRouter.getV3CandidatePools({
             onChainProvider: () => _publicClient,
             subgraphProvider: () => v3SubgraphClient as any,
-            currencyA: inputStableToken,
-            currencyB: token1.value!,
+            currencyA: currencyA,
+            currencyB: currencyB,
             subgraphFallback: true
           })
         const _v3Pools = await getBestRoute()
@@ -394,7 +432,7 @@
         })
         const _inputAmount = CurrencyAmount.fromRawAmount(token1.value!, Number(amountInWei))
         console.log('>>> / _inputAmount:', _inputAmount)
-        const _trade = await SmartRouter.getBestTrade(_inputAmount, inputStableToken, TradeType.EXACT_OUTPUT, {
+        const _trade = await SmartRouter.getBestTrade(_inputAmount, currencyA, TradeType.EXACT_OUTPUT, {
           gasPriceWei: () => _publicClient.getGasPrice(),
           maxHops: 2,
           maxSplits: 3,
@@ -624,7 +662,7 @@
 
       // Nếu trường hợp FROM là đồng Native thì mới truyền amount vào value
       // Nếu không thì truyền 0
-      const value = token0.value?.address === zeroAddress ? BigInt(form.value.amount) * BigInt(10 ** +token0.value.decimals) : BigInt(0)
+      const value = token0.value?.address === zeroAddress ? BigInt(Number(form.value.amount) * 10 ** +token0.value.decimals) : BigInt(0)
       const valueWithFee = BigInt(
         Decimal(value.toString())
           .add(Decimal(fee.value.network).times(10 ** fee.value.networkDecimals))

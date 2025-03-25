@@ -1,6 +1,6 @@
 import { Token } from '@monchain/swap-sdk-core'
 import { getBalance } from '@wagmi/core'
-import { useAccount, useBalance, useConfig, useReadContract } from '@wagmi/vue'
+import { useAccount, useBalance, useConfig, useReadContract, useSwitchChain } from '@wagmi/vue'
 import { defineStore } from 'pinia'
 import { LIST_NETWORK } from '~/config/networks'
 import { DEFAULT_SLIPPAGE, EMPTY_TOKEN } from '~/constant'
@@ -53,6 +53,7 @@ export const useBridgeStore = defineStore('bridge', () => {
     bridge: '0', //  fee tier (orb)
     bridgeSymbol: '' // symbol orb
   })
+  const { switchChain } = useSwitchChain()
 
   const { data: balance, refetch: _refetchBalance } = useBalance(
     computed(() => ({
@@ -80,7 +81,6 @@ export const useBridgeStore = defineStore('bridge', () => {
             _token0?.name
           )
         : undefined
-
       if (!address.value) {
         console.error('Address is required')
         setOpenPopup('popup-connect')
@@ -161,6 +161,9 @@ export const useBridgeStore = defineStore('bridge', () => {
             name: item.tokenSymbol
           }))
         : []
+      if (!fromNetwork.value) return
+      ElMessage.success(`Switch to ${fromNetwork.value.network}`)
+      switchChain({ chainId: fromNetwork.value.chainId })
     },
     watch: [() => !!fromNetwork.value?.network],
     immediate: true
