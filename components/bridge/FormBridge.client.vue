@@ -375,7 +375,7 @@
 
       if (token0.value?.address === stableTokenInSourceChain?.address) {
         console.log('[Bridge] token0 is stable token', stableTokenInDestinationChain)
-        buildBodyForBridge([], amountInWei)
+        bridgeBody.value = buildBodyForBridge([], amountInWei)
         amountOut.value = Decimal(amount).toFixed()
         fee.bridge = '0'
         fee.bridgeSymbol = token0.value?.symbol || ''
