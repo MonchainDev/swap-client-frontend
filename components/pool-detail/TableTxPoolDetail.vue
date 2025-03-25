@@ -1,10 +1,10 @@
 <template>
   <div class="mt-[34px] rounded-lg bg-white pb-[18px] pt-8 shadow-md">
-    <div class="flex items-center justify-between px-6">
+    <div class="flex items-center justify-between px-6 sm:mb-4 sm:flex-col sm:items-start sm:gap-5 sm:px-4">
       <span class="text-2xl font-semibold leading-7">Transactions</span>
-      <BaseTab v-model:model="tabActive" :list="listTab" />
+      <BaseTab v-model:model="tabActive" :list="listTab" class="sm:pl-1" />
     </div>
-    <BaseTable v-loading="isLoading" class="table-tx mt-[26px]" :data="dataTable">
+    <BaseTable v-if="isDesktop" v-loading="isLoading" class="table-tx mt-[26px]" :data="dataTable">
       <ElTableColumn label="Tran.">
         <template #default="{ row }">
           <a
@@ -37,6 +37,35 @@
         </template>
       </ElTableColumn>
     </BaseTable>
+    <div v-else v-loading="isLoading" class="min-h-[200px]">
+      <template v-if="dataTable.length === 0">
+        <span class="flex h-[100px] items-center justify-center text-sm text-gray-6">There are no data</span>
+      </template>
+      <template v-else>
+        <div v-for="item in dataTable" :key="item.id" class="flex justify-between gap-4 border-b border-solid border-gray-3 px-4 py-[10px] last:border-none">
+          <div class="flex-1 flex-col">
+            <a
+              :href="getUrlScan(chainIdByNetwork, 'tx', item.id)"
+              target="_blank"
+              class="cursor-pointer text-sm font-semibold hover:text-hyperlink hover:underline"
+              >{{ item.type }} {{ item.token0.symbol }} for {{ item.token1.symbol }}</a
+            >
+            <div class="text-xs">
+              <span class="text-success">{{ sliceString(item.origin, 8, 4) }}</span>
+              <span class="px-1 text-gray-4">|</span>
+              <span>
+                <span class="font-semibold text-gray-7">${{ formatNumberWithDigits(item.amountUSD) }}</span>
+                <span class="text-gray-6"
+                  >({{ formatNumberWithDigits(item.amount0) }} {{ item.token0.symbol }}, {{ formatNumberWithDigits(item.amount1) }}
+                  {{ item.token1.symbol }})</span
+                >
+              </span>
+            </div>
+          </div>
+          <span class="text-sm">{{ useTimeAgo(item.timestamp, { showSecond: true }) }}</span>
+        </div>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -105,6 +134,8 @@
   })
 
   const tabActive = ref<TabValue>(TabValue.ALL)
+
+  const { isDesktop } = storeToRefs(useBaseStore())
 
   const { address: poolAddress, network: networkPoolInfo } = useRoute('info-network-address').params
 

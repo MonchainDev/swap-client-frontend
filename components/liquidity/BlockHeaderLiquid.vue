@@ -1,16 +1,22 @@
 <template>
-  <div class="flex items-center justify-between">
+  <div class="flex items-center justify-between sm:relative sm:z-10 sm:flex-col sm:items-start sm:gap-4 sm:rounded-lg sm:bg-white sm:px-4 sm:pb-7 sm:pt-[10px]">
     <div class="flex items-center justify-between">
-      <div class="flex gap-4">
-        <NuxtLink to="/liquidity/pool" class="flex size-10 items-center justify-center rounded-lg border border-solid border-gray-3 bg-white">
+      <div class="flex gap-4 sm:gap-3">
+        <NuxtLink to="/liquidity/pool" class="flex size-10 items-center justify-center rounded-lg border border-solid border-gray-3 bg-white sm:border-none">
           <BaseIcon name="arrow-down" size="24" class="rotate-90" />
         </NuxtLink>
-        <div class="flex items-center gap-[9px] text-xl font-semibold">
+        <div class="flex items-center gap-[9px] text-xl font-semibold sm:text-sm">
           <div class="flex">
-            <img src="/token-default.png" alt="token " class="size-[25px] rounded-full border border-solid border-white" />
-            <img src="/token-default.png" alt="token " class="-ml-4 size-[25px] rounded-full border border-solid border-white" />
+            <img src="/token-default.png" alt="token " class="size-[25px] rounded-full border border-solid border-white sm:size-8" />
+            <img src="/token-default.png" alt="token " class="-ml-4 size-[25px] rounded-full border border-solid border-white sm:size-8" />
           </div>
-          <span>{{ pool.baseSymbol }} + {{ pool.quoteSymbol }}</span>
+          <div class="sm:flex sm:flex-col">
+            <span>{{ pool.baseSymbol }} + {{ pool.quoteSymbol }}</span>
+            <div class="hidden items-center gap-[10px] text-xs font-semibold sm:flex">
+              <img :src="networkOfPool?.logo" alt="logo" class="size-3" />
+              <span>{{ networkOfPool?.name }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -19,7 +25,7 @@
         <span class="text-sm">Fee tier</span>
         <span class="text-xl font-semibold">{{ pool.fee / 10000 }}%</span>
       </div>
-      <div class="flex flex-col gap-[6px]">
+      <div class="flex flex-col gap-[6px] sm:hidden">
         <span class="text-sm">Network</span>
         <div class="flex items-center gap-[10px] text-xl font-semibold">
           <img :src="networkOfPool?.logo" alt="logo" class="size-5" />

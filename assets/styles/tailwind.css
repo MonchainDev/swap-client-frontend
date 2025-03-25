@@ -75,4 +75,7 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
+  .bg-linear-mb{
+    background: linear-gradient(116deg, #5c2f64 24.35%, #092143 72.01%);
+  }
 }
