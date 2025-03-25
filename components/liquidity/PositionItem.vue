@@ -237,6 +237,11 @@
           transactionType: 'HARVEST'
         }
         await postTransaction(body)
+        await new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(null)
+          }, 4000)
+        })
         emit('reload')
       } else {
         showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash))
@@ -298,7 +303,9 @@
           transactionType: 'STAKE'
         }
         await Promise.race([v3PoolAddressPid(contractAddressMasterChef), postTransaction(body)])
-        emit('reload')
+        setTimeout(() => {
+          emit('reload')
+        }, 4000)
       } else {
         showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash))
       }

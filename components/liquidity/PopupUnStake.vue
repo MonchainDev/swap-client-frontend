@@ -135,8 +135,10 @@
             transactionType: 'UNSTAKE'
           }
           await postTransaction(body)
-          emit('reload')
-          setOpenPopup('popup-unstake', false)
+          setTimeout(() => {
+            emit('reload')
+            setOpenPopup('popup-unstake', false)
+          }, 4000)
         } else {
           showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash))
         }
