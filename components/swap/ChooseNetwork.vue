@@ -85,6 +85,7 @@
   const { isConnected } = useAccount()
   const route = useRoute('add-currency')
   const router = useRouter()
+  await switchChainAsync({ chainId: network.value.chainId })
 
   const handleSelectNetwork = async (item: INetwork) => {
     if (_props.isSelect) {
