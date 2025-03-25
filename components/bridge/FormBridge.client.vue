@@ -66,7 +66,7 @@
             </div>
             <div class="flex flex-col">
               <p class="text-[32px] font-semibold leading-[28px] text-primary sm:text-[22px]">{{ amountOut }}</p>
-              <p class="text-sm font-semibold text-gray-6">≈ 0.02</p>
+              <!-- <p class="text-sm font-semibold text-gray-6">≈ 0.02</p> -->
             </div>
           </div>
         </div>
@@ -125,7 +125,7 @@
         :disabled="isDisabledButton"
         class="bg-linear mt-3 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:mt-4 sm:h-[42px] sm:text-sm"
         :class="{ 'bg-gray pointer-events-none cursor-default': isSwapping || isConfirmApprove || isConfirmSwap, 'btn-disabled': isDisabledButton }"
-        @click="handleBridge"
+        @click="onCLickBridge"
       >
         <BaseLoadingButton v-if="isFetchQuote || isSwapping || isConfirmApprove || isConfirmSwap" />
         <span>{{ msgButton }}</span>
@@ -146,7 +146,7 @@
       </button>
     </template>
 
-    <PopupSellToken :list-token="listToken" @select="handleSelectToken" />
+    <PopupSellToken :list-token="listTokenFrom" @select="handleSelectToken" />
   </div>
 </template>
 
@@ -178,6 +178,7 @@
   import { config } from '~/config/wagmi'
   import { CHAINS } from '~/utils/config/chains'
   import { MAX_NUMBER_APPROVE } from '~/constant'
+  import { fraxtalTestnet } from 'viem/chains'
 
   export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE'
 
@@ -225,7 +226,7 @@
 
   // const bestTrade = ref<SwapOutput | undefined>(undefined)
   const isFetchQuote = ref(false)
-
+  const needAllowanceApprove = ref(true)
   const isTokenSelected = computed(() => form.value.token?.tokenSymbol !== '')
   const notEnoughLiquidity = ref(false)
   const amountOut = ref('')
@@ -317,6 +318,13 @@
    * token0: ORB in MONCHAIN
    * token1: ORB in BSC
    * stableTokenInDestinationChain: USDT in BSC
+   *
+   * In case:
+   * Nếu token0 là stable token thì không cần gọi best-route và best-trade
+   * => Gọi API get fee
+   * => Check allowance
+   * => Call to bridge contract với routes = []
+   *
    */
   const handleInput = async (amount: string) => {
     console.log('handle input', amount)
@@ -343,6 +351,7 @@
       console.log('token1', token1.value)
       console.log('amountInWei', amountInWei)
 
+      const stableTokenInSourceChain = listTokenFrom.value.find((token) => token.stable && token.chainId === fromNetwork.value?.chainId)
       const stableTokenInDestinationChain = listToken.value.find((token) => token.stable && token.chainId === toNetwork.value?.chainId)
       const nativeTokenInSourceChain = listTokenFrom.value.find((token) => token.address === zeroAddress && token.chainId === fromNetwork.value?.chainId)
       if (!nativeTokenInSourceChain) {
@@ -364,90 +373,91 @@
         stableTokenInDestinationChain.name
       )
 
-      const v3SubgraphClient = new GraphQLClient('https://graph-bsc.monchain.info/subgraphs/name/v4')
-      const _publicClient = publicClient({ chainId: toNetwork.value!.chainId })
-      const getBestRoute = () =>
-        SmartRouter.getV3CandidatePools({
-          onChainProvider: () => _publicClient,
-          subgraphProvider: () => v3SubgraphClient as any,
-          currencyA: inputStableToken,
-          currencyB: token1.value!,
-          subgraphFallback: true
+      if (token0.value?.address === stableTokenInSourceChain?.address) {
+        console.log('[Bridge] token0 is stable token', stableTokenInDestinationChain)
+        buildBodyForBridge([], amountInWei.toString())
+        amountOut.value = Decimal(amount).toFixed()
+        fee.bridge = '0'
+        fee.bridgeSymbol = token0.value?.symbol || ''
+        stepBridge.value = 'SELECT_TOKEN'
+        await calculateFee(bridgeBody.value, nativeTokenInSourceChain, stableTokenInDestinationChain)
+      } else {
+        // Get best trade
+        const v3SubgraphClient = new GraphQLClient('https://graph-bsc.monchain.info/subgraphs/name/v4')
+        const _publicClient = publicClient({ chainId: toNetwork.value!.chainId })
+        const getBestRoute = () =>
+          SmartRouter.getV3CandidatePools({
+            onChainProvider: () => _publicClient,
+            subgraphProvider: () => v3SubgraphClient as any,
+            currencyA: inputStableToken,
+            currencyB: token1.value!,
+            subgraphFallback: true
+          })
+        const _v3Pools = await getBestRoute()
+        console.log('>>> / _v3Pools:', _v3Pools)
+        const poolProvider = SmartRouter.createStaticPoolProvider(_v3Pools)
+        const quoteProvider = SmartRouter.createQuoteProvider({
+          onChainProvider: () => _publicClient
         })
-      const _v3Pools = await getBestRoute()
-      console.log('>>> / _v3Pools:', _v3Pools)
-      const poolProvider = SmartRouter.createStaticPoolProvider(_v3Pools)
-      const quoteProvider = SmartRouter.createQuoteProvider({
-        onChainProvider: () => _publicClient
-      })
-      const _inputAmount = CurrencyAmount.fromRawAmount(token1.value!, Number(amountInWei))
-      console.log('>>> / _inputAmount:', _inputAmount)
-
-      const _trade = await SmartRouter.getBestTrade(_inputAmount, inputStableToken, TradeType.EXACT_OUTPUT, {
-        gasPriceWei: () => _publicClient.getGasPrice(),
-        maxHops: 2,
-        maxSplits: 3,
-        poolProvider,
-        quoteProvider,
-        quoterOptimization: true,
-        distributionPercent: 10
-      })
-      console.log('>>> / _trade:', _trade)
-      if (!_trade) {
-        console.error('No trade found')
-        return
-      }
-      buildBodyForBridge(_trade)
-      const getFeeRs = await $fetch<unknown>('/api/bridge/fee', {
-        method: 'POST',
-        body: JSON.stringify(bridgeBody.value)
-      })
-      console.log('>>> / getFeeRs:', getFeeRs)
-      const { feeNetwork, feeProtocolAmount, feeProtocolDecimals } = getFeeRs.data
-      // TODO: update 18 to native token fromNetwork decimals
-      fee.network = Decimal(feeNetwork || 0)
-        .div(10 ** 18)
-        .toFixed()
-      fee.networkSymbol = nativeTokenInSourceChain.symbol
-      fee.networkDecimals = nativeTokenInSourceChain.decimals
-      fee.protocol = Decimal(feeProtocolAmount || 0)
-        .div(10 ** feeProtocolDecimals)
-        .toSignificantDigits(feeProtocolDecimals)
-        .toFixed()
-      fee.protocolSymbol = stableTokenInDestinationChain.tokenSymbol
-
-      // TODO: Check lai cho nay nhe
-      if (!_trade.routes.length) {
-        console.error('No route found')
-        return
-      }
-      const outputAmount = _trade.routes[0].outputAmount
-      const BASE_FEE_PERCENT = 10 ** 6
-      let feeBridge = 0
-      for (const pool of _trade.routes[0].pools) {
-        if ('fee' in pool === false) {
-          throw new Error('Fee should not be in pool')
+        const _inputAmount = CurrencyAmount.fromRawAmount(token1.value!, Number(amountInWei))
+        console.log('>>> / _inputAmount:', _inputAmount)
+        const _trade = await SmartRouter.getBestTrade(_inputAmount, inputStableToken, TradeType.EXACT_OUTPUT, {
+          gasPriceWei: () => _publicClient.getGasPrice(),
+          maxHops: 2,
+          maxSplits: 3,
+          poolProvider,
+          quoteProvider,
+          quoterOptimization: true,
+          distributionPercent: 10
+        })
+        console.log('>>> / _trade:', _trade)
+        if (!_trade) {
+          console.error('No trade found')
+          return
         }
-        feeBridge += (Number(pool?.fee || 0) / BASE_FEE_PERCENT) * Number(outputAmount.numerator / outputAmount.denominator)
-      }
-      fee.bridge = Decimal(feeBridge)
-        .div(10 ** token0.value!.decimals)
-        .toFixed()
-      fee.bridgeSymbol = token0.value?.symbol || '---'
+        // TODO: Check lai cho nay nhe
+        if (!_trade.routes.length) {
+          console.error('No route found')
+          return
+        }
+        const outputAmount = _trade.routes[0].outputAmount
+        const BASE_FEE_PERCENT = 10 ** 6
+        let feeBridge = 0
+        for (const pool of _trade.routes[0].pools) {
+          if ('fee' in pool === false) {
+            throw new Error('Fee should not be in pool')
+          }
+          feeBridge += (Number(pool?.fee || 0) / BASE_FEE_PERCENT) * Number(outputAmount.numerator / outputAmount.denominator)
+        }
+        fee.bridge = Decimal(feeBridge)
+          .div(10 ** token0.value!.decimals)
+          .toFixed()
+        fee.bridgeSymbol = token0.value?.symbol || '---'
+        bridgeBody.value = buildBodyForBridge(_trade.routes, _trade.inputAmount.toExact())
+        amountOut.value = Decimal(outputAmount.toSignificant(token0.value!.decimals)).sub(Decimal(fee.bridge)).toFixed()
+        await calculateFee(bridgeBody.value, nativeTokenInSourceChain, stableTokenInDestinationChain)
+        //
 
-      //
-      amountOut.value = Decimal(outputAmount.toSignificant(token0.value!.decimals)).sub(Decimal(fee.bridge)).toFixed()
+        if (token0.value?.address === zeroAddress) {
+          needAllowanceApprove.value = false
+          return
+        }
+      }
       //
       //  Check allowance
       //
+      console.log('>>> / Check allowance')
       const allowance = (await readContract(config, {
         abi: ABI_TOKEN,
         address: token0.value?.wrapped.address as `0x${string}`,
         functionName: 'allowance',
         args: [address.value, getLifiContractAddress()]
       })) as bigint
+      console.log('>>> /Check allowance > allowance:', allowance)
       if (BigInt(allowance) < BigInt(amountInWei)) {
-        stepBridge.value = 'CONFIRM_BRIDGE'
+        needAllowanceApprove.value = true
+      } else {
+        needAllowanceApprove.value = false
       }
     } catch (_error) {
       console.error('🚀 ~ handleInput ~ _error:', _error)
@@ -457,13 +467,42 @@
       isFetchQuote.value = false
     }
   }
+  const calculateFee = async (_bridgeBody: typeof bridgeBody.value, nativeTokenInSourceChain: IToken, stableTokenInDestinationChain: IToken) => {
+    // Get fee
+    const getFeeRs = await $fetch<unknown>('/api/bridge/fee', {
+      method: 'POST',
+      body: JSON.stringify(_bridgeBody)
+    })
+    console.log('>>> / getFeeRs:', getFeeRs)
+    const { feeNetwork, feeProtocolAmount, feeProtocolDecimals } = getFeeRs.data
+    // TODO: update 18 to native token fromNetwork decimals
+    fee.network = Decimal(feeNetwork || 0)
+      .div(10 ** 18)
+      .toFixed()
+    fee.networkSymbol = nativeTokenInSourceChain.symbol
+    fee.networkDecimals = nativeTokenInSourceChain.decimals
+    fee.protocol = Decimal(feeProtocolAmount || 0)
+      .div(10 ** feeProtocolDecimals)
+      .toSignificantDigits(feeProtocolDecimals)
+      .toFixed()
+    fee.protocolSymbol = stableTokenInDestinationChain.tokenSymbol
+  }
 
-  const bridgeBody = ref<Record<string, unknown> | null>(null)
-  function buildBodyForBridge(_trade: SmartRouterTrade<TradeType>) {
+  const bridgeBody = ref<ReturnType<typeof buildBodyForBridge> | null>(null)
+  /**
+   * @param bestTradeRoutes
+   * ```ts
+   * const bestTradeRoutes = _trade.routes
+   * ```
+   * @param amountIn
+   * ```ts
+   * const amountIn = _trade.inputAmount.toExact()
+   * ```
+   */
+  function buildBodyForBridge(bestTradeRoutes: Route[], amountIn: string) {
     const routes: RouteInput[] = []
-    const routesBestTrade = _trade.routes as Route[]
-    for (let i = 0; i < routesBestTrade.length; i++) {
-      const route = routesBestTrade[i]
+    for (let i = 0; i < bestTradeRoutes.length; i++) {
+      const route = bestTradeRoutes[i]
 
       const liquidity = (route.pools[0] as V3Pool).liquidity.toString()
       const sqrtRatioX96 = (route.pools[0] as V3Pool).sqrtRatioX96
@@ -473,10 +512,10 @@
       let nextPrice: Decimal = new Decimal(0)
       if (zeroToOne) {
         // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
-        nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(_trade.inputAmount.numerator.toString())).pow(2)
+        nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(amountIn.toString())).pow(2)
       } else {
         // √(Pnew) = (Δy / L) + √(Pcurrent)
-        nextPrice = new Decimal(_trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
+        nextPrice = new Decimal(amountIn.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
       }
       const sqrtPriceLimitX96 = nextPrice
         .sqrt()
@@ -492,18 +531,17 @@
         sqrtPriceLimitX96: sqrtPriceLimitX96
       })
     }
-
     // Call to bridge contract
     const lifiContractAddress = getLifiContractAddress()
-    bridgeBody.value = {
+    return {
       contractAddress: lifiContractAddress,
-      chainId: fromNetwork.value.chainId,
+      chainId: fromNetwork.value!.chainId,
       destinationChainId: toNetwork.value!.chainId as number,
       receiverAddress: receiverAddress.value,
       sendingAssetId: token0.value?.address as `0x${string}`,
       receiverAssetId: token1.value?.address as `0x${string}`,
-      amountIn: Number(_trade.inputAmount.numerator),
-      routes: routes
+      amountIn: Number(amountIn),
+      routes
     }
   }
   /**
@@ -523,9 +561,11 @@
 
   const handleApprove = async () => {
     try {
+      stepBridge.value = 'CONFIRM_BRIDGE'
       isConfirmApprove.value = true
       await approveToken(token0.value?.address as string, getLifiContractAddress(), MAX_NUMBER_APPROVE, (status) => {
         if (status === 'SUCCESS') {
+          needAllowanceApprove.value = false
           isConfirmApprove.value = false
           handleSwap()
         }
@@ -533,7 +573,7 @@
     } catch (error) {
       console.error('Approve failed:', error)
     } finally {
-      isConfirmApprove.value = false
+      //
     }
   }
 
@@ -612,7 +652,7 @@
       })
 
       if (status === 'success') {
-        bridgeSuccess(+form.value.amount, token0.value?.symbol || '', +form.value.amount, `https://dev.explorer.${toNetwork.value?.network}.info/tx/${txHash}`)
+        bridgeSuccess(+form.value.amount, token0.value?.symbol || '', +form.value.amount, `https://dev.explorer.monchain.info/tx/${txHash}`)
       }
 
       isFetchQuote.value = false
@@ -623,12 +663,12 @@
     }
   }
 
-  const handleBridge = async () => {
+  const onCLickBridge = async () => {
     // approveAndSend.value = !approveAndSend.value
     // bridgeSuccess(15, 'ATOM', 123.566, 'https://explorer.monchain.info')
-    if (!isConfirmApprove.value) {
+    if (needAllowanceApprove.value) {
       await handleApprove()
-    } else if (!isConfirmSwap.value) {
+    } else {
       await handleSwap()
     }
   }
