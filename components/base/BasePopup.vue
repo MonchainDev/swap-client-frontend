@@ -22,7 +22,8 @@
             <span>{{ props.title }}</span></slot
           >
           <slot name="close">
-            <BaseIcon name="x" class="cursor-pointer" size="24" @click="setOpenPopup(props.name, false)" />
+            <BaseIcon v-if="props.fullscreen" name="arrow-down" size="24" class="rotate-90 cursor-pointer" @click="setOpenPopup(props.name, false)" />
+            <BaseIcon v-else name="x" class="cursor-pointer" size="24" @click="setOpenPopup(props.name, false)" />
           </slot>
         </div>
       </template>

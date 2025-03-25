@@ -1,6 +1,6 @@
 <template>
-  <BasePopup name="popup-confirm-create-liquidity" width="540" title="Confirm adding liquidity" @open="handleOpen">
-    <div class="flex items-center justify-between px-8">
+  <BasePopup name="popup-confirm-create-liquidity" width="540" :fullscreen="!isDesktop" title="Confirm adding liquidity" @open="handleOpen">
+    <div class="flex items-center justify-between px-8 sm:px-4">
       <div class="flex items-center gap-[10px]">
         <div class="flex">
           <img src="/token-default.png" alt="logo" class="size-7 rounded-full" />
@@ -13,9 +13,9 @@
         <span>Active</span>
       </div>
     </div>
-    <div class="mt-[30px] px-8">
+    <div class="mt-[30px] px-8 sm:px-4">
       <div class="flex h-[215px] flex-col rounded-lg border border-solid border-gray-2 bg-gray-1 pt-4">
-        <div class="flex h-[49px] items-center justify-between gap-2 px-8">
+        <div class="flex h-[49px] items-center justify-between gap-2 px-8 sm:px-4">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <div class="flex flex-col">
@@ -29,7 +29,7 @@
           </div>
         </div>
         <div class="ml-8 h-[30px] w-5 border-r-2 border-dashed border-gray-6" />
-        <div class="mb-[14px] flex h-[49px] items-center justify-between gap-2 px-8">
+        <div class="mb-[14px] flex h-[49px] items-center justify-between gap-2 px-8 sm:px-4">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <div class="flex flex-col">
@@ -42,15 +42,15 @@
             <span class="text-sm font-semibold text-gray-6">${{ formatNumber(props.usdLower) }}</span>
           </div>
         </div>
-        <div class="flex flex-1 items-center justify-between border-t border-solid border-t-gray-3 px-8">
+        <div class="flex flex-1 items-center justify-between border-t border-solid border-t-gray-3 px-8 sm:px-4">
           <span>Fee Tier</span>
           <span class="font-semibold">{{ fee }}%</span>
         </div>
       </div>
     </div>
-    <div class="mt-[22px] px-8">
+    <div class="mt-[22px] px-8 sm:px-4">
       <div class="flex items-center gap-3">
-        <span class="text-lg font-semibold leading-7">View price range</span>
+        <span class="text-lg font-semibold leading-7 sm:text-sm">View price range</span>
         <div class="flex cursor-pointer items-center gap-2" @click="handleClickViewPriceRange">
           <BaseIcon :name="sorted ? 'radio-fill' : 'radio'" size="24" />
           <span class="text-base">{{ currency0?.symbol }}</span>
@@ -117,6 +117,8 @@
   }>()
 
   const loadingAdd = ref(false)
+
+  const isDesktop = useDesktop()
 
   const currency0 = computed(() => unwrappedToken(props.position?.pool.token0))
   const currency1 = computed(() => unwrappedToken(props.position?.pool.token1))
@@ -257,7 +259,7 @@
       //@ts-ignore
       const msg = error?.shortMessage || null
       if (msg) {
-        ElMessage.error(msg)
+        showToastMsg(msg, 'error')
       }
     } finally {
       loadingAdd.value = false

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-[90px] items-center justify-between gap-1 border border-solid border-gray-3 px-4">
+  <div class="flex h-[90px] items-center justify-between gap-1 border border-solid border-gray-3 px-4 sm:h-auto sm:min-h-[90px] sm:py-2">
     <div class="flex flex-col gap-2">
       <span class="text-xs text-gray-8">{{ formatText }} </span>
       <ElInput
