@@ -57,7 +57,7 @@
         <span v-if="amount" class="text-sm font-semibold text-gray-6">≈ {{ amountUsd }}</span>
       </div>
     </div>
-    <span class="mt-2 text-xs text-[#DF1525] sm:hidden">You have insufficient balance</span>
+    <span v-if="isInsufficientBalance" class="mt-2 text-xs text-[#DF1525] sm:hidden">You have insufficient balance</span>
   </div>
 </template>
 
@@ -114,6 +114,9 @@
     }
   }
   const { handleImageError } = useErrorImage()
+  const isInsufficientBalance = computed(() => {
+    return !!amount.value && new Decimal(props.balance).lt(amount.value)
+  })
 </script>
 
 <style lang="scss" scoped>

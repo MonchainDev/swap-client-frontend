@@ -151,7 +151,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { useAccount } from '@wagmi/vue'
+  import { useAccount, useSwitchChain } from '@wagmi/vue'
   import { type Address, type Hex, createPublicClient, encodeFunctionData, http, pad, parseUnits, zeroAddress, zeroHash } from 'viem'
   import { computed } from 'vue'
 
@@ -218,7 +218,8 @@
   const isEditSlippage = ref(false)
 
   // const approveAndSend = ref<boolean>(false)
-  const { isConnected, address } = useAccount()
+  const { isConnected, address, address: receiverAddress } = useAccount()
+  const { chains, switchChain } = useSwitchChain()
   const { approveToken } = useApproveToken()
 
   const stepBridge = ref<StepBridge>('SELECT_TOKEN')
@@ -286,18 +287,20 @@
     console.info('tokens: ', listToken.value)
   }
 
-  const stableDestinationChainIdToken = ref<IToken>()
+  const stableSourceChainIdToken = ref<IToken>()
 
   async function handleSelectToNetwork() {
-    const query = { network: toNetwork.value?.network, crossChain: 'Y' }
+    if (!fromNetwork.value) {
+      console.error('Not found destination network')
+      return
+    }
+    const query = { network: fromNetwork.value?.network, crossChain: 'Y' }
     const { data } = await useFetch<IToken[]>('/api/network/token', { query })
 
-    stableDestinationChainIdToken.value = data.value?.find((item) => item.stable)
-
-    console.info('stableDestinationChainIdToken.value', stableDestinationChainIdToken.value)
+    stableSourceChainIdToken.value = data.value?.find((item) => item.stable)
+    console.info('stableSourceChainIdToken.value', stableSourceChainIdToken.value)
+    stableSourceChainIdToken.value && switchChain({ chainId: stableSourceChainIdToken.value?.chainId })
   }
-
-  const { address: receiverAddress } = useAccount()
 
   /**
    * token0: token from network A
@@ -516,8 +519,8 @@
         tokenInAddress: route.inputAmount.currency.wrapped.address,
         tokenOutAddress: route.outputAmount.currency.wrapped.address,
         fee: (route.pools[0] as V3Pool).fee as number,
-        amountOut: Number(route.outputAmount.numerator),
-        amountInMaximum: Number(route.inputAmount.numerator),
+        amountOut: Number(route.outputAmount.numerator / route.outputAmount.denominator),
+        amountInMaximum: Number(route.inputAmount.numerator / route.inputAmount.denominator),
         sqrtPriceLimitX96: sqrtPriceLimitX96
       })
     }
