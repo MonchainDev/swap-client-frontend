@@ -1,8 +1,8 @@
 <template>
   <div class="mt-12 flex flex-col gap-[22px]">
     <span class="text-2xl font-semibold leading-7">My Positions</span>
-    <div class="grid grid-cols-[374px_1fr] gap-6">
-      <div class="rounded-lg bg-white px-6 pb-6 pt-4 shadow-sm">
+    <div class="grid grid-cols-[374px_1fr] gap-6 sm:grid-cols-1">
+      <div class="rounded-lg bg-white px-6 pb-6 pt-4 shadow-sm sm:px-4">
         <div class="flex flex-col gap-5 border-b border-dashed border-gray-4 pb-5">
           <span class="font-semibold">Overview</span>
           <div class="flex flex-col gap-3 text-sm">
@@ -40,8 +40,8 @@
           </BaseButton>
         </NuxtLink>
       </div>
-      <div class="rounded-lg bg-white p-6 shadow-sm">
-        <div class="flex justify-between">
+      <div class="rounded-lg bg-white p-6 shadow-sm sm:px-4">
+        <div class="flex justify-between sm:flex-col sm:items-start sm:gap-4">
           <span class="font-semibold">{{ formattedData.length }} positions</span>
           <BaseTab v-model:model="tabActive" :list="listTab" />
         </div>

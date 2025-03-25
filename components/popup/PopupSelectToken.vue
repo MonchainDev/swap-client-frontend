@@ -84,13 +84,15 @@
   }>()
 
   const { setOpenPopup } = useBaseStore()
-  const { isDesktop, currentNetwork: network } = storeToRefs(useBaseStore())
+  const { currentNetwork: network } = storeToRefs(useBaseStore())
   const search = ref('')
   const loading = ref(false)
 
   const recentTokens = useStorage<IToken[]>('recent_tokens', [])
 
   const data = ref<IToken[]>([])
+
+  const isDesktop = useDesktop()
 
   const titlePopup = computed(() => {
     return 'Select a token'

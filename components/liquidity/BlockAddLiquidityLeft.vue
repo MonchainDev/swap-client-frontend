@@ -1,7 +1,12 @@
 <template>
-  <div class="rounded-bl-lg rounded-tl-lg bg-white pb-[57px] pl-8 pr-6 pt-[21px] shadow-sm">
+  <div class="rounded-bl-lg rounded-tl-lg bg-white pb-[57px] pl-8 pr-6 pt-[21px] shadow-sm sm:rounded-lg sm:p-4">
     <div class="flex items-center justify-between">
-      <h4 class="text-2xl font-semibold leading-7">Add Liquidity</h4>
+      <div class="flex items-center sm:gap-2">
+        <NuxtLink to="/liquidity/pool" class="hidden size-6 items-center justify-center sm:flex">
+          <BaseIcon name="arrow-down" size="24" class="rotate-90" />
+        </NuxtLink>
+        <h4 class="text-2xl font-semibold leading-7 sm:text-base">Add Liquidity</h4>
+      </div>
       <ChooseNetwork />
     </div>
     <p class="mt-2 max-w-[386px] text-sm text-gray-8">Choose the tokens you want to provide liquidity for. You can select tokens on all supported networks.</p>
@@ -11,7 +16,7 @@
     </div>
     <ListFee :is-token0-selected="isToken0Selected" :is-token1-selected="isToken1Selected" />
     <div class="mt-[34px]">
-      <span class="text-lg font-semibold leading-7">Deposit Amount</span>
+      <span class="text-lg font-semibold leading-7 sm:text-sm">Deposit Amount</span>
       <div class="mt-3 flex flex-col gap-4">
         <InputDepositLiquidity
           v-model:amount="form.amountDeposit0"

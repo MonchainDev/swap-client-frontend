@@ -1,7 +1,7 @@
 <template>
   <ClientOnly>
     <div class="chart-container">
-      <VueApexCharts type="line" width="248" height="75" :options="chartOptions" :series="series" />
+      <VueApexCharts type="line" :width="width" :height="height" :options="chartOptions" :series="series" />
     </div>
   </ClientOnly>
 </template>
@@ -11,10 +11,14 @@
   import VueApexCharts from 'vue3-apexcharts'
   interface IProp {
     data: { periodStartUnix: number; token0Price: string }[]
+    width?: string
+    height?: string
   }
 
   const props = withDefaults(defineProps<IProp>(), {
-    data: () => []
+    data: () => [],
+    width: '248',
+    height: '75'
   })
 
   const chartData = ref<number[]>([])
@@ -104,10 +108,11 @@
       },
       responsive: [
         {
-          breakpoint: 1000,
+          breakpoint: 768,
           options: {
             chart: {
-              height: 300
+              width: '100%',
+              height: 52
             }
           }
         }

@@ -1,10 +1,11 @@
 <template>
   <div v-if="status === 'pending'" v-loading="status === 'pending'" class="min-h-svh w-full" />
   <template v-if="data && status === 'success'">
-    <div class="mx-auto mb-[42px] mt-[30px] max-w-[1024px]">
+    <div class="relative mx-auto mb-[42px] mt-[30px] max-w-[1024px] sm:mt-0 sm:px-4">
       <BlockHeaderLiquid :pool="data" />
       <BlockPairInfo class="mt-[37px]" :show-header="false" :pool="data" />
       <TableTxPoolDetail :pool="data" />
+      <div class="bg-linear-mb absolute left-0 top-0 hidden h-[100px] w-screen sm:block"></div>
     </div>
   </template>
 </template>

@@ -1,7 +1,7 @@
 <template>
-  <div class="block-right rounded-br-lg rounded-tr-lg bg-white pl-8 pr-[22px] pt-[21px] shadow-sm">
+  <div class="block-right rounded-br-lg rounded-tr-lg bg-white pl-8 pr-[22px] pt-[21px] shadow-sm sm:rounded-lg sm:px-4 sm:pb-4">
     <div v-if="!poolExits" class="flex flex-col gap-4">
-      <span class="text-lg font-semibold leading-7">Set starting price</span>
+      <span class="text-lg font-semibold leading-7 sm:text-sm">Set starting price</span>
       <div class="flex gap-3 rounded-lg border border-solid border-warning p-6 pl-[18px]">
         <BaseIcon name="info-warning" size="24" class="text-warning" />
         <div class="flex flex-col gap-4 text-sm leading-5 text-warning">
@@ -28,7 +28,7 @@
       </p>
     </div>
     <div class="mt-7 flex items-center gap-3" :class="{ '!mt-0': poolExits }">
-      <span class="text-lg font-semibold leading-7">Set price range</span>
+      <span class="text-lg font-semibold leading-7 sm:text-sm">Set price range</span>
       <template v-if="props.isToken0Selected && props.isToken1Selected">
         <div class="flex cursor-pointer items-center gap-2" @click="handleChangeActiveRange">
           <BaseIcon :name="listTokenOfRange[0]?.address === form.token0?.address ? 'radio-fill' : 'radio'" size="24" />

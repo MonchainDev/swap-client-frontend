@@ -1,18 +1,20 @@
 <template>
-  <div class="flex flex-col gap-7">
-    <div v-if="props.showHeader" class="flex items-center gap-5 text-sm">
+  <div class="flex flex-col gap-7 sm:gap-6">
+    <div v-if="props.showHeader" class="flex items-center gap-5 text-sm sm:flex-col sm:items-start sm:gap-3">
       <span class="text-2xl font-semibold leading-7">Pair info</span>
-      <div class="flex items-center gap-1">
-        <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
-        <span>1 {{ pool.baseSymbol }} = {{ formatNumber(price0) }} {{ pool.quoteSymbol }}</span>
-      </div>
-      <div class="flex items-center gap-1">
-        <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
-        <span> 1 {{ pool.quoteSymbol }} = {{ formatNumber(price1) }} {{ pool.baseSymbol }}</span>
+      <div class="flex items-center gap-5 sm:flex-col sm:items-start sm:gap-3">
+        <div class="flex items-center gap-1">
+          <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
+          <span>1 {{ pool.baseSymbol }} = {{ formatNumber(price0) }} {{ pool.quoteSymbol }}</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
+          <span> 1 {{ pool.quoteSymbol }} = {{ formatNumber(price1) }} {{ pool.baseSymbol }}</span>
+        </div>
       </div>
     </div>
-    <div class="grid min-h-[421px] grid-cols-[374px_1fr] gap-6">
-      <div class="rounded-lg bg-white px-6 py-4 shadow-md">
+    <div class="grid min-h-[421px] grid-cols-[374px_1fr] gap-6 sm:grid-cols-1">
+      <div class="rounded-lg bg-white px-6 py-4 shadow-md sm:px-4">
         <div class="flex flex-col gap-[6px]">
           <span class="text-sm">Total Tokens locked (TVL)</span>
           <div class="flex items-center gap-3">
@@ -62,7 +64,7 @@
           </div>
         </div>
       </div>
-      <div class="rounded-lg bg-white px-6 py-4 shadow-md">
+      <div class="rounded-lg bg-white px-6 py-4 shadow-md sm:px-4">
         <BaseTab v-model:model="tabActive" :list="listTab" />
         <div v-loading="isLoading" class="mt-7">
           <component :is="component" v-if="!isLoading" :chart-data="chartData" />

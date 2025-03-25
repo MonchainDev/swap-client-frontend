@@ -1,6 +1,6 @@
 <template>
   <div class="relative flex w-full flex-col bg-white">
-    <PageLoading v-if="loading" class="z-10" />
+    <PageLoading v-if="loading" class="z-30" />
     <TheHeader />
     <div class="flex flex-1 flex-col bg-[#F5F5F5]">
       <main>

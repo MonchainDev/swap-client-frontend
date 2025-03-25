@@ -1,11 +1,11 @@
 <template>
   <div class="mt-8">
     <div class="flex items-center justify-between">
-      <h4 class="text-lg font-semibold leading-7">Fee tier</h4>
+      <h4 class="text-lg font-semibold leading-7 sm:text-base">Fee tier</h4>
       <BaseLoadingButton v-if="isPendingAll && isToken0Selected && isToken1Selected" />
     </div>
     <template v-if="isToken0Selected && isToken1Selected">
-      <div v-if="!isPendingAll" class="mt-4 grid grid-cols-[repeat(4,100px)] gap-5">
+      <div v-if="!isPendingAll" class="mt-4 grid grid-cols-[repeat(4,100px)] gap-5 sm:grid-cols-2">
         <div
           v-for="(item, index) in LIST_FEE_AMOUNT"
           :key="item.value"
@@ -22,7 +22,7 @@
       </div>
     </template>
     <template v-else>
-      <div class="mt-4 grid grid-cols-[repeat(4,100px)] gap-5">
+      <div class="mt-4 grid grid-cols-[repeat(4,100px)] gap-5 sm:grid-cols-2">
         <div
           v-for="(item, index) in LIST_FEE_AMOUNT"
           :key="item.value"

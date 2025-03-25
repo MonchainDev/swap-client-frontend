@@ -42,7 +42,7 @@
     height: 67px;
   }
   .btn-md {
-    height: 54px;
+    @apply h-[54px] sm:h-10;
   }
   .btn-sm {
     height: 36px;

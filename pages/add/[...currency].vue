@@ -1,7 +1,7 @@
 <template>
   <ClientOnly>
-    <div class="mx-auto mb-[74px] mt-[38px] max-w-[1024px]">
-      <div class="flex items-center justify-between">
+    <div class="relative mx-auto mb-[74px] mt-[38px] max-w-[1024px] sm:mt-0 sm:px-4">
+      <div class="flex items-center justify-between sm:hidden">
         <div class="flex items-center gap-4">
           <NuxtLink to="/liquidity/pool" class="flex size-10 items-center justify-center rounded-lg border border-solid border-gray-3 bg-white">
             <BaseIcon name="arrow-down" size="24" class="rotate-90" />
@@ -9,10 +9,12 @@
           <h4 class="text-xl font-semibold">Liquidity Pools & Farms / Add Liquidity</h4>
         </div>
       </div>
-      <div class="mt-7 grid grid-cols-[513px_1fr] gap-1">
+      <div class="relative z-10 mt-7 grid grid-cols-[513px_1fr] gap-1 sm:mt-0 sm:grid-cols-1">
         <BlockAddLiquidityLeft :is-token0-selected :is-token1-selected />
         <BlockAddLiquidityRight :is-token0-selected :is-token1-selected />
       </div>
+
+      <div class="bg-linear-mb absolute left-0 top-0 hidden h-[100px] w-screen sm:block"></div>
     </div>
   </ClientOnly>
 </template>
