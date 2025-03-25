@@ -8,6 +8,7 @@ import CONTRACT_SWAP from '~/constant/contract'
 import ABI_TOKEN from '~/constant/contract/contract-token.json'
 import { type ChainId, type INetwork, type IToken } from '~/types'
 import type { IFormBridge } from '~/types/bridge.type'
+import Decimal from 'decimal.js'
 
 export const useBridgeStore = defineStore('bridge', () => {
   const listNetwork = ref<INetwork[]>([...LIST_NETWORK])
@@ -76,10 +77,14 @@ export const useBridgeStore = defineStore('bridge', () => {
         setOpenPopup('popup-connect')
         return
       }
-      balance0.value = Number(await getBalanceToken(address.value, token0.value?.address as `0x${string}`))
-
-      console.log('>>> / balance0.value:', balance0.value)
-
+      if (token0.value) {
+        const _balance = Number(await getBalanceToken(address.value, token0.value.address as `0x${string}`))
+        balance0.value = Decimal(_balance)
+          .div(10 ** token0.value.decimals)
+          .toNumber()
+      } else {
+        balance0.value = 0
+      }
       // Token 1
       const token1Res = await $fetch<IToken[]>('/api/network/token', {
         query: { network: toNetwork.value?.network, crossChain: 'Y' }
