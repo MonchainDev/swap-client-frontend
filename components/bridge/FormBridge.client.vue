@@ -375,7 +375,7 @@
 
       if (token0.value?.address === stableTokenInSourceChain?.address) {
         console.log('[Bridge] token0 is stable token', stableTokenInDestinationChain)
-        buildBodyForBridge([], amountInWei.toString())
+        buildBodyForBridge([], amountInWei)
         amountOut.value = Decimal(amount).toFixed()
         fee.bridge = '0'
         fee.bridgeSymbol = token0.value?.symbol || ''
@@ -433,7 +433,7 @@
           .div(10 ** token0.value!.decimals)
           .toFixed()
         fee.bridgeSymbol = token0.value?.symbol || '---'
-        bridgeBody.value = buildBodyForBridge(_trade.routes, _trade.inputAmount.toExact())
+        bridgeBody.value = buildBodyForBridge(_trade.routes, _trade.inputAmount.numerator / _trade.inputAmount.denominator)
         amountOut.value = Decimal(outputAmount.toSignificant(token0.value!.decimals)).sub(Decimal(fee.bridge)).toFixed()
         await calculateFee(bridgeBody.value, nativeTokenInSourceChain, stableTokenInDestinationChain)
         //
@@ -496,10 +496,10 @@
    * ```
    * @param amountIn
    * ```ts
-   * const amountIn = _trade.inputAmount.toExact()
+   * const amountInWei = _trade.inputAmount.toExact()
    * ```
    */
-  function buildBodyForBridge(bestTradeRoutes: Route[], amountIn: string) {
+  function buildBodyForBridge(bestTradeRoutes: Route[], amountInWei: bigint) {
     const routes: RouteInput[] = []
     for (let i = 0; i < bestTradeRoutes.length; i++) {
       const route = bestTradeRoutes[i]
@@ -512,10 +512,10 @@
       let nextPrice: Decimal = new Decimal(0)
       if (zeroToOne) {
         // √(Pnew) = L / ( (L/√(Pcurrent)) + Δx )
-        nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(amountIn.toString())).pow(2)
+        nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(amountInWei.toString())).pow(2)
       } else {
         // √(Pnew) = (Δy / L) + √(Pcurrent)
-        nextPrice = new Decimal(amountIn.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
+        nextPrice = new Decimal(amountInWei.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
       }
       const sqrtPriceLimitX96 = nextPrice
         .sqrt()
@@ -540,7 +540,7 @@
       receiverAddress: receiverAddress.value,
       sendingAssetId: token0.value?.address as `0x${string}`,
       receiverAssetId: token1.value?.address as `0x${string}`,
-      amountIn: Number(amountIn),
+      amountIn: Number(amountInWei),
       routes
     }
   }
