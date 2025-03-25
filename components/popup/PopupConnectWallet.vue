@@ -37,7 +37,6 @@
 
   const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
   const { connectors, connectAsync } = useConnect()
-  const chainId = useChainId()
 
   const { setOpenPopup } = useBaseStore()
 
@@ -68,7 +67,7 @@
         if (window?.trustWallet) {
           const connector = connectors.find((item) => item.name === 'Trust Wallet')
           if (connector) {
-            await connectAsync({ connector, chainId: chainId.value })
+            await connectAsync({ connector, chainId: currentNetwork.value.chainId })
           }
         } else {
           window.open(`https://link.trustwallet.com/open_url?coin_id=60&url=${window.location.href}`, '_blank')
@@ -82,13 +81,13 @@
           : isInstalled1
 
         if (isInstalled1 && isInstalled2) {
-          await connectAsync({ connector: connectors[0], chainId: chainId.value })
+          await connectAsync({ connector: connectors[0], chainId: currentNetwork.value.chainId })
         } else {
           window.open(`https://metamask.app.link/dapp/${window.location.href}`, '_blank')
         }
       } else if (type === 'COINBASE') {
         if (window?.coinbaseWalletExtension) {
-          await connectAsync({ connector: connectors[1], chainId: chainId.value })
+          await connectAsync({ connector: connectors[1], chainId: currentNetwork.value.chainId })
         } else {
           window.open(`https://go.cb-w.com/dapp?cb_url=${window.location.href}`, '_blank')
         }
