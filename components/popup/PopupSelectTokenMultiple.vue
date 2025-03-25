@@ -3,6 +3,7 @@
     name="popup-selected-token-multiple"
     :is-show-footer="false"
     width="540"
+    :fullscreen="!isDesktop"
     :title="titlePopup"
     @close="search = ''"
     @open="handleOpen"
@@ -91,10 +92,11 @@
   })
 
   const { setOpenPopup } = useBaseStore()
-  const { isDesktop } = storeToRefs(useBaseStore())
   const search = ref('')
   const loading = ref(false)
   const data = ref<IToken[]>([])
+
+  const isDesktop = useDesktop()
 
   const tokenRecentFilter = computed(() => {
     return data.value.filter((item) => props.tokenSelected.some((selected) => selected.id === item.id))

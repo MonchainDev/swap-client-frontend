@@ -1,6 +1,6 @@
 <template>
-  <div v-loading="loading" class="mx-auto max-w-[1024px] pb-6" :class="{ 'pt-10': loading, 'mt-10': !loading }">
-    <div class="flex items-center justify-between">
+  <div v-loading="loading" class="relative mx-auto max-w-[1024px] pb-6 sm:mt-0 sm:px-4" :class="{ 'pt-10': loading, 'mt-10': !loading }">
+    <div class="flex items-center justify-between sm:hidden">
       <div class="flex gap-4">
         <NuxtLink
           :to="{ name: 'liquidity-network-tokenId', params: { tokenId: route.params.tokenId, network: route.params.network } }"
@@ -25,9 +25,20 @@
         </div>
       </div>
     </div>
-    <div class="relative mx-auto mt-12 max-w-[580px] rounded-lg bg-white px-8 pb-[66px] pt-[34px] shadow-sm">
-      <h4 class="text-2xl font-semibold leading-7">Remove {{ liquidityValue0?.currency.symbol }} + {{ liquidityValue1?.currency.symbol }} liquidity</h4>
-      <div class="mt-3 flex items-center justify-between gap-2">
+    <div class="relative z-10 mx-auto mt-12 max-w-[580px] rounded-lg bg-white px-8 pb-[66px] pt-[34px] shadow-sm sm:mt-0 sm:px-4 sm:pt-4">
+      <div class="items-center gap-2 sm:flex">
+        <NuxtLink
+          :to="{ name: 'liquidity-network-tokenId', params: { tokenId: route.params.tokenId, network: route.params.network } }"
+          class="hidden size-6 items-center justify-center sm:flex"
+        >
+          <BaseIcon name="arrow-down" size="24" class="rotate-90" />
+        </NuxtLink>
+        <h4 class="text-2xl font-semibold leading-7 sm:text-sm">
+          Remove {{ liquidityValue0?.currency.symbol }} + {{ liquidityValue1?.currency.symbol }} liquidity
+        </h4>
+      </div>
+
+      <div class="mt-3 flex items-center justify-between gap-2 sm:flex-col sm:items-start sm:gap-3">
         <ElInput
           v-model="percent"
           placeholder="0%"
@@ -46,11 +57,11 @@
           </span>
         </div>
       </div>
-      <div class="-ml-8 mt-4 h-[1px] w-[580px] bg-gray-2"></div>
+      <div class="-ml-8 mt-4 h-[1px] w-[580px] bg-gray-2 sm:hidden"></div>
       <div class="mt-[30px] flex flex-col gap-4">
         <h4 class="text-lg font-medium leading-7">You will receive</h4>
         <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
-          <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
+          <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8 sm:px-4">
             <div class="flex items-center gap-[10px]">
               <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
               <span class="text-xl font-semibold leading-7">{{ liquidityValue0?.currency.symbol }} Pooled</span>
@@ -60,7 +71,7 @@
               <span class="text-sm text-gray-6">${{ formatNumber(priceUsd0) }}</span>
             </div>
           </div>
-          <div class="flex h-1/2 items-center justify-between px-8">
+          <div class="flex h-1/2 items-center justify-between px-8 sm:px-4">
             <div class="flex items-center gap-[10px]">
               <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
               <span class="text-xl font-semibold leading-7">{{ liquidityValue1?.currency.symbol }} Pooled</span>
@@ -72,7 +83,7 @@
           </div>
         </div>
         <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
-          <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
+          <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8 sm:px-4">
             <div class="flex items-center gap-[10px]">
               <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
               <span class="text-xl font-semibold leading-7">{{ liquidityValue0?.currency.symbol }} Fee Earned</span>
@@ -82,7 +93,7 @@
               <span class="text-sm text-gray-6">${{ formatNumber(priceUsdFee0) }}</span>
             </div>
           </div>
-          <div class="flex h-1/2 items-center justify-between px-8">
+          <div class="flex h-1/2 items-center justify-between px-8 sm:px-4">
             <div class="flex items-center gap-[10px]">
               <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
               <span class="text-xl font-semibold leading-7">{{ liquidityValue1?.currency.symbol }} Fee Earned</span>
@@ -107,11 +118,12 @@
         >{{ textBtn }}</BaseButton
       >
     </div>
+    <div class="bg-linear-mb absolute left-0 top-0 hidden h-[100px] w-screen sm:block"></div>
   </div>
   <BasePopup name="popup-confirm-remove" width="540" title="Confirm removing liquidity">
-    <div class="px-8 pb-6">
+    <div class="px-8 pb-6 sm:px-4">
       <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
-        <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
+        <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8 sm:px-4">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <span class="text-xl font-semibold leading-7">{{ liquidityValue0?.currency.symbol }} Pooled</span>
@@ -120,7 +132,7 @@
             <span class="text-[22px] font-semibold leading-7">{{ formattedValue0 }}</span>
           </div>
         </div>
-        <div class="flex h-1/2 items-center justify-between px-8">
+        <div class="flex h-1/2 items-center justify-between px-8 sm:px-4">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <span class="text-xl font-semibold leading-7">{{ liquidityValue1?.currency.symbol }} Pooled</span>

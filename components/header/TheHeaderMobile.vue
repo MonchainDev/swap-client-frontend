@@ -9,22 +9,18 @@
       <span class="text-xs text-gray-8">Swap</span>
     </NuxtLink>
 
-    <div to="/swap" active-class="active-menu" class="flex flex-col items-center justify-center">
-      <BaseIcon name="menu-cross-chain" class="text-gray-8" size="22" />
-      <span class="text-nowrap text-xs text-gray-8">Cross chain</span>
-    </div>
-    <div to="/swap" active-class="active-menu" class="flex flex-col items-center justify-center">
+    <NuxtLink to="/add" active-class="active-menu" class="flex flex-col items-center justify-center">
       <BaseIcon name="menu-liquidity" class="text-gray-8" size="22" />
       <span class="text-nowrap text-xs text-gray-8">Add Liquidity</span>
-    </div>
-    <div to="/swap" active-class="active-menu" class="flex flex-col items-center justify-center">
+    </NuxtLink>
+    <NuxtLink to="/liquidity/pool" active-class="active-menu" class="flex flex-col items-center justify-center">
       <BaseIcon name="menu-farm" class="text-gray-8" size="22" />
       <span class="text-xs text-gray-8">Farm</span>
-    </div>
-    <div to="/swap" active-class="active-menu" class="flex flex-col items-center justify-center">
+    </NuxtLink>
+    <NuxtLink to="/bridge" active-class="active-menu" class="flex flex-col items-center justify-center">
       <BaseIcon name="menu-bridge" class="text-gray-8" size="22" />
       <span class="text-xs text-gray-8">Bridge</span>
-    </div>
+    </NuxtLink>
   </div>
 </template>
 

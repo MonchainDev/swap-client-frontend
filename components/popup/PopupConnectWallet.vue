@@ -1,5 +1,5 @@
 <template>
-  <BasePopup name="popup-connect" width="540" title="Connect Wallet" class="popup-connect" @close="typeConnect = null">
+  <BasePopup name="popup-connect" width="540" :fullscreen="!isDesktop" title="Connect Wallet" class="popup-connect" @close="typeConnect = null">
     <template v-if="!isDesktop" #close>
       <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-connect', false)" />
     </template>
@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { useSwitchChain, useChainId, useConnect } from '@wagmi/vue'
+  import { useConnect, useSwitchChain } from '@wagmi/vue'
   import type { WalletType } from '~/types/connect.type'
 
   declare global {
@@ -35,9 +35,10 @@
     }
   }
 
-  const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
+  const { currentNetwork } = storeToRefs(useBaseStore())
   const { connectors, connectAsync } = useConnect()
-  const chainId = useChainId()
+
+  const isDesktop = useDesktop()
 
   const { setOpenPopup } = useBaseStore()
 
@@ -68,7 +69,7 @@
         if (window?.trustWallet) {
           const connector = connectors.find((item) => item.name === 'Trust Wallet')
           if (connector) {
-            await connectAsync({ connector, chainId: chainId.value })
+            await connectAsync({ connector, chainId: currentNetwork.value.chainId })
           }
         } else {
           window.open(`https://link.trustwallet.com/open_url?coin_id=60&url=${window.location.href}`, '_blank')
@@ -82,13 +83,13 @@
           : isInstalled1
 
         if (isInstalled1 && isInstalled2) {
-          await connectAsync({ connector: connectors[0], chainId: chainId.value })
+          await connectAsync({ connector: connectors[0], chainId: currentNetwork.value.chainId })
         } else {
           window.open(`https://metamask.app.link/dapp/${window.location.href}`, '_blank')
         }
       } else if (type === 'COINBASE') {
         if (window?.coinbaseWalletExtension) {
-          await connectAsync({ connector: connectors[1], chainId: chainId.value })
+          await connectAsync({ connector: connectors[1], chainId: currentNetwork.value.chainId })
         } else {
           window.open(`https://go.cb-w.com/dapp?cb_url=${window.location.href}`, '_blank')
         }
@@ -102,11 +103,4 @@
   }
 </script>
 
-<style lang="scss">
-  .popup-connect {
-    @apply sm:!max-w-full;
-    .wrap-header {
-      @apply sm:w-fit sm:flex-row-reverse sm:gap-2;
-    }
-  }
-</style>
+<style lang="scss"></style>

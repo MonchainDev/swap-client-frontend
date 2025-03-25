@@ -1,12 +1,12 @@
 <template>
-  <BasePopup name="popup-add-liquidity" width="540" @close="handleClose" @open="handleOpen">
+  <BasePopup name="popup-add-liquidity" width="540" :fullscreen="!isDesktop" @close="handleClose" @open="handleOpen">
     <template #title>
       <div class="flex items-center gap-2">
         <BaseIcon v-if="props.showInput && step === 'CONFIRM'" name="arrow-down" size="24" class="rotate-90 cursor-pointer" @click="step = 'INPUT'" />
         <div class="text-xl font-semibold">{{ title }}</div>
       </div>
     </template>
-    <div class="flex items-center justify-between px-8">
+    <div class="flex items-center justify-between px-8 sm:px-4">
       <div class="flex items-center gap-[10px]">
         <div class="flex">
           <img src="/token-default.png" alt="logo" class="size-7 rounded-full" />
@@ -19,9 +19,9 @@
         <span>Active</span>
       </div>
     </div>
-    <div class="mt-[30px] px-8">
+    <div class="mt-[30px] px-8 sm:px-4">
       <div class="flex h-[215px] flex-col rounded-lg border border-solid border-gray-2 bg-gray-1 pt-4">
-        <div class="flex h-[49px] items-center justify-between gap-2 px-8">
+        <div class="flex h-[49px] items-center justify-between gap-2 px-8 sm:px-4">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <div class="flex flex-col">
@@ -41,7 +41,7 @@
           </div>
         </div>
         <div class="ml-8 h-[30px] w-5 border-r-2 border-dashed border-gray-6" />
-        <div class="mb-[14px] flex h-[49px] items-center justify-between gap-2 px-8">
+        <div class="mb-[14px] flex h-[49px] items-center justify-between gap-2 px-8 sm:px-4">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <div class="flex flex-col">
@@ -60,15 +60,15 @@
             </template>
           </div>
         </div>
-        <div class="flex flex-1 items-center justify-between border-t border-solid border-t-gray-3 px-8">
+        <div class="flex flex-1 items-center justify-between border-t border-solid border-t-gray-3 px-8 sm:px-4">
           <span>Fee Tier</span>
           <span class="font-semibold">{{ feeFormat }}</span>
         </div>
       </div>
     </div>
-    <div class="mt-[22px] px-8">
+    <div class="mt-[22px] px-8 sm:px-4">
       <div class="flex items-center gap-3">
-        <span class="text-lg font-semibold leading-7">View price range</span>
+        <span class="text-lg font-semibold leading-7 sm:text-sm">View price range</span>
         <div class="flex cursor-pointer items-center gap-2" @click="handleClickViewPriceRange">
           <BaseIcon :name="sorted ? 'radio-fill' : 'radio'" size="24" />
           <span class="text-base">{{ currency0?.symbol }}</span>
@@ -182,6 +182,8 @@
   const loadingApprove1 = ref(false)
   const loadingAdd = ref(false)
   const step = ref<'INPUT' | 'CONFIRM'>('INPUT')
+
+  const isDesktop = useDesktop()
 
   const { form, balance0, balance1, typedValue, independentField, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
   const { refetchAllowance0, refetchAllowance1, refetchBalance0, refetchBalance1 } = useLiquidityStore()

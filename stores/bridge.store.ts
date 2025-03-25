@@ -1,13 +1,13 @@
 import { Token } from '@monchain/swap-sdk-core'
-import { useAccount, useBalance, useReadContract, useConfig } from '@wagmi/vue'
+import { getBalance } from '@wagmi/core'
+import { useAccount, useBalance, useConfig, useReadContract } from '@wagmi/vue'
 import { defineStore } from 'pinia'
+import { LIST_NETWORK } from '~/config/networks'
 import { DEFAULT_SLIPPAGE, EMPTY_TOKEN } from '~/constant'
 import CONTRACT_SWAP from '~/constant/contract'
 import ABI_TOKEN from '~/constant/contract/contract-token.json'
 import { type ChainId, type INetwork, type IToken } from '~/types'
-import { DEFAULT_NETWORK, LIST_NETWORK } from '~/config/networks'
 import type { IFormBridge } from '~/types/bridge.type'
-import { getBalance } from '@wagmi/core'
 import Decimal from 'decimal.js'
 
 export const useBridgeStore = defineStore('bridge', () => {
@@ -139,7 +139,7 @@ export const useBridgeStore = defineStore('bridge', () => {
     immediate: false
   })
 
-  const { data: listTokenFromRs } = useLazyFetch<IToken[]>('/api/network/token', {
+  const { data: _listTokenFromRs } = useLazyFetch<IToken[]>('/api/network/token', {
     query: computed(() => ({ network: fromNetwork.value?.network, crossChain: 'Y' })),
     onResponse({ response: { _data } }) {
       listTokenFrom.value = Array.isArray(_data)
