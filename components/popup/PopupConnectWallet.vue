@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { useSwitchChain, useChainId, useConnect } from '@wagmi/vue'
+  import { useConnect, useSwitchChain } from '@wagmi/vue'
   import type { WalletType } from '~/types/connect.type'
 
   declare global {
