@@ -1,69 +1,21 @@
 <template>
-  <div v-loading="isLoading" class="mx-auto mt-10 max-w-[1024px] pb-6">
-    <div class="grid grid-cols-2 gap-10">
-      <div class="flex items-center justify-between">
-        <div class="flex gap-4">
-          <NuxtLink to="/liquidity/positions" class="flex size-10 items-center justify-center rounded-lg border border-solid border-gray-3 bg-white">
-            <BaseIcon name="arrow-down" size="24" class="rotate-90" />
-          </NuxtLink>
-          <div class="flex flex-col gap-3">
-            <div class="flex items-center gap-[9px] text-xl font-semibold">
-              <span>Liquidity Pools & Farms /</span>
-              <div class="flex">
-                <img src="/token-default.png" alt="token " class="size-[25px] rounded-full border border-solid border-white" />
-                <img src="/token-default.png" alt="token " class="-ml-4 size-[25px] rounded-full border border-solid border-white" />
-              </div>
-              <span>{{ currencyQuote?.symbol }} + {{ currencyBase?.symbol }}</span>
-            </div>
-            <div class="text-sm">
-              <span class="text-[#049C6B]">Active</span>
-              <span class="px-2 text-gray-4">|</span>
-              <span>#{{ tokenId?.toString() }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="flex gap-6">
-        <div class="flex gap-10">
-          <div class="flex flex-col gap-[6px]">
-            <span class="text-sm">Fee tier</span>
-            <span class="text-xl font-semibold">{{ formatFee }}</span>
-          </div>
-          <div class="flex flex-col gap-[6px]">
-            <span class="text-sm">Network</span>
-            <div class="flex items-center gap-[10px] text-xl font-semibold">
-              <img :src="networkOfPool?.logo" alt="logo" class="size-5" />
-              <span>{{ networkOfPool?.name }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="flex gap-2">
-          <BaseButton
-            type="outline"
-            :disabled="!isConnected || !isOwner"
-            size="md"
-            class="flex w-[95px] items-center justify-center !gap-0 !bg-white text-xl"
-            @click="handleClickAddLiquidity"
-          >
-            <BaseIcon name="plus" size="20" class="text-hyperlink" />
-            <span class="text-hyperlink">Add</span>
-          </BaseButton>
-
-          <BaseButton :disabled="!isConnected || !isOwner" type="outline" size="md" class="w-[120px] !bg-white text-xl">
-            <NuxtLink :to="{ name: 'remove-network-tokenId', params: { network: route.params.network, tokenId: route.params.tokenId } }">
-              <span class="text-hyperlink">Remove</span>
-            </NuxtLink>
-          </BaseButton>
-        </div>
-      </div>
-    </div>
-
+  <div v-loading="isLoading" class="relative mx-auto mt-10 max-w-[1024px] pb-6 sm:mt-0 sm:px-4">
+    <HeaderPositionDetail
+      :currency-quote="currencyQuote"
+      :currency-base="currencyBase"
+      :is-connected="isConnected"
+      :format-fee="formatFee"
+      :is-owner="isOwner"
+      :fee-apr="positionDetail?.feeApr"
+      :reward-apr="positionDetail?.rewardApr"
+      @add-liquid="handleClickAddLiquidity"
+    />
     <div class="mt-12 rounded-lg bg-white shadow-md">
-      <div class="grid grid-cols-2 gap-8 border-b border-solid border-gray-3 p-8">
+      <div class="grid grid-cols-2 gap-8 border-b border-solid border-gray-3 p-8 sm:grid-cols-1 sm:px-4">
         <div class="flex flex-col gap-4">
           <div class="flex flex-col">
             <div class="flex items-center gap-4">
-              <span class="text-2xl font-semibold leading-7">Liquidity</span>
+              <span class="text-2xl font-semibold leading-7 sm:text-base">Liquidity</span>
               <span class="flex items-center gap-1 text-sm">
                 <span>APR</span>
                 <BaseIcon name="calculator" size="16" class="text-gray-4" />
@@ -96,9 +48,9 @@
           </div>
         </div>
         <div class="flex flex-col gap-4">
-          <div class="flex justify-between">
+          <div class="flex justify-between sm:items-center">
             <div class="flex flex-col">
-              <span class="text-2xl font-semibold leading-7">Unclaimed fees</span>
+              <span class="text-2xl font-semibold leading-7 sm:text-base">Unclaimed fees</span>
               <span class="line-clamp-1 text-[48px] font-semibold text-hyperlink"
                 >${{ formatNumber((Number(priceUsdFeeLower) + Number(priceUsdFeeUpper)).toFixed(2)) }}</span
               >
@@ -139,8 +91,8 @@
         </div>
       </div>
       <div class="flex flex-col gap-4 px-8 pb-10 pt-6">
-        <span class="text-2xl font-semibold leading-7">Price range {{ currencyQuote?.symbol }}/{{ currencyBase?.symbol }}</span>
-        <div class="flex items-center gap-10">
+        <span class="text-2xl font-semibold leading-7 sm:text-base">Price range {{ currencyQuote?.symbol }}/{{ currencyBase?.symbol }}</span>
+        <div class="flex items-center gap-10 sm:grid sm:grid-cols-2 sm:gap-x-5 sm:gap-y-2">
           <div class="flex flex-col gap-1">
             <span class="text-xs text-gray-8">Min</span>
             <span class="text-base font-semibold">{{ minAmount }}</span>
@@ -158,26 +110,9 @@
       </div>
     </div>
 
-    <div class="mt-6 rounded-lg bg-white pb-6 shadow-md">
-      <span class="block pl-6 pt-8 text-2xl font-semibold leading-7">History</span>
-      <BaseTable :data="dataTxs" :loading="loadingTxs" class="table-history mt-[26px]">
-        <ElTableColumn label="Timestamp">
-          <template #default="{ row }">
-            <div>{{ useDateFormat(row.timestamp * 1000, 'MM/DD/YYYY h:mm:ss A') }}</div>
-          </template>
-        </ElTableColumn>
-        <ElTableColumn label="Action">
-          <template #default="{ row }">
-            {{ getTran(row.type) }}
-          </template>
-        </ElTableColumn>
-        <ElTableColumn label="Token Transferred" align="right">
-          <template #default="{ row }">
-            <span class="font-semibold">{{ getTokenTransferred(row) }}</span>
-          </template>
-        </ElTableColumn>
-      </BaseTable>
-    </div>
+    <TableActivityPosition :data-txs="dataTxs ?? []" :loading-txs="loadingTxs" />
+
+    <div class="bg-linear-mb absolute left-0 top-0 hidden h-[100px] w-screen sm:block"></div>
   </div>
   <PopupAddLiquidity
     :currency-base
@@ -204,7 +139,6 @@
   import { gql } from 'graphql-request'
   import ChartLine from '~/components/chart/ChartLine.vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
-  import { LIST_NETWORK } from '~/config/networks'
   import { Bound, ChainId } from '~/types'
   import type { IPosition } from '~/types/position.type'
 
@@ -218,9 +152,9 @@
     symbol: string
   }
 
-  interface ITx {
+  export interface ITx {
     id: string
-    timestamp: string
+    timestamp: number | string
     amount0: string
     amount1: string
     token0?: IToken
@@ -273,11 +207,6 @@
 
   const tokenId = computed(() => {
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
-  })
-
-  const networkOfPool = computed(() => {
-    const networkUrl = route.params.network
-    return LIST_NETWORK.find((item) => item.network.toUpperCase() === networkUrl.toUpperCase())
   })
 
   const { isConnected, address: account } = useAccount()
@@ -520,30 +449,6 @@
       }
       collectFee(tokenId.value, options)
     }
-  }
-
-  const getTran = (type: TabValue) => {
-    switch (type) {
-      case TabValue.ADD:
-        return 'Add Liquidity'
-      case TabValue.REMOVE:
-        return 'Remove Liquidity'
-      case TabValue.SWAP:
-        return 'Swap'
-      case TabValue.COLLECT:
-        return 'Collect fee'
-      default:
-        return ''
-    }
-  }
-
-  const getTokenTransferred = (row: ITx) => {
-    const amount0 = formatNumberWithDigits(row.amount0, 2)
-    const amount1 = formatNumberWithDigits(row.amount1, 2)
-    if (row.type === TabValue.ADD || row.type === TabValue.COLLECT) {
-      return `+${amount0} ${row.token0?.symbol}, +${amount1} ${row.token1?.symbol}`
-    }
-    return `-${amount0} ${row.token0?.symbol}, -${amount1} ${row.token1?.symbol}`
   }
 
   async function getListTxPosition(positionId: string) {
