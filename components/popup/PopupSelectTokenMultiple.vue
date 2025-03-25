@@ -9,7 +9,7 @@
     @open="handleOpen"
   >
     <template v-if="!isDesktop" #close>
-      <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-select-token', false)" />
+      <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-selected-token-multiple', false)" />
     </template>
 
     <div class="popup-select-token">
