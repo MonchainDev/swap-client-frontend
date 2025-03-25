@@ -171,7 +171,7 @@
   // import HeaderFormSwap from './HeaderFormSwap.vue'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
   // import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
-  import { type Route, type V3Pool, SmartRouter } from '@monchain/smart-router'
+  import { type Route, type V3Pool, SmartRouter, V4Router } from '@monchain/smart-router'
   import { CurrencyAmount, Token, TradeType } from '@monchain/swap-sdk-core'
   import Decimal from 'decimal.js'
   // import swapRouterABI from "~/constant/abi/swapRouter.json";
@@ -382,11 +382,11 @@
            *  - TradeType: EXACT_OUTPUT
            */
           currencyA = new Token(
-            stableTokenInSourceChain.chainId as ChainId,
-            stableTokenInSourceChain.address as `0x${string}`,
-            +stableTokenInSourceChain.decimals,
-            stableTokenInSourceChain.symbol,
-            stableTokenInSourceChain.name
+            stableTokenInDestinationChain.chainId as ChainId,
+            stableTokenInDestinationChain.address as `0x${string}`,
+            +stableTokenInDestinationChain.decimals,
+            stableTokenInDestinationChain.symbol,
+            stableTokenInDestinationChain.name
           )
           currencyB = new Token(
             toNetwork.value.chainId as ChainId,
@@ -414,34 +414,51 @@
         }
         console.log('currencyA', currencyA)
         console.log('currencyB', currencyB)
-        // Get best trade
-        const v3SubgraphClient = new GraphQLClient(URL_GRAPH[ChainId.BSC_TESTNET])
+
         const _publicClient = publicClient({ chainId: toNetwork.value!.chainId })
-        const getBestRoute = () =>
-          SmartRouter.getV3CandidatePools({
-            onChainProvider: () => _publicClient,
-            subgraphProvider: () => v3SubgraphClient as any,
-            currencyA: currencyA,
-            currencyB: currencyB,
-            subgraphFallback: true
-          })
-        const _v3Pools = await getBestRoute()
-        console.log('>>> / _v3Pools:', _v3Pools)
-        const poolProvider = SmartRouter.createStaticPoolProvider(_v3Pools)
-        const quoteProvider = SmartRouter.createQuoteProvider({
-          onChainProvider: () => _publicClient
-        })
         const _inputAmount = CurrencyAmount.fromRawAmount(token1.value!, Number(amountInWei))
         console.log('>>> / _inputAmount:', _inputAmount)
-        const _trade = await SmartRouter.getBestTrade(_inputAmount, currencyA, TradeType.EXACT_OUTPUT, {
-          gasPriceWei: () => _publicClient.getGasPrice(),
-          maxHops: 2,
-          maxSplits: 3,
-          poolProvider,
-          quoteProvider,
-          quoterOptimization: true,
-          distributionPercent: 10
-        })
+        let _trade
+        if (token1.value?.address === zeroAddress) {
+          console.log('Get best trade with V4Router')
+          const _v3Pools = await V4Router.getV3CandidatePools({
+            clientProvider: () => _publicClient,
+            currencyA: currencyA,
+            currencyB: currencyB
+          })
+          console.log('>>> / _v3Pools:', _v3Pools)
+          _trade = await V4Router.getBestTrade(_inputAmount, currencyA, TradeType.EXACT_OUTPUT, {
+            gasPriceWei: () => _publicClient.getGasPrice(),
+            candidatePools: [..._v3Pools]
+          })
+        } else {
+          console.log('Get best trade with SmartRouter')
+          // Get best trade
+          const v3SubgraphClient = new GraphQLClient(URL_GRAPH[ChainId.BSC_TESTNET])
+          const getBestRoute = () =>
+            SmartRouter.getV3CandidatePools({
+              onChainProvider: () => _publicClient,
+              subgraphProvider: () => v3SubgraphClient as any,
+              currencyA: currencyA,
+              currencyB: currencyB,
+              subgraphFallback: true
+            })
+          const _v3Pools = await getBestRoute()
+          console.log('>>> / _v3Pools:', _v3Pools)
+          const poolProvider = SmartRouter.createStaticPoolProvider(_v3Pools)
+          const quoteProvider = SmartRouter.createQuoteProvider({
+            onChainProvider: () => _publicClient
+          })
+          _trade = await SmartRouter.getBestTrade(_inputAmount, currencyA, TradeType.EXACT_OUTPUT, {
+            gasPriceWei: () => _publicClient.getGasPrice(),
+            maxHops: 2,
+            maxSplits: 3,
+            poolProvider,
+            quoteProvider,
+            quoterOptimization: true,
+            distributionPercent: 5
+          })
+        }
         console.log('>>> / _trade:', _trade)
         if (!_trade) {
           console.error('No trade found')
