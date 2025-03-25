@@ -170,7 +170,7 @@
   // import HeaderFormSwap from './HeaderFormSwap.vue'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
   // import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
-  import { type Route, type SmartRouterTrade, type V3Pool, SmartRouter } from '@monchain/smart-router'
+  import { type Route, type V3Pool, SmartRouter } from '@monchain/smart-router'
   import { CurrencyAmount, Token, TradeType } from '@monchain/swap-sdk-core'
   import Decimal from 'decimal.js'
   // import swapRouterABI from "~/constant/abi/swapRouter.json";
@@ -178,7 +178,6 @@
   import { config } from '~/config/wagmi'
   import { CHAINS } from '~/utils/config/chains'
   import { MAX_NUMBER_APPROVE } from '~/constant'
-  import { fraxtalTestnet } from 'viem/chains'
 
   export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE'
 
@@ -214,7 +213,7 @@
 
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { fromNetwork, toNetwork, form, isConfirmSwap, isConfirmApprove, isSwapping, listToken, token0, token1, balance0, listNetwork, listTokenFrom } =
+  const { fee, fromNetwork, toNetwork, form, isConfirmSwap, isConfirmApprove, isSwapping, listToken, token0, token1, balance0, listNetwork, listTokenFrom } =
     storeToRefs(useBridgeStore())
   const isEditSlippage = ref(false)
 
@@ -230,15 +229,6 @@
   const isTokenSelected = computed(() => form.value.token?.tokenSymbol !== '')
   const notEnoughLiquidity = ref(false)
   const amountOut = ref('')
-  const fee = reactive({
-    network: '0', // value native token
-    networkSymbol: '', // symbol native token
-    networkDecimals: 18,
-    protocol: '0', // fee usdt (stable ở mạng đích)
-    protocolSymbol: '', // symbol usdt (stable ở mạng đích)
-    bridge: '0', //  fee tier (orb)
-    bridgeSymbol: '' // symbol orb
-  })
 
   /*
    * Message button
@@ -377,8 +367,8 @@
         console.log('[Bridge] token0 is stable token', stableTokenInDestinationChain)
         bridgeBody.value = buildBodyForBridge([], amountInWei)
         amountOut.value = Decimal(amount).toFixed()
-        fee.bridge = '0'
-        fee.bridgeSymbol = token0.value?.symbol || ''
+        fee.value.bridge = '0'
+        fee.value.bridgeSymbol = token0.value?.symbol || ''
         stepBridge.value = 'SELECT_TOKEN'
         await calculateFee(bridgeBody.value, nativeTokenInSourceChain, stableTokenInDestinationChain)
       } else {
@@ -429,12 +419,12 @@
           }
           feeBridge += (Number(pool?.fee || 0) / BASE_FEE_PERCENT) * Number(outputAmount.numerator / outputAmount.denominator)
         }
-        fee.bridge = Decimal(feeBridge)
+        fee.value.bridge = Decimal(feeBridge)
           .div(10 ** token0.value!.decimals)
           .toFixed()
-        fee.bridgeSymbol = token0.value?.symbol || '---'
+        fee.value.bridgeSymbol = token0.value?.symbol || '---'
         bridgeBody.value = buildBodyForBridge(_trade.routes, _trade.inputAmount.numerator / _trade.inputAmount.denominator)
-        amountOut.value = Decimal(outputAmount.toSignificant(token0.value!.decimals)).sub(Decimal(fee.bridge)).toFixed()
+        amountOut.value = Decimal(outputAmount.toSignificant(token0.value!.decimals)).sub(Decimal(fee.value.bridge)).toFixed()
         await calculateFee(bridgeBody.value, nativeTokenInSourceChain, stableTokenInDestinationChain)
         //
 
@@ -476,16 +466,16 @@
     console.log('>>> / getFeeRs:', getFeeRs)
     const { feeNetwork, feeProtocolAmount, feeProtocolDecimals } = getFeeRs.data
     // TODO: update 18 to native token fromNetwork decimals
-    fee.network = Decimal(feeNetwork || 0)
+    fee.value.network = Decimal(feeNetwork || 0)
       .div(10 ** 18)
       .toFixed()
-    fee.networkSymbol = nativeTokenInSourceChain.symbol
-    fee.networkDecimals = nativeTokenInSourceChain.decimals
-    fee.protocol = Decimal(feeProtocolAmount || 0)
+    fee.value.networkSymbol = nativeTokenInSourceChain.symbol
+    fee.value.networkDecimals = nativeTokenInSourceChain.decimals
+    fee.value.protocol = Decimal(feeProtocolAmount || 0)
       .div(10 ** feeProtocolDecimals)
       .toSignificantDigits(feeProtocolDecimals)
       .toFixed()
-    fee.protocolSymbol = stableTokenInDestinationChain.tokenSymbol
+    fee.value.protocolSymbol = stableTokenInDestinationChain.tokenSymbol
   }
 
   const bridgeBody = ref<ReturnType<typeof buildBodyForBridge> | null>(null)
@@ -634,7 +624,7 @@
       const value = token0.value?.address === zeroAddress ? BigInt(form.value.amount) * BigInt(10 ** +token0.value.decimals) : BigInt(0)
       const valueWithFee = BigInt(
         Decimal(value.toString())
-          .add(Decimal(fee.network).times(10 ** fee.networkDecimals))
+          .add(Decimal(fee.value.network).times(10 ** fee.value.networkDecimals))
           .toNumber()
       )
 
@@ -653,6 +643,8 @@
 
       if (status === 'success') {
         bridgeSuccess(+form.value.amount, token0.value?.symbol || '', +form.value.amount, `https://dev.explorer.monchain.info/tx/${txHash}`)
+        useBridgeStore().resetStore()
+        amountOut.value = ''
       }
 
       isFetchQuote.value = false

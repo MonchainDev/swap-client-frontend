@@ -44,6 +44,15 @@ export const useBridgeStore = defineStore('bridge', () => {
     fee: 0,
     tradingFee: 0
   })
+  const fee = reactive({
+    network: '0', // value native token
+    networkSymbol: '', // symbol native token
+    networkDecimals: 18,
+    protocol: '0', // fee usdt (stable ở mạng đích)
+    protocolSymbol: '', // symbol usdt (stable ở mạng đích)
+    bridge: '0', //  fee tier (orb)
+    bridgeSymbol: '' // symbol orb
+  })
 
   const { data: balance, refetch: _refetchBalance } = useBalance(
     computed(() => ({
@@ -177,6 +186,9 @@ export const useBridgeStore = defineStore('bridge', () => {
       fee: 0,
       tradingFee: 0
     }
+    fee.bridge = '0'
+    fee.protocol = '0'
+    fee.network = '0'
     isConfirmApprove.value = false
     isConfirmSwap.value = false
     isSwapping.value = false
@@ -202,6 +214,7 @@ export const useBridgeStore = defineStore('bridge', () => {
     refetchAllowance,
     balance0,
     resetStore,
-    listTokenRs
+    listTokenRs,
+    fee
   }
 })
