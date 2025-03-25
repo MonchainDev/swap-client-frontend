@@ -2,7 +2,6 @@
   <LazyBasePopup
     name="popup-sell-token"
     :is-show-footer="false"
-    :fullscreen="!isDesktop"
     width="540"
     title="Sell a token"
     class="popup-sell-token"

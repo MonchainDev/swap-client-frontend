@@ -10,7 +10,7 @@
       :top="props.top"
       :align-center="props.alignCenter"
       :show-close="false"
-      :fullscreen="fullscreen"
+      :fullscreen="!isDesktop"
       class="base-popup"
       @open="handleOpen"
       @close="handleClose"
@@ -78,6 +78,8 @@
   const { popup } = storeToRefs(useBaseStore())
   const popupBody = ref<HTMLElement>()
 
+  const isDesktop = useDesktop()
+
   const isOpen = computed({
     // getter
     get() {
@@ -113,6 +115,7 @@
     --el-dialog-border-radius: 8px;
     --el-dialog-padding-primary: 0;
     overflow-y: hidden;
+    @apply sm:!max-w-full;
 
     .el-dialog__header {
       padding: 19px 32px 15px;

@@ -1,5 +1,5 @@
 <template>
-  <BasePopup name="popup-connect" :fullscreen="!isDesktop" width="540" title="Connect Wallet" class="popup-connect" @close="typeConnect = null">
+  <BasePopup name="popup-connect" width="540" title="Connect Wallet" class="popup-connect" @close="typeConnect = null">
     <template v-if="!isDesktop" #close>
       <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-connect', false)" />
     </template>

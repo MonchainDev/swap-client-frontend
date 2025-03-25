@@ -2,7 +2,6 @@
   <BasePopup
     name="popup-selected-token-multiple"
     :is-show-footer="false"
-    :fullscreen="!isDesktop"
     width="540"
     :title="titlePopup"
     @close="search = ''"
