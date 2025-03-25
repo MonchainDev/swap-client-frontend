@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-7 sm:gap-6">
     <div v-if="props.showHeader" class="flex items-center gap-5 text-sm sm:flex-col sm:items-start sm:gap-3">
       <span class="text-2xl font-semibold leading-7">Pair info</span>
-      <div class="flex items-center gap-5">
+      <div class="flex items-center gap-5 sm:flex-col sm:items-start sm:gap-3">
         <div class="flex items-center gap-1">
           <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
           <span>1 {{ pool.baseSymbol }} = {{ formatNumber(price0) }} {{ pool.quoteSymbol }}</span>

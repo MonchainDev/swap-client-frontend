@@ -41,7 +41,7 @@
         </NuxtLink>
       </div>
       <div class="rounded-lg bg-white p-6 shadow-sm sm:px-4">
-        <div class="flex justify-between">
+        <div class="flex justify-between sm:flex-col sm:items-start sm:gap-4">
           <span class="font-semibold">{{ formattedData.length }} positions</span>
           <BaseTab v-model:model="tabActive" :list="listTab" />
         </div>

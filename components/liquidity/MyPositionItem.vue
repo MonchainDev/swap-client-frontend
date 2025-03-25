@@ -1,13 +1,13 @@
 <template>
   <div class="flex gap-[70px] border-b border-solid border-gray-3 py-3 first:pt-0 last:border-none">
-    <div class="flex flex-1 flex-col gap-1">
+    <div class="flex flex-1 flex-col gap-1 sm:gap-2">
       <div class="flex items-center gap-[10px]">
         <div class="flex">
           <img src="/token-default.png" alt="token" class="size-8 rounded-full border border-solid border-white" />
           <img src="/token-default.png" alt="token" class="-ml-4 size-8 rounded-full border border-solid border-white" />
         </div>
         <div
-          class="group flex flex-col"
+          class="group flex flex-1 flex-col"
           @click="router.push({ name: 'liquidity-network-tokenId', params: { network: props.position.network, tokenId: props.position.tokenId } })"
         >
           <div class="line-clamp-1 cursor-pointer text-sm font-semibold group-hover:text-hyperlink">
@@ -18,27 +18,74 @@
             <span class="text-xs text-gray-8">{{ networkSelected?.name }} | #{{ props.position.tokenId }}</span>
           </div>
         </div>
+        <span class="text-xs" :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
       </div>
-      <div class="flex gap-1 text-xs">
-        <span>Min: {{ formatNumber(min) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
-        <span>|</span>
-        <span>Max: {{ formatNumber(max) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
-      </div>
-      <div class="flex gap-1 text-xs">
-        <span
+      <template v-if="isDesktop">
+        <div class="flex gap-1 text-xs">
+          <span>Min: {{ formatNumber(min) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
+          <span>|</span>
+          <span>Max: {{ formatNumber(max) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
+        </div>
+        <div class="flex gap-1 text-xs">
+          <span
+            >≈ ${{ formatNumber(priceUdtTotal) }} ({{
+              displayTokenReserve(props.position.quoteQuantity, props.position.quoteDecimals, props.position.quoteSymbol)
+            }}
+            /{{ displayTokenReserve(props.position.baseQuantity, props.position.baseDecimals, props.position.baseSymbol) }})</span
+          >
+          <span>|</span>
+          <span
+            >APR: <span class="font-semibold text-success">{{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}%</span></span
+          >
+        </div>
+        <span class="text-xs font-semibold">Mon earned: 0 ($0)</span>
+      </template>
+      <template v-else>
+        <div class="flex items-center gap-2">
+          <div class="flex flex-1 gap-1 text-sm">
+            <span class="font-semibold text-success"> Up to {{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}% </span>
+            <span class="text-gray-6">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</span>
+          </div>
+          <span class="rounded bg-gray-2 px-2 py-1 text-xs font-medium">{{ props.position.fee / 10000 }}%</span>
+        </div>
+        <div class="break-all text-xs">
+          <span>Min: {{ formatNumber(min) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
+          <span class="pl-2">Max: {{ formatNumber(max) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
+        </div>
+        <span class="break-all text-xs"
           >≈ ${{ formatNumber(priceUdtTotal) }} ({{
             displayTokenReserve(props.position.quoteQuantity, props.position.quoteDecimals, props.position.quoteSymbol)
           }}
           /{{ displayTokenReserve(props.position.baseQuantity, props.position.baseDecimals, props.position.baseSymbol) }})</span
         >
-        <span>|</span>
-        <span
-          >APR: <span class="font-semibold text-success">{{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}%</span></span
-        >
-      </div>
-      <span class="text-xs font-semibold">Mon earned: 0 ($0)</span>
+        <div v-if="showStake || showUnStake" class="flex gap-4">
+          <template v-if="showUnStake">
+            <span
+              class="flex h-6 w-full cursor-pointer items-center justify-center rounded border border-solid border-hyperlink px-[10px] text-sm text-hyperlink"
+              @click.stop="emit('unstake', props.position, priceUdtTotal)"
+            >
+              <span>Unstake</span>
+            </span>
+            <span
+              class="flex h-6 w-full cursor-pointer items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white"
+              @click.stop="handleClickHarvest"
+            >
+              <BaseIcon v-if="loadingHarvest" name="loading" size="12" class="animate-spin text-white" />
+              <span>Harvest</span>
+            </span>
+          </template>
+          <span
+            v-if="showStake"
+            class="flex h-6 w-full cursor-pointer items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white"
+            @click.stop="handleStake"
+          >
+            <BaseIcon v-if="loadingStake" name="loading" size="12" class="animate-spin text-white" />
+            <span>Stake</span>
+          </span>
+        </div>
+      </template>
     </div>
-    <div class="flex flex-col items-end gap-3">
+    <div v-if="isDesktop" class="flex flex-col items-end gap-3">
       <div class="flex items-center gap-2 text-sm">
         <!-- <span v-if="props.position.poolType === 'FARM'" class="flex items-center gap-1 font-semibold text-success">
             <BaseIcon name="loading" size="16" class="text-success" />
@@ -105,6 +152,7 @@
   }>()
 
   const router = useRouter()
+  const isDesktop = useDesktop()
 
   // const { currency0, currency1, position: _position, tickAtLimit, base, priceLower, priceUpper, quote } = useExtraV3PositionInfo(props.position)
 
