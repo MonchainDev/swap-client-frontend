@@ -48,9 +48,10 @@
           v-model="amount"
           placeholder="Enter amount"
           class="input-amount flex-1"
-          :class="{ 'disabled-input': !isSelected || stepBridge === 'CONFIRM_BRIDGE' }"
+          :class="{ 'disabled-input': !isSelected || stepBridge === 'CONFIRM_BRIDGE' || disabledInput }"
           :formatter="(value: string) => formatNumberInput(value)"
           :parser="(value: string) => parseNumberInput(value)"
+          :disabled="disabledInput"
           autofocus
           @input="handleInput"
         />
@@ -72,12 +73,14 @@
     token: IToken
     balance: string | undefined
     stepBridge: StepBridge
+    disabledInput?: boolean
   }
 
   const props = withDefaults(defineProps<IProps>(), {
     isSelected: false,
     balance: '0',
-    stepBridge: 'SELECT_TOKEN'
+    stepBridge: 'SELECT_TOKEN',
+    disabledInput: false
   })
 
   const emits = defineEmits<{

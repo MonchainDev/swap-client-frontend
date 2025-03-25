@@ -25,6 +25,7 @@
         :token="form.token"
         :balance="balance0.toString()"
         :step-bridge
+        :disabled-input="!form.token.symbol"
         class="h-[138px] w-full border border-[#EEEEEE] bg-white sm:h-[100px]"
         @select-token="handleOpenPopupSelectToken"
         @change="handleInput"
@@ -253,7 +254,7 @@
       return 'You have insufficient balance'
     } else if (isTokenSelected.value) {
       if (stepBridge.value === 'SELECT_TOKEN') {
-        return `SEND ${form.value.amount} ${form.value.token.network}: ${fromNetwork.value?.network} ⇒ ${toNetwork.value?.network}`
+        return `SEND ${form.value.amount} ${form.value.token.symbol || ''}: ${fromNetwork.value?.network} ⇒ ${toNetwork.value?.network}`
       } else {
         if (isSwapping.value) {
           return 'SWAPPING! PLEASE WAIT..'
