@@ -10,8 +10,9 @@
       :top="props.top"
       :align-center="props.alignCenter"
       :show-close="false"
-      :fullscreen="!isDesktop"
+      :fullscreen="fullscreen"
       class="base-popup"
+      :class="props.class"
       @open="handleOpen"
       @close="handleClose"
     >
@@ -54,6 +55,7 @@
     title?: string
     alignCenter?: boolean
     fullscreen?: boolean
+    class?: string
   }
   const props = withDefaults(defineProps<IPopup>(), {
     name: '',
@@ -66,7 +68,8 @@
     padding: '0px',
     alignCenter: true,
     title: '',
-    fullscreen: false
+    fullscreen: false,
+    class: ''
   })
 
   const emits = defineEmits<{
@@ -77,8 +80,6 @@
   const { setOpenPopup } = useBaseStore()
   const { popup } = storeToRefs(useBaseStore())
   const popupBody = ref<HTMLElement>()
-
-  const isDesktop = useDesktop()
 
   const isOpen = computed({
     // getter
@@ -115,7 +116,7 @@
     --el-dialog-border-radius: 8px;
     --el-dialog-padding-primary: 0;
     overflow-y: hidden;
-    @apply sm:!max-w-full;
+    @apply sm:w-[calc(100vw-32px)];
 
     .el-dialog__header {
       padding: 19px 32px 15px;
@@ -125,6 +126,13 @@
       color: var(--color-primary);
       max-height: 90vh;
       overflow-y: auto;
+    }
+  }
+  .is-fullscreen.base-popup {
+    max-width: 100% !important;
+    width: 100% !important;
+    .wrap-header {
+      @apply sm:w-fit sm:flex-row-reverse sm:gap-2;
     }
   }
 </style>

@@ -78,7 +78,7 @@
         <span class="text-sm text-primary"> You Receive </span>
         <div class="flex flex-col gap-1 text-right">
           <p class="receive">{{ amountOut }}</p>
-          <div class="flex items-center gap-1" v-if="address">
+          <div v-if="address" class="flex items-center gap-1">
             <img src="/public/logo.png" alt="logo" class="size-4 rounded-full" />
             <span class="line-clamp-1 text-xs text-[#6F6A79]">({{ formatAddress(address) }})</span>
           </div>
@@ -90,20 +90,20 @@
       </div>
       <div class="mt-3 flex justify-between">
         <span class="text-sm text-primary"> Fee </span>
-        <div class="text-end text-sm font-medium text-primary" v-if="fee.network !== '0' || fee.protocol !== '0' || fee.bridge !== '0'">
+        <div v-if="fee.network !== '0' || fee.protocol !== '0' || fee.bridge !== '0'" class="text-end text-sm font-medium text-primary">
           <span>{{ fee.network }} {{ fee.networkSymbol }}</span> + <span>{{ fee.protocol }} {{ fee.protocolSymbol }}</span> +
           <el-tooltip popper-class="tooltip-fee-bridge" append-to="body" placement="top-end" effect="light">
             <template #content>
               <div class="flex flex-col gap-2">
-                <div class="flex justify-between" v-if="fee.protocol">
+                <div v-if="fee.protocol" class="flex justify-between">
                   <span class="text-sm text-[#6E6E6E]">Protocol Fee</span>
                   <span class="text-sm text-[#1C1C1C]">{{ fee.protocol }} {{ fee.protocolSymbol }}</span>
                 </div>
-                <div class="flex justify-between" v-if="fee.bridge">
+                <div v-if="fee.bridge" class="flex justify-between">
                   <span class="text-sm text-[#6E6E6E]">deBridge Fee</span>
                   <span class="text-sm text-[#1C1C1C]">{{ fee.bridge }} {{ fee.bridgeSymbol }}</span>
                 </div>
-                <div class="flex justify-between" v-if="fee.network">
+                <div v-if="fee.network" class="flex justify-between">
                   <span class="text-sm text-[#6E6E6E]">Market Maker Gas</span>
                   <span class="text-sm text-[#1C1C1C]">{{ fee.network }} {{ fee.networkSymbol }}</span>
                 </div>
@@ -194,7 +194,7 @@
     sqrtPriceLimitX96: number
   }
 
-  type Response = {
+  type _Response = {
     data: {
       requestId: string
       signature: string

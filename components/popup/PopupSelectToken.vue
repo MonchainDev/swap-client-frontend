@@ -1,5 +1,5 @@
 <template>
-  <BasePopup name="popup-select-token" :is-show-footer="false" width="540" :title="titlePopup" @close="search = ''" @open="handleOpen">
+  <BasePopup name="popup-select-token" :is-show-footer="false" :fullscreen="!isDesktop" width="540" :title="titlePopup" @close="search = ''" @open="handleOpen">
     <template v-if="!isDesktop" #close>
       <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-select-token', false)" />
     </template>
@@ -84,13 +84,15 @@
   }>()
 
   const { setOpenPopup } = useBaseStore()
-  const { isDesktop, currentNetwork: network } = storeToRefs(useBaseStore())
+  const { currentNetwork: network } = storeToRefs(useBaseStore())
   const search = ref('')
   const loading = ref(false)
 
   const recentTokens = useStorage<IToken[]>('recent_tokens', [])
 
   const data = ref<IToken[]>([])
+
+  const isDesktop = useDesktop()
 
   const titlePopup = computed(() => {
     return 'Select a token'

@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="false" class="relative mx-auto max-w-[1024px] pb-6 sm:mt-0 sm:px-4" :class="{ 'pt-10': loading, 'mt-10': !loading }">
+  <div v-loading="loading" class="relative mx-auto max-w-[1024px] pb-6 sm:mt-0 sm:px-4" :class="{ 'pt-10': loading, 'mt-10': !loading }">
     <div class="flex items-center justify-between sm:hidden">
       <div class="flex gap-4">
         <NuxtLink
@@ -121,9 +121,9 @@
     <div class="bg-linear-mb absolute left-0 top-0 hidden h-[100px] w-screen sm:block"></div>
   </div>
   <BasePopup name="popup-confirm-remove" width="540" title="Confirm removing liquidity">
-    <div class="px-8 pb-6">
+    <div class="px-8 pb-6 sm:px-4">
       <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
-        <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
+        <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8 sm:px-4">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <span class="text-xl font-semibold leading-7">{{ liquidityValue0?.currency.symbol }} Pooled</span>
@@ -132,7 +132,7 @@
             <span class="text-[22px] font-semibold leading-7">{{ formattedValue0 }}</span>
           </div>
         </div>
-        <div class="flex h-1/2 items-center justify-between px-8">
+        <div class="flex h-1/2 items-center justify-between px-8 sm:px-4">
           <div class="flex items-center gap-[10px]">
             <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
             <span class="text-xl font-semibold leading-7">{{ liquidityValue1?.currency.symbol }} Pooled</span>

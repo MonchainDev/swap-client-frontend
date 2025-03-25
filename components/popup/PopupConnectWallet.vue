@@ -1,5 +1,5 @@
 <template>
-  <BasePopup name="popup-connect" width="540" title="Connect Wallet" class="popup-connect" @close="typeConnect = null">
+  <BasePopup name="popup-connect" width="540" :fullscreen="!isDesktop" title="Connect Wallet" class="popup-connect" @close="typeConnect = null">
     <template v-if="!isDesktop" #close>
       <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-connect', false)" />
     </template>
@@ -35,8 +35,10 @@
     }
   }
 
-  const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
+  const { currentNetwork } = storeToRefs(useBaseStore())
   const { connectors, connectAsync } = useConnect()
+
+  const isDesktop = useDesktop()
 
   const { setOpenPopup } = useBaseStore()
 
@@ -101,11 +103,4 @@
   }
 </script>
 
-<style lang="scss">
-  .popup-connect {
-    @apply sm:!max-w-full;
-    .wrap-header {
-      @apply sm:w-fit sm:flex-row-reverse sm:gap-2;
-    }
-  }
-</style>
+<style lang="scss"></style>
