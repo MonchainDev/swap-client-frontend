@@ -44,13 +44,44 @@ export const useLiquidityStore = defineStore('liquidity', () => {
 
   const { chainId } = useActiveChainId()
 
+  const { currentNetwork } = storeToRefs(useBaseStore())
+
   const zoomLevel = computed(() => {
     return feeAmount.value ? ZOOM_LEVELS[feeAmount.value as FeeAmount] : ZOOM_LEVELS[FeeAmount.LOWEST]
   })
 
-  const baseCurrency = computed(() => useCurrency(form.value.token0.address as string, chainId.value!).token.value)
+  const { data: baseCurrency } = useQuery({
+    queryKey: computed(() => ['currency-0', form.value.token0.address]),
+    queryFn: async () => {
+      const currency = form.value.token0.address.toLowerCase()
+      const { token: native } = useNativeCurrency(currentNetwork.value.chainId)
+      const isNative = currency === zeroAddress
 
-  const quoteCurrency = computed(() => useCurrency(form.value.token1.address as string, chainId.value!).token.value)
+      if (isNative) {
+        return native.value
+      } else {
+        const item = await getTokenByChainId(currency, currentNetwork.value.chainId)
+        return item
+      }
+    },
+    enabled: computed(() => !!form.value.token0.address)
+  })
+
+  const { data: quoteCurrency } = useQuery({
+    queryKey: computed(() => ['currency-1', form.value.token1.address]),
+    queryFn: async () => {
+      const currency = form.value.token1.address.toLowerCase()
+      const { token: native } = useNativeCurrency(currentNetwork.value.chainId)
+      const isNative = currency === zeroAddress
+      if (isNative) {
+        return native.value
+      } else {
+        const item = await getTokenByChainId(currency, currentNetwork.value.chainId)
+        return item
+      }
+    },
+    enabled: computed(() => !!form.value.token1.address)
+  })
 
   function switchTokens() {
     ;[form.value.token0, form.value.token1] = [form.value.token1, form.value.token0]

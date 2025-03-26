@@ -51,9 +51,47 @@ export const useSwapStore = defineStore('swap', () => {
     }))
   )
 
-  const token0 = computed(() => useCurrency(form.value.token0.address as string, chainId.value!).token.value)
+  // const token0 = computed(() => useCurrency(form.value.token0.address as string, chainId.value!).token.value)
 
-  const token1 = computed(() => useCurrency(form.value.token1.address as string, chainId.value!).token.value)
+  // const token1 = computed(() => useCurrency(form.value.token1.address as string, chainId.value!).token.value)
+
+  const { currentNetwork } = storeToRefs(useBaseStore())
+  /**
+   * List token theo network đang thấy sai so với trên contract
+   * Nên phải gọi lên contract để lấy thông tin token
+   */
+  const { data: token0 } = useQuery({
+    queryKey: computed(() => ['token0', form.value.token0.address]),
+    queryFn: async () => {
+      const currency = form.value.token0.address.toLowerCase()
+      const { token: native } = useNativeCurrency(currentNetwork.value.chainId)
+      const isNative = currency === zeroAddress
+
+      if (isNative) {
+        return native.value
+      } else {
+        const item = await getTokenByChainId(currency, currentNetwork.value.chainId)
+        return item
+      }
+    },
+    enabled: computed(() => !!form.value.token0.address)
+  })
+
+  const { data: token1 } = useQuery({
+    queryKey: computed(() => ['token1', form.value.token1.address]),
+    queryFn: async () => {
+      const currency = form.value.token1.address.toLowerCase()
+      const { token: native } = useNativeCurrency(currentNetwork.value.chainId)
+      const isNative = currency === zeroAddress
+      if (isNative) {
+        return native.value
+      } else {
+        const item = await getTokenByChainId(currency, currentNetwork.value.chainId)
+        return item
+      }
+    },
+    enabled: computed(() => !!form.value.token1.address)
+  })
 
   const swapRouterV3Address = computed(() => getSwapRouterV3Address(chainId.value))
 
