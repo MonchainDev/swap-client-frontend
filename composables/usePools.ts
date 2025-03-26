@@ -99,14 +99,16 @@ export default function usePools() {
     computed(() => ({
       abi: v3PoolStateABI,
       address: poolAddresses.value[0],
-      functionName: 'slot0'
+      functionName: 'slot0',
+      chainId: chainId.value
     }))
   )
   const { data: liquidities } = useReadContract(
     computed(() => ({
       abi: v3PoolStateABI,
       address: poolAddresses.value[0],
-      functionName: 'liquidity'
+      functionName: 'liquidity',
+      chainId: chainId.value
     }))
   )
 
@@ -116,6 +118,7 @@ export default function usePools() {
   watchEffect(() => {
     if (typeof liquidities.value !== 'undefined' && slot0s.value) {
       const tokens = poolTokens.value[0]
+
       if (tokens?.length) {
         const [token0, token1, fee] = tokens
         const [sqrtPriceX96, tick, , , , feeProtocol] = slot0s.value as [bigint, number, number, number, number, number]
