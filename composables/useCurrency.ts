@@ -12,7 +12,9 @@ export default function useCurrency(currencyId: string | undefined, chainId: num
     if (isNative.value) {
       return native.value
     }
-    const item = listToken?.value?.find((item) => item.address === currencyId || item.symbol === currencyId)
+    const item = listToken?.value?.find((item) => {
+      return item.address.toLowerCase() === currencyId?.toLowerCase() || item.symbol === currencyId
+    })
     return item ? new ERC20Token(item.chainId, item.address as `0x${string}`, item.decimals, item.symbol, item.name) : null
   })
 
