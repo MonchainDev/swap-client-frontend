@@ -122,6 +122,8 @@
         recentTokens.value = []
       } else {
         network.value = { ...item }
+        resetStoreLiquid()
+        resetStoreSwap()
       }
       visible.value = false
     }
