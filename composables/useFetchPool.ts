@@ -4,12 +4,12 @@ import { FeeAmount } from '~/constant/fee'
 
 export default function useFetchPool() {
   const { baseCurrency, quoteCurrency, feeAmount } = storeToRefs(useLiquidityStore())
+  const { chainId } = useActiveChainId()
 
   const listFee = [FeeAmount.LOWEST, FeeAmount.LOW, FeeAmount.MEDIUM, FeeAmount.HIGH]
 
   const indexFee = computed(() => listFee.indexOf(feeAmount.value))
 
-  const { chainId } = useActiveChainId()
   const factoryAddress = computed(() => getFactoryAddress(chainId.value) ?? '0x')
 
   const { data: poolAddressLowest, isPending: isPendingLowest } = useReadContract(
@@ -18,7 +18,8 @@ export default function useFetchPool() {
       address: factoryAddress.value,
       functionName: 'getPool',
       args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, FeeAmount.LOWEST],
-      watch: true
+      watch: true,
+      chainId: chainId.value
     }))
   )
 
@@ -28,7 +29,8 @@ export default function useFetchPool() {
       address: factoryAddress.value,
       functionName: 'getPool',
       args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, FeeAmount.LOW],
-      watch: true
+      watch: true,
+      chainId: chainId.value
     }))
   )
 
@@ -38,7 +40,8 @@ export default function useFetchPool() {
       address: factoryAddress.value,
       functionName: 'getPool',
       args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, FeeAmount.MEDIUM],
-      watch: true
+      watch: true,
+      chainId: chainId.value
     }))
   )
 

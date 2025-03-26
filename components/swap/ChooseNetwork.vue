@@ -17,8 +17,8 @@
               <span class="text-sm font-semibold sm:font-normal">Requesting</span>
             </template>
             <template v-else>
-              <img :src="network.logo" alt="logo" class="size-6 rounded-lg" />
-              <span class="text-sm font-semibold sm:font-normal">{{ network.name }}</span>
+              <img :src="currentNetwork.logo" alt="logo" class="size-6 rounded-lg" />
+              <span class="text-sm font-semibold sm:font-normal">{{ currentNetwork.name }}</span>
               <BaseIcon name="arrow" size="16" class="-rotate-90" />
             </template>
           </div>
@@ -66,7 +66,7 @@
 
   const { resetStore: resetStoreLiquid } = useLiquidityStore()
   const { resetStore: resetStoreSwap } = useSwapStore()
-  const { currentNetwork: network } = storeToRefs(useBaseStore())
+  const { currentNetwork } = storeToRefs(useBaseStore())
   const visible = ref(false)
   const search = ref('')
 
@@ -86,10 +86,6 @@
   const route = useRoute('add-currency')
   const router = useRouter()
 
-  onMounted(() => {
-    switchChainAsync({ chainId: network.value.chainId })
-  })
-
   const handleSelectNetwork = async (item: INetwork) => {
     if (_props.isSelect) {
       const index = networkSelected.value.indexOf(item.network)
@@ -103,7 +99,7 @@
       }
     } else {
       const chainSelected = chains.value.find((chain) => chain.id === item.chainId)
-      if (!chainSelected || chainSelected.id === network.value.chainId) {
+      if (!chainSelected || chainSelected.id === currentNetwork.value.chainId) {
         visible.value = false
         return
       }
@@ -122,13 +118,21 @@
           resetStoreLiquid()
           resetStoreSwap()
         }
-
-        recentTokens.value = []
       } else {
-        network.value = { ...item }
-        resetStoreLiquid()
-        resetStoreSwap()
+        if (route.name === 'add-currency') {
+          // replace route without query
+          router.replace({ name: route.name }).then(() => {
+            resetStoreLiquid()
+            resetStoreSwap()
+            currentNetwork.value = { ...item }
+          })
+        } else {
+          currentNetwork.value = { ...item }
+          resetStoreLiquid()
+          resetStoreSwap()
+        }
       }
+      recentTokens.value = []
       visible.value = false
     }
   }

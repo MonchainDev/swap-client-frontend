@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/vue-query'
 import { defineStore } from 'pinia'
-import { DEFAULT_NETWORK, LIST_NETWORK } from '~/config/networks'
+import { DEFAULT_NETWORK } from '~/config/networks'
 import type { INetwork, IToken } from '~/types'
 import type { POPUP_NAME } from '~/types/popup.type'
 
@@ -29,23 +29,7 @@ export const useBaseStore = defineStore('base', () => {
     }
   }
 
-  const { chainId } = useActiveChainId()
-
   const currentNetwork = ref<INetwork>(DEFAULT_NETWORK)
-
-  watchEffect(() => {
-    console.info('Chain ID has changed', chainId.value)
-    if (chainId.value) {
-      const item = LIST_NETWORK.find((item) => item.chainId === chainId.value) || DEFAULT_NETWORK
-      currentNetwork.value = item
-    }
-    // swap and liquidity store can install after base store, so we need to check if the store is installed
-
-    // if (useLiquidityStore && useLiquidityStore() && typeof useLiquidityStore()?.resetStore === 'function') {
-    //   console.log('after resetLiquidStore')
-    //   useLiquidityStore()?.resetStore()
-    // }
-  })
 
   useQuery({
     queryKey: computed(() => ['token-list', currentNetwork.value.chainId]),
@@ -67,5 +51,5 @@ export const useBaseStore = defineStore('base', () => {
     enabled: computed(() => !!currentNetwork.value.chainId)
   })
 
-  return { popup, setOpenPopup, listToken, nativeBalance, isDesktop, currentNetwork, networkLocated, chainId }
+  return { popup, setOpenPopup, listToken, nativeBalance, isDesktop, currentNetwork, networkLocated }
 })
