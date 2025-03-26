@@ -21,20 +21,21 @@
 
 <script lang="ts" setup>
   import { FeeAmount } from '@monchain/v3-sdk'
+  import { LIST_NETWORK } from '~/config/networks'
 
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware', 'validate-network-middleware']
   })
 
-  const { listToken } = storeToRefs(useBaseStore())
   const { form, feeAmount, listTokenOfRange } = storeToRefs(useLiquidityStore())
+  const { chainId } = useActiveChainId()
 
   const isToken0Selected = computed(() => form.value.token0.symbol !== '')
   const isToken1Selected = computed(() => form.value.token1.symbol !== '')
 
   const { params } = useRoute('add-currency')
 
-  watchEffect(() => {
+  ;(async () => {
     let currencies: string[] = []
     if ('currency' in params) {
       currencies = params.currency as string[]
@@ -44,16 +45,39 @@
       const [currencyA, currencyB, feeAmountFromUrl] = currencies
 
       if (currencyA && currencyB) {
-        const tokenA = listToken.value.find(
-          (item) => item.symbol.toLowerCase() === currencyA.toLowerCase() || item.address.toLocaleLowerCase() === currencyA.toLowerCase()
-        )
-        const tokenB = listToken.value.find(
-          (item) => item.symbol.toLowerCase() === currencyB.toLowerCase() || item.address.toLocaleLowerCase() === currencyB.toLowerCase()
-        )
+        const [tokenA, tokenB] = await Promise.all([getTokenByChainId(currencyA, chainId.value!), getTokenByChainId(currencyB, chainId.value!)])
         if (tokenA && tokenB) {
-          form.value.token0 = tokenA
-          form.value.token1 = tokenB
-          listTokenOfRange.value = [tokenA, tokenB]
+          form.value.token0 = {
+            name: tokenA.name ?? '',
+            symbol: tokenA.symbol,
+            decimals: tokenA.decimals,
+            icon_url: '',
+            address: tokenA.address,
+            id: Math.random(),
+            tokenSymbol: tokenA.symbol,
+            tokenAddress: tokenA.address,
+            tokenDecimals: tokenA.decimals,
+            network: LIST_NETWORK.find((item) => item.chainId === tokenA.chainId)?.network ?? '',
+            chainId: tokenA.chainId,
+            stable: false,
+            crossChain: false
+          }
+          form.value.token1 = {
+            name: tokenB.name ?? '',
+            symbol: tokenB.symbol,
+            decimals: tokenB.decimals,
+            icon_url: '',
+            address: tokenB.address,
+            id: Math.random(),
+            tokenSymbol: tokenB.symbol,
+            tokenAddress: tokenB.address,
+            tokenDecimals: tokenB.decimals,
+            network: LIST_NETWORK.find((item) => item.chainId === tokenB.chainId)?.network ?? '',
+            chainId: tokenB.chainId,
+            stable: false,
+            crossChain: false
+          }
+          listTokenOfRange.value = [form.value.token0, form.value.token1]
         }
       }
       if (feeAmountFromUrl) {
@@ -61,7 +85,7 @@
         feeAmount.value = value ? parseFloat(feeAmountFromUrl) : 0
       }
     }
-  })
+  })()
 </script>
 
 <style lang="scss"></style>
