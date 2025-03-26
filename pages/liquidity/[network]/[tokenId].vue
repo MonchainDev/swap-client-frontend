@@ -22,7 +22,7 @@
                 <span class="text-[#049C6B]">{{ positionDetail?.feeApr }}% </span>
               </span>
             </div>
-            <span class="text-[48px] font-semibold">${{ formatNumberAbbreviation(positionDetail?.liquidity || 0) }}</span>
+            <span class="text-[48px] font-semibold">${{ formatNumber((Number(priceUsdBase) + Number(priceUsdQuote)).toFixed(2)) }}</span>
           </div>
           <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
