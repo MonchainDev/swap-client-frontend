@@ -33,21 +33,19 @@ export const useBaseStore = defineStore('base', () => {
 
   const currentNetwork = ref<INetwork>(DEFAULT_NETWORK)
 
-  watch(
-    () => chainId.value,
-    () => {
-      console.info('Chain ID has changed', chainId.value)
-      if (chainId.value === currentNetwork.value.chainId) return
+  watchEffect(() => {
+    console.info('Chain ID has changed', chainId.value)
+    if (chainId.value) {
       const item = LIST_NETWORK.find((item) => item.chainId === chainId.value) || DEFAULT_NETWORK
       currentNetwork.value = item
-      // swap and liquidity store can install after base store, so we need to check if the store is installed
-
-      // if (useLiquidityStore && useLiquidityStore() && typeof useLiquidityStore()?.resetStore === 'function') {
-      //   console.log('after resetLiquidStore')
-      //   useLiquidityStore()?.resetStore()
-      // }
     }
-  )
+    // swap and liquidity store can install after base store, so we need to check if the store is installed
+
+    // if (useLiquidityStore && useLiquidityStore() && typeof useLiquidityStore()?.resetStore === 'function') {
+    //   console.log('after resetLiquidStore')
+    //   useLiquidityStore()?.resetStore()
+    // }
+  })
 
   useQuery({
     queryKey: computed(() => ['token-list', currentNetwork.value.chainId]),
