@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto mb-[85px] mt-[38px] max-w-[1024px] sm:hidden">
+  <div v-if="isDesktop" class="mx-auto mb-[85px] mt-[38px] max-w-[1024px]">
     <div class="flex items-center justify-between">
       <div class="flex flex-col gap-1">
         <h4 class="text-xl font-semibold">Liquidity Pools & Farms</h4>
@@ -111,8 +111,11 @@
       <TableListPool :data="formattedData" :loading="status === 'pending'" />
     </div>
   </div>
-  <BlockLiquidHeaderMobile :token-selected="tokenSelected" class="hidden sm:block" />
-  <TableListPoolMobile :data="formattedData" :loading="status === 'pending'" class="hidden sm:block" />
+  <template v-else>
+    <BlockLiquidHeaderMobile v-model:network-selected="networkSelected" :token-selected="tokenSelected" />
+    <TableListPoolMobile :data="formattedData" :loading="status === 'pending'" @view="handleViewPool" />
+    <DrawerPoolItem v-model:drawer="drawer" :pool-detail="currentPool" />
+  </template>
 
   <!-- <PopupSelectToken v-model:token-selected="tokenSelected" :show-network="false" is-select /> -->
   <PopupSelectTokenMultiple
@@ -138,11 +141,13 @@
   })
 
   const tabActive = ref<'ALL' | 'POSITION'>('ALL')
+  const currentPool = ref<IPool | undefined>(undefined)
 
   const { setOpenPopup } = useBaseStore()
   // const { listToken } = storeToRefs(useBaseStore())
 
   const { handleImageError } = useErrorImage()
+  const isDesktop = useDesktop()
 
   const networkSelected = ref<string[]>(LIST_NETWORK.map((item) => item.network))
   const tokenSelected = ref<IToken[]>([])
@@ -232,6 +237,12 @@
     } else {
       tokenSelected.value = tokenSelected.value.filter((item) => item.id !== token.id)
     }
+  }
+
+  const drawer = ref(false)
+  const handleViewPool = (pool: IPool) => {
+    currentPool.value = pool
+    drawer.value = true
   }
 </script>
 

@@ -121,7 +121,11 @@
   const { setOpenPopup } = useBaseStore()
   const { handleImageError } = useErrorImage()
   const tabActive = ref<'ALL' | 'POSITION'>('ALL')
-  const networkSelected = ref<string[]>(LIST_NETWORK.map((item) => item.network))
+
+  const networkSelected = defineModel('networkSelected', {
+    type: Array<string>,
+    default: []
+  })
 
   const networkListSelected = computed(() => {
     return LIST_NETWORK.filter((item) => networkSelected.value.includes(item.network))
