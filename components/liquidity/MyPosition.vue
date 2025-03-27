@@ -124,30 +124,35 @@
       <BlockLiquidHeaderMobile v-model:network-selected="networkSelected" :token-selected="tokenSelected" />
       <BaseTab v-model:model="tabActive" :list="listTab" class="bg-white pl-6 pt-4" />
 
-      <div v-loading="status === 'pending'" class="mt-6 space-y-4 px-4">
-        <template v-if="formattedData.length">
-          <MyPositionItem
-            v-for="item in formattedData"
-            :key="item.tokenId"
-            :list-exchange-rate="listExchangeRate"
-            :position="item"
-            class="rounded-lg bg-white p-4 first:!pt-4"
-            @reload="refresh"
-            @unstake="
-              (pos, price) => {
-                positionCurrent = pos
-                positionCurrent.priceUdtTotal = price
-                setOpenPopup('popup-unstake')
-              }
-            "
-          />
-        </template>
-        <template v-else>
-          <div class="flex h-full items-center justify-center rounded-lg bg-gray-1">
-            <BaseIcon name="trash" size="80" />
-          </div>
-        </template>
-      </div>
+      <template v-if="isConnected">
+        <div v-loading="status === 'pending'" class="mt-6 space-y-4 px-4">
+          <template v-if="formattedData.length">
+            <MyPositionItem
+              v-for="item in formattedData"
+              :key="item.tokenId"
+              :list-exchange-rate="listExchangeRate"
+              :position="item"
+              class="rounded-lg bg-white p-4 first:!pt-4"
+              @reload="refresh"
+              @unstake="
+                (pos, price) => {
+                  positionCurrent = pos
+                  positionCurrent.priceUdtTotal = price
+                  setOpenPopup('popup-unstake')
+                }
+              "
+            />
+          </template>
+          <template v-else>
+            <div class="items2-center flex h-full justify-center rounded-lg bg-gray-1">
+              <BaseIcon name="trash" size="80" />
+            </div>
+          </template>
+        </div>
+      </template>
+      <template v-else>
+        <div class="flex h-[100px] items-center justify-center text-base text-gray-6">There are no data</div>
+      </template>
     </template>
   </ClientOnly>
 
@@ -267,7 +272,7 @@
 
   const { data, status, refresh } = await useLazyFetch<IResponse<IPositionOrigin[]>>(() => `/api/position/list/search?${queryString.value}`, {
     key: queryString.value,
-    immediate: true,
+    immediate: isConnected.value,
     onResponse: ({ response }) => {
       query.value.total = response._data.totalElements ?? 0
       if (response._data?.content.length) {

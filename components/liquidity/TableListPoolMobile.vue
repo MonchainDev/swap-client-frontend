@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-4 mb-[80px]">
+  <div class="mx-4 mb-[80px] mt-6">
     <div v-for="(item, index) in props.data" :key="index" class="mb-2 rounded-lg bg-white px-4 py-2">
       <div class="wrap-table flex items-center justify-between">
         <NuxtLink :to="{ name: 'liquidity-pool-network-address', params: { network: item.network, address: item.poolAddress } }" class="flex gap-[10px]">
