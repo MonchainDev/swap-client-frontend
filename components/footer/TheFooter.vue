@@ -2,7 +2,7 @@
   <!-- <BannerAds class="mt-[67px]" /> -->
 
   <footer class="relative w-full bg-[#EEE] pb-28 pt-8 sm:pb-7">
-    <img src="/bg-footer.png" alt="bg footer" class="absolute bottom-0 left-0 sm:hidden" />
+    <img src="/bg-footer.png" alt="bg footer" class="absolute bottom-0 left-0 h-full w-full sm:hidden" />
     <div class="mx-auto grid w-[939px] grid-cols-[166px_1fr_1fr_1fr_237px] gap-[50px] sm:w-full sm:grid-cols-3 sm:gap-3 sm:border-none sm:px-4">
       <div class="flex flex-col gap-5 sm:hidden">
         <span class="text-[22px] font-semibold leading-7">ORB</span>
