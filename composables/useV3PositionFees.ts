@@ -24,7 +24,8 @@ export default function useV3PositionFees(pool: Ref<Pool, undefined>, asWNATIVE 
       abi: positionManager.value?.abi,
       functionName: 'ownerOf',
       args: [tokenId.value],
-      watch: true
+      watch: true,
+      chainId: chainId.value
     }))
   )
 

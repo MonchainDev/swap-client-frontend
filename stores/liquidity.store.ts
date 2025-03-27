@@ -158,7 +158,8 @@ export const useLiquidityStore = defineStore('liquidity', () => {
       abi: ABI_TOKEN,
       address: baseCurrency.value?.wrapped.address,
       functionName: 'allowance',
-      args: [address.value, spenderAddress.value]
+      args: [address.value, spenderAddress.value],
+      chainId: chainId.value
     }))
   )
 
@@ -167,7 +168,8 @@ export const useLiquidityStore = defineStore('liquidity', () => {
       abi: ABI_TOKEN,
       address: quoteCurrency.value?.wrapped.address,
       functionName: 'allowance',
-      args: [address.value, spenderAddress.value]
+      args: [address.value, spenderAddress.value],
+      chainId: chainId.value
     }))
   )
 

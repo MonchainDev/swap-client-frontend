@@ -100,7 +100,8 @@ export const useSwapStore = defineStore('swap', () => {
       abi: ABI_TOKEN,
       address: token1.value?.wrapped.address,
       functionName: 'allowance',
-      args: [address.value, swapRouterV3Address.value]
+      args: [address.value, swapRouterV3Address.value],
+      chainId: chainId.value
     }))
   )
 
@@ -109,7 +110,8 @@ export const useSwapStore = defineStore('swap', () => {
       abi: ABI_TOKEN,
       address: token0.value?.wrapped.address,
       functionName: 'allowance',
-      args: [address.value, swapRouterV3Address.value]
+      args: [address.value, swapRouterV3Address.value],
+      chainId: chainId.value
     }))
   )
 

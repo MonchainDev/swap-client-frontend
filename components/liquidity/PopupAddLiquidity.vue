@@ -461,13 +461,15 @@
               address: contractAddress,
               functionName: 'balanceOf',
               args: [address.value],
-              abi: NonfungiblePositionManagerABI
+              abi: NonfungiblePositionManagerABI,
+              chainId: chainId.value
             })
             const tokenId = await readContract(config, {
               address: contractAddress,
               functionName: 'tokenOfOwnerByIndex',
               args: [address.value, Number(balance) - 1],
-              abi: NonfungiblePositionManagerABI
+              abi: NonfungiblePositionManagerABI,
+              chainId: chainId.value
             })
 
             body = {
