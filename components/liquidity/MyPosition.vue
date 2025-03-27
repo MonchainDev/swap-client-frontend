@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <div class="mt-[26px] rounded-lg bg-white py-8 shadow-md">
+    <div v-if="isDesktop" class="mt-[26px] rounded-lg bg-white py-8 shadow-md">
       <div class="flex items-center justify-between px-6">
         <h4 class="text-xl font-semibold">My positions</h4>
         <div class="flex items-center gap-5">
@@ -47,12 +47,12 @@
           >
             <div class="flex items-center gap-2">
               <div class="flex">
-                <template v-if="tokenListSelected.length > 3">
+                <template v-if="tokenSelected.length > 3">
                   <div class="flex">
                     <img
                       v-for="(_i, index) in 3"
                       :key="index"
-                      :src="tokenListSelected[index].icon_url || ''"
+                      :src="tokenSelected[index].icon_url || ''"
                       alt="logo"
                       class="border-sky-500 size-6 rounded-full border-[2px] border-solid border-white [&:not(:first-child)]:-ml-3"
                       @error="handleImageError($event)"
@@ -60,12 +60,12 @@
                     <div
                       class="-ml-3 flex size-6 items-center justify-center rounded-full border-[2px] border-solid border-white bg-[#CCE0FF] text-xs font-bold text-hyperlink"
                     >
-                      +{{ tokenListSelected.length - 3 }}
+                      +{{ tokenSelected.length - 3 }}
                     </div>
                   </div>
                 </template>
                 <template v-else>
-                  <template v-for="item in tokenListSelected" :key="item">
+                  <template v-for="item in tokenSelected" :key="item">
                     <img
                       :src="item.icon_url || ''"
                       alt="logo"
@@ -120,9 +120,43 @@
         <div class="flex h-[100px] items-center justify-center text-base text-gray-6">There are no data</div>
       </template>
     </div>
+    <template v-else>
+      <BlockLiquidHeaderMobile v-model:network-selected="networkSelected" :token-selected="tokenSelected" />
+      <BaseTab v-model:model="tabActive" :list="listTab" class="bg-white pl-6 pt-4" />
+
+      <div v-loading="status === 'pending'" class="mt-6 space-y-4 px-4">
+        <template v-if="formattedData.length">
+          <MyPositionItem
+            v-for="item in formattedData"
+            :key="item.tokenId"
+            :list-exchange-rate="listExchangeRate"
+            :position="item"
+            class="rounded-lg bg-white p-4 first:!pt-4"
+            @reload="refresh"
+            @unstake="
+              (pos, price) => {
+                positionCurrent = pos
+                positionCurrent.priceUdtTotal = price
+                setOpenPopup('popup-unstake')
+              }
+            "
+          />
+        </template>
+        <template v-else>
+          <div class="flex h-full items-center justify-center rounded-lg bg-gray-1">
+            <BaseIcon name="trash" size="80" />
+          </div>
+        </template>
+      </div>
+    </template>
   </ClientOnly>
 
-  <PopupSelectToken v-model:token-selected="tokenSelected" :show-network="false" is-select />
+  <PopupSelectTokenMultiple
+    :network-selected="networkListSelected"
+    :token-selected="tokenSelected"
+    @change="handleSelectToken"
+    @remove-all="tokenSelected = []"
+  />
   <PopupUnStake :position="positionCurrent" @reload="refresh" />
 </template>
 
@@ -133,7 +167,8 @@
   import type { IPosition, IPositionOrigin } from '~/types/position.type'
   import type { IResponse } from '~/types/response.type'
   import PopupUnStake from './PopupUnStake.vue'
-  import type { IExchangeRate } from '~/types'
+  import type { ChainId, IExchangeRate, IToken } from '~/types'
+  import { WNATIVE } from '~/constant/token'
   const enum TabValue {
     ALL = 'ALL',
     ACTIVE = 'ACTIVE',
@@ -174,6 +209,7 @@
     }
   ]
 
+  const isDesktop = useDesktop()
   const tabActive = ref<TabValue>(TabValue.ALL)
 
   const { isConnected, address } = useAccount()
@@ -184,19 +220,22 @@
   })
 
   const { setOpenPopup } = useBaseStore()
-  const { listToken } = storeToRefs(useBaseStore())
 
   const { handleImageError } = useErrorImage()
 
   const networkSelected = ref<string[]>(LIST_NETWORK.map((item) => item.network))
-  const tokenSelected = ref<string[]>([])
+  const tokenSelected = ref<IToken[]>([])
   const positionCurrent = ref<IPosition | undefined>(undefined)
+
+  watchEffect(() => {
+    // reset token selected when change network
+    if (networkSelected.value.length) {
+      tokenSelected.value = []
+    }
+  })
 
   const networkListSelected = computed(() => {
     return LIST_NETWORK.filter((item) => networkSelected.value.includes(item.network))
-  })
-  const tokenListSelected = computed(() => {
-    return listToken.value.filter((item) => tokenSelected.value.includes(item.address))
   })
 
   const titleFilterNetwork = computed(() => {
@@ -206,17 +245,20 @@
   })
 
   const titleFilterToken = computed(() => {
-    return tokenListSelected.value.length === 0 ? 'All tokens' : tokenListSelected.value.map((item) => item.symbol).join(', ')
+    return tokenSelected.value?.length === 0 ? 'All tokens' : tokenSelected.value?.map((item) => item.tokenSymbol).join(', ')
   })
   // const chainIds = ref([16789])
   // const { data, isPending } = useAccountV3Positions(chainIds)
 
   const queryString = computed(() => {
-    // const poolStatus = tabActive.value === TabValue.ALL ? '' : tabActive.value
     const params = new URLSearchParams()
     networkListSelected.value.forEach((network) => params.append('networks', network.network))
-    tokenListSelected.value.forEach((token) => params.append('tokens', token.symbol === 'MON' ? 'WMON' : token.symbol))
-    // params.append('poolStatus', poolStatus)
+    tokenSelected.value?.forEach((token) => {
+      const address =
+        token.tokenAddress === '' || token.tokenAddress.toLowerCase() === zeroAddress ? WNATIVE[token.chainId as ChainId].address : token.tokenAddress
+      params.append('tokens', address)
+    })
+
     params.append('page', query.value.page.toString())
     params.append('pageSize', query.value.pageSize.toString())
     params.append('createdBy', address.value?.toLowerCase() ?? '')
@@ -281,6 +323,19 @@
       currencies.forEach((currency) => params.append('currencies', currency))
       const response = await useFetch<IExchangeRate[]>(`/api/exchange-rate/all?${params.toString()}`)
       listExchangeRate.value = response.data.value ?? []
+    }
+  }
+
+  const handleSelectToken = (token: IToken, type: 'add' | 'remove') => {
+    if (type === 'add') {
+      const index = tokenSelected.value.findIndex((item) => item.id === token.id)
+      if (index === -1) {
+        tokenSelected.value.push(token)
+      } else {
+        tokenSelected.value = tokenSelected.value.filter((item) => item.id !== token.id)
+      }
+    } else {
+      tokenSelected.value = tokenSelected.value.filter((item) => item.id !== token.id)
     }
   }
 </script>

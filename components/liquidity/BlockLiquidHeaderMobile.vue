@@ -1,6 +1,6 @@
 <template>
-  <div class="mb-4 mt-[92px] hidden sm:block">
-    <div class="absolute top-28 z-10 mx-4 flex items-center justify-between rounded-lg bg-white px-4 py-3 shadow">
+  <div class="bg-white">
+    <div class="relative z-10 mx-4 flex items-center justify-between rounded-lg bg-white px-4 py-3 shadow">
       <div class="flex flex-col gap-1">
         <h4 class="text-base font-semibold">Liquidity Pools & Farms</h4>
         <p class="text-xs text-gray-8">
@@ -17,14 +17,14 @@
         </BaseButton>
       </NuxtLink>
     </div>
-    <div class="h-[226px] bg-white px-4 pb-4 pt-12">
-      <div class="flex rounded-lg bg-[#E3EEFF] p-[6px] text-sm font-semibold text-primary">
-        <NuxtLink to="/liquidity/pool" class="w-[165px] py-[6px] text-center" :class="{ 'tab-liquid-active': tabActive === 'ALL' }" @click="tabActive = 'ALL'">
+    <div class="mt-[18px] px-4 pb-4">
+      <div class="grid grid-cols-2 rounded-lg bg-[#E3EEFF] p-[6px] text-sm font-semibold text-primary">
+        <NuxtLink to="/liquidity/pool" class="py-[6px] text-center" :class="{ 'tab-liquid-active': tabActive === 'ALL' }" @click="tabActive = 'ALL'">
           <span class="text-sm">All Pools</span>
         </NuxtLink>
         <NuxtLink
           to="/liquidity/positions"
-          class="w-[165px] py-[6px] text-center"
+          class="py-[6px] text-center"
           :class="{ 'tab-liquid-active': tabActive === 'POSITION' }"
           @click="tabActive = 'POSITION'"
         >
@@ -117,10 +117,11 @@
   const props = withDefaults(defineProps<IProps>(), {
     tokenSelected: () => []
   })
-
+  const route = useRoute()
   const { setOpenPopup } = useBaseStore()
   const { handleImageError } = useErrorImage()
   const tabActive = ref<'ALL' | 'POSITION'>('ALL')
+  tabActive.value = route.name === 'liquidity-positions' ? 'POSITION' : 'ALL'
 
   const networkSelected = defineModel('networkSelected', {
     type: Array<string>,

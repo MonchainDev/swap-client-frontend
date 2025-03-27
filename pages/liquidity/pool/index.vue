@@ -112,9 +112,12 @@
     </div>
   </div>
   <template v-else>
-    <BlockLiquidHeaderMobile v-model:network-selected="networkSelected" :token-selected="tokenSelected" />
-    <TableListPoolMobile :data="formattedData" :loading="status === 'pending'" @view="handleViewPool" />
-    <DrawerPoolItem v-model:drawer="drawer" :pool-detail="currentPool" />
+    <div class="relative">
+      <BlockLiquidHeaderMobile v-model:network-selected="networkSelected" :token-selected="tokenSelected" />
+      <TableListPoolMobile :data="formattedData" :loading="status === 'pending'" @view="handleViewPool" />
+      <DrawerPoolItem v-model:drawer="drawer" :pool-detail="currentPool" />
+      <div class="bg-linear-mb absolute left-0 top-0 hidden h-14 w-screen sm:block"></div>
+    </div>
   </template>
 
   <!-- <PopupSelectToken v-model:token-selected="tokenSelected" :show-network="false" is-select /> -->
