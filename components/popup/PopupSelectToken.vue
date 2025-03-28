@@ -92,7 +92,7 @@
 
   const data = ref<IToken[]>([])
 
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
 
   const titlePopup = computed(() => {
     return 'Select a token'

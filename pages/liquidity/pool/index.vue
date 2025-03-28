@@ -1,124 +1,126 @@
 <template>
-  <div v-if="isDesktop" class="mx-auto mb-[85px] mt-[38px] max-w-[1024px]">
-    <div class="flex items-center justify-between">
-      <div class="flex flex-col gap-1">
-        <h4 class="text-xl font-semibold">Liquidity Pools & Farms</h4>
-        <p class="text-sm text-gray-8">
-          Maximize earnings with secure and smart farming <span class="text-gray-4"> | </span>
-          <span class="text-hyperlink">Learn how</span>
-          <span class="text-gray-4"> | </span>
-          <span class="text-hyperlink">FAQ</span>
-        </p>
-      </div>
-      <div class="flex items-center gap-[50px]">
-        <div class="flex gap-6 text-sm font-semibold text-gray-7">
-          <NuxtLink to="/liquidity/pool">
-            <BaseTab v-model:model="tabActive" :list="[{ title: 'All Pools', value: 'ALL' }]" />
-          </NuxtLink>
-          <NuxtLink to="/liquidity/positions">
-            <span class="tab-active cursor-pointer pb-[10px] hover:text-hyperlink">My Position</span>
+  <ClientOnly>
+    <div v-if="isDesktop" class="mx-auto mb-[85px] mt-[38px] max-w-[1024px]">
+      <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-1">
+          <h4 class="text-xl font-semibold">Liquidity Pools & Farms</h4>
+          <p class="text-sm text-gray-8">
+            Maximize earnings with secure and smart farming <span class="text-gray-4"> | </span>
+            <span class="text-hyperlink">Learn how</span>
+            <span class="text-gray-4"> | </span>
+            <span class="text-hyperlink">FAQ</span>
+          </p>
+        </div>
+        <div class="flex items-center gap-[50px]">
+          <div class="flex gap-6 text-sm font-semibold text-gray-7">
+            <NuxtLink to="/liquidity/pool">
+              <BaseTab v-model:model="tabActive" :list="[{ title: 'All Pools', value: 'ALL' }]" />
+            </NuxtLink>
+            <NuxtLink to="/liquidity/positions">
+              <span class="tab-active cursor-pointer pb-[10px] hover:text-hyperlink">My Position</span>
+            </NuxtLink>
+          </div>
+          <NuxtLink to="/add">
+            <BaseButton size="sm" class="flex w-[149px] items-center gap-1 !text-white">
+              <BaseIcon name="plus" size="24" />
+              <span>Add Liquidity</span>
+            </BaseButton>
           </NuxtLink>
         </div>
-        <NuxtLink to="/add">
-          <BaseButton size="sm" class="flex w-[149px] items-center gap-1 !text-white">
-            <BaseIcon name="plus" size="24" />
-            <span>Add Liquidity</span>
-          </BaseButton>
-        </NuxtLink>
       </div>
-    </div>
-    <div class="mt-[26px] rounded-lg bg-white py-8">
-      <div class="flex items-center justify-between px-6">
-        <h4 class="text-2xl font-semibold leading-7">All Pools</h4>
-        <div class="flex gap-4">
-          <ChooseNetwork v-model:network-selected="networkSelected" is-select>
-            <template #reference>
-              <div class="flex h-[42px] w-[280px] cursor-pointer items-center justify-between gap-1 rounded-lg border border-solid border-gray-4 pl-4 pr-1">
-                <div class="flex items-center gap-2">
-                  <div class="flex">
-                    <template v-if="networkListSelected.length > 3">
-                      <div class="flex">
-                        <img
-                          v-for="(_i, index) in 3"
-                          :key="index"
-                          :src="networkListSelected[index].logo"
-                          alt="logo"
-                          class="border-sky-500 size-6 rounded border-[2px] border-solid border-white [&:not(:first-child)]:-ml-3"
-                        />
-                        <div
-                          class="-ml-3 flex size-6 items-center justify-center rounded border-[2px] border-solid border-white bg-[#CCE0FF] text-xs font-bold text-hyperlink"
-                        >
-                          +{{ networkListSelected.length - 3 }}
+      <div class="mt-[26px] rounded-lg bg-white py-8">
+        <div class="flex items-center justify-between px-6">
+          <h4 class="text-2xl font-semibold leading-7">All Pools</h4>
+          <div class="flex gap-4">
+            <ChooseNetwork v-model:network-selected="networkSelected" is-select>
+              <template #reference>
+                <div class="flex h-[42px] w-[280px] cursor-pointer items-center justify-between gap-1 rounded-lg border border-solid border-gray-4 pl-4 pr-1">
+                  <div class="flex items-center gap-2">
+                    <div class="flex">
+                      <template v-if="networkListSelected.length > 3">
+                        <div class="flex">
+                          <img
+                            v-for="(_i, index) in 3"
+                            :key="index"
+                            :src="networkListSelected[index].logo"
+                            alt="logo"
+                            class="border-sky-500 size-6 rounded border-[2px] border-solid border-white [&:not(:first-child)]:-ml-3"
+                          />
+                          <div
+                            class="-ml-3 flex size-6 items-center justify-center rounded border-[2px] border-solid border-white bg-[#CCE0FF] text-xs font-bold text-hyperlink"
+                          >
+                            +{{ networkListSelected.length - 3 }}
+                          </div>
                         </div>
-                      </div>
-                    </template>
-                    <template v-else>
-                      <template v-for="item in networkListSelected" :key="item">
-                        <img
-                          :src="item.logo"
-                          alt="logo"
-                          class="border-sky-500 size-6 rounded border-[2px] border-solid border-white [&:not(:first-child)]:-ml-3"
-                        />
                       </template>
-                    </template>
-                  </div>
-                  <div class="line-clamp-1 flex-1 text-sm">{{ titleFilterNetwork }}</div>
-                </div>
-                <BaseIcon name="arrow-chevron" size="24" class="text-gray-6" />
-              </div>
-            </template>
-          </ChooseNetwork>
-          <div
-            class="flex h-[42px] w-[280px] cursor-pointer items-center justify-between gap-1 rounded-lg border border-solid border-gray-4 pl-4 pr-1"
-            @click="setOpenPopup('popup-selected-token-multiple')"
-          >
-            <div class="flex items-center gap-2">
-              <div class="flex">
-                <template v-if="tokenSelected && tokenSelected.length > 3">
-                  <div class="flex">
-                    <img
-                      v-for="(_i, index) in 3"
-                      :key="index"
-                      :src="tokenSelected[index].icon_url || ''"
-                      alt="logo"
-                      class="border-sky-500 size-6 rounded-full border-[2px] border-solid border-white [&:not(:first-child)]:-ml-3"
-                      @error="handleImageError($event)"
-                    />
-                    <div
-                      class="-ml-3 flex size-6 items-center justify-center rounded-full border-[2px] border-solid border-white bg-[#CCE0FF] text-xs font-bold text-hyperlink"
-                    >
-                      +{{ tokenSelected.length - 3 }}
+                      <template v-else>
+                        <template v-for="item in networkListSelected" :key="item">
+                          <img
+                            :src="item.logo"
+                            alt="logo"
+                            class="border-sky-500 size-6 rounded border-[2px] border-solid border-white [&:not(:first-child)]:-ml-3"
+                          />
+                        </template>
+                      </template>
                     </div>
+                    <div class="line-clamp-1 flex-1 text-sm">{{ titleFilterNetwork }}</div>
                   </div>
-                </template>
-                <template v-else>
-                  <template v-for="item in tokenSelected" :key="item">
-                    <img
-                      :src="item.icon_url || ''"
-                      alt="logo"
-                      class="border-sky-500 size-7 rounded-full border-[2px] border-solid border-white [&:not(:first-child)]:-ml-3"
-                      @error="handleImageError($event)"
-                    />
+                  <BaseIcon name="arrow-chevron" size="24" class="text-gray-6" />
+                </div>
+              </template>
+            </ChooseNetwork>
+            <div
+              class="flex h-[42px] w-[280px] cursor-pointer items-center justify-between gap-1 rounded-lg border border-solid border-gray-4 pl-4 pr-1"
+              @click="setOpenPopup('popup-selected-token-multiple')"
+            >
+              <div class="flex items-center gap-2">
+                <div class="flex">
+                  <template v-if="tokenSelected && tokenSelected.length > 3">
+                    <div class="flex">
+                      <img
+                        v-for="(_i, index) in 3"
+                        :key="index"
+                        :src="tokenSelected[index].icon_url || ''"
+                        alt="logo"
+                        class="border-sky-500 size-6 rounded-full border-[2px] border-solid border-white [&:not(:first-child)]:-ml-3"
+                        @error="handleImageError($event)"
+                      />
+                      <div
+                        class="-ml-3 flex size-6 items-center justify-center rounded-full border-[2px] border-solid border-white bg-[#CCE0FF] text-xs font-bold text-hyperlink"
+                      >
+                        +{{ tokenSelected.length - 3 }}
+                      </div>
+                    </div>
                   </template>
-                </template>
+                  <template v-else>
+                    <template v-for="item in tokenSelected" :key="item">
+                      <img
+                        :src="item.icon_url || ''"
+                        alt="logo"
+                        class="border-sky-500 size-7 rounded-full border-[2px] border-solid border-white [&:not(:first-child)]:-ml-3"
+                        @error="handleImageError($event)"
+                      />
+                    </template>
+                  </template>
+                </div>
+                <div class="line-clamp-1 flex-1 text-sm">{{ titleFilterToken }}</div>
               </div>
-              <div class="line-clamp-1 flex-1 text-sm">{{ titleFilterToken }}</div>
+              <BaseIcon name="arrow-chevron" size="24" class="text-gray-6" />
             </div>
-            <BaseIcon name="arrow-chevron" size="24" class="text-gray-6" />
           </div>
         </div>
+        <TableListPool :data="formattedData" :loading="status === 'pending'" />
       </div>
-      <TableListPool :data="formattedData" :loading="status === 'pending'" />
     </div>
-  </div>
-  <template v-else>
-    <div class="relative">
-      <BlockLiquidHeaderMobile v-model:network-selected="networkSelected" :token-selected="tokenSelected" />
-      <TableListPoolMobile :data="formattedData" :loading="status === 'pending'" @view="handleViewPool" />
-      <DrawerPoolItem v-model:drawer="drawer" :pool-detail="currentPool" />
-      <div class="bg-linear-mb absolute left-0 top-0 hidden h-14 w-screen sm:block"></div>
-    </div>
-  </template>
+    <template v-else>
+      <div class="relative">
+        <BlockLiquidHeaderMobile v-model:network-selected="networkSelected" :token-selected="tokenSelected" />
+        <TableListPoolMobile :data="formattedData" :loading="status === 'pending'" @view="handleViewPool" />
+        <DrawerPoolItem v-model:drawer="drawer" :pool-detail="currentPool" />
+        <div class="bg-linear-mb absolute left-0 top-0 hidden h-14 w-screen sm:block"></div>
+      </div>
+    </template>
+  </ClientOnly>
 
   <!-- <PopupSelectToken v-model:token-selected="tokenSelected" :show-network="false" is-select /> -->
   <PopupSelectTokenMultiple
@@ -150,7 +152,7 @@
   // const { listToken } = storeToRefs(useBaseStore())
 
   const { handleImageError } = useErrorImage()
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
 
   const networkSelected = ref<string[]>(LIST_NETWORK.map((item) => item.network))
   const tokenSelected = ref<IToken[]>([])

@@ -118,7 +118,7 @@
 
   const loadingAdd = ref(false)
 
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
 
   const currency0 = computed(() => unwrappedToken(props.position?.pool.token0))
   const currency1 = computed(() => unwrappedToken(props.position?.pool.token1))

@@ -55,7 +55,7 @@
     loadingTxs: false
   })
 
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
 
   const getTran = (type: TabValue | string) => {
     switch (type) {

@@ -214,7 +214,7 @@
     }
   ]
 
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
   const tabActive = ref<TabValue>(TabValue.ALL)
 
   const { isConnected, address } = useAccount()

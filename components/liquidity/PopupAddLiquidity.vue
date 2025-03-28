@@ -187,7 +187,7 @@
   const loadingAdd = ref(false)
   const step = ref<'INPUT' | 'CONFIRM'>('INPUT')
 
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
 
   const { form, balance0, balance1, typedValue, independentField, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
   const { refetchAllowance0, refetchAllowance1, refetchBalance0, refetchBalance1 } = useLiquidityStore()

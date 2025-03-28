@@ -152,7 +152,7 @@
   }>()
 
   const router = useRouter()
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
 
   // const { currency0, currency1, position: _position, tickAtLimit, base, priceLower, priceUpper, quote } = useExtraV3PositionInfo(props.position)
 

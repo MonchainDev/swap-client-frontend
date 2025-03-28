@@ -96,7 +96,7 @@
   const loading = ref(false)
   const data = ref<IToken[]>([])
 
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
 
   const tokenRecentFilter = computed(() => {
     return data.value.filter((item) => props.tokenSelected.some((selected) => selected.id === item.id))

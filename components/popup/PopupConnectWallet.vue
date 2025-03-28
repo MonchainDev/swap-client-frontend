@@ -39,7 +39,7 @@
   const { currentNetwork } = storeToRefs(useBaseStore())
   const { connectors, connectAsync } = useConnect()
 
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
 
   const { setOpenPopup } = useBaseStore()
   const { chainId } = useAccount()

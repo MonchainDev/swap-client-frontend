@@ -7,5 +7,5 @@ export default function useDesktop() {
     return breakpoints.greater('large').value
   })
 
-  return isDesktop.value
+  return { isDesktop }
 }

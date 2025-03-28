@@ -40,7 +40,7 @@
   })
   const tabActive = ref<'ALL' | 'POSITION'>('POSITION')
 
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
 </script>
 
 <style lang="scss" scoped>
