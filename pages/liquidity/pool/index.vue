@@ -133,7 +133,7 @@
   import TableListPool from '~/components/liquidity/TableListPool.vue'
   import TableListPoolMobile from '~/components/liquidity/TableListPoolMobile.vue'
   import { LIST_NETWORK } from '~/config/networks'
-  import { WNATIVE } from '~/constant/token'
+  import { WNATIVE } from '~/config/tokens'
   import type { ChainId, IToken } from '~/types'
   import type { IPool, IPoolOrigin } from '~/types/pool.type'
   import type { IResponse } from '~/types/response.type'

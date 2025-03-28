@@ -1,4 +1,4 @@
-import { WNATIVE } from '~/constant/token'
+import { WNATIVE } from '~/config/tokens'
 import { ChainId, type INetwork } from '~/types'
 import { URL_GRAPH } from './graphql'
 import { PUBLIC_NODES } from './nodes'

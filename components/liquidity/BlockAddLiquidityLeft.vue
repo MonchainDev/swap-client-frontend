@@ -47,7 +47,7 @@
 <script lang="ts" setup>
   import Decimal from 'decimal.js'
   import { EMPTY_TOKEN } from '~/constant'
-  import { NATIVE, WNATIVE } from '~/constant/token'
+  import { NATIVE, WNATIVE } from '~/config/tokens'
   import { CurrencyField, type IToken } from '~/types'
   import type { UnsafeCurrency } from '~/types/currency.type'
   import type { TYPE_SWAP } from '~/types/swap.type'

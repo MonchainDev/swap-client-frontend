@@ -173,7 +173,7 @@
   import type { IResponse } from '~/types/response.type'
   import PopupUnStake from './PopupUnStake.vue'
   import type { ChainId, IExchangeRate, IToken } from '~/types'
-  import { WNATIVE } from '~/constant/token'
+  import { WNATIVE } from '~/config/tokens'
   const enum TabValue {
     ALL = 'ALL',
     ACTIVE = 'ACTIVE',
