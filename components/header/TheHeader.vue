@@ -64,8 +64,10 @@
                   <BaseIcon name="default-avatar" size="24" />
                   <div class="sm:text-sm sm:text-white">
                     <div class="font-semibold">
-                      <span>Mainnet </span>
-                      <span class="text-hyperlink">$0.03134</span>
+                      <!-- <span>Mainnet </span> -->
+                      <span class="text-hyperlink"
+                        >{{ formatNumber(parseFloat(nativeBalance?.formatted ?? '0').toFixed(2)) }} {{ currentNetwork.nativeToken }}</span
+                      >
                     </div>
                     <div class="hidden sm:block">{{ sliceString(address!, 2, 4) }}</div>
                   </div>
@@ -149,6 +151,7 @@
   const { isSwapping } = storeToRefs(useSwapStore())
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
+  const { nativeBalance, currentNetwork } = storeToRefs(useBaseStore())
 
   const isOpen = ref(false)
 
