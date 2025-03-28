@@ -26,7 +26,8 @@
 </template>
 
 <script lang="ts" setup>
-  import { useConnect, useSwitchChain } from '@wagmi/vue'
+  import { useAccount, useConnect, useSwitchChain } from '@wagmi/vue'
+  import { UserRejectedRequestError } from 'viem'
   import type { WalletType } from '~/types/connect.type'
 
   declare global {
@@ -41,6 +42,7 @@
   const isDesktop = useDesktop()
 
   const { setOpenPopup } = useBaseStore()
+  const { chainId } = useAccount()
 
   const walletList: { name: string; icon: string; type: WalletType }[] = [
     {
@@ -88,16 +90,26 @@
           window.open(`https://metamask.app.link/dapp/${window.location.href}`, '_blank')
         }
       } else if (type === 'COINBASE') {
-        if (window?.coinbaseWalletExtension) {
+        if (window?.CoinbaseWalletProvider) {
           await connectAsync({ connector: connectors[1], chainId: currentNetwork.value.chainId })
         } else {
           window.open(`https://go.cb-w.com/dapp?cb_url=${window.location.href}`, '_blank')
         }
       }
+
+      if (chainId.value === currentNetwork.value.chainId) {
+        setOpenPopup('popup-connect', false)
+        typeConnect.value = null
+        return
+      }
       await switchChainAsync({ chainId: currentNetwork.value.chainId })
       setOpenPopup('popup-connect', false)
       typeConnect.value = null
     } catch (error) {
+      // case user accept request but throw error in coinbase wallet
+      if (error instanceof UserRejectedRequestError && error.code === 4001 && type === 'COINBASE') {
+        setOpenPopup('popup-connect', false)
+      }
       typeConnect.value = null
     }
   }
