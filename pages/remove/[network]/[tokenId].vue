@@ -156,7 +156,7 @@
   import { BIPS_BASE } from '~/constant'
   // import { NonfungiblePositionManager } from '@monchain/v3-sdk'
   import Decimal from 'decimal.js'
-  import { WNATIVE } from '~/constant/token'
+  import { WNATIVE } from '~/config/tokens'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   import { MasterChefV3 } from '~/utils/masterChefV3'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'

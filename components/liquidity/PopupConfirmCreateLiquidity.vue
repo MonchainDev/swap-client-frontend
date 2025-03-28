@@ -118,7 +118,7 @@
 
   const loadingAdd = ref(false)
 
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
 
   const currency0 = computed(() => unwrappedToken(props.position?.pool.token0))
   const currency1 = computed(() => unwrappedToken(props.position?.pool.token1))
@@ -220,13 +220,15 @@
               address: factoryAddress,
               functionName: 'getPool',
               args: [props.position.pool.token0.address, props.position.pool.token1.address, props.position.pool.fee],
-              abi: MonFactoryABI
+              abi: MonFactoryABI,
+              chainId: chainId.value
             }),
             readContract(config, {
               address: contractAddress,
               functionName: 'balanceOf',
               args: [address.value],
-              abi: NonfungiblePositionManagerABI
+              abi: NonfungiblePositionManagerABI,
+              chainId: chainId.value
             })
           ])
           const tokenId = await readContract(config, {

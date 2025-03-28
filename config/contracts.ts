@@ -44,6 +44,7 @@ const FACTORY_ADDRESSES = {
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, Address>
 
+/** MasterChef V3 */
 const masterChefV3Addresses = {
   [ChainId.MON_TESTNET]: '0x49aE1Bb3C0d9bceE09611282A295aC0180494C04',
   [ChainId.AMOY_POLYGON]: '0x',
@@ -52,6 +53,7 @@ const masterChefV3Addresses = {
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, string>
 
+/** Swap Router V3 */
 const swapRouterV3Addresses = {
   [ChainId.MON_TESTNET]: '0x737A8fc40BCCa63dAE76BB1f300D31078fe9a79D',
   [ChainId.AMOY_POLYGON]: '0x',
@@ -60,6 +62,7 @@ const swapRouterV3Addresses = {
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, string>
 
+/** LiFi Contract Address */
 const lifiContractAddresses = {
   [ChainId.MON_TESTNET]: '0x4797F967C3D77A1949Fb7F429f09072dFdB6de9d',
   [ChainId.AMOY_POLYGON]: '0x',
@@ -68,6 +71,11 @@ const lifiContractAddresses = {
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, string>
 
+/** multicall3 */
+const multicall3Addresses = {
+  [ChainId.MON_TESTNET]: '0x49C0e987D9E2a85FFf40664afc8C10420905826B'
+} as const satisfies Record<number, `0x${string}`>
+
 export default {
   nftPositionManager: NFT_POSITION_MANAGER_ADDRESSES,
   v3PoolDeployer: DEPLOYER_ADDRESSES,
@@ -75,5 +83,6 @@ export default {
   factory: FACTORY_ADDRESSES,
   masterChefV3: masterChefV3Addresses,
   swapRouterV3: swapRouterV3Addresses,
-  lifiContractAddress: lifiContractAddresses
+  lifiContractAddress: lifiContractAddresses,
+  multicall3Addresses
 }

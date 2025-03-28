@@ -9,7 +9,7 @@
     @open="handleOpen"
   >
     <template v-if="!isDesktop" #close>
-      <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-select-token', false)" />
+      <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-selected-token-multiple', false)" />
     </template>
 
     <div class="popup-select-token">
@@ -96,7 +96,7 @@
   const loading = ref(false)
   const data = ref<IToken[]>([])
 
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
 
   const tokenRecentFilter = computed(() => {
     return data.value.filter((item) => props.tokenSelected.some((selected) => selected.id === item.id))

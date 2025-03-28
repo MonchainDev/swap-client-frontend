@@ -35,6 +35,7 @@
 
   const { params } = useRoute('add-currency')
 
+  /** Fill currency in params to form */
   ;(async () => {
     let currencies: string[] = []
     if ('currency' in params) {

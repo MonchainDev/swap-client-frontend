@@ -1,26 +1,34 @@
 import { ChainId } from '~/types'
 
+const DOMAIN_SCAN = {
+  [ChainId.MON_TESTNET]: 'https://dev.explorer.monchain.info',
+  [ChainId.AMOY_POLYGON]: 'https://amoy.polygonscan.com',
+  [ChainId.BSC_TESTNET]: 'https://testnet.bscscan.com',
+  [ChainId.SEPOLIA]: 'https://sepolia.etherscan.io',
+  [ChainId.ARBITRUM_SEPOLIA]: 'https://sepolia.etherscan.io'
+} as const satisfies Record<ChainId, string>
+
 const URL_SCAN = {
   [ChainId.MON_TESTNET]: {
-    tx: 'https://dev.explorer.monchain.info/tx',
-    address: 'https://dev.explorer.monchain.info/address'
+    tx: DOMAIN_SCAN[ChainId.MON_TESTNET] + '/tx',
+    address: DOMAIN_SCAN[ChainId.MON_TESTNET] + '/address'
   },
   [ChainId.AMOY_POLYGON]: {
-    tx: 'https://amoy.polygonscan.com/tx',
-    address: 'https://amoy.polygonscan.com/address'
+    tx: DOMAIN_SCAN[ChainId.AMOY_POLYGON] + '/tx',
+    address: DOMAIN_SCAN[ChainId.AMOY_POLYGON] + '/address'
   },
   [ChainId.BSC_TESTNET]: {
-    tx: 'https://testnet.bscscan.com/tx',
-    address: 'https://testnet.bscscan.com/address'
+    tx: DOMAIN_SCAN[ChainId.BSC_TESTNET] + '/tx',
+    address: DOMAIN_SCAN[ChainId.BSC_TESTNET] + '/address'
   },
   [ChainId.SEPOLIA]: {
-    tx: 'https://sepolia.etherscan.io/tx',
-    address: 'https://sepolia.etherscan.io/address'
+    tx: DOMAIN_SCAN[ChainId.SEPOLIA] + '/tx',
+    address: DOMAIN_SCAN[ChainId.SEPOLIA] + '/address'
   },
   [ChainId.ARBITRUM_SEPOLIA]: {
-    tx: 'https://sepolia.etherscan.io/tx',
-    address: 'https://sepolia.etherscan.io/address'
+    tx: DOMAIN_SCAN[ChainId.ARBITRUM_SEPOLIA] + '/tx',
+    address: DOMAIN_SCAN[ChainId.ARBITRUM_SEPOLIA] + '/address'
   }
 } as const satisfies Record<ChainId, { tx: string; address: string }>
 
-export default URL_SCAN
+export { URL_SCAN, DOMAIN_SCAN }

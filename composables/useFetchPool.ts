@@ -29,7 +29,6 @@ export default function useFetchPool() {
       address: factoryAddress.value,
       functionName: 'getPool',
       args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, FeeAmount.LOW],
-      watch: true,
       chainId: chainId.value
     }))
   )
@@ -40,7 +39,6 @@ export default function useFetchPool() {
       address: factoryAddress.value,
       functionName: 'getPool',
       args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, FeeAmount.MEDIUM],
-      watch: true,
       chainId: chainId.value
     }))
   )
@@ -51,7 +49,7 @@ export default function useFetchPool() {
       address: factoryAddress.value,
       functionName: 'getPool',
       args: [baseCurrency.value?.wrapped.address, quoteCurrency.value?.wrapped.address, FeeAmount.HIGH],
-      watch: true
+      chainId: chainId.value
     }))
   )
 

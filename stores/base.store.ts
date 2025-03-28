@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/vue-query'
+import { useAccount, useBalance } from '@wagmi/vue'
 import { defineStore } from 'pinia'
 import { DEFAULT_NETWORK } from '~/config/networks'
 import type { INetwork, IToken } from '~/types'
@@ -6,7 +7,6 @@ import type { POPUP_NAME } from '~/types/popup.type'
 
 export const useBaseStore = defineStore('base', () => {
   const listToken = ref<IToken[]>([])
-  const nativeBalance = ref<string>('0')
   // const currentNetwork = ref<INetwork>({ ...DEFAULT_NETWORK })
   const networkLocated = ref<INetwork>({} as INetwork)
 
@@ -50,6 +50,15 @@ export const useBaseStore = defineStore('base', () => {
     },
     enabled: computed(() => !!currentNetwork.value.chainId)
   })
+
+  const { address } = useAccount()
+
+  const { data: nativeBalance } = useBalance(
+    computed(() => ({
+      address: address.value,
+      watch: true
+    }))
+  )
 
   return { popup, setOpenPopup, listToken, nativeBalance, isDesktop, currentNetwork, networkLocated }
 })

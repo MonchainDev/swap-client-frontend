@@ -1,4 +1,4 @@
-import URL_SCAN from '~/config/scan'
+import { URL_SCAN } from '~/config/scan'
 import type { ChainId } from '~/types'
 
 export default function getUrlScan(chainId: ChainId | number | undefined, type: 'tx' | 'address', address: string) {

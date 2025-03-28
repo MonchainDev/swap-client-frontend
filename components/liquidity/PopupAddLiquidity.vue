@@ -1,5 +1,9 @@
 <template>
   <BasePopup name="popup-add-liquidity" width="540" :fullscreen="!isDesktop" @close="handleClose" @open="handleOpen">
+    <template v-if="!isDesktop" #close>
+      <span v-if="props.showInput && step === 'CONFIRM'"></span>
+      <BaseIcon v-else name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-add-liquidity', false)" />
+    </template>
     <template #title>
       <div class="flex items-center gap-2">
         <BaseIcon v-if="props.showInput && step === 'CONFIRM'" name="arrow-down" size="24" class="rotate-90 cursor-pointer" @click="step = 'INPUT'" />
@@ -183,7 +187,7 @@
   const loadingAdd = ref(false)
   const step = ref<'INPUT' | 'CONFIRM'>('INPUT')
 
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
 
   const { form, balance0, balance1, typedValue, independentField, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
   const { refetchAllowance0, refetchAllowance1, refetchBalance0, refetchBalance1 } = useLiquidityStore()
@@ -461,13 +465,15 @@
               address: contractAddress,
               functionName: 'balanceOf',
               args: [address.value],
-              abi: NonfungiblePositionManagerABI
+              abi: NonfungiblePositionManagerABI,
+              chainId: chainId.value
             })
             const tokenId = await readContract(config, {
               address: contractAddress,
               functionName: 'tokenOfOwnerByIndex',
               args: [address.value, Number(balance) - 1],
-              abi: NonfungiblePositionManagerABI
+              abi: NonfungiblePositionManagerABI,
+              chainId: chainId.value
             })
 
             body = {

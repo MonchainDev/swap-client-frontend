@@ -46,13 +46,17 @@
             <BaseIcon name="three-dot" size="24" class="cursor-pointer" />
           </template>
           <ul class="flex flex-col gap-4">
-            <li class="flex items-center gap-2">
+            <li class="flex items-center gap-2 hover:text-hyperlink">
               <BaseIcon name="info" size="24" />
               <NuxtLink :to="{ name: 'liquidity-pool-network-address', params: { network: row.network, address: row.poolAddress } }">
                 View pool details
               </NuxtLink>
             </li>
-            <li class="flex items-center gap-2">
+            <li v-if="!isConnected" class="flex cursor-pointer items-center gap-2 hover:text-hyperlink" @click="setOpenPopup('popup-connect')">
+              <BaseIcon name="wallet-1" size="24" />
+              <span>Connect Wallet </span>
+            </li>
+            <li class="flex items-center gap-2 hover:text-hyperlink">
               <BaseIcon name="article" size="24" />
               <NuxtLink :to="{ name: 'info-network-address', params: { network: row.network, address: row.poolAddress } }">
                 <span>View Info page</span>
@@ -66,6 +70,7 @@
 </template>
 
 <script lang="ts" setup>
+  import { useAccount } from '@wagmi/vue'
   import { LIST_NETWORK } from '~/config/networks'
   import type { IPool } from '~/types/pool.type'
 
@@ -78,6 +83,9 @@
     data: () => [],
     loading: false
   })
+
+  const { setOpenPopup } = useBaseStore()
+  const { isConnected } = useAccount()
 
   const getNetwork = (networkName: string) => {
     return LIST_NETWORK.find((item) => item.network === networkName)

@@ -54,8 +54,9 @@
     isToken1Selected: false
   })
 
-  const { feeAmount, baseCurrency, quoteCurrency, leftRangeTypedValue, rightRangeTypedValue } = storeToRefs(useLiquidityStore())
+  const { feeAmount, form, baseCurrency, quoteCurrency, leftRangeTypedValue, rightRangeTypedValue } = storeToRefs(useLiquidityStore())
   const { resetFiled } = useLiquidityStore()
+  const { currentNetwork } = storeToRefs(useBaseStore())
 
   const { listPoolExits, isPendingAll } = useFetchPool()
 
@@ -65,6 +66,9 @@
       feeAmount.value = item.value
       rightRangeTypedValue.value = undefined
       leftRangeTypedValue.value = undefined
+
+      const path = `/add/${form.value.token0.address}/${form.value.token1.address}/${item.value}?chain=${currentNetwork.value.network}`
+      history.pushState(null, '', path)
     }
   }
 </script>

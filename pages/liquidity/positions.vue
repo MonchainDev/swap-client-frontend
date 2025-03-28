@@ -1,6 +1,6 @@
 <template>
-  <div class="mx-auto mb-[85px] mt-[38px] max-w-[1024px]">
-    <div class="flex items-center justify-between">
+  <div class="relative mx-auto mb-[85px] mt-[38px] max-w-[1024px] sm:mb-10 sm:mt-0">
+    <div v-if="isDesktop" class="flex items-center justify-between">
       <div class="flex flex-col gap-1">
         <h4 class="text-xl font-semibold">Liquidity Pools & Farms</h4>
         <p class="text-sm text-gray-8">
@@ -28,6 +28,7 @@
       </div>
     </div>
     <MyPosition />
+    <div class="bg-linear-mb absolute left-0 top-0 hidden h-14 w-screen sm:block"></div>
   </div>
 </template>
 
@@ -38,6 +39,8 @@
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
   })
   const tabActive = ref<'ALL' | 'POSITION'>('POSITION')
+
+  const { isDesktop } = useDesktop()
 </script>
 
 <style lang="scss" scoped>

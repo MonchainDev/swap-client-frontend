@@ -472,15 +472,18 @@
     const contractSwapRouterV3 = getSwapRouterV3Address(chainId.value)
     if (!contractSwapRouterV3) throw new Error('Invalid contract address')
 
+    const isNative = form.value.token0.address === zeroAddress
+    const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
+
     const txHash = await sendTransaction(config, {
       to: contractSwapRouterV3,
       data: calldata,
-      value: hexToBigInt('0x0')
+      value: isNative ? BigInt(inputAmount) : hexToBigInt('0x0')
     })
 
     const { status } = await waitForTransactionReceipt(config, {
+      chainId: chainId.value,
       hash: txHash,
-
       pollingInterval: 2000
     })
 

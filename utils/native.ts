@@ -1,7 +1,7 @@
 import invariant from 'tiny-invariant'
 import type { Currency, Token } from '@monchain/swap-sdk-core'
 import { NativeCurrency } from '@monchain/swap-sdk-core'
-import { NATIVE, WNATIVE } from '~/constant/token'
+import { NATIVE, WNATIVE } from '~/config/tokens'
 
 export class Native extends NativeCurrency {
   protected constructor({ chainId, decimals, name, symbol }: { chainId: number; decimals: number; symbol: string; name: string }) {

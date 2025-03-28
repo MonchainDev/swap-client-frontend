@@ -326,7 +326,8 @@
       address,
       abi: MasterChefV3.ABI,
       functionName: 'v3PoolAddressPid',
-      args: [props.position.poolAddress]
+      args: [props.position.poolAddress],
+      chainId: chainId.value
     })) as bigint
     console.log('🚀 ~ v3PoolAddressPid ~ amount:', amount)
     stakeLocalSuccess.value = amount > BigInt(0)

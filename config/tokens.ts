@@ -1,6 +1,10 @@
 import { ERC20Token } from '@monchain/swap-sdk-evm'
 import { ChainId } from '~/types'
 
+export const WPOL = {
+  [ChainId.AMOY_POLYGON]: new ERC20Token(ChainId.AMOY_POLYGON, '0xA5733b3A8e62A8faF43b0376d5fAF46E89B3033E', 18, 'WPOL', 'Wrapped Polygon', '')
+}
+
 export const WETH9 = {
   [ChainId.BSC_TESTNET]: new ERC20Token(ChainId.BSC_TESTNET, '0xE7bCB9e341D546b66a46298f4893f5650a56e99E', 18, 'ETH', 'ETH', 'https://ethereum.org'),
   [ChainId.SEPOLIA]: new ERC20Token(ChainId.SEPOLIA, '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14', 18, 'WETH', 'Wrapped Ether', 'https://weth.io'),
@@ -34,18 +38,18 @@ export const WNATIVE = {
   [ChainId.BSC_TESTNET]: WBNB[ChainId.BSC_TESTNET],
   [ChainId.MON_TESTNET]: WMON[ChainId.MON_TESTNET],
   [ChainId.SEPOLIA]: WETH9[ChainId.SEPOLIA],
-  // [ChainId.AMOY_POLYGON]: WMON[ChainId.AMOY_POLYGON],
+  [ChainId.AMOY_POLYGON]: WPOL[ChainId.AMOY_POLYGON],
   [ChainId.ARBITRUM_SEPOLIA]: WETH9[ChainId.ARBITRUM_SEPOLIA]
 } as Record<ChainId, ERC20Token>
 
 export const NATIVE = {
   [ChainId.BSC_TESTNET]: {
-    name: 'Binance Chain Native Token',
-    symbol: 'tBNB',
+    name: 'BNB',
+    symbol: 'BNB',
     decimals: 18
   },
   [ChainId.MON_TESTNET]: {
-    name: 'Mon Chain Native Token',
+    name: 'MON',
     symbol: 'MON',
     decimals: 18
   },

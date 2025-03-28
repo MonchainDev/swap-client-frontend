@@ -152,7 +152,7 @@
   }>()
 
   const router = useRouter()
-  const isDesktop = useDesktop()
+  const { isDesktop } = useDesktop()
 
   // const { currency0, currency1, position: _position, tickAtLimit, base, priceLower, priceUpper, quote } = useExtraV3PositionInfo(props.position)
 
@@ -363,7 +363,8 @@
       address,
       abi: MasterChefV3.ABI,
       functionName: 'v3PoolAddressPid',
-      args: [props.position.poolAddress]
+      args: [props.position.poolAddress],
+      chainId: chainId.value
     })) as bigint
     console.log('🚀 ~ v3PoolAddressPid ~ amount:', amount)
     stakeLocalSuccess.value = amount > BigInt(0)
