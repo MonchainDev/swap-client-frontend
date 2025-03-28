@@ -1,25 +1,23 @@
-import { sepolia, polygonAmoy, arbitrumSepolia, bscTestnet } from '@wagmi/core/chains'
+import { arbitrumSepolia, bscTestnet, polygonAmoy, sepolia } from '@wagmi/core/chains'
 import { createConfig, http } from '@wagmi/vue'
 
-import { coinbaseWallet, metaMask } from '@wagmi/vue/connectors'
+import { injected, metaMask } from '@wagmi/vue/connectors'
 
 import { CHAINS, testnet } from './chains'
 
 export const config = createConfig({
   chains: [...CHAINS],
   connectors: [
+    // MetaMask
     metaMask(),
-    coinbaseWallet()
-    // walletConnect({
-    //   projectId: '001368a92a97b7f25233d5631fd4d524',
-    //   isNewChainsStale: true,
-    //   metadata: {
-    //     name: 'Monchain',
-    //     description: 'Monchain WalletConnect',
-    //     url: 'https://dex-swap.datdev.me',
-    //     icons: ['https://dex-swap.datdev.me/logo.png']
-    //   }
-    // })
+    // Coinbase Wallet (sử dụng injected thay vì walletConnect)
+    injected({
+      target: 'coinbaseWallet' // Chỉ định Coinbase Wallet
+    }),
+    // Trust Wallet
+    injected({
+      target: 'trustWallet' // Chỉ định Trust Wallet
+    })
   ],
   transports: {
     [testnet.id]: http(),
