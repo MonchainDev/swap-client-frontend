@@ -3,7 +3,7 @@ import { createConfig, http } from '@wagmi/vue'
 
 import { injected, metaMask } from '@wagmi/vue/connectors'
 
-import { CHAINS, testnet } from './chains'
+import { CHAINS, monChain } from './chains'
 
 export const config = createConfig({
   chains: [...CHAINS],
@@ -20,7 +20,7 @@ export const config = createConfig({
     })
   ],
   transports: {
-    [testnet.id]: http(),
+    [monChain.id]: http(),
     [sepolia.id]: http(),
     [polygonAmoy.id]: http(),
     [arbitrumSepolia.id]: http(),

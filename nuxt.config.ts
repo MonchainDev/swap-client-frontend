@@ -4,8 +4,9 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: true,
   runtimeConfig: {
-    BASE_URL_API: process.env.VITE_BASE_URL_API,
-    BASE_URL_EXCHANGE_API: process.env.VITE_BASE_URL_EXCHANGE_API
+    BASE_URL_API: '',
+    BASE_URL_BRIDGE_API: process.env.VITE_BASE_URL_BRIDGE_API,
+    BASE_URL_EXCHANGE_API: process.env.VITE_BASE_URL_PRICE_API
   },
   modules: [
     '@nuxt/eslint',
