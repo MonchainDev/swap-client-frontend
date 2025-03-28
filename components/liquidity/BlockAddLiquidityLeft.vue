@@ -46,8 +46,8 @@
 
 <script lang="ts" setup>
   import Decimal from 'decimal.js'
-  import { EMPTY_TOKEN } from '~/constant'
   import { NATIVE, WNATIVE } from '~/config/tokens'
+  import { EMPTY_TOKEN } from '~/constant'
   import { CurrencyField, type IToken } from '~/types'
   import type { UnsafeCurrency } from '~/types/currency.type'
   import type { TYPE_SWAP } from '~/types/swap.type'
@@ -131,6 +131,13 @@
 
     // reset form to 0 after select token
     resetFiled()
+    if (!form.value.token0.address || !form.value.token1.address) {
+      history.pushState(null, '', '/add')
+      return
+    }
+
+    const path = `/add/${form.value.token0.address}/${form.value.token1.address}?chain=${currentNetwork.value.network}`
+    history.pushState(null, '', path)
   }
 
   const handleChangeAmount = (value: string, type: TYPE_SWAP) => {

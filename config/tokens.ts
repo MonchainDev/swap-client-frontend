@@ -44,12 +44,12 @@ export const WNATIVE = {
 
 export const NATIVE = {
   [ChainId.BSC_TESTNET]: {
-    name: 'Binance Chain Native Token',
-    symbol: 'tBNB',
+    name: 'BNB',
+    symbol: 'BNB',
     decimals: 18
   },
   [ChainId.MON_TESTNET]: {
-    name: 'Mon Chain Native Token',
+    name: 'MON',
     symbol: 'MON',
     decimals: 18
   },
