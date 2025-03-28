@@ -1,4 +1,7 @@
+import { WNATIVE } from '~/constant/token'
 import { ChainId, type INetwork } from '~/types'
+import { URL_GRAPH } from './graphql'
+import { PUBLIC_NODES } from './nodes'
 
 const DEFAULT_NETWORK: INetwork = {
   name: 'Mon Chain',
@@ -6,11 +9,11 @@ const DEFAULT_NETWORK: INetwork = {
   chainId: ChainId.MON_TESTNET,
   id: 1,
   network: 'MON',
-  rpc: 'https://rpc-testnet.monchain.info',
-  graphUrl: 'https://graph-mon.monchain.info/subgraphs/name/v3',
+  rpc: PUBLIC_NODES[ChainId.MON_TESTNET][0],
+  graphUrl: URL_GRAPH[ChainId.MON_TESTNET],
   nativeToken: 'MON',
   wrapToken: 'WMON',
-  wrapTokenAddress: '0xF9012437655F666bcB07f50Cc471f531629342Df',
+  wrapTokenAddress: WNATIVE[ChainId.MON_TESTNET].address,
   stableTokenAddress: '0x8071be23b8946dd6a9914f3d6d3ab8938241671f',
   lifiContractAddress: null
 }
@@ -23,11 +26,11 @@ const LIST_NETWORK: INetwork[] = [
     logo: '/logo-bnb-chain.png',
     chainId: ChainId.BSC_TESTNET,
     network: 'BSC',
-    rpc: 'https://bsc-testnet-rpc.publicnode.com',
-    graphUrl: 'https://graph-bnb.monchain.info/subgraphs/name/v3',
+    rpc: PUBLIC_NODES[ChainId.BSC_TESTNET][0],
+    graphUrl: URL_GRAPH[ChainId.BSC_TESTNET],
     nativeToken: 'BNB',
     wrapToken: 'WBNB',
-    wrapTokenAddress: '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',
+    wrapTokenAddress: WNATIVE[ChainId.BSC_TESTNET].address,
     stableTokenAddress: '0x2a4b180da0a45a5ae65f230c228de0d4de0b7057',
     lifiContractAddress: null
   },
@@ -37,14 +40,13 @@ const LIST_NETWORK: INetwork[] = [
     chainId: ChainId.SEPOLIA,
     id: 2,
     network: 'ETH',
-    rpc: 'https://sepolia.infura.io',
-    graphUrl: 'https://graph-eth.monchain.info/subgraphs/name/v3',
+    rpc: PUBLIC_NODES[ChainId.SEPOLIA][0],
+    graphUrl: URL_GRAPH[ChainId.SEPOLIA],
     nativeToken: 'ETH',
     wrapToken: 'WETH',
-    wrapTokenAddress: '0xf531B8F309Be94191af87605CfBf600D71C2cFe0',
+    wrapTokenAddress: WNATIVE[ChainId.SEPOLIA].address,
     stableTokenAddress: '',
     lifiContractAddress: null
-
   },
   {
     name: 'Polygon',
@@ -52,14 +54,13 @@ const LIST_NETWORK: INetwork[] = [
     chainId: ChainId.AMOY_POLYGON,
     id: 4,
     network: 'POLYGON',
-    rpc: 'https://rpc-amoy.polygon.technology',
-    graphUrl: 'https://graph-polygon.monchain.info/subgraphs/name/v3',
+    rpc: PUBLIC_NODES[ChainId.AMOY_POLYGON][0],
+    graphUrl: URL_GRAPH[ChainId.AMOY_POLYGON],
     nativeToken: 'POL',
     wrapToken: 'WPOL',
-    wrapTokenAddress: '0xA5733b3A8e62A8faF43b0376d5fAF46E89B3033E',
+    wrapTokenAddress: WNATIVE[ChainId.AMOY_POLYGON].address,
     stableTokenAddress: '',
     lifiContractAddress: null
-
   },
   {
     name: 'Arbitrum Sepolia',
@@ -67,14 +68,13 @@ const LIST_NETWORK: INetwork[] = [
     chainId: ChainId.ARBITRUM_SEPOLIA,
     id: 5,
     network: 'ARBITRUM',
-    rpc: 'https://sepolia-rollup.arbitrum.io/rpc',
-    graphUrl: 'https://graph-arbitrum.monchain.info/subgraphs/name/v3',
+    rpc: PUBLIC_NODES[ChainId.ARBITRUM_SEPOLIA][0],
+    graphUrl: URL_GRAPH[ChainId.ARBITRUM_SEPOLIA],
     nativeToken: 'ETH',
     wrapToken: 'WETH',
-    wrapTokenAddress: '0x980B62Da83eFf3D4576C647993b0c1D7faf17c73',
+    wrapTokenAddress: WNATIVE[ChainId.ARBITRUM_SEPOLIA].address,
     stableTokenAddress: '',
     lifiContractAddress: null
-
   }
 ]
 
@@ -88,4 +88,4 @@ const NETWORK_NAMES: Record<ChainId, string> = {
 
 const NETWORK_SUPPORTED = Object.fromEntries(LIST_NETWORK.map((network) => [network.network, true])) as Record<string, boolean>
 
-export { DEFAULT_NETWORK, LIST_NETWORK, NETWORK_SUPPORTED, NETWORK_NAMES }
+export { DEFAULT_NETWORK, LIST_NETWORK, NETWORK_NAMES, NETWORK_SUPPORTED }
