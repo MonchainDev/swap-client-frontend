@@ -1,5 +1,5 @@
 <template>
-  <BasePopup name="popup-unstake" width="540" title="Unstaking">
+  <BasePopup name="popup-unstake" width="540" title="Unstaking" @close="inverted = false">
     <div class="px-8 pb-7">
       <div class="flex items-center justify-between">
         <div class="flex gap-1">
@@ -18,8 +18,12 @@
         </div>
       </div>
       <div class="mt-[30px] flex flex-col gap-[10px] rounded-lg border border-solid border-gray-4 bg-gray-1 px-6 pb-6 pt-5">
-        <span>Min {{ min }} / Max {{ max }} of {{ position.baseSymbol }} per {{ position.quoteSymbol }}</span>
-        <div>
+        <div class="flex items-center gap-1">
+          <span v-if="inverted">Min {{ invertMin }} / Max {{ invertMax }} of {{ position.baseSymbol }} per {{ position.quoteSymbol }}</span>
+          <span v-else>Min {{ min }} / Max {{ max }} of {{ position.quoteSymbol }} per {{ position.baseSymbol }}</span>
+          <BaseIcon name="arrow-reverse" size="20" class="cursor-pointer" @click="inverted = !inverted" />
+        </div>
+        <div class="flex items-center gap-1">
           <span class="font-semibold text-gray-7">~${{ formatNumber(position.priceUdtTotal || 0) }}</span>
           <span>
             ({{ displayTokenReserve(position.quoteQuantity, position.quoteDecimals, position.quoteSymbol) }} /
@@ -68,6 +72,8 @@
     reload: []
   }>()
 
+  const inverted = ref(false)
+
   const min = computed(() => {
     // priceLower*quotedecimals/basedecimals
     if (!props.position) return 0
@@ -79,6 +85,18 @@
     if (!props.position) return 0
     const { priceUpper, baseDecimals, quoteDecimals } = props.position
     return priceUpper ? formatNumber(toSignificant((priceUpper * quoteDecimals) / baseDecimals)) : 0
+  })
+
+  const invertMin = computed(() => {
+    if (!max.value) return 0
+    const _max = max.value.replaceAll(',', '')
+    return formatNumber(toSignificant(1 / parseFloat(_max)))
+  })
+
+  const invertMax = computed(() => {
+    if (!min.value) return 0
+    const _min = min.value.replaceAll(',', '')
+    return formatNumber(toSignificant(1 / parseFloat(_min)))
   })
 
   const displayTokenReserve = (amount: number, decimals: number, symbol: string) => {
