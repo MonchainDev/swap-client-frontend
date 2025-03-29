@@ -152,7 +152,7 @@
   })
 
   const showStake = computed(() => {
-    return props.position.poolType === 'FARM' && Number(props.position.moonPerSecond) === 0
+    return props.position.poolType === 'FARM' && Number(props.position.moonPerSecond) === 0 && !stakeLocalSuccess.value
   })
 
   const showUnStake = computed(() => {
