@@ -18,7 +18,7 @@
         <div class="flex flex-col gap-[6px]">
           <span class="text-sm">Total Tokens locked (TVL)</span>
           <div class="flex items-center gap-3">
-            <span class="text-xl font-semibold">${{ (pool.tvl ?? 0).toFixed(2) }}</span>
+            <span class="text-xl font-semibold">${{ formatNumber(toSignificant(pool.tvl ?? 0)) }}</span>
             <span class="flex items-center gap-1 rounded-[10px] bg-[#E8FFEB] px-2 py-[2px]">
               <BaseIcon name="arrow-fill" size="12" class="rotate-180 text-success" />
               <span class="text-sm font-semibold text-success">0%</span>

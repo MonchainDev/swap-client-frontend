@@ -72,13 +72,13 @@
     // priceLower*quotedecimals/basedecimals
     if (!props.position) return 0
     const { priceLower, baseDecimals, quoteDecimals } = props.position
-    return props.position?.priceLower ? formatNumber(((priceLower * quoteDecimals) / baseDecimals).toFixed(2)) : 0
+    return props.position?.priceLower ? formatNumber(toSignificant((priceLower * quoteDecimals) / baseDecimals)) : 0
   })
 
   const max = computed(() => {
     if (!props.position) return 0
     const { priceUpper, baseDecimals, quoteDecimals } = props.position
-    return priceUpper ? formatNumber(((priceUpper * quoteDecimals) / baseDecimals).toFixed(2)) : 0
+    return priceUpper ? formatNumber(toSignificant((priceUpper * quoteDecimals) / baseDecimals)) : 0
   })
 
   const displayTokenReserve = (amount: number, decimals: number, symbol: string) => {

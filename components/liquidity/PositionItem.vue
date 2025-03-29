@@ -21,9 +21,9 @@
     </div>
     <div class="flex flex-col items-center justify-center gap-1 px-1 text-sm">
       <div class="break-all font-semibold text-success">{{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}%</div>
-      <div class="text-gray-6">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</div>
+      <div class="break-all text-gray-6">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</div>
     </div>
-    <div class="flex flex-col justify-center text-sm">
+    <div class="flex flex-col justify-center pr-[10px] text-sm">
       <span>Min: {{ formatNumber(min) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
       <span>Max: {{ formatNumber(max) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
     </div>
@@ -116,7 +116,8 @@
 
   const displayTokenReserve = (amount: number, decimals: number, symbol: string) => {
     // = (quoteQtty/10^quotedecimals) TokenA/(baseQtty/10^baseDecimals) TokenB
-    return `${formatNumber((amount / Math.pow(10, decimals)).toFixed(2))} ${symbol}`
+    // return `${formatNumber((amount / Math.pow(10, decimals)).toFixed(2))} ${symbol}`
+    return `${formatNumber(toSignificant(amount / Math.pow(10, decimals)))} ${symbol}`
   }
 
   const enum TabValue {
@@ -143,12 +144,12 @@
   const min = computed(() => {
     // priceLower*quotedecimals/basedecimals
     const { priceLower, baseDecimals, quoteDecimals } = props.position
-    return props.position.priceLower ? formatNumber(((priceLower * quoteDecimals) / baseDecimals).toFixed(2)) : 0
+    return props.position.priceLower ? formatNumber(toSignificant((priceLower * quoteDecimals) / baseDecimals, 6)) : 0
   })
 
   const max = computed(() => {
     const { priceUpper, baseDecimals, quoteDecimals } = props.position
-    return priceUpper ? formatNumber(((priceUpper * quoteDecimals) / baseDecimals).toFixed(2)) : 0
+    return priceUpper ? formatNumber(toSignificant((priceUpper * quoteDecimals) / baseDecimals, 6)) : 0
   })
 
   const showStake = computed(() => {
@@ -184,7 +185,7 @@
   })
 
   const priceUdtTotal = computed(() => {
-    return new Decimal(exchangeRateBaseCurrency.value).plus(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+    return toSignificant(new Decimal(exchangeRateBaseCurrency.value).plus(exchangeRateQuoteCurrency.value).toString())
   })
 
   const { showToastMsg } = useShowToastMsg()
