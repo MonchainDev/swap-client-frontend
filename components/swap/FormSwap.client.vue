@@ -131,8 +131,21 @@
   const { setOpenPopup } = useBaseStore()
   const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
 
-  const { isSwapping, isConfirmApprove, exchangeRateBaseCurrency, slippage, isConfirmSwap, allowance0, balance0, balance1, form, token0, token1 } =
-    storeToRefs(useSwapStore())
+  const {
+    isSwapping,
+    isConfirmApprove,
+    exchangeRateBaseCurrency,
+    slippage,
+    isConfirmSwap,
+    allowance0,
+
+    balance0,
+    balance1,
+    form,
+    token0,
+    token1
+  } = storeToRefs(useSwapStore())
+  const { refetchAllowance0 } = useSwapStore()
 
   const isEditSlippage = ref(false)
   const stepSwap = ref<StepSwap>('SELECT_TOKEN')
@@ -190,12 +203,18 @@
       return 'Insufficient liquidity for this trade'
     } else if (isToken0Selected.value && isToken1Selected.value && form.value.amountOut && form.value.amountIn) {
       if (stepSwap.value === 'SELECT_TOKEN') {
+        if (isInsufficientBalance.value) {
+          return `Insufficient ${form.value.token0.symbol} balance`
+        }
         return `Swap ${bestTrade.value?.inputAmount.toSignificant(6)} ${form.value.token0.symbol} ⇒ ${bestTrade.value?.outputAmount.toSignificant(6)} ${form.value.token1.symbol}`
       } else {
         if (isSwapping.value) {
           return 'SWAPPING! PLEASE WAIT..'
         } else {
-          return isConfirmApprove.value || isConfirmSwap.value ? 'CONFIRM IN WALLET' : 'APPROVE AND SWAP'
+          if (isNeedAllowance0.value) {
+            return `APPROVE ${form.value.token0.symbol}`
+          }
+          return isConfirmApprove.value || isConfirmSwap.value ? 'CONFIRM IN WALLET' : 'SWAP'
         }
       }
     } else {
@@ -235,6 +254,11 @@
 
   let latestRequestId = 0
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
+    if (!amount) {
+      form.value.amountOut = ''
+      form.value.amountIn = ''
+    }
+
     const requestId = ++latestRequestId
     try {
       notEnoughLiquidity.value = false
@@ -513,6 +537,7 @@
           const contractSwapRouterV3 = getSwapRouterV3Address(chainId.value)!
           await approveToken(token0.value?.wrapped.address as string, contractSwapRouterV3, MAX_NUMBER_APPROVE, (status) => {
             if (status === 'SUCCESS') {
+              refetchAllowance0()
               swap()
             }
           })
