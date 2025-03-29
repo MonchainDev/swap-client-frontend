@@ -13,7 +13,7 @@ export default function useShowToastMsg() {
   const showToastMsg = (title: string, type: ToastType, href?: string) => {
     ElNotification({
       message: () =>
-        h('div', { class: 'flex items-start gap-3' }, [
+        h('div', { class: `flex items-start gap-3 ${href ? '' : 'items-center'}` }, [
           h('div', { class: ' w-6' }, [h('img', { src: `${icons[type]}`, class: 'size-6' })]),
           h('div', { class: 'flex flex-col gap-2 flex-1' }, [
             h('div', { class: 'text-sm text-primary font-semibold line-clamp-3' }, title),
