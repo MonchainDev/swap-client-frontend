@@ -213,7 +213,6 @@
           pollingInterval: 2000
         })
         if (status === 'success') {
-          emit('reload', txHash)
           const factoryAddress = getFactoryAddress(chainId.value) ?? '0x'
           const [poolAddress, balance] = await Promise.all([
             readContract(config, {
@@ -251,7 +250,10 @@
             network: currentNetwork.value.network,
             transactionType: 'ADD_POOL'
           }
-          postTransaction(body)
+          await postTransaction(body)
+          setTimeout(() => {
+            emit('reload', txHash)
+          }, 3000)
         } else {
           showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash))
         }
