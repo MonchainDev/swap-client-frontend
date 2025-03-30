@@ -171,7 +171,7 @@
   // import HeaderFormSwap from './HeaderFormSwap.vue'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
   // import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
-  import { type Route, type V3Pool, SmartRouter, V4Router } from '@monchain/smart-router'
+  import { type Route, type V3Pool, SmartRouter } from '@monchain/smart-router'
   import { CurrencyAmount, Token, TradeType } from '@monchain/swap-sdk-core'
   import Decimal from 'decimal.js'
   // import swapRouterABI from "~/constant/abi/swapRouter.json";
@@ -420,16 +420,25 @@
         console.log('>>> / _inputAmount:', _inputAmount)
         let _trade
         if (token1.value?.address === zeroAddress) {
+          // Token1 là đồng native (VD: WBNB in BSC)
+          // Trường hợp ví dụ:
+          /**
+           * Swap BNB from MONCHAIN to BSC
+           * currencyA: USDT in MONCHAIN
+           * currencyB: WBNB in BSC
+           * => Gọi V4Router.getBestTrade với:
+           *  - amount: amountInWei
+           *  - currencyA: USDT in MONCHAIN
+           *  - currencyB: WBNB in BSC
+           *  - tradeType: EXACT_OUTPUT
+           */
           console.log('Get best trade with V4Router')
-          const _v3Pools = await V4Router.getV3CandidatePools({
-            clientProvider: () => _publicClient,
-            currencyA: currencyA,
-            currencyB: currencyB
-          })
-          console.log('>>> / _v3Pools:', _v3Pools)
-          _trade = await V4Router.getBestTrade(_inputAmount, currencyA, TradeType.EXACT_OUTPUT, {
-            gasPriceWei: () => _publicClient.getGasPrice(),
-            candidatePools: [..._v3Pools]
+          _trade = await getBestTradeV4({
+            token0: currencyA,
+            token1: currencyB,
+            inputAmount: Number(amountInWei),
+            type: TradeType.EXACT_OUTPUT,
+            chainId: toNetwork.value!.chainId
           })
         } else {
           console.log('Get best trade with SmartRouter')
@@ -518,7 +527,14 @@
   }
   const calculateFee = async (_bridgeBody: typeof bridgeBody.value, nativeTokenInSourceChain: IToken, stableTokenInDestinationChain: IToken) => {
     // Get fee
-    const getFeeRs = await $fetch<unknown>('/api/bridge/fee', {
+    type FeeInfo = {
+      data: {
+        feeNetwork: number
+        feeProtocolAmount: number
+        feeProtocolDecimals: number
+      }
+    }
+    const getFeeRs = await $fetch<FeeInfo>('/api/bridge/fee', {
       method: 'POST',
       body: JSON.stringify(_bridgeBody)
     })
