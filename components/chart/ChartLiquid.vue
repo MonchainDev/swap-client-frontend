@@ -17,7 +17,7 @@
           <rect x="0" y="0" :width="innerWidth" :height="200" />
         </clipPath>
         <mask v-if="brushDomain" id="liquidityChartRangeInput-chart-area-mask">
-          <rect fill="white" :x="xScale(brushDomain[0])" y="0" :width="xScale(brushDomain[1]) - xScale(brushDomain[0])" :height="innerHeight" />
+          <rect fill="red" :x="xScale(brushDomain[0])" y="0" :width="xScale(brushDomain[1]) - xScale(brushDomain[0])" :height="innerHeight" />
         </mask>
       </defs>
 
@@ -47,13 +47,25 @@
         </g>
       </g>
 
-      <ZoomOverlay ref="zoomRef" :height="200" :width="innerWidth" :zoom-levels="zoomLevels" />
+      <ZoomOverlay ref="zoomRef" :height="200" :width="innerWidth" :zoom-levels="zoomLevels" :on-zoom="onZoom" />
+      <Brush
+        id="liquidityChartRangeInput"
+        :x-scale="xScale"
+        :interactive="true"
+        :brush-extent="brushDomain ?? (xScale.domain() as [number, number])"
+        :inner-width="innerWidth"
+        :inner-height="180"
+        west-handle-color="#ff6347"
+        east-handle-color="#4682b4"
+        @update:brush-extent="handleBrushChange"
+      />
     </svg>
   </div>
 </template>
 
 <script lang="ts" setup>
   import formattedData from '@/constant/mock-chart.json'
+  import type { ZoomTransform } from 'd3'
   import { max, scaleLinear } from 'd3'
   import { ZOOM_LEVELS } from '~/constant/zoom-level'
   import Area from './Area.vue'
@@ -83,10 +95,10 @@
 
   const zoomLevels = ZOOM_LEVELS[2500]
 
+  const currentDomain = ref<[number, number]>([current * zoomLevels.initialMin, current * zoomLevels.initialMax])
+
   const xScale = computed(() => {
-    return scaleLinear()
-      .domain([current * zoomLevels.initialMin, current * zoomLevels.initialMax] as number[])
-      .range([0, innerWidth])
+    return scaleLinear().domain(currentDomain.value).range([0, innerWidth])
   })
 
   const yScale = computed(() => {
@@ -110,7 +122,30 @@
     return [left, right]
   })
 
-  const brushDomain = ref<[number, number] | undefined>(undefined)
+  const brushDomain = ref<[number, number] | undefined>([0.0013152, 0.00250792])
+
+  const onZoom = (transform: ZoomTransform) => {
+    // Calculate the new domain based on the zoom transform
+    const xDomain = transform
+      .rescaleX(
+        scaleLinear()
+          .domain([current * zoomLevels.initialMin, current * zoomLevels.initialMax])
+          .range([0, innerWidth])
+      )
+      .domain()
+
+    // Update the current domain to trigger reactivity
+    currentDomain.value = xDomain as [number, number]
+
+    // Optionally update the brush domain if needed
+    brushDomain.value = xDomain as [number, number]
+
+    console.log('Zoomed to domain:', xDomain)
+  }
+
+  const handleBrushChange = (extent: [number, number]) => {
+    console.log('Brush extent:', extent)
+  }
 </script>
 
 <style lang="scss" scoped></style>
