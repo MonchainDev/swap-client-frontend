@@ -1,17 +1,17 @@
 <template>
   <BasePopup name="popup-unstake" width="540" title="Unstaking" @close="inverted = false">
-    <div class="px-8 pb-7">
+    <div class="px-8 pb-7 sm:px-4">
       <div class="flex items-center justify-between">
         <div class="flex gap-1">
           <span class="font-semibold">{{ position.baseSymbol }}-{{ position.quoteSymbol }}</span>
           <span class="font-semibold text-gray-6">(#{{ position.tokenId }})</span>
         </div>
         <div class="flex gap-2">
-          <span class="flex h-9 w-[117px] items-center justify-center gap-1 rounded-lg bg-[#E8FFEB] text-sm text-success">
+          <span class="flex h-9 w-[117px] items-center justify-center gap-1 rounded-lg bg-[#E8FFEB] text-sm text-success sm:w-fit sm:px-2">
             <BaseIcon name="loading" size="16" class="text-success" />
             <span>Farming</span>
           </span>
-          <span class="flex h-9 w-[117px] items-center justify-center gap-1 rounded-lg bg-[#E8FFEB] text-sm text-success">
+          <span class="flex h-9 w-[117px] items-center justify-center gap-1 rounded-lg bg-[#E8FFEB] text-sm text-success sm:w-fit sm:px-2">
             <BaseIcon name="tick" size="24" class="text-success" />
             <span>Active</span>
           </span>

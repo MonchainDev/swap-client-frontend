@@ -24,11 +24,11 @@
       <div class="break-all text-gray-6">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</div>
     </div>
     <div class="flex flex-col justify-center pr-[10px] text-sm">
-      <span>Min: {{ formatNumber(min) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
-      <span>Max: {{ formatNumber(max) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
+      <span>Min: {{ formatNumber(min) }} {{ props.position.quoteSymbol }}/{{ props.position.baseSymbol }}</span>
+      <span>Max: {{ formatNumber(max) }} {{ props.position.quoteSymbol }}/{{ props.position.baseSymbol }}</span>
     </div>
     <div class="flex flex-col justify-center text-sm">
-      <span>≈ ${{ formatNumber(priceUdtTotal) }}</span>
+      <span>≈ ${{ formatNumberAbbreviation(priceUdtTotal) }}</span>
       <span>({{ displayTokenReserve(props.position.quoteQuantity, props.position.quoteDecimals, props.position.quoteSymbol) }} /</span>
       <span>{{ displayTokenReserve(props.position.baseQuantity, props.position.baseDecimals, props.position.baseSymbol) }})</span>
     </div>
@@ -185,7 +185,9 @@
   })
 
   const priceUdtTotal = computed(() => {
-    return toSignificant(new Decimal(exchangeRateBaseCurrency.value).plus(exchangeRateQuoteCurrency.value).toString())
+    const baseValueUsd = new Decimal(props.position.baseQuantity / Math.pow(10, props.position.baseDecimals)).mul(exchangeRateBaseCurrency.value)
+    const quoteValueUsd = new Decimal(props.position.quoteQuantity / Math.pow(10, props.position.quoteDecimals)).mul(exchangeRateQuoteCurrency.value)
+    return toSignificant(baseValueUsd.plus(quoteValueUsd).toString())
   })
 
   const { showToastMsg } = useShowToastMsg()
