@@ -1,4 +1,4 @@
-const formatNumberAbbreviation = (value: number) => {
+const formatNumberAbbreviation = (value: number | string) => {
   if (!value) return '0'
 
   const number = Number(value)

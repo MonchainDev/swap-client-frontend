@@ -21,14 +21,14 @@
     </div>
     <div class="flex flex-col items-center justify-center gap-1 px-1 text-sm">
       <div class="break-all font-semibold text-success">{{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}%</div>
-      <div class="text-gray-6">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</div>
+      <div class="break-all text-gray-6">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</div>
     </div>
-    <div class="flex flex-col justify-center text-sm">
+    <div class="flex flex-col justify-center pr-[10px] text-sm">
       <span>Min: {{ formatNumber(min) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
       <span>Max: {{ formatNumber(max) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
     </div>
     <div class="flex flex-col justify-center text-sm">
-      <span>≈ ${{ formatNumber(priceUdtTotal) }}</span>
+      <span>≈ ${{ formatNumberAbbreviation(priceUdtTotal) }}</span>
       <span>({{ displayTokenReserve(props.position.quoteQuantity, props.position.quoteDecimals, props.position.quoteSymbol) }} /</span>
       <span>{{ displayTokenReserve(props.position.baseQuantity, props.position.baseDecimals, props.position.baseSymbol) }})</span>
     </div>
@@ -116,7 +116,8 @@
 
   const displayTokenReserve = (amount: number, decimals: number, symbol: string) => {
     // = (quoteQtty/10^quotedecimals) TokenA/(baseQtty/10^baseDecimals) TokenB
-    return `${formatNumber((amount / Math.pow(10, decimals)).toFixed(2))} ${symbol}`
+    // return `${formatNumber((amount / Math.pow(10, decimals)).toFixed(2))} ${symbol}`
+    return `${formatNumber(toSignificant(amount / Math.pow(10, decimals)))} ${symbol}`
   }
 
   const enum TabValue {
@@ -141,18 +142,35 @@
   })
 
   const min = computed(() => {
-    // priceLower*quotedecimals/basedecimals
-    const { priceLower, baseDecimals, quoteDecimals } = props.position
-    return props.position.priceLower ? formatNumber(((priceLower * quoteDecimals) / baseDecimals).toFixed(2)) : 0
+    const { priceUpper, baseDecimals, quoteDecimals } = props.position
+    if (!priceUpper) return 0
+
+    // Điều chỉnh decimals để lấy BNB/USDT (quote/base)
+    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
+    const priceQuotePerBase = priceUpper / decimalAdjustment
+
+    // Đảo ngược để lấy USDT/BNB (base/quote)
+    const priceBasePerQuote = 1 / priceQuotePerBase
+
+    return formatNumber(toSignificant(priceBasePerQuote, 6))
   })
 
   const max = computed(() => {
-    const { priceUpper, baseDecimals, quoteDecimals } = props.position
-    return priceUpper ? formatNumber(((priceUpper * quoteDecimals) / baseDecimals).toFixed(2)) : 0
+    const { priceLower, baseDecimals, quoteDecimals } = props.position
+    if (!priceLower) return 0
+
+    // Điều chỉnh decimals để lấy BNB/USDT (quote/base)
+    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
+    const priceQuotePerBase = priceLower / decimalAdjustment
+
+    // Đảo ngược để lấy USDT/BNB (base/quote)
+    const priceBasePerQuote = 1 / priceQuotePerBase
+
+    return formatNumber(toSignificant(priceBasePerQuote, 6))
   })
 
   const showStake = computed(() => {
-    return props.position.poolType === 'FARM' && Number(props.position.moonPerSecond) === 0
+    return props.position.poolType === 'FARM' && Number(props.position.moonPerSecond) === 0 && !stakeLocalSuccess.value
   })
 
   const showUnStake = computed(() => {
@@ -184,7 +202,9 @@
   })
 
   const priceUdtTotal = computed(() => {
-    return new Decimal(exchangeRateBaseCurrency.value).plus(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+    const baseValueUsd = new Decimal(props.position.baseQuantity / Math.pow(10, props.position.baseDecimals)).mul(exchangeRateBaseCurrency.value)
+    const quoteValueUsd = new Decimal(props.position.quoteQuantity / Math.pow(10, props.position.quoteDecimals)).mul(exchangeRateQuoteCurrency.value)
+    return toSignificant(baseValueUsd.plus(quoteValueUsd).toString())
   })
 
   const { showToastMsg } = useShowToastMsg()

@@ -1,10 +1,21 @@
 import { ERC20Token } from '@monchain/swap-sdk-evm'
 import { ChainId } from '~/types'
 
+/** Token reward  */
+export const TOKEN_REWARDS = {
+  [ChainId.BSC_TESTNET]: new ERC20Token(ChainId.BSC_TESTNET, '0x0BEcA28adA7314Ff85E95a79CDAFd0513e2A7369', 18, 'ORB', 'ORB', ''),
+  [ChainId.MON_TESTNET]: new ERC20Token(ChainId.MON_TESTNET, '0xBbDc62F288da79D0195f219cd4AF0a1a6906935F', 18, 'ORB', 'ORB', ''),
+  [ChainId.SEPOLIA]: null,
+  [ChainId.AMOY_POLYGON]: null,
+  [ChainId.ARBITRUM_SEPOLIA]: null
+} as Record<ChainId, ERC20Token | null>
+
+/** Wrapped native in amoy polygon  */
 export const WPOL = {
   [ChainId.AMOY_POLYGON]: new ERC20Token(ChainId.AMOY_POLYGON, '0xA5733b3A8e62A8faF43b0376d5fAF46E89B3033E', 18, 'WPOL', 'Wrapped Polygon', '')
 }
 
+/** Wrapped native in ethereum  */
 export const WETH9 = {
   [ChainId.BSC_TESTNET]: new ERC20Token(ChainId.BSC_TESTNET, '0xE7bCB9e341D546b66a46298f4893f5650a56e99E', 18, 'ETH', 'ETH', 'https://ethereum.org'),
   [ChainId.SEPOLIA]: new ERC20Token(ChainId.SEPOLIA, '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14', 18, 'WETH', 'Wrapped Ether', 'https://weth.io'),
@@ -18,6 +29,7 @@ export const WETH9 = {
   )
 }
 
+/** Wrapped native in binance  */
 export const WBNB = {
   [ChainId.BSC_TESTNET]: new ERC20Token(ChainId.BSC_TESTNET, '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd', 18, 'WBNB', 'Wrapped BNB', 'https://www.binance.org')
 }
@@ -27,6 +39,7 @@ export const WBNB = {
  * TODO: AMOY_POLYGON cũng chưa có W
  */
 
+/** Wrapped native in mon  */
 export const WMON = {
   [ChainId.MON_TESTNET]: new ERC20Token(ChainId.MON_TESTNET, '0xf9012437655f666bcb07f50cc471f531629342df', 18, 'WMON', 'Wrapped MON', '')
 }
