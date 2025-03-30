@@ -1,5 +1,5 @@
 <template>
-  <BasePopup name="popup-unstake" width="540" title="Unstaking" @close="inverted = false">
+  <BasePopup name="popup-unstake" width="540" title="Unstaking" @close="inverted = false" @open="handleOpen">
     <div class="px-8 pb-7 sm:px-4">
       <div class="flex items-center justify-between">
         <div class="flex gap-1">
@@ -35,7 +35,7 @@
           <BaseIcon name="calculator" size="16" />
           <span class="font-semibold text-success">{{ (position.feeApr || 0).toFixed(2) }}%</span>
         </div>
-        <span class="font-semibold">ORB earned: 0 ($0)</span>
+        <span class="font-semibold">ORB earned: {{ amountOrb }} (${{ formatNumber(amountUsdEarn) }})</span>
         <NuxtLink class="w-full" :to="{ name: 'liquidity-network-tokenId', params: { network: position.network, tokenId: position.tokenId } }">
           <button class="!mt-3 flex h-10 w-full items-center justify-center rounded border border-solid border-gray-3 bg-white font-medium">
             Manage Position
@@ -51,11 +51,14 @@
 </template>
 
 <script lang="ts" setup>
-  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
+  import Decimal from 'decimal.js'
   import { hexToBigInt } from 'viem'
   import { LIST_NETWORK } from '~/config/networks'
+  import { TOKEN_REWARDS } from '~/config/tokens'
   import { config } from '~/config/wagmi'
+  import type { ChainId, IExchangeRate } from '~/types'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { IPosition } from '~/types/position.type'
   import { MasterChefV3 } from '~/utils/masterChefV3'
@@ -171,6 +174,49 @@
         showToastMsg(msg, 'error')
       }
     }
+  }
+
+  const amountOrb = ref(0)
+  async function getV3PoolAddressPid() {
+    const contractAddressMasterChef = getMasterChefV3Address(chainId.value)
+
+    const amount = (await readContract(config, {
+      address: contractAddressMasterChef,
+      abi: MasterChefV3.ABI,
+      functionName: 'v3PoolAddressPid',
+      args: [props.position?.poolAddress],
+      chainId: chainId.value
+    })) as bigint
+    console.log('🚀 ~ v3PoolAddressPid ~ amount:', amount)
+    amountOrb.value = Number(amount) || 0
+  }
+
+  const exchangeRate = ref('0')
+
+  const fetchExchangeRate = async (): Promise<string> => {
+    const params = new URLSearchParams()
+    const symbol = TOKEN_REWARDS[chainId.value as ChainId]?.symbol
+    if (!symbol) return '0'
+    params.append('currencies', symbol)
+    const data = await $fetch<IExchangeRate[]>(`/api/exchange-rate/all?${params.toString()}`)
+    if (data?.length) {
+      const rateList = data.filter((item) => item.symbol.toUpperCase() === symbol.toUpperCase())
+      if (rateList.length) {
+        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
+      }
+      return '0'
+    }
+    return '0'
+  }
+
+  const amountUsdEarn = computed(() => {
+    return new Decimal(amountOrb.value).mul(exchangeRate.value).toSignificantDigits(6).toString()
+  })
+
+  const handleOpen = async () => {
+    getV3PoolAddressPid()
+    exchangeRate.value = await fetchExchangeRate()
   }
 </script>
 
