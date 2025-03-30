@@ -68,6 +68,7 @@ export const useBridgeStore = defineStore('bridge', () => {
     async (formTokenSymbol) => {
       if (!formTokenSymbol) return
       // Token 0
+      form.value.amount = ''
       const query = { network: fromNetwork.value?.network, crossChain: 'Y' }
       const { data } = await useFetch<IToken[]>('/api/network/token', { query })
       const _token0 = data.value?.find((item) => item.tokenSymbol === formTokenSymbol)
@@ -83,6 +84,7 @@ export const useBridgeStore = defineStore('bridge', () => {
         : undefined
       if (!address.value) {
         console.error('Address is required')
+        window.location.reload()
         setOpenPopup('popup-connect')
         return
       }
