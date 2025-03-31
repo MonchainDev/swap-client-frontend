@@ -445,11 +445,6 @@
         })
 
         if (status === 'success') {
-          refetchBalance0()
-          refetchBalance1()
-          setOpenPopup('popup-add-liquidity', false)
-          showToastMsg('Transaction successful', 'success', getUrlScan(chainId.value, 'tx', txHash))
-          emit('reload')
           let body: IBodyTxCollect = {} as IBodyTxCollect
 
           if (props.showInput === false) {
@@ -501,6 +496,13 @@
             }
           }
           await postTransaction(body)
+          setTimeout(() => {
+            refetchBalance0()
+            refetchBalance1()
+            setOpenPopup('popup-add-liquidity', false)
+            showToastMsg('Transaction successful', 'success', getUrlScan(chainId.value, 'tx', txHash))
+            emit('reload')
+          }, 3000)
         } else {
           showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash))
         }

@@ -43,7 +43,7 @@
           </ChooseNetwork>
           <div
             class="flex h-[42px] w-[170px] cursor-pointer items-center justify-between gap-1 rounded-lg border border-solid border-gray-4 pl-4 pr-1"
-            @click="setOpenPopup('popup-select-token')"
+            @click="setOpenPopup('popup-selected-token-multiple')"
           >
             <div class="flex items-center gap-2">
               <div class="flex">

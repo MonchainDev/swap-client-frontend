@@ -21,26 +21,7 @@
     </div>
     <div class="flex justify-between">
       <span class="text-sm">Trading Fee</span>
-      <ElPopover placement="top" width="270" trigger="hover" popper-class="popper-hover-fee" :teleported="false">
-        <template #reference>
-          <span class="cursor-pointer border-b border-dashed border-gray-6 text-sm font-bold leading-4">{{ formatTradingFee }} {{ form.token0.symbol }}</span>
-        </template>
-        <div class="flex flex-col gap-2 text-primary">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-medium">Trading Fee </span>
-            <span class="text-sm font-medium"> {{ formatTradingFee }} {{ form.token0.symbol }}</span>
-          </div>
-          <div class="h-[1px] w-full bg-gray-3"></div>
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-[#6E6E6E]">Swap fee (15% value) </span>
-            <span class="text-sm">$0.022 </span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-[#6E6E6E]">Gas fee </span>
-            <span class="text-sm">$0.070 </span>
-          </div>
-        </div>
-      </ElPopover>
+      <span class="text-sm font-bold leading-4">{{ formatTradingFee }} {{ form.token0.symbol }}</span>
     </div>
     <div class="flex justify-between">
       <span class="text-sm">Price Impact</span>
@@ -138,7 +119,7 @@
   })
 
   const formatTradingFee = computed(() => {
-    return new Decimal(form.value.tradingFee.toString()).div(10 ** Number(form.value.token0.decimals || 0)).toFixed(4)
+    return toSignificant(new Decimal(form.value.tradingFee.toString()).div(10 ** Number(form.value.token0.decimals || 0)).toString())
   })
 
   const exchangeRate = computed(() => {

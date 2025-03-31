@@ -27,7 +27,6 @@
 
 <script lang="ts" setup>
   import { useAccount, useConnect, useSwitchChain } from '@wagmi/vue'
-  import { UserRejectedRequestError } from 'viem'
   import type { WalletType } from '~/types/connect.type'
 
   declare global {
@@ -93,7 +92,11 @@
         if (window?.CoinbaseWalletProvider) {
           await connectAsync({ connector: connectors[1], chainId: currentNetwork.value.chainId })
         } else {
-          window.open(`https://go.cb-w.com/dapp?cb_url=${window.location.href}`, '_blank')
+          if (isDesktop.value) {
+            window.open(`https://www.coinbase.com/wallet/downloads`, '_blank')
+          } else {
+            window.open(`https://go.cb-w.com/dapp?cb_url=${window.location.href}`, '_blank')
+          }
         }
       }
 
@@ -106,10 +109,12 @@
       setOpenPopup('popup-connect', false)
       typeConnect.value = null
     } catch (error) {
+      console.error('🚀 ~ handleConnect ~ error:', error)
       // case user accept request but throw error in coinbase wallet
-      if (error instanceof UserRejectedRequestError && error.code === 4001 && type === 'COINBASE') {
-        setOpenPopup('popup-connect', false)
-      }
+      // if (error instanceof UserRejectedRequestError && error.code === 4001 && type === 'COINBASE') {
+      //   setOpenPopup('popup-connect', false)
+      // }
+      setOpenPopup('popup-connect', false)
       typeConnect.value = null
     }
   }

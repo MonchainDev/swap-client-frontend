@@ -18,17 +18,17 @@
             <span class="text-xs text-gray-8">{{ networkSelected?.name }} | #{{ props.position.tokenId }}</span>
           </div>
         </div>
-        <span class="text-xs" :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
+        <span class="sm hidden text-xs sm:block" :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
       </div>
       <template v-if="isDesktop">
         <div class="flex gap-1 text-xs">
-          <span>Min: {{ formatNumber(min) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
+          <span>Min: {{ formatNumber(min) }} {{ props.position.quoteSymbol }}/{{ props.position.baseSymbol }}</span>
           <span>|</span>
-          <span>Max: {{ formatNumber(max) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
+          <span>Max: {{ formatNumber(max) }} {{ props.position.quoteSymbol }}/{{ props.position.baseSymbol }}</span>
         </div>
         <div class="flex gap-1 text-xs">
           <span
-            >≈ ${{ formatNumber(priceUdtTotal) }} ({{
+            >≈ ${{ formatNumberAbbreviation(priceUdtTotal) }} ({{
               displayTokenReserve(props.position.quoteQuantity, props.position.quoteDecimals, props.position.quoteSymbol)
             }}
             /{{ displayTokenReserve(props.position.baseQuantity, props.position.baseDecimals, props.position.baseSymbol) }})</span
@@ -49,11 +49,11 @@
           <span class="rounded bg-gray-2 px-2 py-1 text-xs font-medium">{{ props.position.fee / 10000 }}%</span>
         </div>
         <div class="break-all text-xs">
-          <span>Min: {{ formatNumber(min) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
-          <span class="pl-2">Max: {{ formatNumber(max) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
+          <span>Min: {{ formatNumber(min) }} {{ props.position.quoteDecimals }}/{{ props.position.baseDecimals }}</span>
+          <span class="pl-2">Max: {{ formatNumber(max) }} {{ props.position.quoteDecimals }}/{{ props.position.baseDecimals }}</span>
         </div>
         <span class="break-all text-xs"
-          >≈ ${{ formatNumber(priceUdtTotal) }} ({{
+          >≈ ${{ formatNumberAbbreviation(priceUdtTotal) }} ({{
             displayTokenReserve(props.position.quoteQuantity, props.position.quoteDecimals, props.position.quoteSymbol)
           }}
           /{{ displayTokenReserve(props.position.baseQuantity, props.position.baseDecimals, props.position.baseSymbol) }})</span
@@ -233,7 +233,9 @@
   })
 
   const priceUdtTotal = computed(() => {
-    return new Decimal(exchangeRateBaseCurrency.value).plus(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+    const baseValueUsd = new Decimal(props.position.baseQuantity / Math.pow(10, props.position.baseDecimals)).mul(exchangeRateBaseCurrency.value)
+    const quoteValueUsd = new Decimal(props.position.quoteQuantity / Math.pow(10, props.position.quoteDecimals)).mul(exchangeRateQuoteCurrency.value)
+    return toSignificant(baseValueUsd.plus(quoteValueUsd).toString())
   })
 
   const { showToastMsg } = useShowToastMsg()

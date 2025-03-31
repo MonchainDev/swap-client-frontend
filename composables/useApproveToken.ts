@@ -8,6 +8,8 @@ export function useApproveToken() {
   const callback = ref<(status: TYPE_STATUS) => void>()
   const { isConfirmApprove } = storeToRefs(useSwapStore())
 
+  const { showToastMsg } = useShowToastMsg()
+
   // Wait for transaction confirmation
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash: hash
@@ -16,6 +18,7 @@ export function useApproveToken() {
   watch(isSuccess, () => {
     if (isSuccess.value && callback.value) {
       callback.value('SUCCESS')
+      showToastMsg('Approve successfully', 'success')
     }
   })
 
@@ -24,6 +27,7 @@ export function useApproveToken() {
       console.error('Approval error:', isError.value)
       isConfirmApprove.value = false
       callback.value('FAILED')
+      showToastMsg('Approve failed', 'error')
     }
   })
 
