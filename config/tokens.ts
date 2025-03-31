@@ -4,7 +4,7 @@ import { ChainId } from '~/types'
 /** Token reward  */
 export const TOKEN_REWARDS = {
   [ChainId.BSC_TESTNET]: new ERC20Token(ChainId.BSC_TESTNET, '0x0BEcA28adA7314Ff85E95a79CDAFd0513e2A7369', 18, 'ORB', 'ORB', ''),
-  [ChainId.MON_TESTNET]: new ERC20Token(ChainId.MON_TESTNET, '0xBbDc62F288da79D0195f219cd4AF0a1a6906935F', 18, 'ORB', 'ORB', ''),
+  [ChainId.MON_TESTNET]: new ERC20Token(ChainId.MON_TESTNET, '0x3b9547e5b66Fd8dB8b3119575f7d809C4DcE6243', 18, 'ORB', 'ORB', ''),
   [ChainId.SEPOLIA]: null,
   [ChainId.AMOY_POLYGON]: null,
   [ChainId.ARBITRUM_SEPOLIA]: null
@@ -41,7 +41,7 @@ export const WBNB = {
 
 /** Wrapped native in mon  */
 export const WMON = {
-  [ChainId.MON_TESTNET]: new ERC20Token(ChainId.MON_TESTNET, '0xf9012437655f666bcb07f50cc471f531629342df', 18, 'WMON', 'Wrapped MON', '')
+  [ChainId.MON_TESTNET]: new ERC20Token(ChainId.MON_TESTNET, '0xBbDc62F288da79D0195f219cd4AF0a1a6906935F', 18, 'WMON', 'Wrapped MON', '')
 }
 
 /**

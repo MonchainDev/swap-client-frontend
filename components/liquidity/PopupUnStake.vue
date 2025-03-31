@@ -19,8 +19,8 @@
       </div>
       <div class="mt-[30px] flex flex-col gap-[10px] rounded-lg border border-solid border-gray-4 bg-gray-1 px-6 pb-6 pt-5">
         <div class="flex items-center gap-1">
-          <span v-if="inverted">Min {{ invertMin }} / Max {{ invertMax }} of {{ position.baseSymbol }} per {{ position.quoteSymbol }}</span>
-          <span v-else>Min {{ min }} / Max {{ max }} of {{ position.quoteSymbol }} per {{ position.baseSymbol }}</span>
+          <span v-if="inverted">Min {{ invertMin }} / Max {{ invertMax }} of {{ position.quoteSymbol }} per {{ position.baseSymbol }}</span>
+          <span v-else>Min {{ min }} / Max {{ max }} of {{ position.baseSymbol }} per {{ position.quoteSymbol }}</span>
           <BaseIcon name="arrow-reverse" size="20" class="cursor-pointer" @click="inverted = !inverted" />
         </div>
         <div class="flex items-center gap-1">
@@ -78,16 +78,33 @@
   const inverted = ref(false)
 
   const min = computed(() => {
-    // priceLower*quotedecimals/basedecimals
     if (!props.position) return 0
-    const { priceLower, baseDecimals, quoteDecimals } = props.position
-    return props.position?.priceLower ? formatNumber(toSignificant((priceLower * quoteDecimals) / baseDecimals)) : 0
-  })
 
+    const { priceUpper, baseDecimals, quoteDecimals } = props.position
+    if (!priceUpper) return 0
+
+    // Điều chỉnh decimals để lấy BNB/USDT (quote/base)
+    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
+    const priceQuotePerBase = priceUpper / decimalAdjustment
+
+    // Đảo ngược để lấy USDT/BNB (base/quote)
+    const priceBasePerQuote = 1 / priceQuotePerBase
+
+    return formatNumber(toSignificant(priceBasePerQuote, 6))
+  })
   const max = computed(() => {
     if (!props.position) return 0
-    const { priceUpper, baseDecimals, quoteDecimals } = props.position
-    return priceUpper ? formatNumber(toSignificant((priceUpper * quoteDecimals) / baseDecimals)) : 0
+    const { priceLower, baseDecimals, quoteDecimals } = props.position
+    if (!priceLower) return 0
+
+    // Điều chỉnh decimals để lấy BNB/USDT (quote/base)
+    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
+    const priceQuotePerBase = priceLower / decimalAdjustment
+
+    // Đảo ngược để lấy USDT/BNB (base/quote)
+    const priceBasePerQuote = 1 / priceQuotePerBase
+
+    return formatNumber(toSignificant(priceBasePerQuote, 6))
   })
 
   const invertMin = computed(() => {
@@ -177,17 +194,17 @@
   }
 
   const amountOrb = ref(0)
-  async function getV3PoolAddressPid() {
+  async function getPendingMoon() {
     const contractAddressMasterChef = getMasterChefV3Address(chainId.value)
 
     const amount = (await readContract(config, {
       address: contractAddressMasterChef,
       abi: MasterChefV3.ABI,
-      functionName: 'v3PoolAddressPid',
-      args: [props.position?.poolAddress],
+      functionName: 'pendingMoon',
+      args: [props.position?.tokenId],
       chainId: chainId.value
     })) as bigint
-    console.log('🚀 ~ v3PoolAddressPid ~ amount:', amount)
+    console.log('🚀 ~ pendingMoon ~ amount:', amount)
     amountOrb.value = Number(amount) || 0
   }
 
@@ -215,7 +232,7 @@
   })
 
   const handleOpen = async () => {
-    getV3PoolAddressPid()
+    getPendingMoon()
     exchangeRate.value = await fetchExchangeRate()
   }
 </script>

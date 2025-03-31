@@ -33,6 +33,7 @@
         if (props.onZoom) props.onZoom(transform)
       })
 
+    //@ts-ignore
     select(overlayRef.value).call(zoomBehavior.value)
   })
 
@@ -49,6 +50,7 @@
       .on('zoom', ({ transform }: { transform: ZoomTransform }) => {
         if (props.onZoom) props.onZoom(transform)
       })
+    //@ts-ignore
 
     select(overlayRef.value).call(zoomBehavior.value)
   })
@@ -59,21 +61,25 @@
     console.log('zoomBehavior', zoomBehavior.value?.scaleBy)
 
     if (!overlayRef.value || !zoomBehavior.value) return
+    //@ts-ignore
     select(overlayRef.value).transition().call(zoomBehavior.value?.scaleBy, 2)
   }
 
   const zoomOut = () => {
     if (!overlayRef.value || !zoomBehavior.value) return
+    //@ts-ignore
     select(overlayRef.value).transition().call(zoomBehavior.value.scaleBy, 0.5)
   }
 
   const zoomInitial = () => {
     if (!overlayRef.value || !zoomBehavior.value) return
+    //@ts-ignore
     select(overlayRef.value).transition().call(zoomBehavior.value.scaleTo, 0.5)
   }
 
   const zoomReset = () => {
     if (!overlayRef.value || !zoomBehavior.value) return
+    //@ts-ignore
     select(overlayRef.value).call(zoomBehavior.value.transform, zoomIdentity.translate(0, 0).scale(1)).transition().call(zoomBehavior.value.scaleTo, 0.5)
   }
 
