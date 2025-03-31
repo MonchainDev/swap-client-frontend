@@ -604,19 +604,4 @@
   })
 </script>
 
-<style lang="scss" scoped>
-  .table-history {
-    :deep(.el-table) {
-      .el-table__header {
-        tr th:first-child {
-          padding-left: 12px;
-        }
-      }
-      .el-table__body {
-        tr td:first-child {
-          padding-left: 12px;
-        }
-      }
-    }
-  }
-</style>
+<style lang="scss" scoped></style>

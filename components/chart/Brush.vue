@@ -76,9 +76,12 @@
     brushLabelValue: {
       type: Object as PropType<(d: 'w' | 'e', x: number) => string>,
       required: false,
+      //@ts-ignore
+      // eslint-disable-next-line vue/require-valid-default-prop
       default: () => (d: 'w' | 'e', x: number) => `${d}:${x}`
     },
     brushExtent: {
+      //@ts-ignore
       type: Array as () => [number, number],
       required: true
     },

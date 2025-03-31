@@ -177,17 +177,17 @@
   }
 
   const amountOrb = ref(0)
-  async function getV3PoolAddressPid() {
+  async function getPendingMoon() {
     const contractAddressMasterChef = getMasterChefV3Address(chainId.value)
 
     const amount = (await readContract(config, {
       address: contractAddressMasterChef,
       abi: MasterChefV3.ABI,
-      functionName: 'v3PoolAddressPid',
-      args: [props.position?.poolAddress],
+      functionName: 'pendingMoon',
+      args: [props.position?.tokenId],
       chainId: chainId.value
     })) as bigint
-    console.log('🚀 ~ v3PoolAddressPid ~ amount:', amount)
+    console.log('🚀 ~ pendingMoon ~ amount:', amount)
     amountOrb.value = Number(amount) || 0
   }
 
@@ -215,7 +215,7 @@
   })
 
   const handleOpen = async () => {
-    getV3PoolAddressPid()
+    getPendingMoon()
     exchangeRate.value = await fetchExchangeRate()
   }
 </script>
