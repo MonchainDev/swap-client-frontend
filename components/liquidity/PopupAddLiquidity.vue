@@ -239,7 +239,7 @@
 
   const baseCurrency = ref<Currency>()
 
-  const sorted = computed(() => baseCurrency.value === currency0.value)
+  const sorted = computed(() => (baseCurrency.value ? currency0.value?.equals(baseCurrency.value) : false))
   const quoteCurrency = computed(() => (sorted.value ? currency1.value : currency0.value))
 
   const subtitle = computed(() => {
