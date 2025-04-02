@@ -238,6 +238,8 @@
   const handleSwapOrder = () => {
     if (stepSwap.value === 'CONFIRM_SWAP') return
     ;[form.value.token0, form.value.token1] = [form.value.token1, form.value.token0]
+    form.value.amountIn = form.value.amountOut
+    form.value.amountOut = ''
     handleInput(form.value.amountIn, 'BASE')
   }
 
@@ -251,6 +253,18 @@
   const poolAddress = ref<string>('')
   const typedValue = ref('')
   const currentTypeInput = ref<TYPE_SWAP>('BASE')
+
+  const getTokenInfo = async (address: string) => {
+    // const currency = form.value.token1.address.toLowerCase()
+    const { token: native } = useNativeCurrency(currentNetwork.value.chainId)
+    const isNative = address === zeroAddress
+    if (isNative) {
+      return native.value
+    } else {
+      const item = await getTokenByChainId(address, currentNetwork.value.chainId)
+      return item
+    }
+  }
 
   let latestRequestId = 0
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
@@ -274,6 +288,8 @@
         slippage.value = DEFAULT_SLIPPAGE
         return
       }
+      const tokenA = await getTokenInfo(form.value.token0.address)
+      const tokenB = await getTokenInfo(form.value.token1.address)
 
       if (type === 'BASE') {
         form.value.amountIn = amount
@@ -283,8 +299,8 @@
         console.log('🚀 ~ handleInput ~ inputAmount', inputAmount)
         // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
         const _bestTrade = await getBestTradeV4({
-          token0: token0.value!,
-          token1: token1.value!,
+          token0: tokenA,
+          token1: tokenB,
           inputAmount: inputAmount,
           type: TradeType.EXACT_INPUT,
           chainId: currentNetwork.value.chainId
@@ -312,8 +328,8 @@
          * TODO: chain id is chain of wallet, not chain of state pinia
          */
         const _bestTrade = await getBestTradeV4({
-          token0: token0.value!,
-          token1: token1.value!,
+          token0: tokenA,
+          token1: tokenB,
           inputAmount: inputAmount,
           type: TradeType.EXACT_OUTPUT,
           chainId: currentNetwork.value.chainId // chainId of wallet
