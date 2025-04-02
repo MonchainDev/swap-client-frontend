@@ -434,7 +434,10 @@
         throw new Error('Invalid route: path and pools mismatch')
       }
 
-      const recipient = address.value
+      // Nếu đầu ra là đồng wnative, thì gửi wnative đến hợp đồng SwapRouter, sau đó chuyển tiếp đến ví của user
+      // chứ không phải user, để router có thể unwrap sau đó
+      const recipient = outputTokenIsNative ? contractSwapRouterV3 : address.value
+
       const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
 
       const amount = bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? route.inputAmount.numerator.toString() : route.outputAmount.numerator.toString()
@@ -467,10 +470,9 @@
         const tokenOut = route.outputAmount.currency.wrapped.address
         const fee = (route.pools[0] as V3Pool).fee
 
-        // Nếu đầu ra là đồng wnative, thì gửi wnative đến hợp đồng SwapRouter, sau đó chuyển tiếp đến ví của user
-        const swapRecipient = outputTokenIsNative ? contractSwapRouterV3 : recipient
+        // const swapRecipient = outputTokenIsNative ? contractSwapRouterV3 : recipient
 
-        const params = [tokenIn, tokenOut, fee, swapRecipient, deadline, BigInt(amount), BigInt(amountLimit), sqrtPriceLimitX96]
+        const params = [tokenIn, tokenOut, fee, recipient, deadline, BigInt(amount), BigInt(amountLimit), sqrtPriceLimitX96]
         console.info(' (FormSwap.client.vue:398) params', params)
 
         encodedData = encodeFunctionData({
@@ -479,7 +481,7 @@
           args: [params]
         })
       } else {
-        const swapRecipient = outputTokenIsNative ? contractSwapRouterV3 : recipient
+        // const swapRecipient = outputTokenIsNative ? contractSwapRouterV3 : recipient
 
         const path = encodePath(
           route.path.map((token) => token.wrapped.address),
@@ -488,7 +490,7 @@
 
         const params = {
           path,
-          recipient: swapRecipient,
+          recipient,
           deadline,
           ...(bestTrade.value?.tradeType === TradeType.EXACT_INPUT
             ? {
@@ -509,15 +511,17 @@
       }
 
       datas.push(encodedData)
+    }
 
-      if (outputTokenIsNative) {
-        const unwrapData = encodeFunctionData({
-          abi: swapRouterABI,
-          functionName: 'unwrapWMON',
-          args: [BigInt(amountLimit), recipient]
-        })
-        datas.push(unwrapData)
-      }
+    if (outputTokenIsNative) {
+      // Đặt amountMinimum là 0 và recipient là address của user
+      // Để đảm bảo tất cả WMON được unwrap và gửi đến user
+      const unwrapData = encodeFunctionData({
+        abi: swapRouterABI,
+        functionName: 'unwrapWMON',
+        args: [BigInt(0), address.value]
+      })
+      datas.push(unwrapData)
     }
 
     const calldata = encodeFunctionData({
