@@ -37,6 +37,7 @@
 </template>
 
 <script lang="ts" setup>
+  import type { Token } from '@monchain/swap-sdk-core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
   import type { TYPE_SWAP } from '~/types/swap.type'
@@ -45,16 +46,20 @@
     loading0?: boolean
     loading1?: boolean
     loadingAdd?: boolean
+    balance0?: string
+    balance1?: string
   }
 
   const props = withDefaults(defineProps<IProps>(), {
     loading0: false,
     loading1: false,
-    loadingAdd: false
+    loadingAdd: false,
+    balance0: '0',
+    balance1: '0'
   })
 
   const { tokenA, tokenB, depositADisabled, depositBDisabled } = useV3DerivedInfo()
-  const { feeAmount, form, balance0, balance1, startPriceTypedValue, allowance0, allowance1, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
+  const { feeAmount, form, startPriceTypedValue, allowance0, allowance1, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
   const { poolExits } = usePools()
   const { isConnected } = useAccount()
 
@@ -73,13 +78,13 @@
 
   const isInsufficientBalanceA = computed(() => {
     const amountA = form.value.amountDeposit0 || 0
-    const balanceA = balance0.value?.formatted || 0
+    const balanceA = props.balance0 || 0
     return depositADisabled.value ? false : new Decimal(amountA).greaterThan(balanceA)
   })
 
   const isInsufficientBalanceB = computed(() => {
     const amountB = form.value.amountDeposit1 || 0
-    const balanceB = balance1.value?.formatted || 0
+    const balanceB = props.balance1 || 0
     return depositBDisabled.value ? false : new Decimal(amountB).greaterThan(balanceB)
   })
 
@@ -126,13 +131,13 @@
   })
 
   const isShowBtnEnable0 = computed(() => {
-    return baseCurrency.value?.isNative
+    return unwrappedToken(baseCurrency.value as Token)?.isNative
       ? false
       : !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance0.value
   })
 
   const isShowBtnEnable1 = computed(() => {
-    return quoteCurrency.value?.isNative
+    return unwrappedToken(quoteCurrency.value as Token)?.isNative
       ? false
       : !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance1.value
   })

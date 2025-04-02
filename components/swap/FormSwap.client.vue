@@ -238,6 +238,8 @@
   const handleSwapOrder = () => {
     if (stepSwap.value === 'CONFIRM_SWAP') return
     ;[form.value.token0, form.value.token1] = [form.value.token1, form.value.token0]
+    form.value.amountIn = form.value.amountOut
+    form.value.amountOut = ''
     handleInput(form.value.amountIn, 'BASE')
   }
 
@@ -251,6 +253,18 @@
   const poolAddress = ref<string>('')
   const typedValue = ref('')
   const currentTypeInput = ref<TYPE_SWAP>('BASE')
+
+  const getTokenInfo = async (address: string) => {
+    // const currency = form.value.token1.address.toLowerCase()
+    const { token: native } = useNativeCurrency(currentNetwork.value.chainId)
+    const isNative = address === zeroAddress
+    if (isNative) {
+      return native.value
+    } else {
+      const item = await getTokenByChainId(address, currentNetwork.value.chainId)
+      return item
+    }
+  }
 
   let latestRequestId = 0
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
@@ -274,6 +288,8 @@
         slippage.value = DEFAULT_SLIPPAGE
         return
       }
+      const tokenA = await getTokenInfo(form.value.token0.address)
+      const tokenB = await getTokenInfo(form.value.token1.address)
 
       if (type === 'BASE') {
         form.value.amountIn = amount
@@ -283,8 +299,8 @@
         console.log('🚀 ~ handleInput ~ inputAmount', inputAmount)
         // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
         const _bestTrade = await getBestTradeV4({
-          token0: token0.value!,
-          token1: token1.value!,
+          token0: tokenA,
+          token1: tokenB,
           inputAmount: inputAmount,
           type: TradeType.EXACT_INPUT,
           chainId: currentNetwork.value.chainId
@@ -312,8 +328,8 @@
          * TODO: chain id is chain of wallet, not chain of state pinia
          */
         const _bestTrade = await getBestTradeV4({
-          token0: token0.value!,
-          token1: token1.value!,
+          token0: tokenA,
+          token1: tokenB,
           inputAmount: inputAmount,
           type: TradeType.EXACT_OUTPUT,
           chainId: currentNetwork.value.chainId // chainId of wallet
@@ -406,6 +422,10 @@
     const trade = swapOut
     console.info(' (FormSwap.client.vue:355) trade', trade)
     const datas: Hex[] = []
+    const outputTokenIsNative = form.value.token1.address === zeroAddress
+
+    const contractSwapRouterV3 = getSwapRouterV3Address(chainId.value)
+    if (!contractSwapRouterV3) throw new Error('Invalid contract address')
 
     for (const route of trade.routes) {
       console.log('🚀 ~ useExactInputMulticall ~ route:', route)
@@ -447,7 +467,10 @@
         const tokenOut = route.outputAmount.currency.wrapped.address
         const fee = (route.pools[0] as V3Pool).fee
 
-        const params = [tokenIn, tokenOut, fee, recipient, deadline, BigInt(amount), BigInt(amountLimit), sqrtPriceLimitX96]
+        // Nếu đầu ra là đồng wnative, thì gửi wnative đến hợp đồng SwapRouter, sau đó chuyển tiếp đến ví của user
+        const swapRecipient = outputTokenIsNative ? contractSwapRouterV3 : recipient
+
+        const params = [tokenIn, tokenOut, fee, swapRecipient, deadline, BigInt(amount), BigInt(amountLimit), sqrtPriceLimitX96]
         console.info(' (FormSwap.client.vue:398) params', params)
 
         encodedData = encodeFunctionData({
@@ -456,6 +479,8 @@
           args: [params]
         })
       } else {
+        const swapRecipient = outputTokenIsNative ? contractSwapRouterV3 : recipient
+
         const path = encodePath(
           route.path.map((token) => token.wrapped.address),
           route.pools.map((pool) => (pool as V3Pool).fee)
@@ -463,7 +488,7 @@
 
         const params = {
           path,
-          recipient,
+          recipient: swapRecipient,
           deadline,
           ...(bestTrade.value?.tradeType === TradeType.EXACT_INPUT
             ? {
@@ -484,6 +509,15 @@
       }
 
       datas.push(encodedData)
+
+      if (outputTokenIsNative) {
+        const unwrapData = encodeFunctionData({
+          abi: swapRouterABI,
+          functionName: 'unwrapWMON',
+          args: [BigInt(amountLimit), recipient]
+        })
+        datas.push(unwrapData)
+      }
     }
 
     const calldata = encodeFunctionData({
@@ -492,9 +526,6 @@
       args: [datas]
     })
     console.log('🚀 ~ useExactInputMulticall ~ calldata:', calldata)
-
-    const contractSwapRouterV3 = getSwapRouterV3Address(chainId.value)
-    if (!contractSwapRouterV3) throw new Error('Invalid contract address')
 
     const isNative = form.value.token0.address === zeroAddress
     const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)

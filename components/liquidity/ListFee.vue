@@ -62,6 +62,7 @@
 
   const handleSelectFee = async (item: { value: number }) => {
     if (baseCurrency.value?.wrapped.address && quoteCurrency.value?.wrapped.address) {
+      if (item.value === feeAmount.value) return
       resetFiled()
       feeAmount.value = item.value
       rightRangeTypedValue.value = undefined

@@ -252,21 +252,22 @@
           }
           await postTransaction(body)
           setTimeout(() => {
+            loadingAdd.value = false
             emit('reload', txHash)
           }, 3000)
         } else {
           showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash))
+          loadingAdd.value = false
         }
       }
     } catch (error: unknown) {
+      loadingAdd.value = false
       console.error('🚀 ~ handleCreatePool ~ error:', error)
       //@ts-ignore
       const msg = error?.shortMessage || null
       if (msg) {
         showToastMsg(msg, 'error')
       }
-    } finally {
-      loadingAdd.value = false
     }
   }
 </script>

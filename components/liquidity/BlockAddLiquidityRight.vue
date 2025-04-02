@@ -78,7 +78,15 @@
         <template v-if="invalidRange"> Invalid range selected. The min price must be lower than the max price. </template>
       </span>
     </div>
-    <GroupButtonLiquidity :loading-add="loadingAdd" :loading0="loadingApprove0" :loading1="loadingApprove1" @approve="handleApprove" @add="handleCreatePool" />
+    <GroupButtonLiquidity
+      :loading-add="loadingAdd"
+      :balance0="balance0?.formatted"
+      :balance1="balance1?.formatted"
+      :loading0="loadingApprove0"
+      :loading1="loadingApprove1"
+      @approve="handleApprove"
+      @add="handleCreatePool"
+    />
   </div>
   <PopupAddLiquidity
     :currency-base="baseCurrency"
@@ -143,8 +151,11 @@
     independentField,
     typedValue,
     exchangeRateBaseCurrency,
-    exchangeRateQuoteCurrency
+    exchangeRateQuoteCurrency,
+    balance0,
+    balance1
   } = storeToRefs(useLiquidityStore())
+
   const { switchTokens, dispatchRangeTypedValue, refetchAllowance0, refetchAllowance1, resetFiled, refetchBalance0, refetchBalance1 } = useLiquidityStore()
 
   watch(

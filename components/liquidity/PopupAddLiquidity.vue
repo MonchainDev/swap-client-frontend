@@ -128,6 +128,8 @@
         class="mb-[34px]"
         :loading0="loadingApprove0"
         :loading1="loadingApprove1"
+        :balance0="balance0?.formatted"
+        :balance1="balance1?.formatted"
         @approve="handleApprove"
         @add="step = 'CONFIRM'"
       />
@@ -142,7 +144,7 @@
   import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
   import { Percent, type Currency } from '@monchain/swap-sdk-core'
   import { type Position } from '@monchain/v3-sdk'
-  import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import { getBalance, readContract, sendTransaction, waitForTransactionReceipt, type GetBalanceReturnType } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
   import { hexToBigInt } from 'viem'
@@ -189,7 +191,15 @@
 
   const { isDesktop } = useDesktop()
 
-  const { form, balance0, balance1, typedValue, independentField, exchangeRateBaseCurrency, exchangeRateQuoteCurrency } = storeToRefs(useLiquidityStore())
+  const {
+    form,
+    balance0: balance0State,
+    balance1: balance1State,
+    typedValue,
+    independentField,
+    exchangeRateBaseCurrency,
+    exchangeRateQuoteCurrency
+  } = storeToRefs(useLiquidityStore())
   const { refetchAllowance0, refetchAllowance1, refetchBalance0, refetchBalance1 } = useLiquidityStore()
   const { setOpenPopup } = useBaseStore()
   const { currentNetwork } = storeToRefs(useBaseStore())
@@ -239,7 +249,7 @@
 
   const baseCurrency = ref<Currency>()
 
-  const sorted = computed(() => baseCurrency.value === currency0.value)
+  const sorted = computed(() => (baseCurrency.value ? currency0.value?.equals(baseCurrency.value) : false))
   const quoteCurrency = computed(() => (sorted.value ? currency1.value : currency0.value))
 
   const subtitle = computed(() => {
@@ -341,6 +351,41 @@
     if (props.showInput === false) {
       step.value = 'CONFIRM'
     }
+    fetchBalance()
+  }
+
+  const balanceOriginal0 = ref<GetBalanceReturnType>()
+  const balanceOriginal1 = ref<GetBalanceReturnType>()
+
+  const balance0 = computed(() => {
+    return props.showInput ? balanceOriginal0.value : balance0State.value
+  })
+
+  const balance1 = computed(() => {
+    return props.showInput ? balanceOriginal1.value : balance1State.value
+  })
+
+  async function fetchBalance() {
+    try {
+      if (props.showInput) {
+        const [rs1, rs2] = await Promise.all([
+          getBalance(config, {
+            address: address.value as `0x${string}`,
+            token: (currency0.value?.isNative ? '' : currency0.value?.wrapped.address) as `0x${string}`,
+            chainId: chainId.value
+          }),
+          getBalance(config, {
+            address: address.value as `0x${string}`,
+            token: (currency1.value?.isNative ? '' : currency1.value?.wrapped.address) as `0x${string}`,
+            chainId: chainId.value
+          })
+        ])
+        balanceOriginal0.value = rs1
+        balanceOriginal1.value = rs2
+      }
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   const handleClose = () => {
@@ -397,7 +442,7 @@
         loadingAdd.value = true
         console.log(positionDetail.value.mintAmounts)
 
-        const useNative = baseCurrency.value?.isNative ? baseCurrency.value : quoteCurrency.value?.isNative ? quoteCurrency.value : undefined
+        const useNative = currency0.value?.isNative ? currency0.value : currency1.value?.isNative ? currency1.value : undefined
         const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
         const allowedSlippage = 50
 
