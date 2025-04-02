@@ -406,6 +406,10 @@
     const trade = swapOut
     console.info(' (FormSwap.client.vue:355) trade', trade)
     const datas: Hex[] = []
+    const outputTokenIsNative = form.value.token1.address === zeroAddress
+
+    const contractSwapRouterV3 = getSwapRouterV3Address(chainId.value)
+    if (!contractSwapRouterV3) throw new Error('Invalid contract address')
 
     for (const route of trade.routes) {
       console.log('🚀 ~ useExactInputMulticall ~ route:', route)
@@ -447,7 +451,10 @@
         const tokenOut = route.outputAmount.currency.wrapped.address
         const fee = (route.pools[0] as V3Pool).fee
 
-        const params = [tokenIn, tokenOut, fee, recipient, deadline, BigInt(amount), BigInt(amountLimit), sqrtPriceLimitX96]
+        // Nếu đầu ra là đồng wnative, thì gửi wnative đến hợp đồng SwapRouter, sau đó chuyển tiếp đến ví của user
+        const swapRecipient = outputTokenIsNative ? contractSwapRouterV3 : recipient
+
+        const params = [tokenIn, tokenOut, fee, swapRecipient, deadline, BigInt(amount), BigInt(amountLimit), sqrtPriceLimitX96]
         console.info(' (FormSwap.client.vue:398) params', params)
 
         encodedData = encodeFunctionData({
@@ -456,6 +463,8 @@
           args: [params]
         })
       } else {
+        const swapRecipient = outputTokenIsNative ? contractSwapRouterV3 : recipient
+
         const path = encodePath(
           route.path.map((token) => token.wrapped.address),
           route.pools.map((pool) => (pool as V3Pool).fee)
@@ -463,7 +472,7 @@
 
         const params = {
           path,
-          recipient,
+          recipient: swapRecipient,
           deadline,
           ...(bestTrade.value?.tradeType === TradeType.EXACT_INPUT
             ? {
@@ -484,6 +493,15 @@
       }
 
       datas.push(encodedData)
+
+      if (outputTokenIsNative) {
+        const unwrapData = encodeFunctionData({
+          abi: swapRouterABI,
+          functionName: 'unwrapWMON',
+          args: [BigInt(amountLimit), recipient]
+        })
+        datas.push(unwrapData)
+      }
     }
 
     const calldata = encodeFunctionData({
@@ -492,9 +510,6 @@
       args: [datas]
     })
     console.log('🚀 ~ useExactInputMulticall ~ calldata:', calldata)
-
-    const contractSwapRouterV3 = getSwapRouterV3Address(chainId.value)
-    if (!contractSwapRouterV3) throw new Error('Invalid contract address')
 
     const isNative = form.value.token0.address === zeroAddress
     const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
