@@ -98,6 +98,7 @@
     :usd-upper="priceUsdUpper"
     :usd-lower="priceUsdLower"
     :show-input="false"
+    @reload="reloadData"
   />
   <PopupConfirmCreateLiquidity
     :position
