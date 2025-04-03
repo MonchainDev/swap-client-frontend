@@ -5,7 +5,9 @@
       <BaseTable v-if="isDesktop" :data="dataTxs" :loading="loadingTxs" class="table-history mt-[26px]">
         <ElTableColumn label="Timestamp">
           <template #default="{ row }">
-            <div>{{ useDateFormat(row.timestamp * 1000, 'MM/DD/YYYY h:mm:ss A') }}</div>
+            <a :href="getUrlScan(chainId, 'tx', row.id)" target="_blank" class="cursor-pointer hover:text-hyperlink hover:underline">{{
+              useDateFormat(row.timestamp * 1000, 'MM/DD/YYYY h:mm:ss A')
+            }}</a>
           </template>
         </ElTableColumn>
         <ElTableColumn label="Action">
@@ -63,6 +65,8 @@
   })
 
   const { isDesktop } = useDesktop()
+
+  const { chainId } = useActiveChainId()
 
   const getTran = (type: TabValue | string) => {
     switch (type) {
