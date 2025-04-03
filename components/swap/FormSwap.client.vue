@@ -637,9 +637,9 @@
 
   const handleChangeSlippage = () => {
     if (currentTypeInput.value === 'BASE') {
-      form.value.minimumAmountOut = ((Number(form.value.amountOut) * (100 - Number(slippage.value))) / 100).toString()
+      form.value.minimumAmountOut = toSignificant((Number(form.value.amountOut) * (100 - Number(slippage.value))) / 100, 6)
     } else {
-      form.value.maximumAmountIn = ((Number(form.value.amountIn) * (100 + Number(slippage.value))) / 100).toString()
+      form.value.maximumAmountIn = toSignificant((Number(form.value.amountIn) * (100 + Number(slippage.value))) / 100, 6)
     }
   }
 </script>
