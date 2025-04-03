@@ -453,7 +453,7 @@
         expectedCurrencyOwed0: feeValue0.value,
         expectedCurrencyOwed1: feeValue1.value
       }
-      collectFee(tokenId.value, options)
+      collectFee(tokenId.value, options, isStakeMV3.value)
     }
   }
 
