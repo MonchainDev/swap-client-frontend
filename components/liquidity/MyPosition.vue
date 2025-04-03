@@ -108,7 +108,7 @@
                 "
                 @reload="refresh"
               />
-              <BasePagination v-model:page="query.page" :total="query.total" class="mt-5 px-6" />
+              <BasePagination v-if="query.total > 20" v-model:page="query.page" :total="query.total" class="mt-5 px-6" />
             </template>
             <template v-else>
               <div class="mx-auto flex h-[60px] items-center justify-center text-sm text-[#909399]">No Data</div>
