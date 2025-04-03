@@ -22,9 +22,9 @@
       </div>
       <template v-if="isDesktop">
         <div class="flex gap-1 text-xs">
-          <span>Min: {{ formatNumber(min) }} {{ props.position.quoteSymbol }}/{{ props.position.baseSymbol }}</span>
+          <span>Min: {{ formatNumber(min) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
           <span>|</span>
-          <span>Max: {{ formatNumber(max) }} {{ props.position.quoteSymbol }}/{{ props.position.baseSymbol }}</span>
+          <span>Max: {{ formatNumber(max) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
         </div>
         <div class="flex gap-1 text-xs">
           <span
@@ -38,7 +38,9 @@
             >APR: <span class="font-semibold text-success">{{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}%</span></span
           >
         </div>
-        <span class="text-xs font-semibold">Mon earned: 0 ($0)</span>
+        <span class="text-xs font-semibold"
+          >{{ TOKEN_REWARDS[chainId as ChainId]?.symbol }} earned: {{ amountTokenEarn }} (${{ formatNumberAbbreviation(priceUsdEarnToken) }})</span
+        >
       </template>
       <template v-else>
         <div class="flex items-center gap-2">
@@ -49,8 +51,8 @@
           <span class="rounded bg-gray-2 px-2 py-1 text-xs font-medium">{{ props.position.fee / 10000 }}%</span>
         </div>
         <div class="break-all text-xs">
-          <span>Min: {{ formatNumber(min) }} {{ props.position.quoteDecimals }}/{{ props.position.baseDecimals }}</span>
-          <span class="pl-2">Max: {{ formatNumber(max) }} {{ props.position.quoteDecimals }}/{{ props.position.baseDecimals }}</span>
+          <span>Min: {{ formatNumber(min) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
+          <span class="pl-2">Max: {{ formatNumber(max) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
         </div>
         <span class="break-all text-xs"
           >≈ ${{ formatNumberAbbreviation(priceUdtTotal) }} ({{
@@ -128,11 +130,13 @@
   import Decimal from 'decimal.js'
   import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
-  import type { IExchangeRate } from '~/types'
+  import type { ChainId, IExchangeRate } from '~/types'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { IPosition } from '~/types/position.type'
   import { MasterChefV3 } from '~/utils/masterChefV3'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
+  import { useQuery } from '@tanstack/vue-query'
+  import { TOKEN_REWARDS } from '~/config/tokens'
 
   interface IProps {
     // position: PositionDetail
@@ -189,15 +193,38 @@
     }
   })
 
+  // const min = computed(() => {
+  //   // priceLower*quotedecimals/basedecimals
+  //   const { priceLower, baseDecimals, quoteDecimals } = props.position
+  //   return props.position.priceLower ? formatNumber(((priceLower * quoteDecimals) / baseDecimals).toFixed(2)) : 0
+  // })
+
   const min = computed(() => {
-    // priceLower*quotedecimals/basedecimals
-    const { priceLower, baseDecimals, quoteDecimals } = props.position
-    return props.position.priceLower ? formatNumber(((priceLower * quoteDecimals) / baseDecimals).toFixed(2)) : 0
+    const { priceUpper, baseDecimals, quoteDecimals } = props.position
+    if (!priceUpper) return 0
+
+    // Điều chỉnh decimals để lấy BNB/USDT (quote/base)
+    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
+    const priceQuotePerBase = priceUpper / decimalAdjustment
+
+    // Đảo ngược để lấy USDT/BNB (base/quote)
+    const priceBasePerQuote = 1 / priceQuotePerBase
+
+    return formatNumber(toSignificant(priceBasePerQuote, 6))
   })
 
   const max = computed(() => {
-    const { priceUpper, baseDecimals, quoteDecimals } = props.position
-    return priceUpper ? formatNumber(((priceUpper * quoteDecimals) / baseDecimals).toFixed(2)) : 0
+    const { priceLower, baseDecimals, quoteDecimals } = props.position
+    if (!priceLower) return 0
+
+    // Điều chỉnh decimals để lấy BNB/USDT (quote/base)
+    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
+    const priceQuotePerBase = priceLower / decimalAdjustment
+
+    // Đảo ngược để lấy USDT/BNB (base/quote)
+    const priceBasePerQuote = 1 / priceQuotePerBase
+
+    return formatNumber(toSignificant(priceBasePerQuote, 6))
   })
 
   const showStake = computed(() => {
@@ -223,6 +250,19 @@
   const exchangeRateQuoteCurrency = computed(() => {
     if (props.listExchangeRate.length) {
       const rateList = props.listExchangeRate.filter((item) => item.symbol === props.position.quoteSymbol)
+      if (rateList.length) {
+        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
+      }
+      return '0'
+    }
+    return '0'
+  })
+
+  const exchangeRateEarnToken = computed(() => {
+    const symbol = TOKEN_REWARDS[chainId.value as ChainId]?.symbol
+    if (props.listExchangeRate.length && symbol) {
+      const rateList = props.listExchangeRate.filter((item) => item.symbol === symbol)
       if (rateList.length) {
         const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
         return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
@@ -371,6 +411,40 @@
     console.log('🚀 ~ v3PoolAddressPid ~ amount:', amount)
     stakeLocalSuccess.value = amount > BigInt(0)
   }
+
+  async function getPendingMoon() {
+    const contractAddressMasterChef = getMasterChefV3Address(chainId.value)
+    const amount = (await readContract(config, {
+      address: contractAddressMasterChef,
+      abi: MasterChefV3.ABI,
+      functionName: 'pendingMoon',
+      args: [props.position?.tokenId],
+      chainId: chainId.value
+    })) as bigint
+    console.log('🚀 ~ pendingMoon ~ amount:', amount)
+    return Number(amount) || 0
+  }
+
+  const { data: amountTokenEarn } = useQuery({
+    queryKey: ['pendingMoon', props.position.tokenId],
+    queryFn: getPendingMoon,
+    enabled: computed(() => !!props.position.tokenId)
+  })
+
+  const priceUsdEarnToken = computed(() => {
+    const rate = exchangeRateEarnToken.value
+    return new Decimal(rate)
+      .mul(amountTokenEarn.value ?? '0')
+      .toSignificantDigits(6)
+      .toString()
+  })
+
+  defineExpose({
+    priceUdtTotal,
+    feeApr: props.position.feeApr,
+    priceUsdEarnToken,
+    amountTokenEarn
+  })
 </script>
 
 <style lang="scss" scoped></style>

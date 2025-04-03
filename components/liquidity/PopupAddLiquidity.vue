@@ -209,9 +209,9 @@
   const title = computed(() => {
     return step.value === 'INPUT'
       ? currency0.value && currency1.value
-        ? `Add ${currency0.value.symbol}-${currency1.value.symbol} Liquidity`
+        ? `Increase ${currency0.value.symbol}-${currency1.value.symbol} Liquidity`
         : ''
-      : 'Confirm increase liquidity'
+      : 'Confirm add liquidity'
   })
 
   const invert = ref(false)

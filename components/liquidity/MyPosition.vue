@@ -108,7 +108,7 @@
                 "
                 @reload="refresh"
               />
-              <BasePagination v-model:page="query.page" :total="query.total" class="mt-5 px-6" />
+              <BasePagination v-if="query.total > 20" v-model:page="query.page" :total="query.total" class="mt-5 px-6" />
             </template>
             <template v-else>
               <div class="mx-auto flex h-[60px] items-center justify-center text-sm text-[#909399]">No Data</div>
@@ -276,8 +276,10 @@
     onResponse: ({ response }) => {
       query.value.total = response._data.totalElements ?? 0
       if (response._data?.content.length) {
-        const list: string[] = response._data?.content.map((item: IPositionOrigin) => item.basesymbol && item.quotesymbol)
-        const listUnique = Array.from(new Set(list))
+        const baseSymbols = response._data?.content.map((item: IPositionOrigin) => item.basesymbol)
+        const quoteSymbols = response._data?.content.map((item: IPositionOrigin) => item.quotesymbol)
+        const listSymbols = [...baseSymbols, ...quoteSymbols]
+        const listUnique = Array.from(new Set(listSymbols))
         fetchExchangeRate(listUnique)
       }
     }
@@ -323,6 +325,7 @@
 
   const listExchangeRate = ref<IExchangeRate[]>([])
   const fetchExchangeRate = async (currencies: string[]) => {
+    console.log('🚀 ~ fetchExchangeRate ~ currencies:', currencies)
     const params = new URLSearchParams()
     if (currencies.length) {
       currencies.forEach((currency) => params.append('currencies', currency))

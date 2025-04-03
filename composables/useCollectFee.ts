@@ -1,5 +1,7 @@
 import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+import { hexToBigInt } from 'viem'
 import { config } from '~/config/wagmi'
+import { MasterChefV3 } from '~/utils/masterChefV3'
 import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
 
 export default function useCollectFee() {
@@ -8,17 +10,23 @@ export default function useCollectFee() {
 
   const { chainId } = useActiveChainId()
 
-  const collectFee = async (tokenId: bigint | undefined, collectOptions: Omit<CollectOptions, 'tokenId'>) => {
+  const collectFee = async (tokenId: bigint | undefined, collectOptions: Omit<CollectOptions, 'tokenId'>, isStakeMV3: boolean) => {
     try {
       loading.value = true
-      const dataEncode = NonfungiblePositionManager.encodeCollect({ ...collectOptions, tokenId: tokenId! })
-      const contractAddress = getNftPositionManagerAddress(chainId.value)
-      if (!contractAddress) throw new Error('Invalid contract address')
+
+      const interfaceManager = isStakeMV3 ? MasterChefV3 : NonfungiblePositionManager
+      const addressTo = isStakeMV3 ? getMasterChefV3Address(chainId.value) : getNftPositionManagerAddress(chainId.value)
+
+      const { calldata, value } = interfaceManager.collectCallParameters({ ...collectOptions, tokenId: tokenId! })
+
+      if (!addressTo) throw new Error('Invalid contract address')
 
       const txHash = await sendTransaction(config, {
-        to: contractAddress,
-        data: dataEncode[0],
-        account: collectOptions.recipient
+        to: addressTo,
+        data: calldata,
+        account: collectOptions.recipient,
+        value: hexToBigInt(value),
+        chainId: chainId.value
       })
 
       const { status } = await waitForTransactionReceipt(config, {

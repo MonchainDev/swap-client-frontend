@@ -1,5 +1,5 @@
 <template>
-  <BasePopup name="popup-confirm-create-liquidity" width="540" :fullscreen="!isDesktop" title="Confirm adding liquidity" @open="handleOpen">
+  <BasePopup name="popup-confirm-create-liquidity" width="540" :fullscreen="!isDesktop" title="Confirm create liquidity" @open="handleOpen">
     <div class="flex items-center justify-between px-8 sm:px-4">
       <div class="flex items-center gap-[10px]">
         <div class="flex">

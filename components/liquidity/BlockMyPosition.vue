@@ -8,11 +8,11 @@
           <div class="flex flex-col gap-3 text-sm">
             <div class="flex items-center justify-between">
               <span>My Liquidity Value</span>
-              <span class="font-medium">$0.00</span>
+              <span class="font-medium">${{ formatNumberAbbreviation(totalLiquidInAlPosition) }}</span>
             </div>
             <div class="flex items-center justify-between">
               <span>My Total APR</span>
-              <span class="font-medium">0.00%</span>
+              <span class="font-medium">{{ formatNumber(totalApr) }}%</span>
             </div>
             <div class="flex items-center justify-between">
               <span>Earning</span>
@@ -29,8 +29,8 @@
         <div class="mt-6 flex flex-col gap-1">
           <span class="font-semibold">Total farming earning</span>
           <div class="flex items-end gap-1">
-            <span class="text-linear text-[32px] font-semibold leading-none">$0</span>
-            <span class="text-xs text-gray-7">0</span>
+            <span class="text-linear text-[32px] font-semibold leading-none">${{ formatNumberAbbreviation(totalFarmingEarnUsd) }}</span>
+            <span class="text-xs text-gray-7">{{ formatNumberAbbreviation(totalFarmingEarn) }}</span>
           </div>
         </div>
         <NuxtLink :to="`/add/${props.pool.tokenBase}/${props.pool.tokenQuote}/${props.pool.fee}?chain=${props.pool.network}`">
@@ -50,6 +50,7 @@
             <ElScrollbar>
               <MyPositionItem
                 v-for="item in formattedData"
+                ref="positionItem"
                 :key="item.tokenId"
                 :list-exchange-rate="listExchangeRate"
                 :position="item"
@@ -79,11 +80,13 @@
 <script lang="ts" setup>
   import { useQuery } from '@tanstack/vue-query'
   import { useAccount } from '@wagmi/vue'
-  import type { IExchangeRate } from '~/types'
+  import type { ChainId, IExchangeRate } from '~/types'
   import type { ITab } from '~/types/component.type'
   import type { IPool } from '~/types/pool.type'
   import type { IPosition, IPositionOrigin } from '~/types/position.type'
+  import MyPositionItem from './MyPositionItem.vue'
   import PopupUnStake from './PopupUnStake.vue'
+  import { TOKEN_REWARDS } from '~/config/tokens'
 
   const enum TabValue {
     ALL = 'ALL',
@@ -113,6 +116,22 @@
   const tabActive = ref<TabValue>(TabValue.ALL)
   const positionCurrent = ref<IPosition | undefined>(undefined)
 
+  const positionItem = ref<InstanceType<typeof MyPositionItem>[] | null>(null)
+
+  const calculateTotal = (propertyName: keyof InstanceType<typeof MyPositionItem>) => {
+    if (!positionItem.value?.length) return 0
+
+    return positionItem.value.reduce((acc: number, item) => {
+      return acc + Number(item[propertyName])
+    }, 0)
+  }
+
+  const totalLiquidInAlPosition = computed(() => calculateTotal('priceUdtTotal'))
+
+  const totalFarmingEarnUsd = computed(() => calculateTotal('priceUsdEarnToken'))
+
+  const totalFarmingEarn = computed(() => calculateTotal('amountTokenEarn'))
+
   // const { data, status, refresh } = await useLazyFetch<IResponse<IPositionOrigin[]>>(
   //   () => `/api/position/list?poolAddress=${props.pool.poolAddress.toLowerCase()}&createdBy=${address.value?.toLowerCase()}`,
   //   {
@@ -137,7 +156,8 @@
       if (result.length) {
         const baseSymbol = result.map((item: IPositionOrigin) => item.basesymbol)
         const quoteSymbol = result.map((item: IPositionOrigin) => item.quotesymbol)
-        const listUnique = Array.from(new Set([...baseSymbol, ...quoteSymbol]))
+        const symbolTokenEarn = TOKEN_REWARDS[props.pool.chainId as ChainId]?.symbol ?? 'ORB'
+        const listUnique = Array.from(new Set([...baseSymbol, ...quoteSymbol, symbolTokenEarn]))
         fetchExchangeRate(listUnique)
       }
       return result
@@ -181,6 +201,17 @@
       })
     }
     return []
+  })
+
+  const totalApr = computed(() => {
+    if (formattedData.value.length) {
+      const total = formattedData.value.reduce((acc, item) => {
+        const apr = Number(item.feeApr)
+        return acc + apr
+      }, 0)
+      return total.toFixed(2)
+    }
+    return 0
   })
 
   const listExchangeRate = ref<IExchangeRate[]>([])
