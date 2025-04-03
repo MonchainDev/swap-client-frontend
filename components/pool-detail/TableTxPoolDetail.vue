@@ -28,7 +28,9 @@
       </ElTableColumn>
       <ElTableColumn label="Account" align="right">
         <template #default="{ row }">
-          <div class="text-success">{{ sliceString(row.origin, 8, 4) }}</div>
+          <a :href="getUrlScan(chainIdByNetwork, 'address', row.origin)" target="_blank" class="cursor-pointer text-success hover:underline">{{
+            sliceString(row.origin, 8, 4)
+          }}</a>
         </template>
       </ElTableColumn>
       <ElTableColumn label="Time" align="right">
@@ -51,7 +53,7 @@
               >{{ item.type }} {{ item.token0.symbol }} for {{ item.token1.symbol }}</a
             >
             <div class="text-xs">
-              <span class="text-success">{{ sliceString(item.origin, 8, 4) }}</span>
+              <a :href="getUrlScan(chainIdByNetwork, 'address', item.origin)" target="_blank" class="text-success">{{ sliceString(item.origin, 8, 4) }}</a>
               <span class="px-1 text-gray-4">|</span>
               <span>
                 <span class="font-semibold text-gray-7">${{ formatNumberWithDigits(item.amountUSD) }}</span>
