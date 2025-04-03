@@ -276,8 +276,10 @@
     onResponse: ({ response }) => {
       query.value.total = response._data.totalElements ?? 0
       if (response._data?.content.length) {
-        const list: string[] = response._data?.content.map((item: IPositionOrigin) => item.basesymbol && item.quotesymbol)
-        const listUnique = Array.from(new Set(list))
+        const baseSymbols = response._data?.content.map((item: IPositionOrigin) => item.basesymbol)
+        const quoteSymbols = response._data?.content.map((item: IPositionOrigin) => item.quotesymbol)
+        const listSymbols = [...baseSymbols, ...quoteSymbols]
+        const listUnique = Array.from(new Set(listSymbols))
         fetchExchangeRate(listUnique)
       }
     }
@@ -323,6 +325,7 @@
 
   const listExchangeRate = ref<IExchangeRate[]>([])
   const fetchExchangeRate = async (currencies: string[]) => {
+    console.log('🚀 ~ fetchExchangeRate ~ currencies:', currencies)
     const params = new URLSearchParams()
     if (currencies.length) {
       currencies.forEach((currency) => params.append('currencies', currency))
