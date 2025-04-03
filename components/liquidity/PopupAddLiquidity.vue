@@ -180,7 +180,7 @@
   })
 
   const emit = defineEmits<{
-    reload: []
+    reload: [hash?: string]
     confirm: []
   }>()
 
@@ -429,7 +429,7 @@
   })
 
   const route = useRoute('liquidity-network-tokenId')
-  const router = useRouter()
+  // const router = useRouter()
   const { showToastMsg } = useShowToastMsg()
 
   const handleAddLiquidity = async () => {
@@ -494,13 +494,7 @@
 
           if (props.showInput === false) {
             // page create pool
-            typedValue.value = ''
-            form.value.amountDeposit0 = ''
-            form.value.amountDeposit1 = ''
-            independentField.value = CurrencyField.CURRENCY_A
-            invert.value = false
-            step.value = 'INPUT'
-            router.push('/liquidity/positions')
+
             const balance = await readContract(config, {
               address: contractAddress,
               functionName: 'balanceOf',
@@ -508,6 +502,7 @@
               abi: NonfungiblePositionManagerABI,
               chainId: chainId.value
             })
+            console.log('🚀 ~ handleAddLiquidity ~ balance:', balance)
             const tokenId = await readContract(config, {
               address: contractAddress,
               functionName: 'tokenOfOwnerByIndex',
@@ -515,6 +510,7 @@
               abi: NonfungiblePositionManagerABI,
               chainId: chainId.value
             })
+            console.log('🚀 ~ handleAddLiquidity ~ tokenId:', tokenId)
 
             body = {
               transactionHash: txHash,
@@ -540,26 +536,39 @@
               transactionType: 'INCREASE_LIQUID'
             }
           }
+          console.log('🚀 ~ handleAddLiquidity ~ body:', body)
           await postTransaction(body)
           setTimeout(() => {
+            typedValue.value = ''
+            form.value.amountDeposit0 = ''
+            form.value.amountDeposit1 = ''
+            independentField.value = CurrencyField.CURRENCY_A
+            invert.value = false
+            step.value = 'INPUT'
             refetchBalance0()
             refetchBalance1()
+            loadingAdd.value = false
+            if (props.showInput) {
+              showToastMsg('Transaction successful', 'success', getUrlScan(chainId.value, 'tx', txHash))
+              emit('reload')
+            } else {
+              emit('reload', txHash)
+            }
             setOpenPopup('popup-add-liquidity', false)
-            showToastMsg('Transaction successful', 'success', getUrlScan(chainId.value, 'tx', txHash))
-            emit('reload')
           }, 3000)
         } else {
+          loadingAdd.value = false
           showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash))
         }
       }
     } catch (error: unknown) {
+      loadingAdd.value = false
+
       //@ts-ignore
       const msg = error?.shortMessage || null
       if (msg) {
         showToastMsg(msg, 'error')
       }
-    } finally {
-      loadingAdd.value = false
     }
   }
 </script>
