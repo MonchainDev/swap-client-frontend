@@ -67,7 +67,7 @@
     </div>
 
     <template v-if="isQuoteExist">
-      <InfoSwap v-model:edit-slippage="isEditSlippage" :step-swap @change-slippage="handleInput(typedValue, currentTypeInput)" />
+      <InfoSwap v-model:edit-slippage="isEditSlippage" :step-swap @change-slippage="handleChangeSlippage" />
     </template>
 
     <template v-if="!isEditSlippage">
@@ -634,6 +634,14 @@
   }
 
   const { handleImageError } = useErrorImage()
+
+  const handleChangeSlippage = () => {
+    if (currentTypeInput.value === 'BASE') {
+      form.value.minimumAmountOut = ((Number(form.value.amountOut) * (100 - Number(slippage.value))) / 100).toString()
+    } else {
+      form.value.maximumAmountIn = ((Number(form.value.amountIn) * (100 + Number(slippage.value))) / 100).toString()
+    }
+  }
 </script>
 
 <style scoped lang="scss">
