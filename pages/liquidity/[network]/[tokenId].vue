@@ -55,22 +55,29 @@
                 >${{ formatNumber((Number(priceUsdFeeLower) + Number(priceUsdFeeUpper)).toFixed(2)) }}</span
               >
             </div>
-            <BaseButton
-              :disabled="disabledCollect"
-              :loading="loadingCollect"
-              type="linear"
-              size="md"
-              class="w-[170px] text-xl font-semibold uppercase"
-              @click="handleCollect"
-              >Collect</BaseButton
-            >
+            <div class="flex flex-col items-end gap-[6px]">
+              <BaseButton
+                :disabled="disabledCollect"
+                :loading="loadingCollect"
+                type="linear"
+                size="md"
+                class="w-[170px] text-xl font-semibold uppercase"
+                @click="handleCollect"
+              >
+                Collect
+              </BaseButton>
+              <div v-if="showCollectAsWNative" class="flex items-center gap-4">
+                <ElSwitch v-model="receiveWNATIVE" />
+                <span class="text-base">Collect as {{ WNATIVE[networkOfPool?.chainId as ChainId].symbol }}</span>
+              </div>
+            </div>
           </div>
 
           <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-                <span class="text-[22px] font-semibold leading-7">{{ feeValueUpper?.currency.symbol }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ liquidityValue0?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">{{ formattedFeeUpper }}</span>
@@ -80,7 +87,7 @@
             <div class="flex h-1/2 items-center justify-between px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-                <span class="text-[22px] font-semibold leading-7">{{ feeValueLower?.currency.symbol }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ liquidityValue1?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">{{ formattedFeeLower }}</span>
@@ -140,6 +147,7 @@
   import ChartLine from '~/components/chart/ChartLine.vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
   import { LIST_NETWORK } from '~/config/networks'
+  import { WNATIVE } from '~/config/tokens'
   import { Bound, ChainId } from '~/types'
   import type { IPosition } from '~/types/position.type'
 
@@ -274,7 +282,9 @@
   const { pool } = usePools()
 
   const receiveWNATIVE = ref(false)
-  const { feeValue0, feeValue1, owner } = useV3PositionFees(pool as Ref<Pool>, receiveWNATIVE.value)
+  // const { feeValue0, feeValue1, owner } = useV3PositionFees(pool as Ref<Pool>, receiveWNATIVE.value)
+
+  const { liquidityValue0, liquidityValue1, feeValue0, feeValue1, owner } = useDerivedV3BurnInfo(_position, ref('100'), receiveWNATIVE)
 
   const feeValueUpper = computed(() => (inverted.value ? feeValue0.value : feeValue1.value))
   const feeValueLower = computed(() => (inverted.value ? feeValue1.value : feeValue0.value))
@@ -419,14 +429,18 @@
     return !isConnected.value || !isOwner.value || (feeValue0.value?.equalTo(0) && feeValue1.value?.equalTo(0))
   })
 
+  const showCollectAsWNative = computed(() => {
+    return feeValue0.value?.currency.isNative || feeValue1.value?.currency.isNative
+  })
+
   const { collectFee, loading: loadingCollect } = useCollectFee()
 
   const handleCollect = async () => {
     if (feeValue0.value && feeValue1.value) {
       const options: Omit<CollectOptions, 'tokenId'> = {
         recipient: account.value as `0x${string}`,
-        expectedCurrencyOwed0: feeValue0.value,
-        expectedCurrencyOwed1: feeValue1.value
+        expectedCurrencyOwed0: liquidityValue0.value!,
+        expectedCurrencyOwed1: liquidityValue1.value!
       }
       collectFee(tokenId.value, options, isStakeMV3.value)
     }
