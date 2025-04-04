@@ -21,7 +21,8 @@
           <div class="flex flex-col">
             <span class="font-semibold"> ${{ formatNumberWithDigits(row.amountUSD) }}</span>
             <span class="text-gray-6"
-              >({{ formatNumberWithDigits(row.amount0) }} {{ row.token0.symbol }}, {{ formatNumberWithDigits(row.amount1) }} {{ row.token1.symbol }})</span
+              >({{ formatNumberWithDigits(Math.abs(row.amount0)) }} {{ row.token0.symbol }}, {{ formatNumberWithDigits(Math.abs(row.amount1)) }}
+              {{ row.token1.symbol }})</span
             >
           </div>
         </template>
