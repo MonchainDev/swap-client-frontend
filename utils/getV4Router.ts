@@ -102,6 +102,9 @@ const getV4Router = async (
 }
 
 export const getBestTradeV4 = async ({ token0, token1, inputAmount, type, chainId }: SwapInput): Promise<SwapOutput> => {
+  console.log('🚀 ~ getBestTradeV4 ~ token0:', token0)
+  console.log('🚀 ~ getBestTradeV4 ~ token1:', token1)
+  console.log('🚀 ~ getBestTradeV4 ~ inputAmount:', inputAmount)
   try {
     const client = publicClient({ chainId })
     const token0Currency = token0

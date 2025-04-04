@@ -266,6 +266,26 @@
     }
   }
 
+  const calcTradingFee = () => {
+    const routes = (bestTrade.value as SwapOutput)?.routes
+
+    let totalFeeWei = BigInt(0)
+    for (const route of routes) {
+      const inputAmountRaw = route.inputAmount.numerator
+      const inputAmount = BigInt(inputAmountRaw)
+      const pools = (route.pools || []) as V3Pool[]
+      for (const pool of pools) {
+        const poolFeeBps = BigInt(pool.fee || 0)
+        // Calculate fee for this pool (inputAmount * fee / 1000000)
+        const poolFeeWei = (inputAmount * poolFeeBps) / BigInt(1000000)
+        totalFeeWei += poolFeeWei
+      }
+    }
+    console.log('🚀 ~ calcTradingFee ~ totalFeeWei:', totalFeeWei)
+
+    return totalFeeWei
+  }
+
   let latestRequestId = 0
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
     if (!amount) {
@@ -315,10 +335,10 @@
         bestTrade.value = _bestTrade
         poolAddress.value = (_bestTrade?.routes[0].pools[0] as V3Pool)?.address ?? ''
         form.value.amountOut = _bestTrade.outputAmount.toSignificant(6)
-        form.value.tradingFee = _bestTrade.tradingFee
         form.value.minimumAmountOut = _bestTrade.minimumAmountOut?.toSignificant(6)
         form.value.maximumAmountIn = ''
         form.value.priceImpact = _bestTrade.priceImpact.toFixed()
+        form.value.tradingFee = calcTradingFee()
         isFetchQuote.value = false
       } else {
         form.value.amountOut = amount
