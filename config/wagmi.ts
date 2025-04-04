@@ -9,7 +9,7 @@ export const config = createConfig({
   chains: [...CHAINS],
   connectors: [
     // MetaMask
-    metaMask(),
+    metaMask({ logging: { developerMode: true, sdk: true } }),
     // Coinbase Wallet (sử dụng injected thay vì walletConnect)
     injected({
       target: 'coinbaseWallet' // Chỉ định Coinbase Wallet

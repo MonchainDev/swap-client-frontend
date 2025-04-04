@@ -5,7 +5,9 @@
       <BaseTable v-if="isDesktop" :data="dataTxs" :loading="loadingTxs" class="table-history mt-[26px]">
         <ElTableColumn label="Timestamp">
           <template #default="{ row }">
-            <div>{{ useDateFormat(row.timestamp * 1000, 'MM/DD/YYYY h:mm:ss A') }}</div>
+            <a :href="getUrlScan(chainId, 'tx', row.id)" target="_blank" class="cursor-pointer hover:text-hyperlink hover:underline">{{
+              useDateFormat(row.timestamp * 1000, 'MM/DD/YYYY h:mm:ss A')
+            }}</a>
           </template>
         </ElTableColumn>
         <ElTableColumn label="Action">
@@ -38,6 +40,7 @@
 </template>
 
 <script lang="ts" setup>
+  import type { Token } from '@monchain/swap-sdk-core'
   import type { ITx } from '~/pages/liquidity/[network]/[tokenId].vue'
 
   const enum TabValue {
@@ -50,14 +53,20 @@
   interface IProps {
     dataTxs: ITx[]
     loadingTxs: boolean
+    token0: Token | undefined
+    token1: Token | undefined
   }
 
-  const _props = withDefaults(defineProps<IProps>(), {
+  const props = withDefaults(defineProps<IProps>(), {
     dataTxs: () => [],
-    loadingTxs: false
+    loadingTxs: false,
+    token0: undefined,
+    token1: undefined
   })
 
   const { isDesktop } = useDesktop()
+
+  const { chainId } = useActiveChainId()
 
   const getTran = (type: TabValue | string) => {
     switch (type) {
@@ -78,9 +87,9 @@
     const amount0 = formatNumberWithDigits(row.amount0, 2)
     const amount1 = formatNumberWithDigits(row.amount1, 2)
     if (row.type === 'ADD' || row.type === 'COLLECT') {
-      return `+${amount0} ${row.token0?.symbol}, +${amount1} ${row.token1?.symbol}`
+      return `+${amount0} ${props.token0?.symbol}, +${amount1} ${props.token1?.symbol}`
     }
-    return `-${amount0} ${row.token0?.symbol}, -${amount1} ${row.token1?.symbol}`
+    return `-${amount0} ${props.token0?.symbol}, -${amount1} ${props.token1?.symbol}`
   }
 </script>
 

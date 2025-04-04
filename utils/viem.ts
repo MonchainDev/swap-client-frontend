@@ -80,5 +80,11 @@ export const publicClient = ({ chainId }: { chainId?: ChainId }) => {
   const httpString = chainId && first(PUBLIC_NODES[chainId]) ? first(PUBLIC_NODES[chainId]) : undefined
 
   const chain = CHAINS.find((c) => c.id === chainId)
-  return createPublicClient({ chain, transport: http(httpString), ...CLIENT_CONFIG })
+  return createPublicClient({
+    chain,
+    transport: http(httpString, {
+      timeout: 30000
+    }),
+    ...CLIENT_CONFIG
+  })
 }

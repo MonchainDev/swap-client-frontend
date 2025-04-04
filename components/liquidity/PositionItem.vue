@@ -242,7 +242,7 @@
         pollingInterval: 2000
       })
       if (status === 'success') {
-        showToastMsg('Harvested! Your funds ORB earnings have been sent to your wallet', 'success', getUrlScan(chainId.value, 'tx', hash))
+        showToastMsg('Harvested! Your funds ORB earnings have been sent to your wallet', 'success', getUrlScan(chainId.value, 'tx', hash), chainId.value)
         const { tokenId, network, tokenBase, tokenQuote, poolAddress, pendingReward } = props.position
         const body: IBodyTxCollect = {
           transactionHash: hash,
@@ -264,7 +264,7 @@
         })
         emit('reload')
       } else {
-        showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash))
+        showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash), chainId.value)
       }
       loadingHarvest.value = false
     } catch (error) {
@@ -307,7 +307,7 @@
         pollingInterval: 2000
       })
       if (status === 'success') {
-        showToastMsg('Staked! Your funds have heen staked in the farm', 'success', getUrlScan(chainId.value, 'tx', hash))
+        showToastMsg('Staked! Your funds have heen staked in the farm', 'success', getUrlScan(chainId.value, 'tx', hash), chainId.value)
 
         const { tokenId, network, tokenBase, tokenQuote, poolAddress, pendingReward } = props.position
         const body: IBodyTxCollect = {
@@ -327,7 +327,7 @@
           emit('reload')
         }, 4000)
       } else {
-        showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash))
+        showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash), chainId.value)
       }
       loadingStake.value = false
     } catch (error) {

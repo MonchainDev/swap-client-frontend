@@ -409,7 +409,7 @@
     refetchAllowance0()
     refetchAllowance1()
     if (hash) {
-      showToastMsg('Transaction receipt', 'success', getUrlScan(chainId.value, 'tx', hash))
+      showToastMsg('Transaction receipt', 'success', getUrlScan(chainId.value, 'tx', hash), chainId.value)
       router.push('/liquidity/positions')
     }
   }

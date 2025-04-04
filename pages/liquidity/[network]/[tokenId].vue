@@ -55,22 +55,29 @@
                 >${{ formatNumber((Number(priceUsdFeeLower) + Number(priceUsdFeeUpper)).toFixed(2)) }}</span
               >
             </div>
-            <BaseButton
-              :disabled="disabledCollect"
-              :loading="loadingCollect"
-              type="linear"
-              size="md"
-              class="w-[170px] text-xl font-semibold uppercase"
-              @click="handleCollect"
-              >Collect</BaseButton
-            >
+            <div class="flex flex-col items-end gap-[6px]">
+              <BaseButton
+                :disabled="disabledCollect"
+                :loading="loadingCollect"
+                type="linear"
+                size="md"
+                class="w-[170px] text-xl font-semibold uppercase"
+                @click="handleCollect"
+              >
+                Collect
+              </BaseButton>
+              <div v-if="showCollectAsWNative" class="flex items-center gap-4">
+                <ElSwitch v-model="receiveWNATIVE" />
+                <span class="text-base">Collect as {{ WNATIVE[networkOfPool?.chainId as ChainId].symbol }}</span>
+              </div>
+            </div>
           </div>
 
           <div class="flex h-[164px] flex-col rounded-lg bg-gray-1">
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-                <span class="text-[22px] font-semibold leading-7">{{ feeValueUpper?.currency.symbol }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ liquidityValue0?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">{{ formattedFeeUpper }}</span>
@@ -80,7 +87,7 @@
             <div class="flex h-1/2 items-center justify-between px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-                <span class="text-[22px] font-semibold leading-7">{{ feeValueLower?.currency.symbol }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ liquidityValue1?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
                 <span class="text-[22px] font-semibold leading-7">{{ formattedFeeLower }}</span>
@@ -110,7 +117,7 @@
       </div>
     </div>
 
-    <TableActivityPosition :data-txs="dataTxs ?? []" :loading-txs="loadingTxs" />
+    <TableActivityPosition :data-txs="dataTxs ?? []" :loading-txs="loadingTxs" :token0="token0" :token1="token1" />
 
     <div class="bg-linear-mb absolute left-0 top-0 hidden h-[100px] w-screen sm:block"></div>
   </div>
@@ -125,7 +132,7 @@
     :fee-format="formatFee"
     :usd-lower="priceUsdQuote"
     :usd-upper="priceUsdBase"
-    @reload="refetch"
+    @reload="reload"
   />
 </template>
 
@@ -140,6 +147,7 @@
   import ChartLine from '~/components/chart/ChartLine.vue'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
   import { LIST_NETWORK } from '~/config/networks'
+  import { WNATIVE } from '~/config/tokens'
   import { Bound, ChainId } from '~/types'
   import type { IPosition } from '~/types/position.type'
 
@@ -149,53 +157,24 @@
     ADD = 'ADD',
     REMOVE = 'REMOVE'
   }
-  interface IToken {
-    symbol: string
-  }
 
   export interface ITx {
     id: string
     timestamp: number | string
     amount0: string
     amount1: string
-    token0?: IToken
-    token1?: IToken
     type: TabValue.ADD | TabValue.REMOVE | TabValue.SWAP | TabValue.COLLECT
-    pool?: {
-      token0: IToken
-      token1: IToken
-    }
-  }
-
-  interface IMintTransaction {
-    mints: ITx[]
-  }
-
-  interface ISwapTransaction {
-    swaps: ITx[]
-  }
-
-  interface IBurnTransaction {
-    burns: ITx[]
-  }
-
-  interface ICollectTransaction {
-    collects: ITx[]
   }
 
   interface ITransaction {
-    burns: { transaction: IBurnTransaction }[]
-    collects: { transaction: ICollectTransaction }[]
-    mints: { transaction: IMintTransaction }[]
-    swaps: { transaction: ISwapTransaction }[]
-  }
-
-  interface IPositionTx {
-    transaction: ITransaction
+    burns: ITx[]
+    collects: ITx[]
+    mints: ITx[]
+    swaps: ITx[]
   }
 
   interface IPositionsData {
-    positions: IPositionTx[]
+    transactions: ITransaction[]
   }
 
   definePageMeta({
@@ -221,6 +200,10 @@
   })
 
   const { isLoading, position: _position, refetch } = useV3PositionsFromTokenId(tokenId.value)
+
+  const reload = (_hash?: string) => {
+    refetch()
+  }
 
   const masterChefV3 = computed(() => getMasterChefV3Address(networkOfPool.value?.chainId))
 
@@ -299,7 +282,9 @@
   const { pool } = usePools()
 
   const receiveWNATIVE = ref(false)
-  const { feeValue0, feeValue1, owner } = useV3PositionFees(pool as Ref<Pool>, receiveWNATIVE.value)
+  // const { feeValue0, feeValue1, owner } = useV3PositionFees(pool as Ref<Pool>, receiveWNATIVE.value)
+
+  const { liquidityValue0, liquidityValue1, feeValue0, feeValue1, owner } = useDerivedV3BurnInfo(_position, ref('100'), receiveWNATIVE)
 
   const feeValueUpper = computed(() => (inverted.value ? feeValue0.value : feeValue1.value))
   const feeValueLower = computed(() => (inverted.value ? feeValue1.value : feeValue0.value))
@@ -444,101 +429,75 @@
     return !isConnected.value || !isOwner.value || (feeValue0.value?.equalTo(0) && feeValue1.value?.equalTo(0))
   })
 
+  const showCollectAsWNative = computed(() => {
+    return feeValue0.value?.currency.isNative || feeValue1.value?.currency.isNative
+  })
+
   const { collectFee, loading: loadingCollect } = useCollectFee()
 
   const handleCollect = async () => {
     if (feeValue0.value && feeValue1.value) {
       const options: Omit<CollectOptions, 'tokenId'> = {
         recipient: account.value as `0x${string}`,
-        expectedCurrencyOwed0: feeValue0.value,
-        expectedCurrencyOwed1: feeValue1.value
+        expectedCurrencyOwed0: liquidityValue0.value!,
+        expectedCurrencyOwed1: liquidityValue1.value!
       }
       collectFee(tokenId.value, options, isStakeMV3.value)
     }
   }
 
-  async function getListTxPosition(positionId: string) {
+  async function getListTxPosition() {
     try {
       const client = getGraphQLClient(networkOfPool.value!.chainId)
       // Định nghĩa query với variable
       const query = gql`
-        query MyQuery($positionId: String!) {
-          positions(where: { id: $positionId }) {
-            transaction {
-              burns {
-                transaction {
-                  burns {
-                    id
-                    timestamp
-                    amount0
-                    amount1
-                    token0 {
-                      symbol
-                    }
-                    token1 {
-                      symbol
-                    }
-                  }
-                }
-              }
-              collects {
-                transaction {
-                  collects {
-                    id
-                    amount0
-                    amount1
-                    timestamp
-                    pool {
-                      token0 {
-                        symbol
-                      }
-                      token1 {
-                        symbol
-                      }
-                    }
-                  }
-                }
-              }
-              mints {
-                transaction {
-                  mints {
-                    id
-                    amount0
-                    amount1
-                    timestamp
-                    token0 {
-                      symbol
-                    }
-                    token1 {
-                      symbol
-                    }
-                  }
-                }
-              }
-              swaps {
-                transaction {
-                  swaps {
-                    id
-                    amount0
-                    amount1
-                    timestamp
-                    token0 {
-                      symbol
-                    }
-                    token1 {
-                      symbol
-                    }
-                  }
-                }
-              }
+        query MyQuery($origin: String!, $pool: String!, $tickUpper: String!, $tickLower: String!) {
+          transactions(
+            where: {
+              or: [
+                { mints_: { origin: $origin, tickUpper: $tickUpper, tickLower: $tickLower } }
+                { burns_: { origin: $origin, tickUpper: $tickUpper, tickLower: $tickLower } }
+                { collects_: { pool: $pool, tickUpper: $tickUpper, tickLower: $tickLower } }
+              ]
+            }
+            orderBy: timestamp
+            orderDirection: desc
+          ) {
+            burns {
+              id
+              amount0
+              amount1
+              timestamp
+            }
+            mints {
+              id
+              amount0
+              amount1
+              timestamp
+            }
+            collects {
+              id
+              amount0
+              amount1
+              timestamp
+            }
+            swaps {
+              id
+              amount0
+              amount1
+              timestamp
             }
           }
         }
       `
       const variables = {
-        positionId
+        origin: account.value?.toLowerCase(),
+        pool: positionDetail.value?.poolAddress.toLowerCase(),
+        tickUpper: positionDetail.value?.tickUpper.toString(),
+        tickLower: positionDetail.value?.tickLower.toString()
       }
       const data = await client.request<IPositionsData>(query, variables)
+      console.log('🚀 ~ getListTxPosition ~ data:', data)
 
       return data
     } catch (error) {
@@ -549,22 +508,20 @@
 
   const { data: dataTxs, isLoading: loadingTxs } = useQuery({
     queryKey: computed(() => ['txs-position-detail', route.params.tokenId]),
-    queryFn: async () => flattenTransactions(await getListTxPosition(route.params.tokenId)),
+    queryFn: async () => flattenTransactions(await getListTxPosition()),
     enabled: computed(() => !!route.params.tokenId)
   })
 
   const flattenTransactions = (data: IPositionsData): ITx[] => {
-    if (!data.positions.length) return []
-    return data.positions.flatMap((position) => {
-      const { burns, collects, mints, swaps } = position.transaction
+    if (!data.transactions.length) return []
+    return data.transactions.flatMap((position) => {
+      const { burns, collects, mints, swaps } = position
 
       return [
-        ...burns.flatMap((burn) => burn.transaction.burns.map((tx) => ({ ...tx, type: TabValue.REMOVE }))),
-        ...collects.flatMap((collect) =>
-          collect.transaction.collects.map((tx) => ({ ...tx, token0: tx.pool?.token0, token1: tx.pool?.token1, type: TabValue.COLLECT }))
-        ),
-        ...mints.flatMap((mint) => mint.transaction.mints.map((tx) => ({ ...tx, type: TabValue.ADD }))),
-        ...swaps.flatMap((swap) => swap.transaction.swaps.map((tx) => ({ ...tx, type: TabValue.SWAP })))
+        ...burns.flatMap((tx) => ({ ...tx, type: TabValue.REMOVE })),
+        ...collects.flatMap((tx) => ({ ...tx, type: TabValue.COLLECT })),
+        ...mints.flatMap((tx) => ({ ...tx, type: TabValue.ADD })),
+        ...swaps.flatMap((tx) => ({ ...tx, type: TabValue.SWAP }))
       ]
     })
   }
