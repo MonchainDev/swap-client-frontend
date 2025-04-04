@@ -1,3 +1,6 @@
+import { EXPLORER_NAME } from '~/config/scan'
+import { ChainId } from '~/types'
+
 type ToastType = 'success' | 'error'
 export default function useShowToastMsg() {
   const classes: Record<ToastType, string> = {
@@ -10,7 +13,7 @@ export default function useShowToastMsg() {
     error: '/toast-error.png'
   }
 
-  const showToastMsg = (title: string, type: ToastType, href?: string) => {
+  const showToastMsg = (title: string, type: ToastType, href?: string, chainId?: ChainId) => {
     ElNotification({
       message: () =>
         h('div', { class: `flex items-start gap-3 ${href ? '' : 'items-center'}` }, [
@@ -20,7 +23,7 @@ export default function useShowToastMsg() {
             href
               ? h('span', { class: 'text-sm text-primary flex gap-1' }, [
                   h('span', {}, 'View on'),
-                  h('a', { class: 'underline cursor-pointer', href: `${href}`, target: '_blank' }, 'Mon explorer')
+                  h('a', { class: 'underline cursor-pointer', href: `${href}`, target: '_blank' }, EXPLORER_NAME[chainId || ChainId.MON_TESTNET])
                 ])
               : ''
           ])

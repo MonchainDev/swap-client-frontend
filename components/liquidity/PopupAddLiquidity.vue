@@ -549,7 +549,7 @@
             refetchBalance1()
             loadingAdd.value = false
             if (props.showInput) {
-              showToastMsg('Transaction successful', 'success', getUrlScan(chainId.value, 'tx', txHash))
+              showToastMsg('Transaction successful', 'success', getUrlScan(chainId.value, 'tx', txHash), chainId.value)
               emit('reload')
             } else {
               emit('reload', txHash)
@@ -558,7 +558,7 @@
           }, 3000)
         } else {
           loadingAdd.value = false
-          showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash))
+          showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash), chainId.value)
         }
       }
     } catch (error: unknown) {

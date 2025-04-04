@@ -173,13 +173,13 @@
           }
           await postTransaction(body)
           setTimeout(() => {
-            showToastMsg('Unstaked! Your funds ORB earnings have been sent to your wallet', 'success', getUrlScan(chainId.value, 'tx', hash))
+            showToastMsg('Unstaked! Your funds ORB earnings have been sent to your wallet', 'success', getUrlScan(chainId.value, 'tx', hash), chainId.value)
             loadingUnStake.value = false
             emit('reload')
             setOpenPopup('popup-unstake', false)
           }, 4000)
         } else {
-          showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash))
+          showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash), chainId.value)
         }
       }
     } catch (error) {

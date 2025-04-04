@@ -31,4 +31,12 @@ const URL_SCAN = {
   }
 } as const satisfies Record<ChainId, { tx: string; address: string }>
 
-export { URL_SCAN, DOMAIN_SCAN }
+const EXPLORER_NAME = {
+  [ChainId.MON_TESTNET]: 'Mon explorer',
+  [ChainId.AMOY_POLYGON]: 'Amoy explorer',
+  [ChainId.BSC_TESTNET]: 'Bsc explorer',
+  [ChainId.SEPOLIA]: 'Etherscan explorer',
+  [ChainId.ARBITRUM_SEPOLIA]: 'Arbitrum explorer'
+} as const satisfies Record<ChainId, string>
+
+export { URL_SCAN, DOMAIN_SCAN, EXPLORER_NAME }

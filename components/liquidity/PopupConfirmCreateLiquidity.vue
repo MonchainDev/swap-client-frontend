@@ -256,7 +256,7 @@
             emit('reload', txHash)
           }, 3000)
         } else {
-          showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash))
+          showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash), chainId.value)
           loadingAdd.value = false
         }
       }

@@ -35,9 +35,9 @@ export default function useCollectFee() {
       })
 
       if (status === 'success') {
-        showToastMsg('Transaction receipt', 'success', getUrlScan(chainId.value, 'tx', txHash))
+        showToastMsg('Transaction receipt', 'success', getUrlScan(chainId.value, 'tx', txHash), chainId.value)
       } else {
-        showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash))
+        showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', txHash), chainId.value)
       }
     } catch (error) {
       console.error(error)
