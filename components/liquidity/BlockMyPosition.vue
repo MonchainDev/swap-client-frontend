@@ -43,9 +43,9 @@
       <div class="rounded-lg bg-white p-6 shadow-sm sm:px-4">
         <div class="flex justify-between sm:flex-col sm:items-start sm:gap-4">
           <span class="font-semibold">{{ formattedData.length }} positions</span>
-          <BaseTab v-model:model="tabActive" :list="listTab" />
+          <BaseTab v-model:model="tabActive" :list="listTab" @update:model="() => refetch()" />
         </div>
-        <div v-loading="isLoading" class="mt-6 h-[235px]">
+        <div v-loading="isLoading || isRefetching" class="mt-6 h-[235px]">
           <template v-if="formattedData.length">
             <ElScrollbar>
               <MyPositionItem
@@ -147,11 +147,11 @@
   //   }
   // )
 
-  const { data, refetch, isLoading } = useQuery({
-    queryKey: [props.pool.poolAddress, address.value],
+  const { data, refetch, isLoading, isRefetching } = useQuery({
+    queryKey: [props.pool.poolAddress, address.value, tabActive.value],
     queryFn: async () => {
       const result = await $fetch<IPositionOrigin[]>(
-        `/api/position/list?poolAddress=${props.pool.poolAddress.toLowerCase()}&createdBy=${address.value?.toLowerCase()}`
+        `/api/position/list?poolAddress=${props.pool.poolAddress.toLowerCase()}&createdBy=${address.value?.toLowerCase()}&status=${tabActive.value === 'ALL' ? '' : tabActive.value}`
       )
       if (result.length) {
         const baseSymbol = result.map((item: IPositionOrigin) => item.basesymbol)

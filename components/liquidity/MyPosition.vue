@@ -257,6 +257,9 @@
 
   const queryString = computed(() => {
     const params = new URLSearchParams()
+    if (tabActive.value !== 'ALL') {
+      params.append('status', tabActive.value)
+    }
     networkListSelected.value.forEach((network) => params.append('networks', network.network))
     tokenSelected.value?.forEach((token) => {
       const address =
