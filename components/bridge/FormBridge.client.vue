@@ -181,7 +181,7 @@
   import { MAX_NUMBER_APPROVE } from '~/constant'
   import { URL_GRAPH } from '~/config/graphql'
 
-  export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE'
+  export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE' | 'APPROVE_TOKEN'
 
   interface IProps {
     title?: string
@@ -260,6 +260,21 @@
         if (isSwapping.value) {
           return 'SWAPPING! PLEASE WAIT..'
         } else {
+          if (stepBridge.value === 'APPROVE_TOKEN') {
+            if (needAllowanceApprove.value) {
+              if (isConfirmApprove.value) {
+                return `APPROVING ${token0.value?.symbol} IN WALLET`
+              } else {
+                return `APPROVE ${token0.value?.symbol}`
+              }
+            } else if (needAllowanceApproveProtocolFee.value) {
+              if (isConfirmApprove.value) {
+                return `APPROVING ${fee.value?.protocolSymbol} IN WALLET`
+              } else {
+                return `APPROVE ${fee.value?.protocolSymbol}`
+              }
+            }
+          }
           return isConfirmApprove.value || isConfirmSwap.value ? 'CONFIRM IN WALLET' : 'APPROVE AND SWAP'
         }
       }
@@ -300,6 +315,12 @@
     switchChain({ chainId: fromNetwork.value?.chainId })
   }
 
+  const restoreFee = () => {
+    fee.value.bridge = '0'
+    fee.value.protocol = '0'
+    fee.value.network = '0'
+  }
+
   /**
    * token0: token from network A
    * token1: token from network B
@@ -320,6 +341,7 @@
   const handleInput = async (amount: string) => {
     console.log('handle input', amount)
     try {
+      restoreFee()
       notEnoughLiquidity.value = false
       if (!isTokenSelected.value) return
       isFetchQuote.value = true
@@ -647,31 +669,38 @@
 
   const handleApprove = async () => {
     try {
-      stepBridge.value = 'CONFIRM_BRIDGE'
       isConfirmApprove.value = true
       if (needAllowanceApprove.value) {
-        const res = await approveToken(token0.value?.address as string, getLifiContractAddress(), MAX_NUMBER_APPROVE, (status) => {
+        await approveToken(token0.value?.address as string, getLifiContractAddress(), MAX_NUMBER_APPROVE, (status) => {
           if (status === 'SUCCESS') {
             needAllowanceApprove.value = false
+            isConfirmApprove.value = false
+
+            // if allowed fee => execute contract
+            if (!needAllowanceApproveProtocolFee.value) {
+              stepBridge.value = 'CONFIRM_BRIDGE'
+              handleSwap()
+            }
           }
         })
-        console.info("🚀 ~ res ~ res:", res)
       } else if (needAllowanceApproveProtocolFee.value) {
         await approveToken(fee.value.feeProtocolToken, getLifiContractAddress(), MAX_NUMBER_APPROVE, (status) => {
           if (status === 'SUCCESS') {
             needAllowanceApproveProtocolFee.value = false
             isConfirmApprove.value = false
-            handleSwap()
+
+            // if allowed token => execute contract
+            if (!needAllowanceApprove.value) {
+              stepBridge.value = 'CONFIRM_BRIDGE'
+              handleSwap()
+            }
           }
         })
       }
-  
-      if (!needAllowanceApprove.value || !needAllowanceApproveProtocolFee.value) {
-        isConfirmApprove.value = false
-        handleSwap()
-      }
     } catch (error) {
       console.error('Approve failed:', error)
+      bridgeError('Approve token failed', '')
+      stepBridge.value = 'SELECT_TOKEN'
     } finally {
       //
     }
@@ -688,7 +717,7 @@
         method: 'POST',
         body: JSON.stringify(bridgeBody.value)
       })
-      console.info("🚀 ~ handleSwap ~ swapResult:", swapResult)
+      console.info('🚀 ~ handleSwap ~ swapResult:', swapResult)
       console.log('BODY', bridgeBody.value)
 
       // Call to lifi contract
@@ -713,7 +742,7 @@
 
       const feeData = {
         feeProtocolAmount: BigInt(swapResult.data.feeProtocol),
-        feeNetworkAmount: BigInt(swapResult.data.feeNetwork),
+        feeNetworkAmount: BigInt(swapResult.data.feeNetwork)
       }
 
       const publicClientFrom = createPublicClient({
@@ -737,9 +766,7 @@
 
       // Nếu trường hợp FROM là đồng Native thì mới truyền amount vào value
       // Nếu không thì truyền 0
-      const value = token0.value?.address === zeroAddress 
-        ? BigInt(Number(form.value.amount) * 10 ** +token0.value.decimals) 
-        : BigInt(0)
+      const value = token0.value?.address === zeroAddress ? BigInt(Number(form.value.amount) * 10 ** +token0.value.decimals) : BigInt(0)
       const valueWithFee = BigInt(value.toString()) + BigInt(swapResult.data.feeNetwork)
 
       const txHash = await sendTransaction(config, {
@@ -764,6 +791,7 @@
       isFetchQuote.value = false
     } catch (error) {
       console.error('Transaction failed:', error)
+      bridgeError('Bridge swapping failed', '')
     } finally {
       isSwapping.value = false
     }
@@ -773,6 +801,7 @@
     // approveAndSend.value = !approveAndSend.value
     // bridgeSuccess(15, 'ATOM', 123.566, 'https://explorer.monchain.info')
     if (needAllowanceApprove.value || needAllowanceApproveProtocolFee.value) {
+      stepBridge.value = 'APPROVE_TOKEN'
       await handleApprove()
     } else {
       await handleSwap()
@@ -791,6 +820,18 @@
       message: message,
       type: 'success',
       customClass: 'notification-bridge-success',
+      position: isDesktop.value ? 'top-right' : 'bottom-right'
+    })
+  }
+
+  const bridgeError = (title: string, message: string) => {
+    // const isMobile = window.innerWidth <= 768
+    ElNotification({
+      title: title,
+      dangerouslyUseHTMLString: true,
+      message: message,
+      type: 'error',
+      customClass: 'notification-bridge-error',
       position: isDesktop.value ? 'top-right' : 'bottom-right'
     })
   }
@@ -855,6 +896,20 @@
     .el-notification__content {
       font-size: 14px;
       color: #000000;
+    }
+  }
+
+  .notification-bridge-error {
+    background-color: #ffe8ea;
+    padding: 20px 16px;
+    .el-notification__title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #a60202;
+    }
+    .el-notification__content {
+      font-size: 14px;
+      color: #a60202;
     }
   }
 </style>
