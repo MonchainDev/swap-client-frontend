@@ -245,24 +245,35 @@
 
   const mintsData = computed(() => {
     return (
-      data.value?.pools[0].mints.flatMap((m) => m.transaction.mints.map((item) => ({ ...item, type: TabValue.ADD, timestamp: item.timestamp * 1000 }))) || []
+      // sort timestamp descending
+      (
+        data.value?.pools[0].mints.flatMap((m) => m.transaction.mints.map((item) => ({ ...item, type: TabValue.ADD, timestamp: item.timestamp * 1000 }))) || []
+      ).sort((a, b) => {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      })
     )
   })
 
   const burnsData = computed(() => {
     return (
       data.value?.pools[0].burns.flatMap((m) => m.transaction.burns.map((item) => ({ ...item, type: TabValue.REMOVE, timestamp: item.timestamp * 1000 }))) || []
-    )
+    ).sort((a, b) => {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    })
   })
 
   const swapsData = computed(() => {
     return (
       data.value?.pools[0].swaps.flatMap((m) => m.transaction.swaps.map((item) => ({ ...item, type: TabValue.SWAP, timestamp: item.timestamp * 1000 }))) || []
-    )
+    ).sort((a, b) => {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    })
   })
 
   const allData = computed(() => {
-    return [...mintsData.value, ...burnsData.value, ...swapsData.value]
+    return [...mintsData.value, ...burnsData.value, ...swapsData.value].sort((a, b) => {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    })
   })
 
   const dataTable = computed(() => {
