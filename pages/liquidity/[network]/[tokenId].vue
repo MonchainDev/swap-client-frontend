@@ -148,7 +148,7 @@
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
   import { LIST_NETWORK } from '~/config/networks'
   import { WNATIVE } from '~/config/tokens'
-  import { Bound, ChainId } from '~/types'
+  import { ChainId, Bound } from '~/types'
   import type { IPosition } from '~/types/position.type'
 
   const enum TabValue {
@@ -231,50 +231,52 @@
   // const unwrapToken0 = computed(() => unwrappedToken(token0.value))
   // const unwrapToken1 = computed(() => unwrappedToken(token1.value))
 
-  watchEffect(async () => {
-    if (_position.value) {
-      token0.value = await getTokenByChainId(token0Address.value as string, networkOfPool.value?.chainId || ChainId.MON_TESTNET)
-      console.log('🚀 ~ watchEffect ~ token0:', token0.value)
-      token1.value = await getTokenByChainId(token1Address.value as string, networkOfPool.value?.chainId || ChainId.MON_TESTNET)
-      console.log('🚀 ~ watchEffect ~ token1:', token1.value)
-
-      feeAmount.value = fee.value ?? 0
+  watch(
+    () => _position.value,
+    async (newValue) => {
+      if (newValue) {
+        const result0 = await getTokenByChainId(token0Address.value as string, networkOfPool.value?.chainId || ChainId.MON_TESTNET)
+        console.log('🚀 ~ watch ~ token0:', token0)
+        if (result0) {
+          form.value.token0 = {
+            ...form.value.token0,
+            ...result0,
+            icon_url: '',
+            name: result0?.name || '',
+            decimals: result0?.decimals ?? 18,
+            symbol: result0?.symbol ?? '',
+            address: result0.isNative ? zeroAddress : (result0?.address as string),
+            tokenSymbol: result0?.symbol ?? '',
+            tokenAddress: result0.isNative ? zeroAddress : (result0?.address as string),
+            tokenDecimals: result0?.decimals ?? 18,
+            chainId: result0.chainId
+          }
+          token0.value = result0
+        }
+        const result1 = await getTokenByChainId(token1Address.value as string, networkOfPool.value?.chainId || ChainId.MON_TESTNET)
+        console.log('🚀 ~ watch ~ token1:', token1)
+        if (result1) {
+          form.value.token1 = {
+            ...form.value.token1,
+            ...result1,
+            icon_url: '',
+            name: result1?.name || '',
+            decimals: result1?.decimals ?? 18,
+            symbol: result1?.symbol ?? '',
+            address: result1.isNative ? zeroAddress : (result1?.address as string),
+            tokenSymbol: result1?.symbol ?? '',
+            tokenAddress: result1.isNative ? zeroAddress : (result1?.address as string),
+            tokenDecimals: result1?.decimals ?? 18,
+            chainId: result1.chainId
+          }
+          token1.value = result1
+        }
+        feeAmount.value = fee.value ?? 0
+      }
     }
-  })
+  )
 
   const inverted = computed(() => (token1.value && base.value ? base.value.equals(token1.value) : undefined))
-
-  // if pool has aNATIVE, set token0 or 1 to NATIVE
-  watchEffect(() => {
-    if (token0.value && token1.value) {
-      form.value.token0 = {
-        ...form.value.token0,
-        ...token0.value,
-        icon_url: '',
-        name: token0.value?.name || '',
-        decimals: token0.value?.decimals ?? 18,
-        symbol: token0.value?.symbol ?? '',
-        address: token0.value.isNative ? zeroAddress : (token0.value?.address as string),
-        tokenSymbol: token0.value?.symbol ?? '',
-        tokenAddress: token0.value.isNative ? zeroAddress : (token0.value?.address as string),
-        tokenDecimals: token0.value?.decimals ?? 18,
-        chainId: token0.value.chainId
-      }
-      form.value.token1 = {
-        ...form.value.token1,
-        ...token1.value,
-        icon_url: '',
-        name: token1.value?.name || '',
-        decimals: token1.value?.decimals ?? 18,
-        symbol: token1.value?.symbol ?? '',
-        address: token1.value.isNative ? '' : (token1.value?.address as string),
-        tokenSymbol: token1.value?.symbol ?? '',
-        tokenAddress: token1.value.isNative ? '' : (token1.value?.address as string),
-        tokenDecimals: token1.value?.decimals ?? 18,
-        chainId: token1.value.chainId
-      }
-    }
-  })
 
   const currency0 = computed(() => (token0.value ? token0.value : undefined))
   const currency1 = computed(() => (token1.value ? token1.value : undefined))
