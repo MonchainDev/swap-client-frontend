@@ -19,7 +19,7 @@
               <span class="flex items-center gap-1 text-sm">
                 <span>APR</span>
                 <BaseIcon name="calculator" size="16" class="text-gray-4" />
-                <span class="text-[#049C6B]">{{ positionDetail?.feeApr }}% </span>
+                <span class="text-[#049C6B]">{{ positionDetail?.feeApr || 0 }}% </span>
               </span>
             </div>
             <span class="text-[48px] font-semibold">${{ formatNumber((Number(priceUsdBase) + Number(priceUsdQuote)).toFixed(2)) }}</span>
