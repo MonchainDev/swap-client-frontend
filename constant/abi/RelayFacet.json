@@ -10,6 +10,11 @@
         "internalType": "address",
         "name": "_relaySolver",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_feeProtocolAddress",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -114,6 +119,17 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "message",
+        "type": "bytes32"
+      }
+    ],
+    "name": "NotEnoughAmount",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "NullAddrIsNotAValidSpender",
     "type": "error"
@@ -161,6 +177,31 @@
       }
     ],
     "name": "BridgeToNonEVMChain",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "feeProtocolAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "feeNetworkAmount",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ILiFi.FeeData",
+        "name": "feeData",
+        "type": "tuple"
+      }
+    ],
+    "name": "FeeBridge",
     "type": "event"
   },
   {
@@ -427,6 +468,19 @@
   },
   {
     "inputs": [],
+    "name": "feeProtocolAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "relayReceiver",
     "outputs": [
       {
@@ -533,8 +587,25 @@
             "type": "bytes"
           }
         ],
-        "internalType": "struct RelayFacet.RelayData",
+        "internalType": "struct RelayFacetV2.RelayData",
         "name": "_relayData",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "feeProtocolAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "feeNetworkAmount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ILiFi.FeeData",
+        "name": "_feeData",
         "type": "tuple"
       }
     ],
@@ -667,8 +738,25 @@
             "type": "bytes"
           }
         ],
-        "internalType": "struct RelayFacet.RelayData",
+        "internalType": "struct RelayFacetV2.RelayData",
         "name": "_relayData",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "feeProtocolAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "feeNetworkAmount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ILiFi.FeeData",
+        "name": "_feeData",
         "type": "tuple"
       }
     ],

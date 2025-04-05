@@ -4,6 +4,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   try {
     const rs = await fetchBridge(`sign/relay-transfer`, 'POST', { data: body })
+    console.info("🚀 ~ defineEventHandler ~ rs:", rs)
     return rs
   } catch (error) {
     return createError({

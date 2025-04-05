@@ -5,7 +5,10 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
     console.log('>>> / body:', body)
 
-    const rs = await axios.post(`https://api-bridge.monchain.info/api/v1/sign/relay-transfer`, body)
+    const config = useRuntimeConfig()
+    const baseURL = config.BASE_URL_BRIDGE_API || 'https://api-bridge.monchain.info/'
+
+    const rs = await axios.post(`${baseURL}api/v1/sign/relay-transfer`, body)
     return rs.data
   } catch (error: unknown) {
     return createError({
