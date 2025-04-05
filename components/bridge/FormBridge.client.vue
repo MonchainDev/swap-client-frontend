@@ -229,6 +229,7 @@
   // const bestTrade = ref<SwapOutput | undefined>(undefined)
   const isFetchQuote = ref(false)
   const needAllowanceApprove = ref(true)
+  const needAllowanceApproveProtocolFee = ref(true)
   const isTokenSelected = computed(() => form.value.token?.tokenSymbol !== '')
   const notEnoughLiquidity = ref(false)
   const amountOut = ref('')
@@ -532,6 +533,7 @@
         feeNetwork: number
         feeProtocolAmount: number
         feeProtocolDecimals: number
+        feeProtocolToken: string
       }
     }
     const getFeeRs = await $fetch<FeeInfo>('/api/bridge/fee', {
@@ -539,7 +541,7 @@
       body: JSON.stringify(_bridgeBody)
     })
     console.log('>>> / getFeeRs:', getFeeRs)
-    const { feeNetwork, feeProtocolAmount, feeProtocolDecimals } = getFeeRs.data
+    const { feeNetwork, feeProtocolAmount, feeProtocolDecimals, feeProtocolToken } = getFeeRs.data
     // TODO: update 18 to native token fromNetwork decimals
     fee.value.network = Decimal(feeNetwork || 0)
       .div(10 ** 18)
@@ -551,6 +553,25 @@
       .toSignificantDigits(feeProtocolDecimals)
       .toFixed()
     fee.value.protocolSymbol = stableTokenInDestinationChain.tokenSymbol
+    fee.value.feeProtocolToken = feeProtocolToken
+
+    console.log('>>> / Check allowance protocol fee')
+    if (feeProtocolToken === zeroAddress) {
+      needAllowanceApproveProtocolFee.value = false
+      return
+    }
+    const allowanceProtocolFee = (await readContract(config, {
+      abi: ABI_TOKEN,
+      address: feeProtocolToken as `0x${string}`,
+      functionName: 'allowance',
+      args: [address.value, getLifiContractAddress()]
+    })) as bigint
+    console.log('>>> /Check allowance > allowance:', allowanceProtocolFee)
+    if (BigInt(allowanceProtocolFee) < BigInt(feeProtocolAmount)) {
+      needAllowanceApproveProtocolFee.value = true
+    } else {
+      needAllowanceApproveProtocolFee.value = false
+    }
   }
 
   const bridgeBody = ref<ReturnType<typeof buildBodyForBridge> | null>(null)
@@ -628,13 +649,27 @@
     try {
       stepBridge.value = 'CONFIRM_BRIDGE'
       isConfirmApprove.value = true
-      await approveToken(token0.value?.address as string, getLifiContractAddress(), MAX_NUMBER_APPROVE, (status) => {
-        if (status === 'SUCCESS') {
-          needAllowanceApprove.value = false
-          isConfirmApprove.value = false
-          handleSwap()
-        }
-      })
+      if (needAllowanceApprove.value) {
+        const res = await approveToken(token0.value?.address as string, getLifiContractAddress(), MAX_NUMBER_APPROVE, (status) => {
+          if (status === 'SUCCESS') {
+            needAllowanceApprove.value = false
+          }
+        })
+        console.info("🚀 ~ res ~ res:", res)
+      } else if (needAllowanceApproveProtocolFee.value) {
+        await approveToken(fee.value.feeProtocolToken, getLifiContractAddress(), MAX_NUMBER_APPROVE, (status) => {
+          if (status === 'SUCCESS') {
+            needAllowanceApproveProtocolFee.value = false
+            isConfirmApprove.value = false
+            handleSwap()
+          }
+        })
+      }
+  
+      if (!needAllowanceApprove.value || !needAllowanceApproveProtocolFee.value) {
+        isConfirmApprove.value = false
+        handleSwap()
+      }
     } catch (error) {
       console.error('Approve failed:', error)
     } finally {
@@ -653,6 +688,7 @@
         method: 'POST',
         body: JSON.stringify(bridgeBody.value)
       })
+      console.info("🚀 ~ handleSwap ~ swapResult:", swapResult)
       console.log('BODY', bridgeBody.value)
 
       // Call to lifi contract
@@ -675,6 +711,11 @@
         signature: swapResult.data.signature as Hex // Định rõ kiểu Hex
       }
 
+      const feeData = {
+        feeProtocolAmount: BigInt(swapResult.data.feeProtocol),
+        feeNetworkAmount: BigInt(swapResult.data.feeNetwork),
+      }
+
       const publicClientFrom = createPublicClient({
         chain: CHAINS[fromNetwork.value!.chainId],
         transport: http(fromNetwork.value!.rpc),
@@ -685,7 +726,7 @@
         }
       })
       const gasEstimate = await publicClientFrom.getGasPrice()
-      const datas = [bridgeData, relayData]
+      const datas = [bridgeData, relayData, feeData]
       console.log('>>> / bridgeData, relayData:', datas)
 
       const calldata = encodeFunctionData({
@@ -696,12 +737,10 @@
 
       // Nếu trường hợp FROM là đồng Native thì mới truyền amount vào value
       // Nếu không thì truyền 0
-      const value = token0.value?.address === zeroAddress ? BigInt(Number(form.value.amount) * 10 ** +token0.value.decimals) : BigInt(0)
-      const valueWithFee = BigInt(
-        Decimal(value.toString())
-          .add(Decimal(fee.value.network).times(10 ** fee.value.networkDecimals))
-          .toNumber()
-      )
+      const value = token0.value?.address === zeroAddress 
+        ? BigInt(Number(form.value.amount) * 10 ** +token0.value.decimals) 
+        : BigInt(0)
+      const valueWithFee = BigInt(value.toString()) + BigInt(swapResult.data.feeNetwork)
 
       const txHash = await sendTransaction(config, {
         to: getLifiContractAddress(),
@@ -733,7 +772,7 @@
   const onCLickBridge = async () => {
     // approveAndSend.value = !approveAndSend.value
     // bridgeSuccess(15, 'ATOM', 123.566, 'https://explorer.monchain.info')
-    if (needAllowanceApprove.value) {
+    if (needAllowanceApprove.value || needAllowanceApproveProtocolFee.value) {
       await handleApprove()
     } else {
       await handleSwap()

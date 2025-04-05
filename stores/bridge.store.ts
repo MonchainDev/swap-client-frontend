@@ -50,6 +50,7 @@ export const useBridgeStore = defineStore('bridge', () => {
     networkDecimals: 18,
     protocol: '0', // fee usdt (stable ở mạng đích)
     protocolSymbol: '', // symbol usdt (stable ở mạng đích)
+    feeProtocolToken: '', // address token fee
     bridge: '0', //  fee tier (orb)
     bridgeSymbol: '' // symbol orb
   })
