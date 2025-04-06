@@ -163,7 +163,7 @@
 
   import { ElNotification } from 'element-plus'
   import ABI_TOKEN from '~/constant/contract/contract-token.json'
-  import { ChainId, type IToken } from '~/types'
+  import type { ChainId, type IToken } from '~/types'
   import PopupSellToken from '../popup/PopupSellToken.vue'
   import ChooseNetworkBridge from './ChooseNetworkBridge.vue'
   import InputBridge from './InputBridge.vue'
@@ -171,16 +171,16 @@
   // import HeaderFormSwap from './HeaderFormSwap.vue'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
   // import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
-  import { type Route, type V3Pool, SmartRouter } from '@monchain/smart-router'
+  import { type Route, SmartRouter, type V3Pool } from '@monchain/smart-router'
   import { CurrencyAmount, Token, TradeType } from '@monchain/swap-sdk-core'
   import Decimal from 'decimal.js'
   // import swapRouterABI from "~/constant/abi/swapRouter.json";
   import { GraphQLClient } from 'graphql-request'
-  import { config } from '~/config/wagmi'
-  import { CHAINS } from '~/utils/config/chains'
-  import { MAX_NUMBER_APPROVE } from '~/constant'
   import { URL_GRAPH } from '~/config/graphql'
-  import {EXPLORER_NAME, URL_SCAN} from "~/config/scan";
+  import { EXPLORER_NAME, URL_SCAN } from '~/config/scan'
+  import { config } from '~/config/wagmi'
+  import { MAX_NUMBER_APPROVE } from '~/constant'
+  import { CHAINS } from '~/utils/config/chains'
 
   export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE' | 'APPROVE_TOKEN'
 
@@ -568,14 +568,14 @@
       const { feeNetwork, feeProtocolAmount, feeProtocolDecimals, feeProtocolToken } = getFeeRs.data
       // TODO: update 18 to native token fromNetwork decimals
       fee.value.network = Decimal(feeNetwork || 0)
-          .div(10 ** 18)
-          .toFixed()
+        .div(10 ** 18)
+        .toFixed()
       fee.value.networkSymbol = nativeTokenInSourceChain.symbol
       fee.value.networkDecimals = nativeTokenInSourceChain.decimals
       fee.value.protocol = Decimal(feeProtocolAmount || 0)
-          .div(10 ** feeProtocolDecimals)
-          .toSignificantDigits(feeProtocolDecimals)
-          .toFixed()
+        .div(10 ** feeProtocolDecimals)
+        .toSignificantDigits(feeProtocolDecimals)
+        .toFixed()
       fee.value.protocolSymbol = stableTokenInDestinationChain.tokenSymbol
       fee.value.feeProtocolToken = feeProtocolToken
 
