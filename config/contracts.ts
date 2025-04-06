@@ -42,7 +42,7 @@ const FACTORY_ADDRESSES = {
 
 /** MasterChef V3 */
 const masterChefV3Addresses = {
-  [ChainId.MON_TESTNET]: '0x223eFB61a5f1c766A5fC7F637435251a91C356CA',
+  [ChainId.MON_TESTNET]: '0xD82C9f6CC1B5c56fBD1ad7CE8B450cdcBAFA775d',
   [ChainId.AMOY_POLYGON]: '0x',
   [ChainId.BSC_TESTNET]: '0x3fFBCe2e4c0C023e43C1f529FC052a3eAb0Dc5A1',
   [ChainId.SEPOLIA]: '0x',
