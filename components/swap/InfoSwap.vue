@@ -69,7 +69,7 @@
               :formatter="(value: string) => formatNumberInput(value)"
               placeholder="0"
               class="input-slippage !h-11 !w-[88px] sm:!w-full sm:flex-1"
-              @change="handleChangeSlippage"
+              @change="handleChangeSlippageInput"
             >
               <template #suffix>
                 <span class="text-sm text-gray-8">%</span>
@@ -77,6 +77,16 @@
             </ElInput>
             <span v-if="isErrorSlippage" class="absolute -bottom-4 left-0 text-nowrap text-[10px] text-error">Invalid slippage</span>
             <button class="bg-linear w-20 rounded-ee-lg rounded-se-lg text-white sm:w-[95px]" @click="handleChangeSlippage(settingSlippage)">Apply</button>
+          </div>
+        </div>
+        <div v-if="isWarningSlippage" class="mt-4 flex gap-3 rounded-lg border border-solid border-warning p-6 pl-[18px]">
+          <BaseIcon name="info-warning" size="24" class="text-warning" />
+          <div class="flex flex-col text-sm leading-5 text-warning">
+            <span>Your transaction may be frontrun.</span>
+            <p>
+              <span class="cursor-pointer font-bold underline" @click="handleChangeSlippage(DEFAULT_SLIPPAGE.toString(), true)">Reset slippage settings</span>
+              to avoid potential loss.
+            </p>
           </div>
         </div>
       </div>
@@ -96,6 +106,7 @@
 <script lang="ts" setup>
   import Decimal from 'decimal.js'
   import type { StepSwap } from './FormSwap.client.vue'
+  import { DEFAULT_SLIPPAGE, SLIPPAGE_WARNING } from '~/constant'
 
   interface IProps {
     stepSwap: StepSwap
@@ -116,6 +127,10 @@
 
   const isErrorSlippage = computed(() => {
     return Number(settingSlippage.value) < 0 || Number(settingSlippage.value) > 100
+  })
+
+  const isWarningSlippage = computed(() => {
+    return Number(settingSlippage.value) > SLIPPAGE_WARNING
   })
 
   const formatTradingFee = computed(() => {
@@ -139,6 +154,18 @@
     slippage.value = value
     editSlippage.value = false
     emit('change-slippage')
+  }
+
+  const handleChangeSlippageInput = (value: string) => {
+    if (isErrorSlippage.value) return
+    settingSlippage.value = value
+    slippage.value = value
+    emit('change-slippage')
+    if (isWarningSlippage.value) {
+      editSlippage.value = true
+    } else {
+      editSlippage.value = false
+    }
   }
 
   function formatNumberInput(value: string, _isSplit = true) {
