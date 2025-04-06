@@ -163,7 +163,7 @@
 
   import { ElNotification } from 'element-plus'
   import ABI_TOKEN from '~/constant/contract/contract-token.json'
-  import type { ChainId, type IToken } from '~/types'
+  import type { ChainId, IToken } from '~/types'
   import PopupSellToken from '../popup/PopupSellToken.vue'
   import ChooseNetworkBridge from './ChooseNetworkBridge.vue'
   import InputBridge from './InputBridge.vue'
