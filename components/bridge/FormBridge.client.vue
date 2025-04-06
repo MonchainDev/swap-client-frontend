@@ -180,6 +180,7 @@
   import { CHAINS } from '~/utils/config/chains'
   import { MAX_NUMBER_APPROVE } from '~/constant'
   import { URL_GRAPH } from '~/config/graphql'
+  import {EXPLORER_NAME, URL_SCAN} from "~/config/scan";
 
   export type StepBridge = 'SELECT_TOKEN' | 'CONFIRM_BRIDGE' | 'APPROVE_TOKEN'
 
@@ -466,7 +467,7 @@
         } else {
           console.log('Get best trade with SmartRouter')
           // Get best trade
-          const v3SubgraphClient = new GraphQLClient(URL_GRAPH[ChainId.BSC_TESTNET])
+          const v3SubgraphClient = new GraphQLClient(URL_GRAPH[toNetwork.value.chainId])
           const getBestRoute = () =>
             SmartRouter.getV3CandidatePools({
               onChainProvider: () => _publicClient,
@@ -558,41 +559,46 @@
         feeProtocolToken: string
       }
     }
-    const getFeeRs = await $fetch<FeeInfo>('/api/bridge/fee', {
-      method: 'POST',
-      body: JSON.stringify(_bridgeBody)
-    })
-    console.log('>>> / getFeeRs:', getFeeRs)
-    const { feeNetwork, feeProtocolAmount, feeProtocolDecimals, feeProtocolToken } = getFeeRs.data
-    // TODO: update 18 to native token fromNetwork decimals
-    fee.value.network = Decimal(feeNetwork || 0)
-      .div(10 ** 18)
-      .toFixed()
-    fee.value.networkSymbol = nativeTokenInSourceChain.symbol
-    fee.value.networkDecimals = nativeTokenInSourceChain.decimals
-    fee.value.protocol = Decimal(feeProtocolAmount || 0)
-      .div(10 ** feeProtocolDecimals)
-      .toSignificantDigits(feeProtocolDecimals)
-      .toFixed()
-    fee.value.protocolSymbol = stableTokenInDestinationChain.tokenSymbol
-    fee.value.feeProtocolToken = feeProtocolToken
+    try {
+      const getFeeRs = await $fetch<FeeInfo>('/api/bridge/fee', {
+        method: 'POST',
+        body: JSON.stringify(_bridgeBody)
+      })
+      console.log('>>> / getFeeRs:', getFeeRs)
+      const { feeNetwork, feeProtocolAmount, feeProtocolDecimals, feeProtocolToken } = getFeeRs.data
+      // TODO: update 18 to native token fromNetwork decimals
+      fee.value.network = Decimal(feeNetwork || 0)
+          .div(10 ** 18)
+          .toFixed()
+      fee.value.networkSymbol = nativeTokenInSourceChain.symbol
+      fee.value.networkDecimals = nativeTokenInSourceChain.decimals
+      fee.value.protocol = Decimal(feeProtocolAmount || 0)
+          .div(10 ** feeProtocolDecimals)
+          .toSignificantDigits(feeProtocolDecimals)
+          .toFixed()
+      fee.value.protocolSymbol = stableTokenInDestinationChain.tokenSymbol
+      fee.value.feeProtocolToken = feeProtocolToken
 
-    console.log('>>> / Check allowance protocol fee')
-    if (feeProtocolToken === zeroAddress) {
-      needAllowanceApproveProtocolFee.value = false
-      return
-    }
-    const allowanceProtocolFee = (await readContract(config, {
-      abi: ABI_TOKEN,
-      address: feeProtocolToken as `0x${string}`,
-      functionName: 'allowance',
-      args: [address.value, getLifiContractAddress()]
-    })) as bigint
-    console.log('>>> /Check allowance > allowance:', allowanceProtocolFee)
-    if (BigInt(allowanceProtocolFee) < BigInt(feeProtocolAmount)) {
-      needAllowanceApproveProtocolFee.value = true
-    } else {
-      needAllowanceApproveProtocolFee.value = false
+      console.log('>>> / Check allowance protocol fee')
+      if (feeProtocolToken === zeroAddress) {
+        needAllowanceApproveProtocolFee.value = false
+        return
+      }
+      const allowanceProtocolFee = (await readContract(config, {
+        abi: ABI_TOKEN,
+        address: feeProtocolToken as `0x${string}`,
+        functionName: 'allowance',
+        args: [address.value, getLifiContractAddress()]
+      })) as bigint
+      console.log('>>> /Check allowance > allowance:', allowanceProtocolFee)
+      if (BigInt(allowanceProtocolFee) < BigInt(feeProtocolAmount)) {
+        needAllowanceApproveProtocolFee.value = true
+      } else {
+        needAllowanceApproveProtocolFee.value = false
+      }
+    } catch (e) {
+      console.error('Call estimate fee fail: ', e)
+      bridgeError('Estimate gas failed', `Can't estimate fee using to transfer token, please reload and try again.`)
     }
   }
 
@@ -701,6 +707,7 @@
       console.error('Approve failed:', error)
       bridgeError('Approve token failed', '')
       stepBridge.value = 'SELECT_TOKEN'
+      isConfirmApprove.value = false
     } finally {
       //
     }
@@ -783,7 +790,8 @@
       })
 
       if (status === 'success') {
-        bridgeSuccess(+form.value.amount, token0.value?.symbol || '', +form.value.amount, `https://dev.explorer.monchain.info/tx/${txHash}`)
+        const tnxScan = `${URL_SCAN[fromNetwork.value!.chainId].tx}/${txHash}`
+        bridgeSuccess(+form.value.amount, token0.value?.symbol || '', +form.value.amount, tnxScan)
         useBridgeStore().resetStore()
         amountOut.value = ''
       }
@@ -791,15 +799,13 @@
       isFetchQuote.value = false
     } catch (error) {
       console.error('Transaction failed:', error)
-      bridgeError('Bridge swapping failed', '')
+      bridgeError('Bridge swapping failed', 'Bridge swapping failed, please reload and try again.')
     } finally {
       isSwapping.value = false
     }
   }
 
   const onCLickBridge = async () => {
-    // approveAndSend.value = !approveAndSend.value
-    // bridgeSuccess(15, 'ATOM', 123.566, 'https://explorer.monchain.info')
     if (needAllowanceApprove.value || needAllowanceApproveProtocolFee.value) {
       stepBridge.value = 'APPROVE_TOKEN'
       await handleApprove()
@@ -811,7 +817,7 @@
   const bridgeSuccess = (amount: number, token: string, value: number, explorerLink: string) => {
     const message = `
           <p>${amount} ${token} ⇒ ${value} ${token}.</p>
-          <p>View on <a style="text-decoration: underline;" href="${explorerLink}" target="_blank" rel="noopener noreferrer">Mon Explorer</a></p>
+          <p>View on <a style="text-decoration: underline;" href="${explorerLink}" target="_blank" rel="noopener noreferrer">${EXPLORER_NAME[fromNetwork.value!.chainId]}</a></p>
       `
     // const isMobile = window.innerWidth <= 768
     ElNotification({
