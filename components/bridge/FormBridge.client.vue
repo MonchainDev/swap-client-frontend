@@ -354,7 +354,7 @@
         return
       }
 
-      const amountInWei = parseUnits(amount, form.value.token.tokenDecimals)
+      const amountInWei = parseUnits(amount, token1.value!.decimals)
       if (new Decimal(balance0.value!).lt(new Decimal(amountInWei.toString()))) {
         console.log('balance0', balance0.value)
         // notEnoughLiquidity.value = true
