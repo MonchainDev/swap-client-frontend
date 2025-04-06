@@ -41,6 +41,7 @@
       <div class="mt-3 flex items-center justify-between gap-2 sm:flex-col sm:items-start sm:gap-3">
         <ElInput
           v-model="percent"
+          autofocus
           placeholder="0%"
           class="input-percent"
           :formatter="(value: string) => formatNumberInput(value, true)"
@@ -193,7 +194,7 @@
 
   const loading = computed(() => !positionSDK.value)
 
-  const disabledButton = computed(() => !percent.value || !parseFloat(percent.value) || parseFloat(percent.value) > 100)
+  const disabledButton = computed(() => !percent.value || !parseFloat(percent.value) || parseFloat(percent.value) > 100 || positionSDK.value?.liquidity === 0n)
   const textBtn = computed(() => {
     return !account.value ? 'Connect wallet' : disabledButton.value ? 'Enter a percent' : 'Remove'
   })
