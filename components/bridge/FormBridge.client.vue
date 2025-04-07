@@ -436,62 +436,30 @@
           )
           currencyB = token1.value
         }
+
+        /**
+         * Swap BNB from MONCHAIN to BSC
+         * currencyA: USDT in BSC
+         * currencyB: WBNB in BSC
+         * => Gọi V4Router.getBestTrade với:
+         *  - amount: amountInWei
+         *  - currencyA: USDT in BSC
+         *  - currencyB: WBNB in BSC
+         *  - tradeType: EXACT_OUTPUT
+         */
         console.log('currencyA', currencyA)
         console.log('currencyB', currencyB)
 
-        const _publicClient = publicClient({ chainId: toNetwork.value!.chainId })
         const _inputAmount = CurrencyAmount.fromRawAmount(token1.value!, Number(amountInWei))
         console.log('>>> / _inputAmount:', _inputAmount)
-        let _trade
-        if (token1.value?.address === zeroAddress) {
-          // Token1 là đồng native (VD: WBNB in BSC)
-          // Trường hợp ví dụ:
-          /**
-           * Swap BNB from MONCHAIN to BSC
-           * currencyA: USDT in MONCHAIN
-           * currencyB: WBNB in BSC
-           * => Gọi V4Router.getBestTrade với:
-           *  - amount: amountInWei
-           *  - currencyA: USDT in MONCHAIN
-           *  - currencyB: WBNB in BSC
-           *  - tradeType: EXACT_OUTPUT
-           */
-          console.log('Get best trade with V4Router')
-          _trade = await getBestTradeV4({
-            token0: currencyA,
-            token1: currencyB,
-            inputAmount: Number(amountInWei),
-            type: TradeType.EXACT_OUTPUT,
-            chainId: toNetwork.value!.chainId
-          })
-        } else {
-          console.log('Get best trade with SmartRouter')
-          // Get best trade
-          const v3SubgraphClient = new GraphQLClient(URL_GRAPH[toNetwork.value.chainId])
-          const getBestRoute = () =>
-            SmartRouter.getV3CandidatePools({
-              onChainProvider: () => _publicClient,
-              subgraphProvider: () => v3SubgraphClient as any,
-              currencyA: currencyA,
-              currencyB: currencyB,
-              subgraphFallback: true
-            })
-          const _v3Pools = await getBestRoute()
-          console.log('>>> / _v3Pools:', _v3Pools)
-          const poolProvider = SmartRouter.createStaticPoolProvider(_v3Pools)
-          const quoteProvider = SmartRouter.createQuoteProvider({
-            onChainProvider: () => _publicClient
-          })
-          _trade = await SmartRouter.getBestTrade(_inputAmount, currencyA, TradeType.EXACT_OUTPUT, {
-            gasPriceWei: () => _publicClient.getGasPrice(),
-            maxHops: 2,
-            maxSplits: 3,
-            poolProvider,
-            quoteProvider,
-            quoterOptimization: true,
-            distributionPercent: 5
-          })
-        }
+        console.log('Get best trade with RouterV4')
+        const _trade = await getBestTradeV4({
+          token0: currencyA,
+          token1: currencyB,
+          inputAmount: Number(amountInWei),
+          type: TradeType.EXACT_OUTPUT,
+          chainId: toNetwork.value!.chainId
+        })
         console.log('>>> / _trade:', _trade)
         if (!_trade) {
           console.error('No trade found')
