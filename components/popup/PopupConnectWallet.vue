@@ -76,14 +76,8 @@
           window.open(`https://link.trustwallet.com/open_url?coin_id=60&url=${window.location.href}`, '_blank')
         }
       } else if (type === 'METAMASK') {
-        const isInstalled1 = window?.ethereum?.isMetaMask && !window?.ethereum?.isTrust
-        const isInstalled2 = window?.ethereum?.providers
-          ? (window?.ethereum?.providers as { isMetaMask: boolean | undefined; isTrust: boolean | undefined }[]).some(
-              (provider) => provider.isMetaMask && !provider.isTrust
-            )
-          : isInstalled1
-
-        if (isInstalled1 && isInstalled2) {
+        const isInstalled = detectMetaMask()
+        if (isInstalled) {
           await connectAsync({ connector: connectors[0], chainId: currentNetwork.value.chainId })
         } else {
           window.open(`https://metamask.app.link/dapp/${window.location.href}`, '_blank')
@@ -117,6 +111,33 @@
       setOpenPopup('popup-connect', false)
       typeConnect.value = null
     }
+  }
+
+  function detectMetaMask() {
+    let hasMetaMask = false
+
+    if (window?.ethereum && window?.ethereum?.providers) {
+      //@ts-ignore
+      window.ethereum.providers.forEach((provider) => {
+        console.log(provider)
+
+        if (provider.isMetaMask) {
+          if (provider._metamask && typeof provider.request === 'function' && typeof provider._metamask.isUnlocked === 'function') {
+            hasMetaMask = true
+          }
+        }
+      })
+    } else if (window.ethereum) {
+      if (window.ethereum.isMetaMask) {
+        if (window.ethereum._metamask && typeof window.ethereum.request === 'function' && typeof window.ethereum._metamask.isUnlocked === 'function') {
+          hasMetaMask = true
+        } else {
+          console.log('Provider override MetaMask')
+        }
+      }
+    }
+
+    return hasMetaMask
   }
 </script>
 

@@ -4,48 +4,70 @@
       <span class="text-2xl font-semibold leading-7">Transactions</span>
       <BaseTab v-model:model="tabActive" :list="listTab" class="sm:pl-1" />
     </div>
-    <BaseTable v-if="isDesktop" v-loading="isLoading" class="table-tx mt-[26px]" :data="dataTable">
-      <ElTableColumn label="Tran.">
-        <template #default="{ row }">
-          <a
-            :href="getUrlScan(chainIdByNetwork, 'tx', row.id)"
-            target="_blank"
-            class="cursor-pointer text-sm font-semibold hover:text-hyperlink hover:underline"
-            >{{ row.type }} {{ row.token0.symbol }} for {{ row.token1.symbol }}</a
-          >
-        </template>
-      </ElTableColumn>
-
-      <ElTableColumn label="Value" align="right">
-        <template #default="{ row }">
-          <div class="flex flex-col">
-            <span class="font-semibold"> ${{ formatNumberWithDigits(row.amountUSD) }}</span>
-            <span class="text-gray-6"
-              >({{ formatNumberWithDigits(Math.abs(row.amount0)) }} {{ row.token0.symbol }}, {{ formatNumberWithDigits(Math.abs(row.amount1)) }}
-              {{ row.token1.symbol }})</span
+    <template v-if="isDesktop">
+      <BaseTable v-loading="isLoading || isRefetching" class="table-tx mt-[26px]" :data="flattenedTransactions">
+        <ElTableColumn label="Tran.">
+          <template #default="{ row }">
+            <a
+              :href="getUrlScan(chainIdByNetwork, 'tx', row.id)"
+              target="_blank"
+              class="cursor-pointer text-sm font-semibold hover:text-hyperlink hover:underline"
+              >{{ row.type }} {{ row.token0.symbol }} for {{ row.token1.symbol }}</a
             >
-          </div>
-        </template>
-      </ElTableColumn>
-      <ElTableColumn label="Account" align="right">
-        <template #default="{ row }">
-          <a :href="getUrlScan(chainIdByNetwork, 'address', row.origin)" target="_blank" class="cursor-pointer text-success hover:underline">{{
-            sliceString(row.origin, 8, 4)
-          }}</a>
-        </template>
-      </ElTableColumn>
-      <ElTableColumn label="Time" align="right">
-        <template #default="{ row }">
-          <div class="pr-3">{{ useTimeAgo(row.timestamp, { showSecond: true }) }}</div>
-        </template>
-      </ElTableColumn>
-    </BaseTable>
-    <div v-else v-loading="isLoading" class="min-h-[200px]">
-      <template v-if="dataTable.length === 0">
+          </template>
+        </ElTableColumn>
+
+        <ElTableColumn label="Value" align="right">
+          <template #default="{ row }">
+            <div class="flex flex-col">
+              <span class="font-semibold"> ${{ formatNumberWithDigits(row.amountUSD) }}</span>
+              <span class="text-gray-6"
+                >({{ formatNumberWithDigits(Math.abs(row.amount0)) }} {{ row.token0.symbol }}, {{ formatNumberWithDigits(Math.abs(row.amount1)) }}
+                {{ row.token1.symbol }})</span
+              >
+            </div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="Account" align="right">
+          <template #default="{ row }">
+            <a :href="getUrlScan(chainIdByNetwork, 'address', row.origin)" target="_blank" class="cursor-pointer text-success hover:underline">{{
+              sliceString(row.origin, 8, 4)
+            }}</a>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="Time" align="right">
+          <template #default="{ row }">
+            <div class="pr-3">{{ useTimeAgo(row.timestamp, { showSecond: true }) }}</div>
+          </template>
+        </ElTableColumn>
+      </BaseTable>
+      <div v-if="tabActive !== TabValue.ALL && flattenedTransactions.length" class="mt-5 flex justify-end space-x-4 pr-4">
+        <button
+          class="solid flex items-center gap-1 rounded-lg border border-gray-3 px-4 py-2 text-sm hover:border-hyperlink"
+          :class="{ 'pointer-events-none bg-gray-3': !skip }"
+          @click="handleSkipChange('BACK')"
+        >
+          Back
+        </button>
+        <button
+          class="solid flex items-center gap-1 rounded-lg border border-gray-3 px-4 py-2 text-sm hover:border-hyperlink"
+          :class="{ 'pointer-events-none bg-gray-3': flattenedTransactions.length < first }"
+          @click="handleSkipChange('NEXT')"
+        >
+          Next
+        </button>
+      </div>
+    </template>
+    <div v-else v-loading="isLoading || isRefetching" class="min-h-[200px]">
+      <template v-if="flattenedTransactions.length === 0">
         <span class="flex h-[100px] items-center justify-center text-sm text-gray-6">There are no data</span>
       </template>
       <template v-else>
-        <div v-for="item in dataTable" :key="item.id" class="flex justify-between gap-4 border-b border-solid border-gray-3 px-4 py-[10px] last:border-none">
+        <div
+          v-for="item in flattenedTransactions"
+          :key="item.id"
+          class="flex justify-between gap-4 border-b border-solid border-gray-3 px-4 py-[10px] last:border-none"
+        >
           <div class="flex-1 flex-col">
             <a
               :href="getUrlScan(chainIdByNetwork, 'tx', item.id)"
@@ -66,6 +88,22 @@
             </div>
           </div>
           <span class="text-sm">{{ useTimeAgo(item.timestamp, { showSecond: true }) }}</span>
+        </div>
+        <div v-if="tabActive !== TabValue.ALL && flattenedTransactions.length" class="mt-5 flex justify-center space-x-4 pr-4">
+          <button
+            class="solid flex items-center gap-1 rounded-lg border border-gray-3 px-4 py-2 text-sm"
+            :class="{ 'pointer-events-none bg-gray-3': !skip }"
+            @click="handleSkipChange('BACK')"
+          >
+            Back
+          </button>
+          <button
+            class="solid flex items-center gap-1 rounded-lg border border-gray-3 px-4 py-2 text-sm"
+            :class="{ 'pointer-events-none bg-gray-3': flattenedTransactions.length < first }"
+            @click="handleSkipChange('NEXT')"
+          >
+            Next
+          </button>
         </div>
       </template>
     </div>
@@ -92,14 +130,14 @@
     type: TabValue.ADD | TabValue.REMOVE | TabValue.SWAP
   }
 
-  interface Pool {
-    swaps: { transaction: { swaps: ITx[] } }[]
-    mints: { transaction: { mints: ITx[] } }[]
-    burns: { transaction: { burns: ITx[] } }[]
+  interface ITxs {
+    swaps: ITx[]
+    mints: ITx[]
+    burns: ITx[]
   }
 
   interface PoolsResponse {
-    pools: Pool[]
+    transactions: ITxs[]
   }
 
   const enum TabValue {
@@ -160,74 +198,147 @@
 
   // // }
 
+  // Các queries riêng biệt
+  const ALL_QUERY = gql`
+    query AllTransactions($poolAddress: String!) {
+      transactions(
+        where: { or: [{ mints_: { pool: $poolAddress } }, { burns_: { pool: $poolAddress } }, { swaps_: { pool: $poolAddress } }] }
+        orderBy: timestamp
+        orderDirection: desc
+      ) {
+        burns {
+          origin
+          amount0
+          amount1
+          amountUSD
+          id
+          token0 {
+            symbol
+          }
+          token1 {
+            symbol
+          }
+          timestamp
+        }
+        mints {
+          origin
+          amount0
+          amount1
+          amountUSD
+          id
+          token0 {
+            symbol
+          }
+          token1 {
+            symbol
+          }
+          timestamp
+        }
+        swaps {
+          origin
+          amount0
+          amount1
+          amountUSD
+          id
+          token0 {
+            symbol
+          }
+          token1 {
+            symbol
+          }
+          timestamp
+        }
+      }
+    }
+  `
+  const SWAP_QUERY = gql`
+    query AllTransactions($poolAddress: String!, $skip: Int = 0) {
+      transactions(where: { swaps_: { pool: $poolAddress } }, orderBy: timestamp, orderDirection: desc, skip: $skip, first: 10) {
+        swaps {
+          origin
+          amount0
+          amount1
+          amountUSD
+          id
+          token0 {
+            symbol
+          }
+          token1 {
+            symbol
+          }
+          timestamp
+        }
+      }
+    }
+  `
+  const ADD_QUERY = gql`
+    query AllTransactions($poolAddress: String!, $skip: Int = 0) {
+      transactions(where: { mints_: { pool: $poolAddress } }, orderBy: timestamp, orderDirection: desc, skip: $skip, first: 10) {
+        mints {
+          origin
+          amount0
+          amount1
+          amountUSD
+          id
+          token0 {
+            symbol
+          }
+          token1 {
+            symbol
+          }
+          timestamp
+        }
+      }
+    }
+  `
+  const REMOVE_QUERY = gql`
+    query AllTransactions($poolAddress: String!, $skip: Int = 0) {
+      transactions(where: { burns_: { pool: $poolAddress } }, orderBy: timestamp, orderDirection: desc, skip: $skip, first: 10) {
+        burns {
+          origin
+          amount0
+          amount1
+          amountUSD
+          id
+          token0 {
+            symbol
+          }
+          token1 {
+            symbol
+          }
+          timestamp
+        }
+      }
+    }
+  `
+
+  const getQuery = () => {
+    switch (tabActive.value) {
+      case TabValue.SWAP:
+        return SWAP_QUERY
+      case TabValue.ADD:
+        return ADD_QUERY
+      case TabValue.REMOVE:
+        return REMOVE_QUERY
+      default:
+        return ALL_QUERY
+    }
+  }
+
+  const skip = ref(0)
+  const first = 10
+
   async function getPoolData(poolAddress: string) {
     try {
       const client = getGraphQLClient(props.pool.chainId)
       // Định nghĩa query với variable
-      const query = gql`
-        query MyQuery($poolAddress: String!) {
-          pools(where: { id: $poolAddress }) {
-            swaps {
-              transaction {
-                swaps {
-                  id
-                  timestamp
-                  amountUSD
-                  amount0
-                  amount1
-                  origin
-                  token0 {
-                    symbol
-                  }
-                  token1 {
-                    symbol
-                  }
-                }
-              }
-            }
-            mints {
-              transaction {
-                mints {
-                  id
-                  amount0
-                  amount1
-                  amountUSD
-                  timestamp
-                  token0 {
-                    symbol
-                  }
-                  token1 {
-                    symbol
-                  }
-                  origin
-                }
-              }
-            }
-            burns {
-              transaction {
-                burns {
-                  id
-                  amount0
-                  amount1
-                  amountUSD
-                  timestamp
-                  origin
-                  token0 {
-                    symbol
-                  }
-                  token1 {
-                    symbol
-                  }
-                }
-              }
-            }
-          }
-        }
-      `
+      const query = getQuery()
       const variables = {
-        poolAddress: poolAddress
+        poolAddress: poolAddress,
+        skip: skip.value
       }
       const data = await client.request<PoolsResponse>(query, variables)
+      console.log('🚀 ~ getPoolData ~ data:', data)
 
       return data
     } catch (error) {
@@ -236,59 +347,65 @@
     }
   }
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: computed(() => ['txs-pool', poolAddress]),
     queryFn: () => getPoolData(poolAddress),
     enabled: computed(() => !!poolAddress),
     retry: 2
   })
 
-  const mintsData = computed(() => {
-    return (
-      // sort timestamp descending
-      (
-        data.value?.pools[0].mints.flatMap((m) => m.transaction.mints.map((item) => ({ ...item, type: TabValue.ADD, timestamp: item.timestamp * 1000 }))) || []
-      ).sort((a, b) => {
-        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      })
-    )
-  })
-
-  const burnsData = computed(() => {
-    return (
-      data.value?.pools[0].burns.flatMap((m) => m.transaction.burns.map((item) => ({ ...item, type: TabValue.REMOVE, timestamp: item.timestamp * 1000 }))) || []
-    ).sort((a, b) => {
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    })
-  })
-
-  const swapsData = computed(() => {
-    return (
-      data.value?.pools[0].swaps.flatMap((m) => m.transaction.swaps.map((item) => ({ ...item, type: TabValue.SWAP, timestamp: item.timestamp * 1000 }))) || []
-    ).sort((a, b) => {
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    })
-  })
-
-  const allData = computed(() => {
-    return [...mintsData.value, ...burnsData.value, ...swapsData.value].sort((a, b) => {
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    })
-  })
-
-  const dataTable = computed(() => {
-    switch (tabActive.value) {
-      case TabValue.ALL:
-        return allData.value
-      case TabValue.SWAP:
-        return swapsData.value
-      case TabValue.ADD:
-        return mintsData.value
-      case TabValue.REMOVE:
-        return burnsData.value
-      default:
-        return allData.value
+  const handleSkipChange = (type: 'BACK' | 'NEXT') => {
+    if (type === 'BACK') {
+      skip.value = skip.value === 0 ? 0 : skip.value - first
+    } else {
+      skip.value += first
     }
+    refetch()
+  }
+
+  watch(
+    () => tabActive.value,
+    () => {
+      skip.value = 0
+      refetch()
+    }
+  )
+
+  // Logic làm phẳng dữ liệu
+  const flattenedTransactions = computed(() => {
+    if (!data.value?.transactions.length || !data.value?.transactions) return []
+    const txs: ITx[] = []
+    // Xử lý mints
+    data.value.transactions.forEach((item) => {
+      if (item?.mints && item.mints.length) {
+        item.mints.forEach((mint) => {
+          txs.push({
+            ...mint,
+            type: TabValue.ADD,
+            timestamp: mint.timestamp * 1000
+          })
+        })
+      }
+      if (item?.burns && item.burns.length) {
+        item.burns.forEach((burn) => {
+          txs.push({
+            ...burn,
+            type: TabValue.REMOVE,
+            timestamp: burn.timestamp * 1000
+          })
+        })
+      }
+      if (item?.swaps && item.swaps.length) {
+        item.swaps.forEach((swap) => {
+          txs.push({
+            ...swap,
+            type: TabValue.SWAP,
+            timestamp: swap.timestamp * 1000
+          })
+        })
+      }
+    })
+    return txs
   })
 </script>
 
