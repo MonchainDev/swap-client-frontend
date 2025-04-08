@@ -75,12 +75,14 @@
     'select-network': []
   }>()
 
-  const listNetworks = computed(() => {
-    return LIST_NETWORK.filter((item) => item.network.toLowerCase().includes(useTrim(search.value.toLowerCase())))
-  })
-
   fromNetwork.value = listNetwork.value[0] || DEFAULT_NETWORK
   toNetwork.value = listNetwork.value[1] || DEFAULT_NETWORK
+
+  const listNetWorkDefault = ref<INetwork[]>(LIST_NETWORK)
+
+  const listNetworks = computed(() => {
+    return listNetWorkDefault.value.filter((item) => item.network.toLowerCase().includes(useTrim(search.value.toLowerCase())))
+  })
 
   const handleSelectNetwork = (item: INetwork) => {
     if (_props.type === 'FROM') {
@@ -92,6 +94,19 @@
       visible.value = false
     }
   }
+  watch(
+    () => visible.value,
+    (value) => {
+      if (value) {
+        if (_props.type === 'TO') {
+          listNetWorkDefault.value = LIST_NETWORK.filter((chain) => chain.network !== fromNetwork.value?.network)
+        }
+        if (_props.type === 'FROM') {
+          listNetWorkDefault.value = LIST_NETWORK.filter((chain) => chain.network !== toNetwork.value?.network)
+        }
+      }
+    }
+  )
 </script>
 
 <style lang="scss" scoped>
