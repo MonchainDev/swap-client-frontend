@@ -21,9 +21,15 @@ export function createViemPublicClients({ transportSignal }: CreatePublicClientP
             //@ts-ignore
             (PUBLIC_NODES[cur.id] as string[]).map((url) =>
               http(url, {
-                timeout: 10_000,
+                timeout: 60_000, // 60 seconds
+                retryCount: 3,
                 fetchOptions: {
                   signal: transportSignal
+                },
+                onFetchResponse(response) {
+                  if (response.status !== 200) {
+                    console.error(`RPC response issue from ${url}: ${response.status}`)
+                  }
                 }
               })
             ),
@@ -83,7 +89,8 @@ export const publicClient = ({ chainId }: { chainId?: ChainId }) => {
   return createPublicClient({
     chain,
     transport: http(httpString, {
-      timeout: 30000
+      timeout: 60_000,
+      retryCount: 3
     }),
     ...CLIENT_CONFIG
   })
