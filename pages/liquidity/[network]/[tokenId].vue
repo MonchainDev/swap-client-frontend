@@ -138,7 +138,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { type Currency, type Price } from '@monchain/swap-sdk-core'
+  import { CurrencyAmount, type Currency, type Price } from '@monchain/swap-sdk-core'
   import type { FeeAmount, Pool } from '@monchain/v3-sdk'
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { useQuery } from '@tanstack/vue-query'
@@ -433,11 +433,11 @@
   const { collectFee, loading: loadingCollect } = useCollectFee()
 
   const handleCollect = async () => {
-    if (feeValue0.value && feeValue1.value) {
+    if (liquidityValue0.value && liquidityValue1.value && feeValue0.value && feeValue1.value) {
       const options: Omit<CollectOptions, 'tokenId'> = {
         recipient: account.value as `0x${string}`,
-        expectedCurrencyOwed0: liquidityValue0.value!,
-        expectedCurrencyOwed1: liquidityValue1.value!
+        expectedCurrencyOwed0: CurrencyAmount.fromRawAmount(liquidityValue0.value.currency, feeValue0.value.quotient),
+        expectedCurrencyOwed1: CurrencyAmount.fromRawAmount(liquidityValue1.value.currency, feeValue1.value.quotient)
       }
       collectFee(tokenId.value, options, isStakeMV3.value)
     }
