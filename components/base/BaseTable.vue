@@ -1,6 +1,6 @@
 <template>
   <div class="base-table">
-    <ElTable v-loading="loading" :data="data">
+    <ElTable v-loading="loading" :data="data" :max-height="maxHeight">
       <slot></slot>
     </ElTable>
   </div>
@@ -10,11 +10,13 @@
   interface IProps {
     data: T[] | undefined
     loading?: boolean
+    maxHeight?: number | string
   }
 
   const _props = withDefaults(defineProps<IProps>(), {
     data: () => [],
-    loading: false
+    loading: false,
+    maxHeight: 'auto'
   })
 </script>
 

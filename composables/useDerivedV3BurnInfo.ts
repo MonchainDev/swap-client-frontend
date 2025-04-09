@@ -21,37 +21,80 @@ export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | unde
     }
   })
 
-  // if pool has aNATIVE, set token0 or 1 to NATIVE
-  watchEffect(() => {
-    if (token0.value && token1.value) {
-      form.value.token0 = {
-        ...form.value.token0,
-        ...token0.value,
-        icon_url: '',
-        name: token0.value?.name || '',
-        decimals: token0.value?.decimals ?? 18,
-        symbol: token0.value?.symbol ?? '',
-        address: token0.value.isNative ? '' : (token0.value?.address as string),
-        tokenSymbol: token0.value?.symbol ?? '',
-        tokenAddress: token0.value.isNative ? '' : (token0.value?.address as string),
-        tokenDecimals: token0.value?.decimals ?? 18,
-        chainId: token0.value.chainId
-      }
-      form.value.token1 = {
-        ...form.value.token1,
-        ...token1.value,
-        icon_url: '',
-        name: token1.value?.name || '',
-        decimals: token1.value?.decimals ?? 18,
-        symbol: token1.value?.symbol ?? '',
-        address: token1.value.isNative ? '' : (token1.value?.address as string),
-        tokenSymbol: token1.value?.symbol ?? '',
-        tokenAddress: token1.value.isNative ? '' : (token1.value?.address as string),
-        tokenDecimals: token1.value?.decimals ?? 18,
-        chainId: token1.value.chainId
+  // if pool has aNATIVE, set token0 or 1 to NATIVE\
+
+  watch(
+    () => token0.value,
+    () => {
+      if (token0.value) {
+        form.value.token0 = {
+          ...form.value.token0,
+          ...token0.value,
+          icon_url: '',
+          name: token0.value?.name || '',
+          decimals: token0.value?.decimals ?? 18,
+          symbol: token0.value?.symbol ?? '',
+          address: token0.value.isNative ? zeroAddress : (token0.value?.address as string),
+          tokenSymbol: token0.value?.symbol ?? '',
+          tokenAddress: token0.value.isNative ? zeroAddress : (token0.value?.address as string),
+          tokenDecimals: token0.value?.decimals ?? 18,
+          chainId: token0.value.chainId
+        }
       }
     }
-  })
+  )
+  watch(
+    () => token1.value,
+    () => {
+      if (token1.value) {
+        form.value.token1 = {
+          ...form.value.token1,
+          ...token1.value,
+          icon_url: '',
+          name: token1.value?.name || '',
+          decimals: token1.value?.decimals ?? 18,
+          symbol: token1.value?.symbol ?? '',
+          address: token1.value.isNative ? '' : (token1.value?.address as string),
+          tokenSymbol: token1.value?.symbol ?? '',
+          tokenAddress: token1.value.isNative ? '' : (token1.value?.address as string),
+          tokenDecimals: token1.value?.decimals ?? 18,
+          chainId: token1.value.chainId
+        }
+      }
+    }
+  )
+  // watchEffect(() => {
+  //   if (token0.value && token1.value) {
+  //     console.log('watchEffect in useDerivedV3BurnInfo', token0.value, token1.value)
+
+  //     form.value.token0 = {
+  //       ...form.value.token0,
+  //       ...token0.value,
+  //       icon_url: '',
+  //       name: token0.value?.name || '',
+  //       decimals: token0.value?.decimals ?? 18,
+  //       symbol: token0.value?.symbol ?? '',
+  //       address: token0.value.isNative ? '' : (token0.value?.address as string),
+  //       tokenSymbol: token0.value?.symbol ?? '',
+  //       tokenAddress: token0.value.isNative ? '' : (token0.value?.address as string),
+  //       tokenDecimals: token0.value?.decimals ?? 18,
+  //       chainId: token0.value.chainId
+  //     }
+  //     form.value.token1 = {
+  //       ...form.value.token1,
+  //       ...token1.value,
+  //       icon_url: '',
+  //       name: token1.value?.name || '',
+  //       decimals: token1.value?.decimals ?? 18,
+  //       symbol: token1.value?.symbol ?? '',
+  //       address: token1.value.isNative ? '' : (token1.value?.address as string),
+  //       tokenSymbol: token1.value?.symbol ?? '',
+  //       tokenAddress: token1.value.isNative ? '' : (token1.value?.address as string),
+  //       tokenDecimals: token1.value?.decimals ?? 18,
+  //       chainId: token1.value.chainId
+  //     }
+  //   }
+  // })
 
   const liquidityPercentage = computed(() => {
     return percent.value === null || percent.value === undefined ? undefined : new Percent(Math.floor(+percent.value), 100)
@@ -111,6 +154,8 @@ export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | unde
     discountedAmount1,
     feeValue0,
     feeValue1,
-    owner
+    owner,
+    token0,
+    token1
   }
 }

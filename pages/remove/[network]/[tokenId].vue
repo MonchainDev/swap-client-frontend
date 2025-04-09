@@ -108,7 +108,7 @@
       </div>
       <div v-if="showCollectAsWNative" class="mt-[30px] flex items-center gap-4">
         <ElSwitch v-model="receiveNative" />
-        <span class="text-base">Collect as WMON</span>
+        <span class="text-base">Collect as {{ WNATIVE[chainId as ChainId].symbol }}</span>
       </div>
       <BaseButton
         size="md"
@@ -161,6 +161,7 @@
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   import { MasterChefV3 } from '~/utils/masterChefV3'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
+  import type { ChainId } from '~/types'
 
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware', 'validate-network-middleware']
@@ -293,8 +294,12 @@
         slippageTolerance: basisPointsToPercent(allowedSlippage),
         deadline: deadline.toString(),
         collectOptions: {
-          expectedCurrencyOwed0: feeValue0.value ?? CurrencyAmount.fromRawAmount(liquidityValue0.value.currency, 0),
-          expectedCurrencyOwed1: feeValue1.value ?? CurrencyAmount.fromRawAmount(liquidityValue1.value.currency, 0),
+          expectedCurrencyOwed0: feeValue0.value
+            ? CurrencyAmount.fromRawAmount(liquidityValue0.value.currency, feeValue0.value.quotient)
+            : CurrencyAmount.fromRawAmount(liquidityValue0.value.currency, 0),
+          expectedCurrencyOwed1: feeValue1.value
+            ? CurrencyAmount.fromRawAmount(liquidityValue1.value.currency, feeValue1.value.quotient)
+            : CurrencyAmount.fromRawAmount(liquidityValue1.value.currency, 0),
           recipient: account.value
         }
       })

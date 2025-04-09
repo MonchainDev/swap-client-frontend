@@ -5,14 +5,14 @@
       <BaseTab v-model:model="tabActive" :list="listTab" class="sm:pl-1" />
     </div>
     <template v-if="isDesktop">
-      <BaseTable v-loading="isLoading || isRefetching" class="table-tx mt-[26px]" :data="flattenedTransactions">
+      <BaseTable v-loading="isLoading || isRefetching" max-height="500" class="table-tx mt-[26px]" :data="flattenedTransactions">
         <ElTableColumn label="Tran.">
           <template #default="{ row }">
             <a
               :href="getUrlScan(chainIdByNetwork, 'tx', row.id)"
               target="_blank"
               class="cursor-pointer text-sm font-semibold hover:text-hyperlink hover:underline"
-              >{{ row.type }} {{ row.token0.symbol }} for {{ row.token1.symbol }}</a
+              >{{ row.type }} {{ row.token0.symbol }} {{ row.type === 'SWAP' ? 'for' : 'and' }} {{ row.token1.symbol }}</a
             >
           </template>
         </ElTableColumn>
@@ -63,32 +63,34 @@
         <span class="flex h-[100px] items-center justify-center text-sm text-gray-6">There are no data</span>
       </template>
       <template v-else>
-        <div
-          v-for="item in flattenedTransactions"
-          :key="item.id"
-          class="flex justify-between gap-4 border-b border-solid border-gray-3 px-4 py-[10px] last:border-none"
-        >
-          <div class="flex-1 flex-col">
-            <a
-              :href="getUrlScan(chainIdByNetwork, 'tx', item.id)"
-              target="_blank"
-              class="cursor-pointer text-sm font-semibold hover:text-hyperlink hover:underline"
-              >{{ item.type }} {{ item.token0.symbol }} for {{ item.token1.symbol }}</a
-            >
-            <div class="text-xs">
-              <a :href="getUrlScan(chainIdByNetwork, 'address', item.origin)" target="_blank" class="text-success">{{ sliceString(item.origin, 8, 4) }}</a>
-              <span class="px-1 text-gray-4">|</span>
-              <span>
-                <span class="font-semibold text-gray-7">${{ formatNumberWithDigits(item.amountUSD) }}</span>
-                <span class="text-gray-6"
-                  >({{ formatNumberWithDigits(item.amount0) }} {{ item.token0.symbol }}, {{ formatNumberWithDigits(item.amount1) }}
-                  {{ item.token1.symbol }})</span
-                >
-              </span>
+        <ElScrollbar max-height="500" always>
+          <div
+            v-for="item in flattenedTransactions"
+            :key="item.id"
+            class="flex justify-between gap-4 border-b border-solid border-gray-3 px-4 py-[10px] last:border-none"
+          >
+            <div class="flex-1 flex-col">
+              <a
+                :href="getUrlScan(chainIdByNetwork, 'tx', item.id)"
+                target="_blank"
+                class="cursor-pointer text-sm font-semibold hover:text-hyperlink hover:underline"
+                >{{ item.type }} {{ item.token0.symbol }} for {{ item.token1.symbol }}</a
+              >
+              <div class="text-xs">
+                <a :href="getUrlScan(chainIdByNetwork, 'address', item.origin)" target="_blank" class="text-success">{{ sliceString(item.origin, 8, 4) }}</a>
+                <span class="px-1 text-gray-4">|</span>
+                <span>
+                  <span class="font-semibold text-gray-7">${{ formatNumberWithDigits(item.amountUSD) }}</span>
+                  <span class="text-gray-6"
+                    >({{ formatNumberWithDigits(item.amount0) }} {{ item.token0.symbol }}, {{ formatNumberWithDigits(item.amount1) }}
+                    {{ item.token1.symbol }})</span
+                  >
+                </span>
+              </div>
             </div>
+            <span class="text-sm">{{ useTimeAgo(item.timestamp, { showSecond: true }) }}</span>
           </div>
-          <span class="text-sm">{{ useTimeAgo(item.timestamp, { showSecond: true }) }}</span>
-        </div>
+        </ElScrollbar>
         <div v-if="tabActive !== TabValue.ALL && flattenedTransactions.length" class="mt-5 flex justify-center space-x-4 pr-4">
           <button
             class="solid flex items-center gap-1 rounded-lg border border-gray-3 px-4 py-2 text-sm"

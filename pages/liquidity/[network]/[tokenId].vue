@@ -1,13 +1,14 @@
 <template>
   <div v-loading="isLoading" class="relative mx-auto mt-10 max-w-[1024px] pb-6 sm:mt-0 sm:px-4">
     <HeaderPositionDetail
-      :currency-quote="currencyQuote"
-      :currency-base="currencyBase"
+      :currency-quote="liquidityValue1?.currency"
+      :currency-base="liquidityValue0?.currency"
       :is-connected="isConnected"
       :format-fee="formatFee"
       :is-owner="isOwner"
       :fee-apr="positionDetail?.feeApr"
       :reward-apr="positionDetail?.rewardApr"
+      :status="positionDetail?.positionStatus"
       @add-liquid="handleClickAddLiquidity"
     />
     <div class="mt-12 rounded-lg bg-white shadow-md">
@@ -28,20 +29,20 @@
             <div class="flex h-1/2 items-center justify-between border-b border-solid border-gray-3 px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-                <span class="text-[22px] font-semibold leading-7">{{ positionValueUpper?.currency.symbol }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ liquidityValue0?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
-                <span class="text-[22px] font-semibold leading-7">{{ formattedValueUpper }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ formattedValue0 }}</span>
                 <span class="text-sm text-gray-6">${{ formatNumber(priceUsdBase) }}</span>
               </div>
             </div>
             <div class="flex h-1/2 items-center justify-between px-8">
               <div class="flex items-center gap-[10px]">
                 <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
-                <span class="text-[22px] font-semibold leading-7">{{ unwrappedToken(positionValueLower?.currency)?.symbol }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ liquidityValue1?.currency?.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
-                <span class="text-[22px] font-semibold leading-7">{{ formattedValueLower }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ formattedValue1 }}</span>
                 <span class="text-sm text-gray-6">${{ formatNumber(priceUsdQuote) }}</span>
               </div>
             </div>
@@ -80,8 +81,8 @@
                 <span class="text-[22px] font-semibold leading-7">{{ liquidityValue0?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
-                <span class="text-[22px] font-semibold leading-7">{{ formattedFeeUpper }}</span>
-                <span class="text-sm text-gray-6">${{ formatNumber(priceUsdFeeUpper) }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ formattedFee0 }}</span>
+                <span class="text-sm text-gray-6">${{ formatNumber(priceUsdFee0) }}</span>
               </div>
             </div>
             <div class="flex h-1/2 items-center justify-between px-8">
@@ -90,8 +91,8 @@
                 <span class="text-[22px] font-semibold leading-7">{{ liquidityValue1?.currency.symbol }}</span>
               </div>
               <div class="flex flex-col gap-1 text-right">
-                <span class="text-[22px] font-semibold leading-7">{{ formattedFeeLower }}</span>
-                <span class="text-sm text-gray-6">${{ formatNumber(priceUsdFeeLower) }}</span>
+                <span class="text-[22px] font-semibold leading-7">{{ formattedFee1 }}</span>
+                <span class="text-sm text-gray-6">${{ formatNumber(priceUsdFee1) }}</span>
               </div>
             </div>
           </div>
@@ -137,7 +138,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { type Currency, type Price, type Token } from '@monchain/swap-sdk-core'
+  import { CurrencyAmount, type Currency, type Price } from '@monchain/swap-sdk-core'
   import type { FeeAmount, Pool } from '@monchain/v3-sdk'
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { useQuery } from '@tanstack/vue-query'
@@ -148,7 +149,8 @@
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
   import { LIST_NETWORK } from '~/config/networks'
   import { WNATIVE } from '~/config/tokens'
-  import { ChainId, Bound } from '~/types'
+  import type { ChainId } from '~/types'
+  import { Bound } from '~/types'
   import type { IPosition } from '~/types/position.type'
 
   const enum TabValue {
@@ -191,8 +193,7 @@
 
   const { isConnected, address: account } = useAccount()
   // const { chainId } = useActiveChainId()
-  const { feeAmount, form, existingPosition, exchangeRateBaseCurrency, exchangeRateQuoteCurrency, baseCurrency, quoteCurrency } =
-    storeToRefs(useLiquidityStore())
+  const { feeAmount, existingPosition, exchangeRateBaseCurrency, exchangeRateQuoteCurrency, baseCurrency, quoteCurrency } = storeToRefs(useLiquidityStore())
 
   const networkOfPool = computed(() => {
     const networkUrl = route.params.network
@@ -215,66 +216,23 @@
   const liquidity = computed(() => _position.value?.liquidity)
   const tickLower = computed(() => _position.value?.tickLower)
   const tickUpper = computed(() => _position.value?.tickUpper)
-  const token0Address = computed(() => _position.value?.token0)
-  const token1Address = computed(() => _position.value?.token1)
+  // const token0Address = computed(() => _position.value?.token0)
+  // const token1Address = computed(() => _position.value?.token1)
   const fee = computed(() => _position.value?.fee)
+
+  watch(
+    () => fee.value,
+    (newValue) => {
+      if (newValue) {
+        feeAmount.value = newValue
+      }
+    },
+    { immediate: true }
+  )
 
   const formatFee = computed(() => {
     return fee.value ? `${fee.value / 10000}%` : ''
   })
-
-  // const removed = computed(() => liquidity.value === 0n)
-
-  const token0 = ref<Token>()
-  const token1 = ref<Token>()
-
-  // const unwrapToken0 = computed(() => unwrappedToken(token0.value))
-  // const unwrapToken1 = computed(() => unwrappedToken(token1.value))
-
-  watch(
-    () => _position.value,
-    async (newValue) => {
-      if (newValue) {
-        const result0 = await getTokenByChainId(token0Address.value as string, networkOfPool.value?.chainId || ChainId.MON_TESTNET)
-        console.log('🚀 ~ watch ~ token0:', token0)
-        if (result0) {
-          form.value.token0 = {
-            ...form.value.token0,
-            ...result0,
-            icon_url: '',
-            name: result0?.name || '',
-            decimals: result0?.decimals ?? 18,
-            symbol: result0?.symbol ?? '',
-            address: result0.isNative ? zeroAddress : (result0?.address as string),
-            tokenSymbol: result0?.symbol ?? '',
-            tokenAddress: result0.isNative ? zeroAddress : (result0?.address as string),
-            tokenDecimals: result0?.decimals ?? 18,
-            chainId: result0.chainId
-          }
-          token0.value = result0
-        }
-        const result1 = await getTokenByChainId(token1Address.value as string, networkOfPool.value?.chainId || ChainId.MON_TESTNET)
-        console.log('🚀 ~ watch ~ token1:', token1)
-        if (result1) {
-          form.value.token1 = {
-            ...form.value.token1,
-            ...result1,
-            icon_url: '',
-            name: result1?.name || '',
-            decimals: result1?.decimals ?? 18,
-            symbol: result1?.symbol ?? '',
-            address: result1.isNative ? zeroAddress : (result1?.address as string),
-            tokenSymbol: result1?.symbol ?? '',
-            tokenAddress: result1.isNative ? zeroAddress : (result1?.address as string),
-            tokenDecimals: result1?.decimals ?? 18,
-            chainId: result1.chainId
-          }
-          token1.value = result1
-        }
-        feeAmount.value = fee.value ?? 0
-      }
-    }
-  )
 
   const inverted = computed(() => (token1.value && base.value ? base.value.equals(token1.value) : undefined))
 
@@ -286,7 +244,7 @@
   const receiveWNATIVE = ref(false)
   // const { feeValue0, feeValue1, owner } = useV3PositionFees(pool as Ref<Pool>, receiveWNATIVE.value)
 
-  const { liquidityValue0, liquidityValue1, feeValue0, feeValue1, owner } = useDerivedV3BurnInfo(_position, ref('100'), receiveWNATIVE)
+  const { liquidityValue0, liquidityValue1, feeValue0, feeValue1, owner, token0, token1 } = useDerivedV3BurnInfo(_position, ref('100'), receiveWNATIVE)
 
   const feeValueUpper = computed(() => (inverted.value ? feeValue0.value : feeValue1.value))
   const feeValueLower = computed(() => (inverted.value ? feeValue1.value : feeValue0.value))
@@ -367,32 +325,67 @@
     return formattedCurrencyAmount(positionValueLower.value)
   })
 
-  const formattedFeeUpper = computed(() => {
-    return formatCurrencyAmount(feeValueUpper.value, 4, 'en-US')
+  const formattedFee0 = computed(() => formattedCurrencyAmount(feeValue0.value))
+  const formattedFee1 = computed(() => formattedCurrencyAmount(feeValue1.value))
+
+  const formattedValue0 = computed(() => {
+    return formattedCurrencyAmount(liquidityValue0.value)
   })
 
-  const formattedFeeLower = computed(() => {
-    return formatCurrencyAmount(feeValueLower.value, 4, 'en-US')
+  const formattedValue1 = computed(() => {
+    return formattedCurrencyAmount(liquidityValue1.value)
+  })
+
+  const priceUsdFee0 = computed(() => {
+    if (feeValue0.value) {
+      return new Decimal(feeValue0.value.toExact()).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
+  })
+
+  const priceUsdFee1 = computed(() => {
+    if (feeValue1.value) {
+      return new Decimal(feeValue1.value.toExact()).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+    }
+    return '0'
   })
 
   const priceUsdBase = computed(() => {
-    if (!formattedValueUpper.value) return '0'
-    const exchangeRate = feeValueUpper.value?.currency.wrapped.equals(baseCurrency.value?.wrapped as Currency)
-      ? exchangeRateBaseCurrency.value
-      : exchangeRateQuoteCurrency.value
-    if (currencyBase.value && exchangeRate) {
-      return new Decimal(formattedValueUpper.value.replaceAll(',', '')).mul(exchangeRate).toSignificantDigits(6).toString()
+    // if (!formattedValueUpper.value) return '0'
+    // const exchangeRate = feeValueUpper.value?.currency.wrapped.equals(baseCurrency.value?.wrapped as Currency)
+    //   ? exchangeRateBaseCurrency.value
+    //   : exchangeRateQuoteCurrency.value
+    // if (currencyBase.value && exchangeRate) {
+    //   return new Decimal(formattedValueUpper.value.replaceAll(',', '')).mul(exchangeRate).toSignificantDigits(6).toString()
+    // }
+    if (liquidityValue0.value) {
+      // return new Decimal(liquidityValue0.value.toExact()).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
+      const exchangeRate = liquidityValue0.value?.currency.wrapped.equals(baseCurrency.value?.wrapped as Currency)
+        ? exchangeRateBaseCurrency.value
+        : exchangeRateQuoteCurrency.value
+      if (liquidityValue0.value && exchangeRate) {
+        return new Decimal(liquidityValue0.value.toExact()).mul(exchangeRate).toSignificantDigits(6).toString()
+      }
     }
     return '0'
   })
 
   const priceUsdQuote = computed(() => {
-    if (!formattedValueLower.value) return '0'
-    const exchangeRate = feeValueLower.value?.currency.wrapped.equals(quoteCurrency.value?.wrapped as Currency)
-      ? exchangeRateQuoteCurrency.value
-      : exchangeRateBaseCurrency.value
-    if (currencyQuote.value && exchangeRate) {
-      return new Decimal(formattedValueLower.value.replaceAll(',', '')).mul(exchangeRate).toSignificantDigits(6).toString()
+    // if (!formattedValueLower.value) return '0'
+    // const exchangeRate = feeValueLower.value?.currency.wrapped.equals(quoteCurrency.value?.wrapped as Currency)
+    //   ? exchangeRateQuoteCurrency.value
+    //   : exchangeRateBaseCurrency.value
+    // if (currencyQuote.value && exchangeRate) {
+    //   return new Decimal(formattedValueLower.value.replaceAll(',', '')).mul(exchangeRate).toSignificantDigits(6).toString()
+    // }
+    if (liquidityValue1.value) {
+      // return new Decimal(liquidityValue1.value.toExact()).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
+      const exchangeRate = liquidityValue1.value?.currency.wrapped.equals(quoteCurrency.value?.wrapped as Currency)
+        ? exchangeRateQuoteCurrency.value
+        : exchangeRateBaseCurrency.value
+      if (liquidityValue1.value && exchangeRate) {
+        return new Decimal(liquidityValue1.value.toExact()).mul(exchangeRate).toSignificantDigits(6).toString()
+      }
     }
     return '0'
   })
@@ -428,7 +421,9 @@
   }
 
   const disabledCollect = computed(() => {
-    return !isConnected.value || !isOwner.value || (feeValue0.value?.equalTo(0) && feeValue1.value?.equalTo(0))
+    return (
+      !isConnected.value || !isOwner.value || (feeValue0.value?.equalTo(0) && feeValue1.value?.equalTo(0)) || positionDetail.value?.positionStatus === 'CLOSE'
+    )
   })
 
   const showCollectAsWNative = computed(() => {
@@ -438,11 +433,11 @@
   const { collectFee, loading: loadingCollect } = useCollectFee()
 
   const handleCollect = async () => {
-    if (feeValue0.value && feeValue1.value) {
+    if (liquidityValue0.value && liquidityValue1.value && feeValue0.value && feeValue1.value) {
       const options: Omit<CollectOptions, 'tokenId'> = {
         recipient: account.value as `0x${string}`,
-        expectedCurrencyOwed0: liquidityValue0.value!,
-        expectedCurrencyOwed1: liquidityValue1.value!
+        expectedCurrencyOwed0: CurrencyAmount.fromRawAmount(liquidityValue0.value.currency, feeValue0.value.quotient),
+        expectedCurrencyOwed1: CurrencyAmount.fromRawAmount(liquidityValue1.value.currency, feeValue1.value.quotient)
       }
       collectFee(tokenId.value, options, isStakeMV3.value)
     }
