@@ -11,25 +11,30 @@ const DOMAIN_SCAN = {
 const URL_SCAN = {
   [ChainId.MON_TESTNET]: {
     tx: DOMAIN_SCAN[ChainId.MON_TESTNET] + '/tx',
-    address: DOMAIN_SCAN[ChainId.MON_TESTNET] + '/address'
+    address: DOMAIN_SCAN[ChainId.MON_TESTNET] + '/address',
+    token: DOMAIN_SCAN[ChainId.MON_TESTNET] + '/token'
   },
   [ChainId.AMOY_POLYGON]: {
     tx: DOMAIN_SCAN[ChainId.AMOY_POLYGON] + '/tx',
-    address: DOMAIN_SCAN[ChainId.AMOY_POLYGON] + '/address'
+    address: DOMAIN_SCAN[ChainId.AMOY_POLYGON] + '/address',
+    token: DOMAIN_SCAN[ChainId.AMOY_POLYGON] + '/token'
   },
   [ChainId.BSC_TESTNET]: {
     tx: DOMAIN_SCAN[ChainId.BSC_TESTNET] + '/tx',
-    address: DOMAIN_SCAN[ChainId.BSC_TESTNET] + '/address'
+    address: DOMAIN_SCAN[ChainId.BSC_TESTNET] + '/address',
+    token: DOMAIN_SCAN[ChainId.BSC_TESTNET] + '/token'
   },
   [ChainId.SEPOLIA]: {
     tx: DOMAIN_SCAN[ChainId.SEPOLIA] + '/tx',
-    address: DOMAIN_SCAN[ChainId.SEPOLIA] + '/address'
+    address: DOMAIN_SCAN[ChainId.SEPOLIA] + '/address',
+    token: DOMAIN_SCAN[ChainId.SEPOLIA] + '/token'
   },
   [ChainId.ARBITRUM_SEPOLIA]: {
     tx: DOMAIN_SCAN[ChainId.ARBITRUM_SEPOLIA] + '/tx',
-    address: DOMAIN_SCAN[ChainId.ARBITRUM_SEPOLIA] + '/address'
+    address: DOMAIN_SCAN[ChainId.ARBITRUM_SEPOLIA] + '/address',
+    token: DOMAIN_SCAN[ChainId.ARBITRUM_SEPOLIA] + '/token'
   }
-} as const satisfies Record<ChainId, { tx: string; address: string }>
+} as const satisfies Record<ChainId, { tx: string; address: string; token: string }>
 
 const EXPLORER_NAME = {
   [ChainId.MON_TESTNET]: 'Mon explorer',

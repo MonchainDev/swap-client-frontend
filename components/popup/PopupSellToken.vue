@@ -1,12 +1,5 @@
 <template>
-  <LazyBasePopup
-    name="popup-sell-token"
-    :is-show-footer="false"
-    width="540"
-    title="Sell a token"
-    class="popup-sell-token"
-    @close="search = ''"
-  >
+  <LazyBasePopup name="popup-sell-token" :is-show-footer="false" width="540" title="Select a token" class="popup-sell-token" @close="search = ''">
     <template v-if="!isDesktop" #close>
       <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-sell-token', false)" />
     </template>
@@ -27,9 +20,9 @@
           <BaseIcon name="search" class="text-primary" size="20" />
         </template>
         <template v-if="showNetwork" #suffix>
-          <div class="flex min-w-[136px] items-center justify-end gap-[9px] rounded-lg bg-white p-[6px] sm:hidden">
-            <img :src="toNetwork?.logo" alt="logo" class="size-6 rounded-lg" />
-            <span class="text-xs font-semibold text-primary">{{ toNetwork?.network }}</span>
+          <div class="flex min-w-[136px] items-center justify-center gap-[9px] rounded-lg bg-white p-[6px] sm:hidden">
+            <img :src="fromNetwork?.logo" alt="logo" class="size-6 rounded-lg" />
+            <span class="text-xs font-semibold text-primary">{{ fromNetwork?.network }}</span>
           </div>
         </template>
       </ElInput>
@@ -91,7 +84,7 @@
   const { isConnected } = useAccount()
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { toNetwork } = storeToRefs(useBridgeStore())
+  const { fromNetwork } = storeToRefs(useBridgeStore())
 
   const search = ref('')
   const loading = ref(false)

@@ -55,23 +55,21 @@
           </div>
         </div>
       </div>
-      <div class="w-full rounded-bl-lg rounded-br-lg border-t border-[#EEEEEE] bg-[#FAFAFA] px-8 pb-7 pt-3 shadow sm:px-3 sm:pb-5">
+      <!-- <div class="w-full rounded-bl-lg rounded-br-lg border-t border-[#EEEEEE] bg-[#FAFAFA] px-8 pb-7 pt-3 shadow sm:px-3 sm:pb-5">
         <div class="flex flex-col">
           <p class="mb-1 text-primary sm:mb-2 sm:text-sm">Send</p>
           <div class="flex items-center justify-between gap-2 rounded-lg bg-[#FAFAFA]">
             <div class="flex items-center gap-1">
-              <!-- <img :src="form.token.icon_url" alt="logo" class="size-7 rounded-lg sm:size-5" /> -->
               <p class="overflow-hidden text-ellipsis text-[22px] font-semibold leading-[28px] sm:text-base">
                 {{ form.token.tokenSymbol }}
               </p>
             </div>
             <div class="flex flex-col">
               <p class="text-[32px] font-semibold leading-[28px] text-primary sm:text-[22px]">{{ amountOut }}</p>
-              <!-- <p class="text-sm font-semibold text-gray-6">≈ 0.02</p> -->
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <div class="mt-3 w-full rounded-lg border border-dashed border-gray-4 px-8 py-4 sm:mt-4 sm:px-4 sm:pt-3">
@@ -79,9 +77,11 @@
         <span class="text-sm text-primary"> You Receive </span>
         <div class="flex flex-col gap-1 text-right">
           <p class="receive">{{ amountOut }}</p>
-          <div v-if="address" class="flex items-center gap-1">
+          <div v-if="fromNetwork?.chainId" class="flex items-center gap-1">
             <img src="/public/logo.png" alt="logo" class="size-4 rounded-full" />
-            <span class="line-clamp-1 text-xs text-[#6F6A79]">({{ formatAddress(address) }})</span>
+            <a :href="`${URL_SCAN[fromNetwork.chainId].token}/${form.token.address}`" target="_blank">
+              <span class="line-clamp-1 text-xs text-[#6F6A79]">({{ formatAddress(form.token.address) }})</span>
+            </a>
           </div>
         </div>
       </div>
@@ -283,13 +283,7 @@
   })
 
   const isDisabledButton = computed(() => {
-    return (
-      !isTokenSelected.value ||
-      !form.value.amount ||
-      // !(fromNetwork.value?.network === toNetwork.value?.network) ||
-      isFetchQuote.value ||
-      notEnoughLiquidity.value
-    )
+    return !isTokenSelected.value || !+form.value.amount || isFetchQuote.value || notEnoughLiquidity.value
   })
 
   const handleSwapOrder = () => {
@@ -309,7 +303,7 @@
       console.error('Not found source network')
       return
     }
-    ElMessage.success(`Switch to ${fromNetwork.value.network}`)
+    // ElMessage.success(`Switch to ${fromNetwork.value.network}`)
     form.value.amount = ''
     switchChain({ chainId: fromNetwork.value?.chainId })
   }
@@ -339,6 +333,7 @@
    */
   const handleInput = async (amount: string) => {
     console.log('handle input', amount)
+
     try {
       restoreFee()
       notEnoughLiquidity.value = false
@@ -812,6 +807,18 @@
     () => toNetwork.value,
     () => {
       form.value.token = {} as IToken
+    }
+  )
+  watch(
+    () => form.value.token,
+    (value) => {
+      if (value) {
+        form.value.amount = ''
+        amountOut.value = ''
+        fee.value.network = '0'
+        fee.value.protocol = '0'
+        fee.value.bridge = '0'
+      }
     }
   )
 </script>
