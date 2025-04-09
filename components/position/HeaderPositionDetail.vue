@@ -24,7 +24,7 @@
             </div>
           </div>
           <div class="text-sm sm:hidden">
-            <span class="text-[#049C6B]">Active</span>
+            <span :class="classStatus">{{ capitalizeFirstLetter(status) }}</span>
             <span class="px-2 text-gray-4">|</span>
             <span>#{{ tokenId?.toString() }}</span>
           </div>
@@ -71,7 +71,7 @@
           <span class="text-hyperlink">Add</span>
         </BaseButton>
 
-        <BaseButton :disabled="!isConnected || !isOwner" type="outline" size="md" class="w-[120px] !bg-white text-xl sm:flex-1">
+        <BaseButton :disabled="!isConnected || !isOwner || status === 'CLOSE'" type="outline" size="md" class="w-[120px] !bg-white text-xl sm:flex-1">
           <NuxtLink :to="{ name: 'remove-network-tokenId', params: { network: route.params.network, tokenId: route.params.tokenId } }">
             <span class="text-hyperlink">Remove</span>
           </NuxtLink>
@@ -84,6 +84,7 @@
 <script lang="ts" setup>
   import type { Currency, Token } from '@monchain/swap-sdk-core'
   import { LIST_NETWORK } from '~/config/networks'
+  import type { POSITION_STATUS } from '~/types/position.type'
 
   interface IProps {
     currencyQuote: Token | undefined | Currency
@@ -93,16 +94,18 @@
     isOwner: boolean
     feeApr: number | undefined
     rewardApr: number | undefined
+    status: POSITION_STATUS | undefined
   }
 
-  const _props = withDefaults(defineProps<IProps>(), {
+  const props = withDefaults(defineProps<IProps>(), {
     currencyQuote: undefined,
     currencyBase: undefined,
     formatFee: '',
     isConnected: false,
     isOwner: false,
     feeApr: undefined,
-    rewardApr: undefined
+    rewardApr: undefined,
+    status: undefined
   })
 
   const emit = defineEmits<{
@@ -118,6 +121,22 @@
 
   const tokenId = computed(() => {
     return route.params.tokenId ? BigInt(route.params.tokenId) : undefined
+  })
+
+  const enum TabValue {
+    ALL = 'ALL',
+    ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
+    CLOSE = 'CLOSE'
+  }
+
+  const classStatus = computed(() => {
+    const status = props.status
+    return {
+      'text-error': status === TabValue.CLOSE,
+      'text-success': status === TabValue.ACTIVE,
+      'text-warning': status === TabValue.INACTIVE
+    }
   })
 </script>
 

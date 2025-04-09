@@ -127,11 +127,6 @@
     CLOSE = 'CLOSE'
   }
 
-  function capitalizeFirstLetter(string: string) {
-    if (!string) return ''
-    return string.charAt(0).toUpperCase() + string.slice(1).toLocaleLowerCase()
-  }
-
   const classStatus = computed(() => {
     const status = props.position.positionStatus
     return {
@@ -170,7 +165,9 @@
   })
 
   const showStake = computed(() => {
-    return props.position.poolType === 'FARM' && Number(props.position.moonPerSecond) === 0 && !stakeLocalSuccess.value
+    return (
+      props.position.poolType === 'FARM' && Number(props.position.moonPerSecond) === 0 && !stakeLocalSuccess.value && props.position.positionStatus !== 'CLOSE'
+    )
   })
 
   const showUnStake = computed(() => {

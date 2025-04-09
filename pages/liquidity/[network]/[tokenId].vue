@@ -8,6 +8,7 @@
       :is-owner="isOwner"
       :fee-apr="positionDetail?.feeApr"
       :reward-apr="positionDetail?.rewardApr"
+      :status="positionDetail?.positionStatus"
       @add-liquid="handleClickAddLiquidity"
     />
     <div class="mt-12 rounded-lg bg-white shadow-md">
@@ -420,7 +421,9 @@
   }
 
   const disabledCollect = computed(() => {
-    return !isConnected.value || !isOwner.value || (feeValue0.value?.equalTo(0) && feeValue1.value?.equalTo(0))
+    return (
+      !isConnected.value || !isOwner.value || (feeValue0.value?.equalTo(0) && feeValue1.value?.equalTo(0)) || positionDetail.value?.positionStatus === 'CLOSE'
+    )
   })
 
   const showCollectAsWNative = computed(() => {

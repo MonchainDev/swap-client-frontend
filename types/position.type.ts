@@ -39,7 +39,7 @@ export interface IPositionOrigin {
   pendingreward: number
   moonpersecond: number
 }
-
+export type POSITION_STATUS = 'ACTIVE' | 'INACTIVE' | 'CLOSE'
 export interface IPosition {
   quoteDecimals: number
   tokenQuote: string
@@ -63,7 +63,7 @@ export interface IPosition {
   priceLower: number
   poolAddress: string
   poolType: null | 'FARM'
-  positionStatus: string
+  positionStatus: POSITION_STATUS | undefined
   priceUdtTotal?: string
   pendingReward: number
   liquidity: number
