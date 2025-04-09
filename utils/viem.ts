@@ -78,9 +78,11 @@ export const CLIENT_CONFIG = {
 }
 
 export const publicClient = ({ chainId }: { chainId?: ChainId }) => {
-  if (chainId && viemClients[chainId]) {
-    return viemClients[chainId]
-  }
+  // if (chainId && viemClients[chainId]) {
+  //   console.log(viemClients)
+  //   return viemClients[chainId]
+  // }
+
   console.log('publicClient', chainId)
 
   const httpString = chainId && first(PUBLIC_NODES[chainId]) ? first(PUBLIC_NODES[chainId]) : undefined
