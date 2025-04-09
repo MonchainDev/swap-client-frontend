@@ -251,7 +251,7 @@
     } else if (isFetchQuote.value) {
       return 'Finalizing quote...'
     } else if ((isFetchQuote.value && !isTokenSelected.value) || notEnoughLiquidity.value) {
-      return 'You have insufficient balance'
+      return 'Insufficient liquidity for this trade'
     } else if (isTokenSelected.value) {
       if (stepBridge.value === 'SELECT_TOKEN') {
         return `SEND ${form.value.amount} ${form.value.token.symbol || ''}: ${fromNetwork.value?.network} ⇒ ${toNetwork.value?.network}`
@@ -336,6 +336,7 @@
 
     try {
       restoreFee()
+      amountOut.value = ''
       notEnoughLiquidity.value = false
       if (!isTokenSelected.value) return
       isFetchQuote.value = true
@@ -443,9 +444,6 @@
         console.log('currencyA', currencyA)
         console.log('currencyB', currencyB)
 
-        const _inputAmount = CurrencyAmount.fromRawAmount(token1.value!, Number(amountInWei))
-        console.log('>>> / _inputAmount:', _inputAmount)
-        console.log('Get best trade with RouterV4')
         const _trade = await getBestTradeV4({
           token0: currencyA,
           token1: currencyB,
@@ -466,12 +464,27 @@
         const outputAmount = _trade.routes[0].outputAmount
         const BASE_FEE_PERCENT = 10 ** 6
         let feeBridge = 0
-        for (const pool of _trade.routes[0].pools) {
-          if ('fee' in pool === false) {
-            throw new Error('Fee should not be in pool')
+        let remainAmountOut = 0n
+
+        for (const route of _trade.routes) {
+          for (const pool of route.pools) {
+            if (!('fee' in pool)) {
+              throw new Error('Fee should not be in pool')
+            }
+            feeBridge += (Number(pool?.fee || 0) / BASE_FEE_PERCENT) * Number(outputAmount.numerator / outputAmount.denominator)
+            if ("reserve0" in pool && pool.reserve0?.currency.address === currencyB.address) {
+              remainAmountOut += BigInt(pool.reserve0?.numerator ?? 0) / BigInt(pool.reserve0?.denominator ?? 1)
+            } else if ("reserve1" in pool && pool.reserve1?.currency.address === currencyB.address) {
+              remainAmountOut += BigInt(pool.reserve1?.numerator ?? 0) / BigInt(pool.reserve1?.denominator ?? 1)
+            }
           }
-          feeBridge += (Number(pool?.fee || 0) / BASE_FEE_PERCENT) * Number(outputAmount.numerator / outputAmount.denominator)
         }
+        console.info(" ~ FormBridge.client.vue:491 ~ remainAmountOut:", remainAmountOut);
+        if (remainAmountOut <= amountInWei) {
+          notEnoughLiquidity.value = true
+          return
+        }
+
         fee.value.bridge = Decimal(feeBridge)
           .div(10 ** token0.value!.decimals)
           .toFixed()
