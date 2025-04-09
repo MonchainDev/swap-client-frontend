@@ -82,12 +82,12 @@
 </template>
 
 <script lang="ts" setup>
-  import type { Token } from '@monchain/swap-sdk-core'
+  import type { Currency, Token } from '@monchain/swap-sdk-core'
   import { LIST_NETWORK } from '~/config/networks'
 
   interface IProps {
-    currencyQuote: Token | undefined
-    currencyBase: Token | undefined
+    currencyQuote: Token | undefined | Currency
+    currencyBase: Token | undefined | Currency
     formatFee: string
     isConnected: boolean
     isOwner: boolean
