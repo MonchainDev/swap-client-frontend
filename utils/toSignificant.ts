@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js'
 
-export default function toSignificant(value: string | number, significantDigits = 6): string {
+export default function toSignificant(value: string | number | undefined, significantDigits = 6): string {
   if (!value) return '0'
 
   if (+value > 0 && +value < 0.000001) return '<0.000001'

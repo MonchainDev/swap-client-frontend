@@ -39,7 +39,9 @@
           >
         </div>
         <span class="text-xs font-semibold"
-          >{{ TOKEN_REWARDS[chainId as ChainId]?.symbol }} earned: {{ amountTokenEarn }} (${{ formatNumberAbbreviation(priceUsdEarnToken) }})</span
+          >{{ TOKEN_REWARDS[chainId as ChainId]?.symbol }} earned: {{ toSignificant(amountTokenEarn) }} (${{
+            formatNumberAbbreviation(priceUsdEarnToken)
+          }})</span
         >
       </template>
       <template v-else>
@@ -422,7 +424,8 @@
       chainId: chainId.value
     })) as bigint
     console.log('🚀 ~ pendingMoon ~ amount:', amount)
-    return Number(amount) || 0
+    const decimals = TOKEN_REWARDS[chainId.value as ChainId]?.decimals ?? 0
+    return new Decimal(amount.toString()).div(Math.pow(10, decimals)).toNumber() || 0
   }
 
   const { data: amountTokenEarn } = useQuery({

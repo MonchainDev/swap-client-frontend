@@ -35,7 +35,7 @@
           <BaseIcon name="calculator" size="16" />
           <span class="font-semibold text-success">{{ (position.feeApr || 0).toFixed(2) }}%</span>
         </div>
-        <span class="font-semibold">ORB earned: {{ amountOrb }} (${{ formatNumber(amountUsdEarn) }})</span>
+        <span class="font-semibold">ORB earned: {{ toSignificant(amountOrb) }} (${{ formatNumber(amountUsdEarn) }})</span>
         <NuxtLink class="w-full" :to="{ name: 'liquidity-network-tokenId', params: { network: position.network, tokenId: position.tokenId } }">
           <button class="!mt-3 flex h-10 w-full items-center justify-center rounded border border-solid border-gray-3 bg-white font-medium">
             Manage Position
@@ -193,7 +193,7 @@
     }
   }
 
-  const amountOrb = ref(0)
+  const amountOrb = ref('0')
   async function getPendingMoon() {
     const contractAddressMasterChef = getMasterChefV3Address(chainId.value)
 
@@ -205,7 +205,8 @@
       chainId: chainId.value
     })) as bigint
     console.log('🚀 ~ pendingMoon ~ amount:', amount)
-    amountOrb.value = Number(amount) || 0
+    const decimals = TOKEN_REWARDS[chainId.value as ChainId]?.decimals ?? 0
+    amountOrb.value = new Decimal(amount.toString()).div(Math.pow(10, decimals)).toString()
   }
 
   const exchangeRate = ref('0')
