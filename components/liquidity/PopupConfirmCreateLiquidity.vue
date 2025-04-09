@@ -176,6 +176,7 @@
   const { address } = useAccount()
   const { showToastMsg } = useShowToastMsg()
   const { currentNetwork } = storeToRefs(useBaseStore())
+  const { baseCurrency: baseCurrencyState, quoteCurrency: quoteCurrencyState } = storeToRefs(useLiquidityStore())
 
   const { chainId } = useActiveChainId()
 
@@ -183,7 +184,11 @@
     try {
       if (props.position) {
         loadingAdd.value = true
-        const useNative = baseCurrency.value?.isNative ? baseCurrency.value : quoteCurrency.value?.isNative ? quoteCurrency.value : undefined
+        const useNative = baseCurrencyState.value?.isNative
+          ? baseCurrencyState.value
+          : quoteCurrencyState.value?.isNative
+            ? quoteCurrencyState.value
+            : undefined
         console.log('🚀 ~ handleAddLiquidity ~ useNative:', useNative)
         console.log('🚀 ~ position ~ mintAmounts:', props.position.mintAmounts)
         const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
