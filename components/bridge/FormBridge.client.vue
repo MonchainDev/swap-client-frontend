@@ -231,6 +231,7 @@
   const needAllowanceApproveProtocolFee = ref(true)
   const isTokenSelected = computed(() => form.value.token?.tokenSymbol !== '')
   const notEnoughLiquidity = ref(false)
+  const insufficientBalance = ref(false)
   const amountOut = ref('')
 
   /*
@@ -250,6 +251,8 @@
       return 'Select a token'
     } else if (isFetchQuote.value) {
       return 'Finalizing quote...'
+    } else if (insufficientBalance.value) {
+      return 'You have insufficient balance'
     } else if ((isFetchQuote.value && !isTokenSelected.value) || notEnoughLiquidity.value) {
       return 'Insufficient liquidity for this trade'
     } else if (isTokenSelected.value) {
@@ -283,7 +286,7 @@
   })
 
   const isDisabledButton = computed(() => {
-    return !isTokenSelected.value || !+form.value.amount || isFetchQuote.value || notEnoughLiquidity.value
+    return !isTokenSelected.value || !+form.value.amount || isFetchQuote.value || notEnoughLiquidity.value || insufficientBalance.value
   })
 
   const handleSwapOrder = () => {
@@ -338,6 +341,7 @@
       restoreFee()
       amountOut.value = ''
       notEnoughLiquidity.value = false
+      insufficientBalance.value = false
       if (!isTokenSelected.value) return
       isFetchQuote.value = true
       if (!amount) {
@@ -349,9 +353,10 @@
       }
 
       const amountInWei = parseUnits(amount, token1.value!.decimals)
-      if (new Decimal(balance0.value!).lt(new Decimal(amountInWei.toString()))) {
+      if (parseUnits(String(balance0.value!), token1.value!.decimals) < amountInWei) {
         console.log('balance0', balance0.value)
         // notEnoughLiquidity.value = true
+        insufficientBalance.value = true
       }
       form.value.amount = amount
 
