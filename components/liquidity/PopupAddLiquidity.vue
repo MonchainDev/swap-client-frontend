@@ -442,7 +442,6 @@
         loadingAdd.value = true
         console.log(positionDetail.value.mintAmounts)
 
-        const useNative = currency0.value?.isNative ? currency0.value : currency1.value?.isNative ? currency1.value : undefined
         const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
         const allowedSlippage = 50
 
@@ -450,6 +449,8 @@
         let value: `0x${string}` = '0x'
 
         if (props.showInput) {
+          const useNative = currency0.value?.isNative ? currency0.value : currency1.value?.isNative ? currency1.value : undefined
+
           const { calldata: hexCall, value: hexValue } = NonfungiblePositionManager.addCallParameters(positionDetail.value, {
             tokenId: route.params.tokenId,
             slippageTolerance: basisPointsToPercent(allowedSlippage),
@@ -459,6 +460,8 @@
           calldata = hexCall
           value = hexValue
         } else {
+          const useNative = props.currencyBase?.isNative ? props.currencyBase : props.currencyQuote?.isNative ? props.currencyQuote : undefined
+
           const { calldata: hexCall, value: hexValue } = NonfungiblePositionManager.addCallParameters(positionDetail.value, {
             slippageTolerance: basisPointsToPercent(allowedSlippage),
             recipient: address.value!,

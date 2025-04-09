@@ -131,15 +131,27 @@
   })
 
   const isShowBtnEnable0 = computed(() => {
-    return unwrappedToken(baseCurrency.value as Token)?.isNative
-      ? false
-      : !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance0.value
+    const condition =
+      !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance0.value
+    return route.name === 'add-currency'
+      ? baseCurrency.value?.isNative
+        ? false
+        : condition
+      : unwrappedToken(baseCurrency.value as Token)?.isNative
+        ? false
+        : condition
   })
 
   const isShowBtnEnable1 = computed(() => {
-    return unwrappedToken(quoteCurrency.value as Token)?.isNative
-      ? false
-      : !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance1.value
+    const condition =
+      !isInvalidPair.value && !isShowEnterAmount.value && !isInsufficientBalanceA.value && !isInsufficientBalanceB.value && isNeedAllowance1.value
+    return route.name === 'add-currency'
+      ? quoteCurrency.value?.isNative
+        ? false
+        : condition
+      : unwrappedToken(quoteCurrency.value as Token)?.isNative
+        ? false
+        : condition
   })
 
   const isShowBtnAdd = computed(() => {

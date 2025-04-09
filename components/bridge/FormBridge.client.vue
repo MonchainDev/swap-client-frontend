@@ -171,12 +171,10 @@
   // import HeaderFormSwap from './HeaderFormSwap.vue'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
   // import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
-  import { type Route, SmartRouter, type V3Pool } from '@monchain/smart-router'
+  import { type Route, type V3Pool } from '@monchain/smart-router'
   import { CurrencyAmount, Token, TradeType } from '@monchain/swap-sdk-core'
   import Decimal from 'decimal.js'
   // import swapRouterABI from "~/constant/abi/swapRouter.json";
-  import { GraphQLClient } from 'graphql-request'
-  import { URL_GRAPH } from '~/config/graphql'
   import { EXPLORER_NAME, URL_SCAN } from '~/config/scan'
   import { config } from '~/config/wagmi'
   import { MAX_NUMBER_APPROVE } from '~/constant'
