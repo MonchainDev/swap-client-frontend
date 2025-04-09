@@ -83,7 +83,8 @@ const getV4Router = async (
     const v3Pools = await V4Router.getV3CandidatePools({
       clientProvider: () => publicClient,
       currencyA: tokenIn,
-      currencyB: tokenOut
+      currencyB: tokenOut,
+      gasLimit: BigInt(10 ** 7) // 10M gas limit
     })
     console.log('🚀 ~ getV4Router ~ v3Pools:', v3Pools)
     const pools = [...v3Pools]
@@ -97,6 +98,7 @@ const getV4Router = async (
     }
     return [trade]
   } catch (error) {
+    console.log('🚀 ~ error:', error)
     return Promise.reject(error)
   }
 }
