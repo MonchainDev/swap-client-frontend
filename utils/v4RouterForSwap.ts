@@ -42,7 +42,9 @@ const getV4Router = async (
     console.log('🚀 ~ pools:', pools)
     const trade = await V4Router.getBestTrade(amount, quoteCurrency, tradeType, {
       gasPriceWei: () => publicClient.getGasPrice(),
-      candidatePools: pools
+      candidatePools: pools,
+      maxHops: 2,
+      maxSplits: 2
     })
     console.log('🚀 ~ getV4Router ~ trade:', trade)
     if (!trade) {
