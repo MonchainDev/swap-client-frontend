@@ -307,8 +307,6 @@
     }
     // ElMessage.success(`Switch to ${fromNetwork.value.network}`)
     useBridgeStore().resetStore()
-    console.log(form.value.token)
-
     switchChain({ chainId: fromNetwork.value?.chainId })
   }
 

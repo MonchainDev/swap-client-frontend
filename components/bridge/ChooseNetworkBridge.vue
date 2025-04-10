@@ -50,7 +50,7 @@
 
 <script lang="ts" setup>
   import type { INetwork } from '~/types'
-  import { DEFAULT_NETWORK, LIST_NETWORK } from '~/config/networks'
+  import { LIST_NETWORK } from '~/config/networks'
 
   interface IProps {
     isSelect?: boolean
@@ -63,7 +63,7 @@
   })
 
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { fromNetwork, toNetwork, listNetwork } = storeToRefs(useBridgeStore())
+  const { fromNetwork, toNetwork } = storeToRefs(useBridgeStore())
   const visible = ref(false)
   const search = ref('')
   const networkSelected = defineModel('networkSelected', {
@@ -74,9 +74,6 @@
   const emits = defineEmits<{
     'select-network': []
   }>()
-
-  fromNetwork.value = listNetwork.value[0] || DEFAULT_NETWORK
-  toNetwork.value = listNetwork.value[1] || DEFAULT_NETWORK
 
   const listNetWorkDefault = ref<INetwork[]>(LIST_NETWORK)
 
