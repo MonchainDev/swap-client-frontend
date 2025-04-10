@@ -27,10 +27,10 @@
           </div>
         </div>
         <div class="mt-6 flex flex-col gap-1">
-          <span class="font-semibold">Total farming earning</span>
+          <span class="font-semibold">Total farming earning {{ TOKEN_REWARDS[props.pool.chainId as ChainId]?.symbol }}</span>
           <div class="flex items-end gap-1">
             <span class="text-linear text-[32px] font-semibold leading-none">${{ formatNumberAbbreviation(totalFarmingEarnUsd) }}</span>
-            <span class="text-xs text-gray-7">{{ formatNumberAbbreviation(totalFarmingEarn) }}</span>
+            <span class="text-xs text-gray-7">{{ formatNumberAbbreviation(toSignificant(totalFarmingEarn, 6)) }}</span>
           </div>
         </div>
         <NuxtLink :to="`/add/${props.pool.tokenBase}/${props.pool.tokenQuote}/${props.pool.fee}?chain=${props.pool.network}`">
