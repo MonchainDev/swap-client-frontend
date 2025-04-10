@@ -15,9 +15,9 @@
           </div>
         </div>
       </div>
-      <span v-if="isConnected && stepBridge === 'SELECT_TOKEN'" class="text-sm text-gray-8 sm:border-b-2 sm:border-[#D9D9D9] sm:py-1"
-        >Max: {{ formattedBalance }}</span
-      >
+      <span v-if="isConnected && stepBridge === 'SELECT_TOKEN'" class="text-sm text-gray-8 sm:border-b-2 sm:border-[#D9D9D9] sm:py-1">
+        Max: {{ formattedBalance }}
+      </span>
     </div>
     <div class="flex min-h-12 items-center gap-2">
       <template v-if="isSelected">
@@ -96,7 +96,7 @@
   })
   const { isConnected } = useAccount()
   const formattedBalance = computed(() => {
-    return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
+    return props.isSelected && props.token ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
   })
 
   const amountUsd = computed(() => {
