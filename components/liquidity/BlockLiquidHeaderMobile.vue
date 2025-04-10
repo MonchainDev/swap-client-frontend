@@ -31,7 +31,7 @@
           <span class="text-sm">My Position</span>
         </NuxtLink>
       </div>
-      <ChooseNetwork v-model:network-selected="networkSelected" is-select>
+      <ChooseNetwork v-model:network-selected="networkSelected" is-select @change="emit('change')">
         <template #reference>
           <div class="my-4 flex h-[42px] cursor-pointer items-center justify-between gap-1 rounded-lg border border-solid border-gray-4 pl-4 pr-1">
             <div class="flex items-center gap-2">
@@ -113,6 +113,10 @@
   interface IProps {
     tokenSelected: IToken[]
   }
+
+  const emit = defineEmits<{
+    change: []
+  }>()
 
   const props = withDefaults(defineProps<IProps>(), {
     tokenSelected: () => []
