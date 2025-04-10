@@ -197,7 +197,11 @@
     } else if (isFetchQuote.value) {
       return 'Finalizing quote...'
     } else if (
-      (!isFetchQuote.value && noRoute.value && isToken0Selected.value && isToken1Selected.value && (form.value.amountIn || form.value.amountOut)) ||
+      (!isFetchQuote.value &&
+        noRoute.value &&
+        isToken0Selected.value &&
+        isToken1Selected.value &&
+        (Number(form.value.amountIn) || Number(form.value.amountOut))) ||
       notEnoughLiquidity.value
     ) {
       return 'Insufficient liquidity for this trade'
@@ -226,8 +230,8 @@
     return (
       !isToken0Selected.value ||
       !isToken1Selected.value ||
-      !form.value.amountOut ||
-      !form.value.amountOut ||
+      !Number(form.value.amountIn) ||
+      !Number(form.value.amountOut) ||
       isFetchQuote.value ||
       noRoute.value ||
       notEnoughLiquidity.value ||
@@ -288,9 +292,13 @@
 
   let latestRequestId = 0
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
-    if (!amount) {
-      form.value.amountOut = ''
-      form.value.amountIn = ''
+    if (amount.trim() === '' || Number(amount) === 0) {
+      form.value.amountIn = type === 'BASE' ? amount : ''
+      form.value.amountOut = type === 'QUOTE' ? amount : ''
+      latestRequestId = 0
+      isFetchQuote.value = false
+      notEnoughLiquidity.value = false
+      return
     }
 
     const requestId = ++latestRequestId
