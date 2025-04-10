@@ -45,6 +45,22 @@ export abstract class Payments {
 
     return encodeFunctionData({ abi: Payments.ABI, functionName: 'unwrapWMON', args: [amountMinimum, recipient] })
   }
+  public static encodeUnwrapWMON9(amountMinimum: bigint, recipient: Address, feeOptions?: FeeOptions): `0x${string}` {
+    recipient = validateAndParseAddress(recipient)
+
+    if (feeOptions) {
+      const feeBips = this.encodeFeeBips(feeOptions.fee)
+      const feeRecipient = validateAndParseAddress(feeOptions.recipient)
+
+      return encodeFunctionData({
+        abi: Payments.ABI,
+        functionName: 'unwrapWMONWithFee',
+        args: [amountMinimum, recipient, feeBips, feeRecipient]
+      })
+    }
+
+    return encodeFunctionData({ abi: Payments.ABI, functionName: 'unwrapWMON9', args: [amountMinimum, recipient] })
+  }
 
   public static encodeSweepToken(token: Token, amountMinimum: bigint, recipient: Address, feeOptions?: FeeOptions): `0x${string}` {
     recipient = validateAndParseAddress(recipient)

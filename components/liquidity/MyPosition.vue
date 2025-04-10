@@ -4,7 +4,7 @@
       <div class="flex items-center justify-between px-6">
         <h4 class="text-xl font-semibold">My positions</h4>
         <div class="flex items-center gap-5">
-          <ChooseNetwork v-model:network-selected="networkSelected" is-select>
+          <ChooseNetwork v-model:network-selected="networkSelected" is-select @change="query.page = 1">
             <template #reference>
               <div class="flex h-[42px] w-[232px] cursor-pointer items-center justify-between gap-1 rounded-lg border border-solid border-gray-4 pl-4 pr-1">
                 <div class="flex items-center gap-2">
@@ -79,7 +79,7 @@
             </div>
             <BaseIcon name="arrow-chevron" size="24" class="text-gray-6" />
           </div>
-          <BaseTab v-model:model="tabActive" :list="listTab" class="ml-6" />
+          <BaseTab v-model:model="tabActive" :list="listTab" class="ml-6" @update:model="query.page = 1" />
         </div>
       </div>
 
@@ -121,8 +121,8 @@
       </template>
     </div>
     <template v-else>
-      <BlockLiquidHeaderMobile v-model:network-selected="networkSelected" :token-selected="tokenSelected" />
-      <BaseTab v-model:model="tabActive" :list="listTab" class="bg-white pl-6 pt-4" />
+      <BlockLiquidHeaderMobile v-model:network-selected="networkSelected" :token-selected="tokenSelected" @change="query.page = 1" />
+      <BaseTab v-model:model="tabActive" :list="listTab" class="bg-white pl-6 pt-4" @update:model="query.page = 1" />
 
       <template v-if="isConnected">
         <div v-loading="status === 'pending'" class="mt-6 space-y-4 px-4">
@@ -160,7 +160,12 @@
     :network-selected="networkListSelected"
     :token-selected="tokenSelected"
     @change="handleSelectToken"
-    @remove-all="tokenSelected = []"
+    @remove-all="
+      () => {
+        query.page = 1
+        tokenSelected = []
+      }
+    "
   />
   <PopupUnStake :position="positionCurrent" @reload="refresh" />
 </template>
@@ -338,6 +343,7 @@
   }
 
   const handleSelectToken = (token: IToken, type: 'add' | 'remove') => {
+    query.value.page = 1
     if (type === 'add') {
       const index = tokenSelected.value.findIndex((item) => item.id === token.id)
       if (index === -1) {

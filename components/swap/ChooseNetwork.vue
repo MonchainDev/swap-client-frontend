@@ -63,6 +63,9 @@
   const _props = withDefaults(defineProps<IProps>(), {
     isSelect: false
   })
+  const emit = defineEmits<{
+    change: []
+  }>()
 
   const { resetStore: resetStoreLiquid } = useLiquidityStore()
   const { resetStore: resetStoreSwap } = useSwapStore()
@@ -87,6 +90,7 @@
   const router = useRouter()
 
   const handleSelectNetwork = async (item: INetwork) => {
+    emit('change')
     if (_props.isSelect) {
       const index = networkSelected.value.indexOf(item.network)
       if (index > -1) {
