@@ -75,6 +75,24 @@
         "type": "address"
       }
     ],
+    "name": "unwrapWMON9",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountMinimum",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      }
+    ],
     "name": "unwrapWMON",
     "outputs": [],
     "stateMutability": "payable",
