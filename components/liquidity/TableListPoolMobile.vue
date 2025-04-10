@@ -19,8 +19,10 @@
       </div>
       <div class="mt-2 flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <div class="border-b border-dashed border-[#D9D9D9] text-sm font-bold text-[#049C6B]">Up to {{ Number(item.feeApr).toFixed(2) }}%</div>
-          <div class="font-semibold text-gray-6">{{ item.rewardApr }}%</div>
+          <div class="border-b border-dashed border-[#D9D9D9] text-sm font-bold text-[#049C6B]">
+            Up to {{ (Number(item.feeApr ?? 0) + Number(item.rewardApr ?? 0)).toFixed(2) }}%
+          </div>
+          <!-- <div class="font-semibold text-gray-6">{{ item.rewardApr }}%</div> -->
         </div>
         <div class="flex h-5 w-[55px] items-center justify-center rounded-sm bg-[#F5F5F5] text-xs font-semibold">{{ item.fee / 10000 }}%</div>
       </div>

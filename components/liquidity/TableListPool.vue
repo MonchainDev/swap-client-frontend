@@ -25,7 +25,7 @@
     <ElTableColumn label="APR">
       <template #default="{ row }">
         <div class="text-sm text-[#049C6B]">
-          Up to {{ row.feeApr ? Number(row.feeApr).toFixed(2) : 0 }}%
+          Up to {{ (Number(row.feeApr ?? 0) + Number(row.rewardApr ?? 0)).toFixed(2) }}%
           <!-- <span class="text-gray-6"> {{ row.rewardApr }}%</span> -->
         </div>
       </template>
