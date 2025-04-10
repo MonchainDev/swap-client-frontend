@@ -127,8 +127,8 @@
     amountUSD: string
     timestamp: number
     origin: string
-    token0: { symbol: string }
-    token1: { symbol: string }
+    token0: { symbol: string; id?: string }
+    token1: { symbol: string; id?: string }
     type: TabValue.ADD | TabValue.REMOVE | TabValue.SWAP
   }
 
@@ -243,9 +243,11 @@
           amountUSD
           id
           token0 {
+            id
             symbol
           }
           token1 {
+            id
             symbol
           }
           timestamp
@@ -263,9 +265,11 @@
           amountUSD
           id
           token0 {
+            id
             symbol
           }
           token1 {
+            id
             symbol
           }
           timestamp
@@ -373,52 +377,108 @@
     }
   )
 
+  // // Logic làm phẳng dữ liệu
+  // const flattenedTransactions = computed(() => {
+  //   if (!data.value?.transactions.length || !data.value?.transactions) return []
+  //   const txs: ITx[] = []
+  //   // Xử lý mints
+  //   data.value.transactions.forEach((item) => {
+  //     if (item?.swaps && item.swaps.length) {
+  //       if (item.swaps.length === 1) {
+  //         const amount0 = item.swaps[0].amount0
+  //         const amount1 = item.swaps[0].amount1
+  //         txs.push({
+  //           ...item.swaps[0],
+  //           amount0: Number(amount0) > Number(amount1) ? amount0 : amount1,
+  //           amount1: Number(amount0) > Number(amount1) ? amount1 : amount0,
+  //           token0: {
+  //             symbol: Number(amount0) > Number(amount1) ? item.swaps[0].token0.symbol : item.swaps[0].token1.symbol
+  //           },
+  //           token1: {
+  //             symbol: Number(amount0) > Number(amount1) ? item.swaps[0].token1.symbol : item.swaps[0].token0.symbol
+  //           },
+  //           type: TabValue.SWAP,
+  //           timestamp: item.swaps[0].timestamp * 1000
+  //         })
+  //       } else {
+  //         const itemExitsOfPool = item.swaps.find((elm) => elm.token0.id === props.pool.tokenBase && elm.token1.id === props.pool.tokenQuote)
+  //         console.log('🚀 ~ data.value.transactions.forEach ~ itemExitsOfPool:', itemExitsOfPool)
+  //         if (itemExitsOfPool) {
+  //           const amount0 = itemExitsOfPool.amount0
+  //           const amount1 = itemExitsOfPool.amount1
+  //           txs.push({
+  //             ...itemExitsOfPool,
+  //             amount0: Number(amount0) > Number(amount1) ? amount0 : amount1,
+  //             amount1: Number(amount0) > Number(amount1) ? amount1 : amount0,
+  //             token0: {
+  //               ...itemExitsOfPool.token0,
+  //               symbol: Number(amount0) > Number(amount1) ? itemExitsOfPool.token0.symbol : itemExitsOfPool.token1.symbol
+  //             },
+  //             token1: {
+  //               ...itemExitsOfPool.token1,
+  //               symbol: Number(amount0) > Number(amount1) ? itemExitsOfPool.token1.symbol : itemExitsOfPool.token0.symbol
+  //             },
+  //             type: TabValue.SWAP,
+  //             timestamp: itemExitsOfPool.timestamp * 1000
+  //           })
+  //         } else {
+  //           const firstAmount0 = item.swaps[0].amount0
+  //           const firstAmount1 = item.swaps[0].amount1
+  //           const lastAmount0 = item.swaps[item.swaps.length - 1].amount0
+  //           const lastAmount1 = item.swaps[item.swaps.length - 1].amount1
+  //           const symbol0 = Number(firstAmount0) > Number(firstAmount1) ? item.swaps[0].token0.symbol : item.swaps[0].token1.symbol
+  //           const symbol1 =
+  //             Number(lastAmount0) > Number(lastAmount1) ? item.swaps[item.swaps.length - 1].token1.symbol : item.swaps[item.swaps.length - 1].token0.symbol
+
+  //           const amount0 = Number(firstAmount0) > Number(firstAmount1) ? firstAmount0 : firstAmount1
+  //           const amount1 = Number(lastAmount0) > Number(lastAmount1) ? lastAmount0 : lastAmount1
+  //           txs.push({
+  //             ...item.swaps[0],
+  //             amount0: amount0,
+  //             amount1: amount1,
+  //             token0: { symbol: symbol0 },
+  //             token1: { symbol: symbol1 },
+  //             type: TabValue.SWAP,
+  //             timestamp: item.swaps[0].timestamp * 1000
+  //           })
+  //         }
+  //       }
+  //     }
+  //     if (item?.burns && item.burns.length) {
+  //       item.burns.forEach((burn) => {
+  //         txs.push({
+  //           ...burn,
+  //           type: TabValue.REMOVE,
+  //           timestamp: burn.timestamp * 1000
+  //         })
+  //       })
+  //     }
+  //     if (item?.mints && item.mints.length) {
+  //       item.mints.forEach((mint) => {
+  //         txs.push({
+  //           ...mint,
+  //           type: TabValue.ADD,
+  //           timestamp: mint.timestamp * 1000
+  //         })
+  //       })
+  //     }
+  //   })
+  //   return txs
+  // })
+
   // Logic làm phẳng dữ liệu
   const flattenedTransactions = computed(() => {
-    if (!data.value?.transactions.length || !data.value?.transactions) return []
-    const txs: ITx[] = []
-    // Xử lý mints
-    data.value.transactions.forEach((item) => {
-      if (item?.swaps && item.swaps.length) {
-        if (item.swaps.length === 1) {
-          const amount0 = item.swaps[0].amount0
-          const amount1 = item.swaps[0].amount1
-          txs.push({
-            ...item.swaps[0],
-            amount0: Number(amount0) > Number(amount1) ? amount0 : amount1,
-            amount1: Number(amount0) > Number(amount1) ? amount1 : amount0,
-            token0: {
-              symbol: Number(amount0) > Number(amount1) ? item.swaps[0].token0.symbol : item.swaps[0].token1.symbol
-            },
-            token1: {
-              symbol: Number(amount0) > Number(amount1) ? item.swaps[0].token1.symbol : item.swaps[0].token0.symbol
-            },
-            type: TabValue.SWAP,
-            timestamp: item.swaps[0].timestamp * 1000
-          })
-        } else {
-          const firstAmount0 = item.swaps[0].amount0
-          const firstAmount1 = item.swaps[0].amount1
-          const lastAmount0 = item.swaps[item.swaps.length - 1].amount0
-          const lastAmount1 = item.swaps[item.swaps.length - 1].amount1
-          const symbol0 = Number(firstAmount0) > Number(firstAmount1) ? item.swaps[0].token0.symbol : item.swaps[0].token1.symbol
-          const symbol1 =
-            Number(lastAmount0) > Number(lastAmount1) ? item.swaps[item.swaps.length - 1].token1.symbol : item.swaps[item.swaps.length - 1].token0.symbol
+    const transactions = data.value?.transactions || []
+    if (!transactions.length) return []
 
-          const amount0 = Number(firstAmount0) > Number(firstAmount1) ? firstAmount0 : firstAmount1
-          const amount1 = Number(lastAmount0) > Number(lastAmount1) ? lastAmount0 : lastAmount1
-          txs.push({
-            ...item.swaps[0],
-            amount0: amount0,
-            amount1: amount1,
-            token0: { symbol: symbol0 },
-            token1: { symbol: symbol1 },
-            type: TabValue.SWAP,
-            timestamp: item.swaps[0].timestamp * 1000
-          })
-        }
+    const txs: ITx[] = []
+
+    transactions.forEach((item) => {
+      if (item?.swaps?.length) {
+        processSwaps(item.swaps, txs, props.pool)
       }
-      if (item?.burns && item.burns.length) {
+
+      if (item?.burns?.length) {
         item.burns.forEach((burn) => {
           txs.push({
             ...burn,
@@ -427,7 +487,8 @@
           })
         })
       }
-      if (item?.mints && item.mints.length) {
+
+      if (item?.mints?.length) {
         item.mints.forEach((mint) => {
           txs.push({
             ...mint,
@@ -437,8 +498,89 @@
         })
       }
     })
+
     return txs
   })
+
+  function processSwaps(swaps: ITx[], txs: ITx[], pool: IPool) {
+    if (swaps.length === 1) {
+      processSingleSwap(swaps[0], txs)
+    } else {
+      processMultipleSwaps(swaps, txs, pool)
+    }
+  }
+
+  function processSingleSwap(swap: ITx, txs: ITx[]) {
+    const amount0 = swap.amount0
+    const amount1 = swap.amount1
+    const isAmount0Greater = Number(amount0) > Number(amount1)
+
+    txs.push({
+      ...swap,
+      amount0: isAmount0Greater ? amount0 : amount1,
+      amount1: isAmount0Greater ? amount1 : amount0,
+      token0: {
+        symbol: isAmount0Greater ? swap.token0.symbol : swap.token1.symbol
+      },
+      token1: {
+        symbol: isAmount0Greater ? swap.token1.symbol : swap.token0.symbol
+      },
+      type: TabValue.SWAP,
+      timestamp: swap.timestamp * 1000
+    })
+  }
+
+  function processMultipleSwaps(swaps: ITx[], txs: ITx[], pool: IPool) {
+    // Try to find a swap matching the current pool
+    const poolSwap = swaps.find((swap) => swap.token0.id === pool.tokenBase && swap.token1.id === pool.tokenQuote)
+
+    if (poolSwap) {
+      const amount0 = poolSwap.amount0
+      const amount1 = poolSwap.amount1
+      const isAmount0Greater = Number(amount0) > Number(amount1)
+
+      txs.push({
+        ...poolSwap,
+        amount0: isAmount0Greater ? amount0 : amount1,
+        amount1: isAmount0Greater ? amount1 : amount0,
+        token0: {
+          ...poolSwap.token0,
+          symbol: isAmount0Greater ? poolSwap.token0.symbol : poolSwap.token1.symbol
+        },
+        token1: {
+          ...poolSwap.token1,
+          symbol: isAmount0Greater ? poolSwap.token1.symbol : poolSwap.token0.symbol
+        },
+        type: TabValue.SWAP,
+        timestamp: poolSwap.timestamp * 1000
+      })
+    } else {
+      // Use first and last swap for a route swap
+      const firstSwap = swaps[0]
+      const lastSwap = swaps[swaps.length - 1]
+
+      const firstAmount0 = firstSwap.amount0
+      const firstAmount1 = firstSwap.amount1
+      const lastAmount0 = lastSwap.amount0
+      const lastAmount1 = lastSwap.amount1
+
+      const symbol0 = Number(firstAmount0) > Number(firstAmount1) ? firstSwap.token0.symbol : firstSwap.token1.symbol
+      const symbol1 = Number(lastAmount0) > Number(lastAmount1) ? lastSwap.token1.symbol : lastSwap.token0.symbol
+
+      const amount0 = Number(firstAmount0) > Number(firstAmount1) ? firstAmount0 : firstAmount1
+      const amount1 = Number(lastAmount0) > Number(lastAmount1) ? lastAmount0 : lastAmount1
+
+      txs.push({
+        ...firstSwap,
+        amount0: amount0,
+        amount1: amount1,
+        token0: { symbol: symbol0 },
+        token1: { symbol: symbol1 },
+        type: TabValue.SWAP,
+        timestamp: firstSwap.timestamp * 1000
+      })
+    }
+  }
 </script>
 
 <style lang="scss" scoped>
