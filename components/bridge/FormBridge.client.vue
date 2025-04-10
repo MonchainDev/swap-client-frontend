@@ -32,12 +32,11 @@
       />
     </div>
 
-    <div class="mt-6 w-full sm:mt-5">
+    <!-- <div class="mt-6 w-full sm:mt-5">
       <div class="flex w-full rounded-tl-lg rounded-tr-lg bg-[#FAFAFA] px-8 pb-7 pt-3 shadow sm:px-3 sm:pb-5">
         <div class="flex flex-col">
           <p class="mb-4 text-sm text-primary sm:mb-2 sm:text-xs">From network</p>
           <div class="flex items-center gap-2 rounded-lg">
-            <!-- <img :src="fromNetwork?.logo" alt="logo" class="size-7 rounded-lg sm:size-5" /> -->
             <span class="overflow-hidden text-ellipsis text-base font-semibold sm:text-xs">
               {{ fromNetwork?.network }}
             </span>
@@ -48,14 +47,13 @@
         <div class="flex flex-col">
           <p class="mb-4 text-sm text-primary sm:mb-2 sm:text-xs">To network</p>
           <div class="flex items-center gap-2 rounded-lg">
-            <!-- <img :src="fromNetwork?.logo" alt="logo" class="size-7 rounded-lg sm:size-5" /> -->
             <span class="overflow-hidden text-ellipsis text-base font-semibold sm:text-xs">
               {{ toNetwork?.network }}
             </span>
           </div>
         </div>
       </div>
-      <!-- <div class="w-full rounded-bl-lg rounded-br-lg border-t border-[#EEEEEE] bg-[#FAFAFA] px-8 pb-7 pt-3 shadow sm:px-3 sm:pb-5">
+      <div class="w-full rounded-bl-lg rounded-br-lg border-t border-[#EEEEEE] bg-[#FAFAFA] px-8 pb-7 pt-3 shadow sm:px-3 sm:pb-5">
         <div class="flex flex-col">
           <p class="mb-1 text-primary sm:mb-2 sm:text-sm">Send</p>
           <div class="flex items-center justify-between gap-2 rounded-lg bg-[#FAFAFA]">
@@ -69,18 +67,19 @@
             </div>
           </div>
         </div>
-      </div> -->
-    </div>
+      </div>
+    </div> -->
 
     <div class="mt-3 w-full rounded-lg border border-dashed border-gray-4 px-8 py-4 sm:mt-4 sm:px-4 sm:pt-3">
       <div class="flex justify-between">
         <span class="text-sm text-primary"> You Receive </span>
-        <div class="flex flex-col gap-1 text-right">
+        <div v-if="token1?.address && form.token.address" class="flex flex-col gap-1 text-right">
           <p class="receive">{{ amountOut }}</p>
-          <div v-if="fromNetwork?.chainId" class="flex items-center gap-1">
+          <div v-if="toNetwork?.chainId" class="flex items-center gap-1">
             <img src="/public/logo.png" alt="logo" class="size-4 rounded-full" />
-            <a :href="`${URL_SCAN[fromNetwork.chainId].token}/${form.token.address}`" target="_blank">
-              <span class="line-clamp-1 text-xs text-[#6F6A79]">({{ formatAddress(form.token.address) }})</span>
+            <span class="text-sm"> {{ token1?.symbol }}</span>
+            <a :href="`${URL_SCAN[toNetwork.chainId].token}/${token1?.address}`" target="_blank">
+              <span class="line-clamp-1 text-xs text-[#6F6A79]">({{ formatAddress(token1?.address) }})</span>
             </a>
           </div>
         </div>
@@ -147,7 +146,7 @@
       </button>
     </template>
 
-    <PopupSellToken :list-token="listTokenFrom" @select="handleSelectToken" />
+    <PopupSellToken :list-token="listToken" @select="handleSelectToken" />
   </div>
 </template>
 
@@ -307,7 +306,9 @@
       return
     }
     // ElMessage.success(`Switch to ${fromNetwork.value.network}`)
-    form.value.amount = ''
+    useBridgeStore().resetStore()
+    console.log(form.value.token)
+
     switchChain({ chainId: fromNetwork.value?.chainId })
   }
 
