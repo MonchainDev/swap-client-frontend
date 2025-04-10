@@ -19,6 +19,8 @@ export default {
       warning: 'var(--color-warning)',
       white: '#fff',
       error: 'var(--color-error)',
+      up: 'var(--color-up)',
+      down: 'var(--color-down)',
       transparent: 'transparent',
       hyperlink: 'var(--color-hyperlink)',
       'linear-gradient': 'var(--color-linear-gradient)'

@@ -18,10 +18,10 @@
         <div class="flex flex-col gap-[6px]">
           <span class="text-sm">Total Tokens locked (TVL)</span>
           <div class="flex items-center gap-3">
-            <span class="text-xl font-semibold">${{ formatNumber(toSignificant(pool.tvl ?? 0)) }}</span>
-            <span class="flex items-center gap-1 rounded-[10px] bg-[#E8FFEB] px-2 py-[2px]">
-              <BaseIcon name="arrow-fill" size="12" class="rotate-180 text-success" />
-              <span class="text-sm font-semibold text-success">0%</span>
+            <span class="text-xl font-semibold">${{ formatNumber(toSignificant(infoVolume.today.tvl ?? 0)) }}</span>
+            <span class="flex items-center gap-1 rounded-[10px] px-2 py-[2px]" :class="statusVolume.tvl.bg">
+              <BaseIcon name="arrow-fill" size="12" :class="`${statusVolume.tvl.bg} ${statusVolume.tvl.rotate} ${statusVolume.tvl.status}`" />
+              <span class="text-sm font-semibold" :class="statusVolume.tvl.status">{{ statusVolume.tvl.change }}%</span>
             </span>
           </div>
         </div>
@@ -45,20 +45,20 @@
           <div class="flex flex-col gap-[6px]">
             <span class="text-sm">Volume 24h</span>
             <div class="flex items-center gap-3">
-              <span class="text-xl font-semibold">${{ formatNumber((pool.volume24h || 0).toFixed(2)) }}</span>
-              <span class="flex items-center gap-1 rounded-[10px] bg-[#E8FFEB] px-2 py-[2px]">
-                <BaseIcon name="arrow-fill" size="12" class="rotate-180 text-success" />
-                <span class="text-sm font-semibold text-success">0%</span>
+              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.volume.toFixed(2)) }}</span>
+              <span class="flex items-center gap-1 rounded-[10px] px-2 py-[2px]" :class="statusVolume.volume.bg">
+                <BaseIcon name="arrow-fill" size="12" :class="`${statusVolume.volume.bg} ${statusVolume.volume.rotate} ${statusVolume.volume.status}`" />
+                <span class="text-sm font-semibold" :class="statusVolume.volume.status">{{ statusVolume.volume.change }}%</span>
               </span>
             </div>
           </div>
           <div class="flex flex-col gap-[6px]">
             <span class="text-sm">Fee 24h</span>
             <div class="flex items-center gap-3">
-              <span class="text-xl font-semibold">${{ formatNumber(fee24h) }}</span>
-              <span class="flex items-center gap-1 rounded-[10px] bg-[#FFECEF] px-2 py-[2px]">
-                <BaseIcon name="arrow-fill" size="12" class="text-error" />
-                <span class="text-sm font-semibold text-error">0%</span>
+              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.fee.toFixed(2)) }}</span>
+              <span class="flex items-center gap-1 rounded-[10px] px-2 py-[2px]" :class="statusVolume.fee.bg">
+                <BaseIcon name="arrow-fill" size="12" :class="`${statusVolume.fee.bg} ${statusVolume.fee.rotate} ${statusVolume.fee.status}`" />
+                <span class="text-sm font-semibold" :class="statusVolume.fee.status">{{ statusVolume.fee.change }}%</span>
               </span>
             </div>
           </div>
@@ -93,7 +93,7 @@
 
   export interface poolDayDatas {
     date: number
-    feeUSD: string
+    feesUSD: string
     tvlUSD: string
     volumeUSD: string
     liquidity: string
@@ -167,17 +167,17 @@
     }
   })
 
-  const fee24h = computed(() => {
-    const volume = new Decimal(props.pool.volume24h)
-    const fee = new Decimal(props.pool.fee).div(10000).toString()
-    return (
-      volume
-        .mul(fee)
-        .div(10 ** 6)
-        .toSignificantDigits(6)
-        .toString() ?? '0'
-    )
-  })
+  // const fee24h = computed(() => {
+  //   const volume = new Decimal(props.pool.volume24h)
+  //   const fee = new Decimal(props.pool.fee).div(10000).toString()
+  //   return (
+  //     volume
+  //       .mul(fee)
+  //       .div(10 ** 6)
+  //       .toSignificantDigits(6)
+  //       .toString() ?? '0'
+  //   )
+  // })
 
   const currentPrice = computed(() => {
     const sqrtX96 = new Decimal(2).pow(96).toString()
@@ -223,6 +223,65 @@
           //@ts-ignore
           .sort((a: IDataChart, b: IDataChart) => new Date(a.date).getTime() - new Date(b.date).getTime())
       : []
+  })
+
+  const infoVolume = computed(() => {
+    if (data.value?.poolDayDatas.length) {
+      const today = data.value.poolDayDatas[0]
+      const yesterday = data.value.poolDayDatas[1]
+      return {
+        today: {
+          volume: parseFloat(today.volumeUSD ?? '0'),
+          fee: parseFloat(today.feesUSD ?? '0'),
+          tvl: parseFloat(today.tvlUSD ?? '0')
+        },
+        yesterday: {
+          volume: parseFloat(yesterday.volumeUSD ?? '0'),
+          fee: parseFloat(yesterday.feesUSD ?? '0'),
+          tvl: parseFloat(yesterday.tvlUSD ?? '0')
+        }
+      }
+    }
+    return {
+      today: {
+        volume: 0,
+        fee: 0,
+        tvl: 0
+      },
+      yesterday: {
+        volume: 0,
+        fee: 0,
+        tvl: 0
+      }
+    }
+  })
+
+  const statusVolume = computed(() => {
+    const today = infoVolume.value.today
+    const yesterday = infoVolume.value.yesterday
+    const changeTvl = yesterday.tvl ? new Decimal(today.tvl).sub(yesterday.tvl).div(yesterday.tvl).mul(100).abs().toFixed(2) : '0'
+    const changeVolume = yesterday.volume ? new Decimal(today.volume).sub(yesterday.volume).div(yesterday.volume).mul(100).abs().toFixed(2) : '0'
+    const changeFee = yesterday.fee ? new Decimal(today.fee).sub(yesterday.fee).div(yesterday.fee).mul(100).abs().toFixed(2) : '0'
+    return {
+      tvl: {
+        status: today.tvl > yesterday.tvl ? 'text-up' : 'text-down',
+        change: changeTvl,
+        rotate: today.tvl > yesterday.tvl ? 'rotate-180' : '',
+        bg: today.tvl > yesterday.tvl ? 'bg-[#E8FFEB]' : 'bg-[#FFECEF]'
+      },
+      volume: {
+        status: today.volume > yesterday.volume ? 'text-up' : 'text-down',
+        change: changeVolume,
+        rotate: today.volume > yesterday.volume ? 'rotate-180' : '',
+        bg: today.volume > yesterday.volume ? 'bg-[#E8FFEB]' : 'bg-[#FFECEF]'
+      },
+      fee: {
+        status: today.fee > yesterday.fee ? 'text-up' : 'text-down',
+        change: changeFee,
+        rotate: today.fee > yesterday.fee ? 'rotate-180' : '',
+        bg: today.fee > yesterday.fee ? 'bg-[#E8FFEB]' : 'bg-[#FFECEF]'
+      }
+    }
   })
 
   // Hàm thực thi query với pool address
