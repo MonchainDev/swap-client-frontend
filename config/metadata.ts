@@ -17,7 +17,7 @@ const HEAD_META = {
     {
       rel: 'icon',
       type: 'image/x-icon',
-      href: '/favicon.ico' // Path to your favicon (example: /favicon.ico = public/favicon.ico)
+      href: '/logo.png' // Path to your favicon (example: /logo.png = public/logo.png)
     }
   ]
 }
