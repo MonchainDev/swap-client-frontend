@@ -5,18 +5,24 @@
 </template>
 
 <script setup lang="ts">
+  import { SEO_METADATA, HEAD_META } from './config/metadata'
+
   useSeoMeta({
-    title: 'MonChain - Swap & Trade Crypto with Ease',
-    description: 'MonChain is a cutting-edge decentralized exchange (DEX) enabling seamless crypto swaps and trades with low fees and high security.',
-    ogTitle: 'MonChain - Swap & Trade Crypto with Ease',
-    ogDescription: 'Trade and swap cryptocurrencies securely on MonChain, a next-gen DEX with lightning-fast transactions and low fees.',
-    ogImage: '/og-preview.png',
-    ogUrl: 'https://swap.monchain.info',
-    twitterTitle: 'MonChain - The Future of Crypto Trading',
-    twitterDescription: 'Experience fast, secure, and low-cost crypto trading with MonChain. Join the decentralized revolution today!',
-    twitterImage: '/og-preview.png',
-    twitterCard: 'summary_large_image',
-    keywords: 'MonChain, crypto swap, decentralized exchange, DEX, trade crypto, DeFi, blockchain trading, Web3'
+    title: SEO_METADATA.title,
+    description: SEO_METADATA.description,
+    ogTitle: SEO_METADATA.ogTitle,
+    ogDescription: SEO_METADATA.ogDescription,
+    ogImage: SEO_METADATA.ogImage,
+    ogUrl: SEO_METADATA.ogUrl,
+    twitterTitle: SEO_METADATA.twitterTitle,
+    twitterDescription: SEO_METADATA.twitterDescription,
+    twitterImage: SEO_METADATA.twitterImage,
+    twitterCard: SEO_METADATA.twitterCard as 'summary_large_image' | 'summary' | 'app' | 'player' | null | undefined,
+    keywords: SEO_METADATA.keywords
+  })
+
+  useHead({
+    link: HEAD_META.link
   })
 </script>
 
