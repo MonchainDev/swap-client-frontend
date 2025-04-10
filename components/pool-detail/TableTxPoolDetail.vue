@@ -379,14 +379,44 @@
     const txs: ITx[] = []
     // Xử lý mints
     data.value.transactions.forEach((item) => {
-      if (item?.mints && item.mints.length) {
-        item.mints.forEach((mint) => {
+      if (item?.swaps && item.swaps.length) {
+        if (item.swaps.length === 1) {
+          const amount0 = item.swaps[0].amount0
+          const amount1 = item.swaps[0].amount1
           txs.push({
-            ...mint,
-            type: TabValue.ADD,
-            timestamp: mint.timestamp * 1000
+            ...item.swaps[0],
+            amount0: Number(amount0) > Number(amount1) ? amount0 : amount1,
+            amount1: Number(amount0) > Number(amount1) ? amount1 : amount0,
+            token0: {
+              symbol: Number(amount0) > Number(amount1) ? item.swaps[0].token0.symbol : item.swaps[0].token1.symbol
+            },
+            token1: {
+              symbol: Number(amount0) > Number(amount1) ? item.swaps[0].token1.symbol : item.swaps[0].token0.symbol
+            },
+            type: TabValue.SWAP,
+            timestamp: item.swaps[0].timestamp * 1000
           })
-        })
+        } else {
+          const firstAmount0 = item.swaps[0].amount0
+          const firstAmount1 = item.swaps[0].amount1
+          const lastAmount0 = item.swaps[item.swaps.length - 1].amount0
+          const lastAmount1 = item.swaps[item.swaps.length - 1].amount1
+          const symbol0 = Number(firstAmount0) > Number(firstAmount1) ? item.swaps[0].token0.symbol : item.swaps[0].token1.symbol
+          const symbol1 =
+            Number(lastAmount0) > Number(lastAmount1) ? item.swaps[item.swaps.length - 1].token1.symbol : item.swaps[item.swaps.length - 1].token0.symbol
+
+          const amount0 = Number(firstAmount0) > Number(firstAmount1) ? firstAmount0 : firstAmount1
+          const amount1 = Number(lastAmount0) > Number(lastAmount1) ? lastAmount0 : lastAmount1
+          txs.push({
+            ...item.swaps[0],
+            amount0: amount0,
+            amount1: amount1,
+            token0: { symbol: symbol0 },
+            token1: { symbol: symbol1 },
+            type: TabValue.SWAP,
+            timestamp: item.swaps[0].timestamp * 1000
+          })
+        }
       }
       if (item?.burns && item.burns.length) {
         item.burns.forEach((burn) => {
@@ -397,12 +427,12 @@
           })
         })
       }
-      if (item?.swaps && item.swaps.length) {
-        item.swaps.forEach((swap) => {
+      if (item?.mints && item.mints.length) {
+        item.mints.forEach((mint) => {
           txs.push({
-            ...swap,
-            type: TabValue.SWAP,
-            timestamp: swap.timestamp * 1000
+            ...mint,
+            type: TabValue.ADD,
+            timestamp: mint.timestamp * 1000
           })
         })
       }

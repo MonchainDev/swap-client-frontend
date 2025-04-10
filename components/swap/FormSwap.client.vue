@@ -557,8 +557,7 @@
     const txHash = await sendTransaction(config, {
       to: contractSwapRouterV3,
       data: calldata,
-      value: isNative ? BigInt(inputAmount) : hexToBigInt('0x0'),
-      gasPrice: BigInt(3000000)
+      value: isNative ? BigInt(inputAmount) : hexToBigInt('0x0')
     })
 
     const { status } = await waitForTransactionReceipt(config, {
