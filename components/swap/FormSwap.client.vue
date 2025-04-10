@@ -266,25 +266,25 @@
     }
   }
 
-  const calcTradingFee = () => {
-    const routes = (bestTrade.value as SwapOutput)?.routes
+  // const calcTradingFee = () => {
+  //   const routes = (bestTrade.value as SwapOutput)?.routes
 
-    let totalFeeWei = BigInt(0)
-    for (const route of routes) {
-      const inputAmountRaw = route.inputAmount.numerator
-      const inputAmount = BigInt(inputAmountRaw)
-      const pools = (route.pools || []) as V3Pool[]
-      for (const pool of pools) {
-        const poolFeeBps = BigInt(pool.fee || 0)
-        // Calculate fee for this pool (inputAmount * fee / 1000000)
-        const poolFeeWei = (inputAmount * poolFeeBps) / BigInt(1000000)
-        totalFeeWei += poolFeeWei
-      }
-    }
-    console.log('🚀 ~ calcTradingFee ~ totalFeeWei:', totalFeeWei)
+  //   let totalFeeWei = BigInt(0)
+  //   for (const route of routes) {
+  //     const inputAmountRaw = route.inputAmount.numerator
+  //     const inputAmount = BigInt(inputAmountRaw)
+  //     const pools = (route.pools || []) as V3Pool[]
+  //     for (const pool of pools) {
+  //       const poolFeeBps = BigInt(pool.fee || 0)
+  //       // Calculate fee for this pool (inputAmount * fee / 1000000)
+  //       const poolFeeWei = (inputAmount * poolFeeBps) / BigInt(1000000)
+  //       totalFeeWei += poolFeeWei
+  //     }
+  //   }
+  //   console.log('🚀 ~ calcTradingFee ~ totalFeeWei:', totalFeeWei)
 
-    return totalFeeWei
-  }
+  //   return totalFeeWei
+  // }
 
   let latestRequestId = 0
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
@@ -337,8 +337,14 @@
         form.value.amountOut = _bestTrade.outputAmountWithGasAdjusted?.toSignificant(6) ?? _bestTrade.outputAmount.toSignificant(6)
         form.value.minimumAmountOut = _bestTrade.minimumAmountOut?.toSignificant(6)
         form.value.maximumAmountIn = ''
-        form.value.priceImpact = _bestTrade.priceImpact.toFixed()
-        form.value.tradingFee = calcTradingFee()
+
+        // calc trading fee and price impact
+        const { lpFeeAmount, priceImpactWithoutFee } = computeTradePriceBreakdown(_bestTrade)
+        console.log('🚀 ~ handleInput ~ priceImpactWithoutFee:', priceImpactWithoutFee)
+        console.log('🚀 ~ handleInput ~ lpFeeAmount:', lpFeeAmount)
+        form.value.priceImpact = priceImpactWithoutFee ? (priceImpactWithoutFee?.lessThan(ONE_BIPS) ? '<0.01' : priceImpactWithoutFee?.toFixed(2)) : ''
+        form.value.tradingFee = lpFeeAmount ? (formatAmount(lpFeeAmount, 4)?.toString() ?? '') : ''
+
         isFetchQuote.value = false
       } else {
         form.value.amountOut = amount
@@ -355,6 +361,9 @@
           chainId: currentNetwork.value.chainId // chainId of wallet
         })
 
+        const rs = computeTradePriceBreakdown(_bestTrade)
+        console.log('🚀 ~ lpFeeAmount ~ :', rs.lpFeeAmount?.toExact())
+        console.log('🚀 ~ priceImpactWithoutFee ~ :', rs.priceImpactWithoutFee?.toSignificant(6))
         if (requestId !== latestRequestId) {
           console.log('🚀 ~ handleInput ~ Aborting: newer request detected')
           return
@@ -363,11 +372,16 @@
         if (_bestTrade) {
           bestTrade.value = _bestTrade
           form.value.amountIn = _bestTrade.inputAmountWithGasAdjusted?.toSignificant(6) ?? _bestTrade.inputAmount.toSignificant(6)
-          form.value.tradingFee = bestTrade.value.tradingFee
           form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toSignificant(6)
           form.value.minimumAmountOut = ''
-          form.value.priceImpact = bestTrade.value.priceImpact.toFixed()
           form.value.fee = _bestTrade.fee
+
+          // calc trading fee and price impact
+          const { lpFeeAmount, priceImpactWithoutFee } = computeTradePriceBreakdown(_bestTrade)
+          console.log('🚀 ~ handleInput ~ priceImpactWithoutFee:', priceImpactWithoutFee)
+          console.log('🚀 ~ handleInput ~ lpFeeAmount:', lpFeeAmount)
+          form.value.priceImpact = priceImpactWithoutFee ? (priceImpactWithoutFee?.lessThan(ONE_BIPS) ? '<0.01' : priceImpactWithoutFee?.toFixed(2)) : ''
+          form.value.tradingFee = lpFeeAmount ? (formatAmount(lpFeeAmount, 4)?.toString() ?? '') : ''
         }
       }
       isFetchQuote.value = false
@@ -627,7 +641,7 @@
       stepSwap.value = 'SELECT_TOKEN'
       form.value.amountIn = ''
       form.value.amountOut = ''
-      form.value.tradingFee = 0
+      form.value.tradingFee = '0'
     } catch (error) {
       console.log('🚀 ~ swap ~ error:', error)
       console.info(' (FormSwap.client.vue:319) sign sao sao sao saii  xong r ne')

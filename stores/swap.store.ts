@@ -32,7 +32,7 @@ export const useSwapStore = defineStore('swap', () => {
     maximumAmountIn: '',
     priceImpact: '',
     fee: 0,
-    tradingFee: 0
+    tradingFee: '0'
   })
 
   const { data: balance0 } = useBalance(
@@ -130,7 +130,7 @@ export const useSwapStore = defineStore('swap', () => {
       maximumAmountIn: '',
       priceImpact: '',
       fee: 0,
-      tradingFee: 0
+      tradingFee: '0'
     }
     isConfirmApprove.value = false
     isConfirmSwap.value = false

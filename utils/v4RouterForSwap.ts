@@ -119,14 +119,12 @@ export const getBestTradeV4ForSwap = async ({ token0, token1, inputAmount, type,
         outputAmountWithGasAdjusted = outputAmountWithGasAdjusted.add(bestTrade.outputAmountWithGasAdjusted)
         newTradeList.push(...(bestTradeInAmount as Trade<Currency, Token, TradeType>[]))
         remainAmountIn = remainAmountIn.subtract(recalInputAmount)
-        console.log('🚀 ~ getBestTradeV4ForSwap ~ recalInputAmount:', recalInputAmount)
 
         tradingFee += (Number(fee.toString()) / BASE_FEE_PERCENT) * Number(recalInputAmount.numerator)
         const percent = (Number(recalInputAmount.toExact()) / Number(currencyAmount.toExact())) * 100
 
         // cal price impact
         const midPrice = bestTradeInAmount[0].swaps[0].route.midPrice
-        console.log('🚀 ~ getBestTradeV4ForSwap ~ midPrice:', midPrice)
         spotOutputAmount = spotOutputAmount.add(midPrice.quote(recalInputAmount))
 
         routeOuts.push({
