@@ -80,31 +80,23 @@
   const min = computed(() => {
     if (!props.position) return 0
 
-    const { priceUpper, baseDecimals, quoteDecimals } = props.position
-    if (!priceUpper) return 0
-
-    // Điều chỉnh decimals để lấy BNB/USDT (quote/base)
-    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
-    const priceQuotePerBase = priceUpper / decimalAdjustment
-
-    // Đảo ngược để lấy USDT/BNB (base/quote)
-    const priceBasePerQuote = 1 / priceQuotePerBase
-
-    return formatNumber(toSignificant(priceBasePerQuote, 6))
-  })
-  const max = computed(() => {
-    if (!props.position) return 0
     const { priceLower, baseDecimals, quoteDecimals } = props.position
     if (!priceLower) return 0
 
-    // Điều chỉnh decimals để lấy BNB/USDT (quote/base)
     const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
     const priceQuotePerBase = priceLower / decimalAdjustment
 
-    // Đảo ngược để lấy USDT/BNB (base/quote)
-    const priceBasePerQuote = 1 / priceQuotePerBase
+    return formatNumber(toSignificant(priceQuotePerBase, 6))
+  })
+  const max = computed(() => {
+    if (!props.position) return 0
+    const { priceUpper, baseDecimals, quoteDecimals } = props.position
+    if (!priceUpper) return 0
 
-    return formatNumber(toSignificant(priceBasePerQuote, 6))
+    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
+    const priceQuotePerBase = priceUpper / decimalAdjustment
+
+    return formatNumber(toSignificant(priceQuotePerBase, 6))
   })
 
   const invertMin = computed(() => {

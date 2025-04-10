@@ -24,8 +24,8 @@
       <div class="break-all text-gray-6">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</div>
     </div>
     <div class="flex flex-col justify-center pr-[10px] text-sm">
-      <span>Min: {{ formatNumber(min) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
-      <span>Max: {{ formatNumber(max) }} {{ props.position.baseSymbol }}/{{ props.position.quoteSymbol }}</span>
+      <span>Min: {{ formatNumber(min) }} {{ props.position.quoteSymbol }}/{{ props.position.baseSymbol }}</span>
+      <span>Max: {{ formatNumber(max) }} {{ props.position.quoteSymbol }}/{{ props.position.baseSymbol }}</span>
     </div>
     <div class="flex flex-col justify-center text-sm">
       <span>≈ ${{ formatNumberAbbreviation(priceUdtTotal) }}</span>
@@ -137,31 +137,23 @@
   })
 
   const min = computed(() => {
-    const { priceUpper, baseDecimals, quoteDecimals } = props.position
-    if (!priceUpper) return 0
-
-    // Điều chỉnh decimals để lấy BNB/USDT (quote/base)
-    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
-    const priceQuotePerBase = priceUpper / decimalAdjustment
-
-    // Đảo ngược để lấy USDT/BNB (base/quote)
-    const priceBasePerQuote = 1 / priceQuotePerBase
-
-    return formatNumber(toSignificant(priceBasePerQuote, 6))
-  })
-
-  const max = computed(() => {
     const { priceLower, baseDecimals, quoteDecimals } = props.position
     if (!priceLower) return 0
 
-    // Điều chỉnh decimals để lấy BNB/USDT (quote/base)
     const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
     const priceQuotePerBase = priceLower / decimalAdjustment
 
-    // Đảo ngược để lấy USDT/BNB (base/quote)
-    const priceBasePerQuote = 1 / priceQuotePerBase
+    return formatNumber(toSignificant(priceQuotePerBase, 6))
+  })
 
-    return formatNumber(toSignificant(priceBasePerQuote, 6))
+  const max = computed(() => {
+    const { priceUpper, baseDecimals, quoteDecimals } = props.position
+    if (!priceUpper) return 0
+
+    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
+    const priceQuotePerBase = priceUpper / decimalAdjustment
+
+    return formatNumber(toSignificant(priceQuotePerBase, 6))
   })
 
   const showStake = computed(() => {
