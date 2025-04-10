@@ -14,8 +14,8 @@ export const useBridgeStore = defineStore('bridge', () => {
   const listNetwork = ref<INetwork[]>([...LIST_NETWORK])
   const listToken = ref<IToken[]>([])
   const listTokenFrom = ref<IToken[]>([])
-  const fromNetwork = ref<INetwork>()
-  const toNetwork = ref<INetwork>()
+  const fromNetwork = ref<INetwork>(LIST_NETWORK[0])
+  const toNetwork = ref<INetwork>(LIST_NETWORK[1])
   const token0 = ref<Token>()
   const token1 = ref<Token>()
 
@@ -30,7 +30,7 @@ export const useBridgeStore = defineStore('bridge', () => {
   const { address, chainId } = useAccount()
   const { setOpenPopup } = useBaseStore()
   const config = useConfig()
-
+  
   const form = ref<IFormBridge>({
     token0: {
       ...EMPTY_TOKEN
@@ -146,9 +146,13 @@ export const useBridgeStore = defineStore('bridge', () => {
             name: item.tokenSymbol
           }))
         : []
+      const tokenDefault = listToken.value.find(item => item.symbol === 'MON')
+      if (tokenDefault) {
+        form.value.token = tokenDefault
+      }
     },
     watch: [() => !!toNetwork.value?.network],
-    immediate: false
+    immediate: true
   })
 
   const { data: _listTokenFromRs } = useLazyFetch<IToken[]>('/api/network/token', {
@@ -172,11 +176,20 @@ export const useBridgeStore = defineStore('bridge', () => {
     immediate: true
   })
 
-  const { data: _listNetworkRs } = useLazyFetch<INetwork[]>('/api/network/all', {
+  const { data: _listNetworkRs } = useFetch<INetwork[]>('/api/network/all', {
     onResponse({ response: { _data } }) {
       listNetwork.value = _data || []
+      const networkFrom = listNetwork.value.find(item => item.network === 'MON')
+      const networkTo = listNetwork.value.find(item => item.network === 'BSC')
+      if (networkFrom) {
+        fromNetwork.value = {...networkFrom, logo: '/logo-mon-chain.png'}
+      }
+      if (networkTo) {
+        toNetwork.value = {...networkTo, logo: '/logo-bnb-chain.png'}
+      }
     }
   })
+  
 
   const resetStore = () => {
     form.value = {
