@@ -172,7 +172,7 @@
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
   // import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
   import { type Route, type V3Pool } from '@monchain/smart-router'
-  import { CurrencyAmount, Token, TradeType } from '@monchain/swap-sdk-core'
+  import { Token, TradeType } from '@monchain/swap-sdk-core'
   import Decimal from 'decimal.js'
   // import swapRouterABI from "~/constant/abi/swapRouter.json";
   import { EXPLORER_NAME, URL_SCAN } from '~/config/scan'
@@ -477,14 +477,14 @@
               throw new Error('Fee should not be in pool')
             }
             feeBridge += (Number(pool?.fee || 0) / BASE_FEE_PERCENT) * Number(outputAmount.numerator / outputAmount.denominator)
-            if ("reserve0" in pool && pool.reserve0?.currency.address === currencyB.address) {
+            if ('reserve0' in pool && pool.reserve0?.currency.address === currencyB.address) {
               remainAmountOut += BigInt(pool.reserve0?.numerator ?? 0) / BigInt(pool.reserve0?.denominator ?? 1)
-            } else if ("reserve1" in pool && pool.reserve1?.currency.address === currencyB.address) {
+            } else if ('reserve1' in pool && pool.reserve1?.currency.address === currencyB.address) {
               remainAmountOut += BigInt(pool.reserve1?.numerator ?? 0) / BigInt(pool.reserve1?.denominator ?? 1)
             }
           }
         }
-        console.info(" ~ FormBridge.client.vue:491 ~ remainAmountOut:", remainAmountOut);
+        console.info(' ~ FormBridge.client.vue:491 ~ remainAmountOut:', remainAmountOut)
         if (remainAmountOut <= amountInWei) {
           notEnoughLiquidity.value = true
           return

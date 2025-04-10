@@ -26,7 +26,7 @@
     <div class="flex justify-between">
       <span class="text-sm">Price Impact</span>
       <div class="flex flex-col items-end text-sm">
-        <span class="font-bold"> {{ Math.abs(Number(form.priceImpact || 0)) }}%</span>
+        <span class="font-bold"> {{ form.priceImpact }}%</span>
       </div>
     </div>
     <template v-if="editSlippage">
@@ -134,7 +134,8 @@
   })
 
   const formatTradingFee = computed(() => {
-    return toSignificant(new Decimal(form.value.tradingFee.toString()).div(10 ** Number(form.value.token0.decimals || 0)).toString())
+    return form.value.tradingFee
+    // return toSignificant(new Decimal(form.value.tradingFee.toString()).div(10 ** Number(form.value.token0.decimals || 0)).toString())
   })
 
   const exchangeRate = computed(() => {

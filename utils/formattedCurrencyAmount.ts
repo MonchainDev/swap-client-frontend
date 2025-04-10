@@ -22,7 +22,7 @@ function formatFraction(fraction?: Fraction | null | undefined, precision: numbe
   return fraction.toSignificant(precision, undefined, rounding)
 }
 
-function formatAmount(amount?: CurrencyAmount<Currency> | null | undefined, precision?: number | undefined) {
+export function formatAmount(amount?: CurrencyAmount<Currency> | null | undefined, precision?: number | undefined) {
   if (!amount) {
     return undefined
   }
