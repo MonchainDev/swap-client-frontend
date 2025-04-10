@@ -318,7 +318,7 @@
         const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
         console.log('🚀 ~ handleInput ~ inputAmount', inputAmount)
         // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
-        const _bestTrade = await getBestTradeV4({
+        const _bestTrade = await getBestTradeV4ForSwap({
           token0: tokenA,
           token1: tokenB,
           inputAmount: inputAmount,
@@ -334,7 +334,7 @@
 
         bestTrade.value = _bestTrade
         poolAddress.value = (_bestTrade?.routes[0].pools[0] as V3Pool)?.address ?? ''
-        form.value.amountOut = _bestTrade.outputAmount.toSignificant(6)
+        form.value.amountOut = _bestTrade.outputAmountWithGasAdjusted?.toSignificant(6) ?? _bestTrade.outputAmount.toSignificant(6)
         form.value.minimumAmountOut = _bestTrade.minimumAmountOut?.toSignificant(6)
         form.value.maximumAmountIn = ''
         form.value.priceImpact = _bestTrade.priceImpact.toFixed()
@@ -347,7 +347,7 @@
         /**
          * TODO: chain id is chain of wallet, not chain of state pinia
          */
-        const _bestTrade = await getBestTradeV4({
+        const _bestTrade = await getBestTradeV4ForSwap({
           token0: tokenA,
           token1: tokenB,
           inputAmount: inputAmount,
@@ -362,7 +362,7 @@
 
         if (_bestTrade) {
           bestTrade.value = _bestTrade
-          form.value.amountIn = bestTrade.value.inputAmount.toSignificant(6)
+          form.value.amountIn = _bestTrade.inputAmountWithGasAdjusted?.toSignificant(6) ?? _bestTrade.inputAmount.toSignificant(6)
           form.value.tradingFee = bestTrade.value.tradingFee
           form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toSignificant(6)
           form.value.minimumAmountOut = ''
@@ -557,7 +557,8 @@
     const txHash = await sendTransaction(config, {
       to: contractSwapRouterV3,
       data: calldata,
-      value: isNative ? BigInt(inputAmount) : hexToBigInt('0x0')
+      value: isNative ? BigInt(inputAmount) : hexToBigInt('0x0'),
+      gasPrice: BigInt(3000000)
     })
 
     const { status } = await waitForTransactionReceipt(config, {
