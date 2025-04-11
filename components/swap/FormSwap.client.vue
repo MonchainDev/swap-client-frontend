@@ -340,10 +340,13 @@
           return
         }
 
+        // slippage * 100 because computeSlippageAdjustedAmounts expect slippage in bips
+        const { OUTPUT } = computeSlippageAdjustedAmounts(_bestTrade, +slippage.value * 100)
+
         bestTrade.value = _bestTrade
         poolAddress.value = (_bestTrade?.routes[0].pools[0] as V3Pool)?.address ?? ''
-        form.value.amountOut = _bestTrade.outputAmountWithGasAdjusted?.toSignificant(6) ?? _bestTrade.outputAmount.toSignificant(6)
-        form.value.minimumAmountOut = _bestTrade.minimumAmountOut?.toSignificant(6)
+        form.value.amountOut = _bestTrade.outputAmount.toSignificant(6)
+        form.value.minimumAmountOut = OUTPUT?.toSignificant(6)
         form.value.maximumAmountIn = ''
 
         // calc trading fee and price impact
@@ -378,9 +381,12 @@
         }
 
         if (_bestTrade) {
+          // slippage * 100 because computeSlippageAdjustedAmounts expect slippage in bips
+          const { INPUT } = computeSlippageAdjustedAmounts(_bestTrade, +slippage.value * 100)
+
           bestTrade.value = _bestTrade
-          form.value.amountIn = _bestTrade.inputAmountWithGasAdjusted?.toSignificant(6) ?? _bestTrade.inputAmount.toSignificant(6)
-          form.value.maximumAmountIn = bestTrade.value?.maximumAmountIn?.toSignificant(6)
+          form.value.amountIn = _bestTrade.inputAmount.toSignificant(6)
+          form.value.maximumAmountIn = INPUT?.toSignificant(6)
           form.value.minimumAmountOut = ''
           form.value.fee = _bestTrade.fee
 

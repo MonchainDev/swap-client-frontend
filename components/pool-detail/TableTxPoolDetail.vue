@@ -41,7 +41,7 @@
           </template>
         </ElTableColumn>
       </BaseTable>
-      <div v-if="tabActive !== TabValue.ALL && flattenedTransactions.length" class="mt-5 flex justify-end space-x-4 pr-4">
+      <!-- <div v-if="tabActive !== TabValue.ALL && flattenedTransactions.length" class="mt-5 flex justify-end space-x-4 pr-4">
         <button
           class="solid flex items-center gap-1 rounded-lg border border-gray-3 px-4 py-2 text-sm hover:border-hyperlink"
           :class="{ 'pointer-events-none bg-gray-3': !skip }"
@@ -56,7 +56,7 @@
         >
           Next
         </button>
-      </div>
+      </div> -->
     </template>
     <div v-else v-loading="isLoading || isRefetching" class="min-h-[200px]">
       <template v-if="flattenedTransactions.length === 0">
@@ -91,7 +91,7 @@
             <span class="text-sm">{{ useTimeAgo(item.timestamp, { showSecond: true }) }}</span>
           </div>
         </ElScrollbar>
-        <div v-if="tabActive !== TabValue.ALL && flattenedTransactions.length" class="mt-5 flex justify-center space-x-4 pr-4">
+        <!-- <div v-if="tabActive !== TabValue.ALL && flattenedTransactions.length" class="mt-5 flex justify-center space-x-4 pr-4">
           <button
             class="solid flex items-center gap-1 rounded-lg border border-gray-3 px-4 py-2 text-sm"
             :class="{ 'pointer-events-none bg-gray-3': !skip }"
@@ -106,7 +106,7 @@
           >
             Next
           </button>
-        </div>
+        </div> -->
       </template>
     </div>
   </div>
@@ -256,8 +256,8 @@
     }
   `
   const SWAP_QUERY = gql`
-    query AllTransactions($poolAddress: String!, $skip: Int = 0) {
-      transactions(where: { swaps_: { pool: $poolAddress } }, orderBy: timestamp, orderDirection: desc, skip: $skip, first: 10) {
+    query AllTransactions($poolAddress: String!) {
+      transactions(where: { swaps_: { pool: $poolAddress } }, orderBy: timestamp, orderDirection: desc) {
         swaps {
           origin
           amount0
@@ -278,8 +278,8 @@
     }
   `
   const ADD_QUERY = gql`
-    query AllTransactions($poolAddress: String!, $skip: Int = 0) {
-      transactions(where: { mints_: { pool: $poolAddress } }, orderBy: timestamp, orderDirection: desc, skip: $skip, first: 10) {
+    query AllTransactions($poolAddress: String!) {
+      transactions(where: { mints_: { pool: $poolAddress } }, orderBy: timestamp, orderDirection: desc) {
         mints {
           origin
           amount0
@@ -298,8 +298,8 @@
     }
   `
   const REMOVE_QUERY = gql`
-    query AllTransactions($poolAddress: String!, $skip: Int = 0) {
-      transactions(where: { burns_: { pool: $poolAddress } }, orderBy: timestamp, orderDirection: desc, skip: $skip, first: 10) {
+    query AllTransactions($poolAddress: String!) {
+      transactions(where: { burns_: { pool: $poolAddress } }, orderBy: timestamp, orderDirection: desc) {
         burns {
           origin
           amount0
@@ -360,7 +360,7 @@
     retry: 2
   })
 
-  const handleSkipChange = (type: 'BACK' | 'NEXT') => {
+  const _handleSkipChange = (type: 'BACK' | 'NEXT') => {
     if (type === 'BACK') {
       skip.value = skip.value === 0 ? 0 : skip.value - first
     } else {
@@ -480,6 +480,7 @@
 
       if (item?.burns?.length) {
         item.burns.forEach((burn) => {
+          if (parseFloat(burn.amount0) === 0 && parseFloat(burn.amount1) === 0) return
           txs.push({
             ...burn,
             type: TabValue.REMOVE,
