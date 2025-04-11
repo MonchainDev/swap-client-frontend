@@ -70,7 +70,7 @@ export function createViemPublicClientGetter({ viemClients: viemClientsOverride,
 export const CLIENT_CONFIG = {
   batch: {
     multicall: {
-      batchSize: 1024 * 200,
+      batchSize: 1024 * 25, // 25KB
       wait: 16
     }
   },
