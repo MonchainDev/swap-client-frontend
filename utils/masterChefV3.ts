@@ -128,9 +128,7 @@ export abstract class MasterChefV3 {
         ? (options.expectedCurrencyOwed1.currency as Token)
         : (options.expectedCurrencyOwed0.currency as Token)
       const tokenAmount = options.expectedCurrencyOwed0.currency.isNative ? options.expectedCurrencyOwed1.quotient : options.expectedCurrencyOwed0.quotient
-      // calldatas.push(Payments.encodeUnwrapWMON(ethAmount, recipient))
-      calldatas.push(Payments.encodeUnwrapWMON9(ethAmount, recipient))
-
+      calldatas.push(Payments.encodeUnwrapWMON(ethAmount, recipient))
       calldatas.push(Payments.encodeSweepToken(token, tokenAmount, recipient))
     }
 
