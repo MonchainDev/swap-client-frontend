@@ -4,9 +4,9 @@ import type { Address, Hash } from 'viem'
 
 /** DEPLOYER_ADDRESSES */
 const DEPLOYER_ADDRESSES = {
-  [ChainId.MON_TESTNET]: '0xF9012437655F666bcB07f50Cc471f531629342Df',
+  [ChainId.MON_TESTNET]: '0xa049AC06B8d4c8563a45FE95ea6deD1eE1f19840',
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0xea1c0c1478a748a6bdba0e9288e269af0cc4a221',
+  [ChainId.BSC_TESTNET]: '0x0bB61547Ce82b18D6cbE45b66185F838760Ee3D2',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, Address>
@@ -42,9 +42,9 @@ const FACTORY_ADDRESSES = {
 
 /** MasterChef V3 */
 const masterChefV3Addresses = {
-  [ChainId.MON_TESTNET]: '0xD82C9f6CC1B5c56fBD1ad7CE8B450cdcBAFA775d',
+  [ChainId.MON_TESTNET]: '0x24Dc90b71Cd760C927b067Ff7e48a584154Cd2C5',
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0x3fFBCe2e4c0C023e43C1f529FC052a3eAb0Dc5A1',
+  [ChainId.BSC_TESTNET]: '0xf9FBa21888B7E274AAA762E60d3e4637eCC09d3b',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, string>
