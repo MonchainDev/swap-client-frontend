@@ -73,7 +73,7 @@ export const useBridgeStore = defineStore('bridge', () => {
       const query = { network: fromNetwork.value?.network, crossChain: 'Y' }
       const { data } = await useFetch<IToken[]>('/api/network/token', { query })
       const _token0 = data.value?.find((item) => item.tokenSymbol === formTokenSymbol)
-      console.info('token0', _token0)
+      console.info('store-token0', _token0)
       token0.value = formTokenSymbol
         ? new Token(
             fromNetwork.value?.chainId as ChainId,
@@ -91,9 +91,11 @@ export const useBridgeStore = defineStore('bridge', () => {
       }
       if (token0.value) {
         const _balance = Number(await getBalanceToken(address.value, token0.value.address as `0x${string}`))
+          console.info(" ~ bridge.store.ts:95 ~ _balance:", _balance);
         balance0.value = Decimal(_balance)
           .div(10 ** token0.value.decimals)
           .toNumber()
+          console.info(" ~ bridge.store.ts:99 ~ balance0:", balance0.value);
       } else {
         balance0.value = 0
       }

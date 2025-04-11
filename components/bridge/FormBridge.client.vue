@@ -146,7 +146,7 @@
       </button>
     </template>
 
-    <PopupSellToken :list-token="listToken" @select="handleSelectToken" />
+    <PopupSellToken :list-token="listTokenFrom" @select="handleSelectToken" />
   </div>
 </template>
 
@@ -297,7 +297,7 @@
   const handleOpenPopupSelectToken = () => {
     if (stepBridge.value === 'CONFIRM_BRIDGE') return
     setOpenPopup('popup-sell-token', true)
-    console.info('tokens: ', listToken.value)
+    console.info('tokens: ', listTokenFrom.value)
   }
 
   async function handleSelectToNetwork() {

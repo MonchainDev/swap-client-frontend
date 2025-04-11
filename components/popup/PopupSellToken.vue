@@ -21,8 +21,8 @@
         </template>
         <template v-if="showNetwork" #suffix>
           <div class="flex min-w-[136px] items-center justify-center gap-[9px] rounded-lg bg-white p-[6px] sm:hidden">
-            <img :src="toNetwork?.logo" alt="logo" class="size-6 rounded-lg" />
-            <span class="text-xs font-semibold text-primary">{{ toNetwork?.network }}</span>
+            <img :src="fromNetwork?.logo" alt="logo" class="size-6 rounded-lg" />
+            <span class="text-xs font-semibold text-primary">{{ fromNetwork?.network }}</span>
           </div>
         </template>
       </ElInput>
@@ -84,7 +84,7 @@
   const { isConnected } = useAccount()
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { toNetwork } = storeToRefs(useBridgeStore())
+  const { fromNetwork } = storeToRefs(useBridgeStore())
 
   const search = ref('')
   const loading = ref(false)
