@@ -285,10 +285,10 @@
   const manuallyInverted = ref(false)
 
   const priceLower = computed(() => {
-    return manuallyInverted.value ? priceFromPosition.value?.priceUpper?.invert() : priceFromPosition.value?.priceLower
+    return inverted.value ? priceFromPosition.value?.priceUpper?.invert() : priceFromPosition.value?.priceLower
   })
   const priceUpper = computed(() => {
-    return manuallyInverted.value ? priceFromPosition.value?.priceLower?.invert() : priceFromPosition.value?.priceUpper
+    return inverted.value ? priceFromPosition.value?.priceLower?.invert() : priceFromPosition.value?.priceUpper
   })
   const base = computed(() => (manuallyInverted.value ? priceFromPosition.value?.quote : priceFromPosition.value?.base))
   // const quote = computed(() => (manuallyInverted.value ? priceFromPosition.value?.base : priceFromPosition.value?.quote))
@@ -515,7 +515,10 @@
       const { burns, collects, mints, swaps } = position
 
       return [
-        ...burns.flatMap((tx) => ({ ...tx, type: TabValue.REMOVE })),
+        ...burns.flatMap((tx) => {
+          if (parseFloat(tx.amount0) === 0 && parseFloat(tx.amount1) === 0) return []
+          return { ...tx, type: TabValue.REMOVE }
+        }),
         ...collects.flatMap((tx) => ({ ...tx, type: TabValue.COLLECT })),
         ...mints.flatMap((tx) => ({ ...tx, type: TabValue.ADD })),
         ...swaps.flatMap((tx) => ({ ...tx, type: TabValue.SWAP }))

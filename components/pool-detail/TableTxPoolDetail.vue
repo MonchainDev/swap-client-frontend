@@ -480,6 +480,7 @@
 
       if (item?.burns?.length) {
         item.burns.forEach((burn) => {
+          if (parseFloat(burn.amount0) === 0 && parseFloat(burn.amount1) === 0) return
           txs.push({
             ...burn,
             type: TabValue.REMOVE,
