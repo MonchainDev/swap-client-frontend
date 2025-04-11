@@ -36,20 +36,21 @@ const getV4Router = async (
       clientProvider: () => publicClient,
       currencyA: tokenIn,
       currencyB: tokenOut,
-      gasLimit: BigInt(10 ** 7) // 10M gas limit
+      gasLimit: BigInt(20 * 10 ** 6) // 20M gas limit
     })
     const pools = [...v3Pools]
     console.log('🚀 ~ pools:', pools)
     const trade = await V4Router.getBestTrade(amount, quoteCurrency, tradeType, {
       gasPriceWei: () => publicClient.getGasPrice(),
       candidatePools: pools,
-      maxHops: 2,
-      maxSplits: 2
+      maxHops: 3,
+      maxSplits: undefined // undefined = no limit
     })
     console.log('🚀 ~ getV4Router ~ trade:', trade)
     if (!trade) {
       throw new Error('No trade found')
     }
+
     return [trade]
   } catch (error) {
     console.log('🚀 ~ error:', error)
@@ -151,6 +152,8 @@ export const getBestTradeV4ForSwap = async ({ token0, token1, inputAmount, type,
 
       priceImpact = spotOutputAmount.subtract(totalOutputA).divide(spotOutputAmount)
       const minimumAmountOut = totalOutputA.multiply(100 - Number(slippage.value)).divide(100)
+      console.log('🚀 ~ getBestTradeV4ForSwap ~ totalOutputA:', totalOutputA.toExact())
+      console.log('🚀 ~ getBestTradeV4ForSwap ~ res.outputAmountWithGasAdjusted:', outputAmountWithGasAdjusted.toExact())
 
       const res = {
         tradingFee: tradingFee,
@@ -176,7 +179,6 @@ export const getBestTradeV4ForSwap = async ({ token0, token1, inputAmount, type,
       if (!bestTrades) {
         throw new Error('No trade found')
       }
-      console.info('🚀 ~ getBestTradeV4ForSwap ~ bestTradesOut', bestTrades)
 
       let remainOutputAmount = currencyAmount
       let totalInputA: CurrencyAmount<Currency> = CurrencyAmount.fromRawAmount(token0Currency, 0n)
@@ -222,7 +224,7 @@ export const getBestTradeV4ForSwap = async ({ token0, token1, inputAmount, type,
 
         // cal price impact
         const midPrice = bestTradeInAmount[0].swaps[0].route.midPrice
-        console.info('🚀 ~ getBestTradeV4ForSwap ~ recalOutputAmount:', recalOutputAmount.wrapped)
+        // console.info('🚀 ~ getBestTradeV4ForSwap ~ recalOutputAmount:', recalOutputAmount.wrapped)
         // spotInputAmount = spotInputAmount.add(midPrice.quoteCurrency(recalOutputAmount))
         spotInputAmount = spotInputAmount.add(midPrice.invert().quote(recalOutputAmount))
 
@@ -236,7 +238,7 @@ export const getBestTradeV4ForSwap = async ({ token0, token1, inputAmount, type,
           outputAmount: bestTradeInAmount[0].outputAmount
         })
 
-        console.info('🚀 ~ getBestTradeV4ForSwap ~ remainAmountIn', remainOutputAmount)
+        // console.info('🚀 ~ getBestTradeV4ForSwap ~ remainAmountIn', remainOutputAmount)
         if (remainOutputAmount.lessThan(0) || remainOutputAmount.equalTo(0)) {
           break
         }
