@@ -281,9 +281,9 @@
           tvl: today.tvlUSD
         },
         yesterday: {
-          volume: yesterday.volumeUSD,
-          fee: yesterday.feeUSD,
-          tvl: yesterday.tvlUSD
+          volume: yesterday?.volumeUSD ?? 0,
+          fee: yesterday?.feeUSD ?? 0,
+          tvl: yesterday?.tvlUSD ?? 0
         }
       }
     }
@@ -370,7 +370,6 @@
 
   function calculateMetrics(poolDayData: poolDayDatas): IMetric {
     const pool = poolDayData.pool
-    console.log(new Date(poolDayData.date * 1000).toLocaleDateString())
 
     const tvlUSD =
       parseFloat(pool.totalValueLockedToken0) * parseFloat(pool.token0.derivedUSD) +
