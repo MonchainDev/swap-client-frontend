@@ -96,7 +96,7 @@
   })
   const { isConnected } = useAccount()
   const formattedBalance = computed(() => {
-    return props.isSelected && props.token ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
+    return props.isSelected && props.token.address ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
   })
 
   const amountUsd = computed(() => {

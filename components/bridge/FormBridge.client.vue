@@ -73,13 +73,13 @@
     <div class="mt-3 w-full rounded-lg border border-dashed border-gray-4 px-8 py-4 sm:mt-4 sm:px-4 sm:pt-3">
       <div class="flex justify-between">
         <span class="text-sm text-primary"> You Receive </span>
-        <div v-if="token1?.address && form.token.address" class="flex flex-col gap-1 text-right">
+        <div v-if="token1 !== undefined && form.token?.address" class="flex flex-col gap-1 text-right">
           <p class="receive">{{ amountOut }}</p>
           <div v-if="toNetwork?.chainId" class="flex items-center gap-1">
             <img src="/public/logo.png" alt="logo" class="size-4 rounded-full" />
-            <span class="text-sm"> {{ token1?.symbol }}</span>
-            <a :href="`${URL_SCAN[toNetwork.chainId].token}/${token1?.address}`" target="_blank">
-              <span class="line-clamp-1 text-xs text-[#6F6A79]">({{ formatAddress(token1?.address) }})</span>
+            <span class="text-sm">{{ form.token.symbol || '' }}</span>
+            <a v-if="checkNativeToken(toNetwork, token1)" :href="`${URL_SCAN[toNetwork.chainId].token}/${token1.address}`" target="_blank">
+              <span class="line-clamp-1 text-xs text-[#6F6A79]"> ({{ formatAddress(token1.address) }}) </span>
             </a>
           </div>
         </div>
@@ -162,7 +162,7 @@
 
   import { ElNotification } from 'element-plus'
   import ABI_TOKEN from '~/constant/contract/contract-token.json'
-  import type { ChainId, IToken } from '~/types'
+  import type { ChainId, INetwork, IToken } from '~/types'
   import PopupSellToken from '../popup/PopupSellToken.vue'
   import ChooseNetworkBridge from './ChooseNetworkBridge.vue'
   import InputBridge from './InputBridge.vue'
@@ -308,6 +308,14 @@
     // ElMessage.success(`Switch to ${fromNetwork.value.network}`)
     useBridgeStore().resetStore()
     switchChain({ chainId: fromNetwork.value?.chainId })
+    form.value.token = {} as IToken
+    balance0.value = 0
+    form.value.amount = ''
+    balance0.value = 0
+    amountOut.value = ''
+    fee.value.network = '0'
+    fee.value.protocol = '0'
+    fee.value.bridge = '0'
   }
 
   const restoreFee = () => {
@@ -649,6 +657,7 @@
 
   const handleSelectToken = (token: IToken) => {
     form.value.token = token
+    balance0.value = 0
   }
 
   const handleApprove = async () => {
@@ -820,24 +829,21 @@
     })
   }
 
-  watch(
-    () => toNetwork.value,
-    () => {
-      form.value.token = {} as IToken
+  const checkNativeToken = (toNetwork: INetwork, token: Token) => {
+    if (toNetwork.chainId === token.chainId) {
+      return token.address !== '0x0000000000000000000000000000000000000000'
     }
-  )
-  watch(
-    () => form.value.token,
-    (value) => {
-      if (value) {
-        form.value.amount = ''
-        amountOut.value = ''
-        fee.value.network = '0'
-        fee.value.protocol = '0'
-        fee.value.bridge = '0'
-      }
+  }
+  const { listToken: listTokenCurrentNetwork } = storeToRefs(useBaseStore())
+  onMounted(() => {
+    console.log(listToken.value, 'list token')
+
+    const tokenDefault = listTokenCurrentNetwork.value.find((item) => item?.symbol === 'MON') as IToken
+    if (tokenDefault) {
+      form.value.token = tokenDefault
     }
-  )
+    balance0.value = 0
+  })
 </script>
 
 <style scoped lang="scss">
