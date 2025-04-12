@@ -1,5 +1,13 @@
 <template>
-  <LazyBasePopup name="popup-sell-token" :is-show-footer="false" width="540" title="Select a token" class="popup-sell-token" @close="search = ''">
+  <LazyBasePopup
+    name="popup-sell-token"
+    :is-show-footer="false"
+    width="540"
+    title="Select a token"
+    class="popup-sell-token"
+    @close="search = ''"
+    @open="handleOpen"
+  >
     <template v-if="!isDesktop" #close>
       <BaseIcon name="arrow-down" size="24" class="rotate-90" @click="setOpenPopup('popup-sell-token', false)" />
     </template>
@@ -19,7 +27,7 @@
         <template #prefix>
           <BaseIcon name="search" class="text-primary" size="20" />
         </template>
-        <template v-if="showNetwork" #suffix>
+        <template #suffix>
           <div class="flex min-w-[136px] items-center justify-center gap-[9px] rounded-lg bg-white p-[6px] sm:hidden">
             <img :src="fromNetwork?.logo" alt="logo" class="size-6 rounded-lg" />
             <span class="text-xs font-semibold text-primary">{{ fromNetwork?.network }}</span>
@@ -62,59 +70,47 @@
   import { useAccount } from '@wagmi/vue'
   import type { IToken } from '~/types'
 
-  interface IProps {
-    showNetwork?: boolean
-    isSelect?: boolean
-    listToken: IToken[]
-  }
-
-  const _props = withDefaults(defineProps<IProps>(), {
-    showNetwork: true,
-    isSelect: false
-  })
-
   const emit = defineEmits<{
     select: [token: IToken]
   }>()
 
-  const tokenSelected = defineModel('tokenSelected', {
-    type: Array<string>,
-    default: []
-  })
+  const data = ref<IToken[]>([])
   const { isConnected } = useAccount()
-  const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
   const { fromNetwork } = storeToRefs(useBridgeStore())
 
+  const { setOpenPopup } = useBaseStore()
+  // const { currentNetwork: network } = storeToRefs(useBaseStore())
   const search = ref('')
   const loading = ref(false)
   const isIncompatible = ref<boolean>(false)
 
-  const data = computed(() => {
-    return _props.listToken.filter((item) => {
-      return (
-        item.network?.toLowerCase().includes(search.value.toLowerCase()) ||
-        item.tokenSymbol?.toLowerCase().includes(search.value.toLowerCase()) ||
-        item.tokenAddress?.toLowerCase().includes(search.value.toLowerCase())
-      )
-    })
-  })
-  const handleSearchToken = useDebounce(() => {
+  const init = async (first = false) => {
+    const query = first ? { network: fromNetwork.value.network } : { network: fromNetwork.value.network, token: useTrim(search.value) }
+    const rs =
+      first || useTrim(search.value) === ''
+        ? await $fetch<IToken[]>('/api/network/token', { params: query })
+        : await $fetch<IToken[]>('/api/network/token-info', { params: query })
+    data.value = rs.map((item) => ({
+      ...item,
+      icon_url: item.icon_url ?? '',
+      address: item.tokenAddress,
+      name: item.tokenSymbol,
+      symbol: item.tokenSymbol,
+      decimals: item.tokenDecimals
+    }))
     loading.value = false
-  }, 600)
+  }
+  const handleSearchToken = useDebounce(() => {
+    init()
+  }, 400)
 
   const handleClickToken = (item: IToken) => {
-    if (_props.isSelect) {
-      const index = tokenSelected.value.indexOf(item.tokenAddress)
-      if (index > -1) {
-        tokenSelected.value.splice(index, 1)
-      } else {
-        tokenSelected.value.push(item.tokenAddress)
-      }
-    } else {
-      emit('select', { ...item })
-      setOpenPopup('popup-sell-token', false)
-    }
+    emit('select', { ...item, icon_url: item.icon_url ?? '' })
+    setOpenPopup('popup-sell-token', false)
+  }
+  const handleOpen = () => {
+    init(true)
   }
   const { handleImageError } = useErrorImage()
 </script>
