@@ -59,8 +59,8 @@
   })
 
   const hoveredData = ref({
-    date: maxDate,
-    volume: maxValue
+    date: maxDate.value,
+    volume: maxValue.value
   })
 
   const chartOptions = computed((): ApexOptions => {
