@@ -91,22 +91,34 @@
     TVL = 'TVL'
   }
 
-  export interface poolDayDatas {
+  interface IMetric {
     date: number
-    feesUSD: string
-    tvlUSD: string
-    volumeUSD: string
-    liquidity: string
-    token0Price: string
-    token1Price: string
+    tvlUSD: number
+    volumeUSD: number
+    liquidity: number
+    feeUSD: number
+    token0: Token
+    token1: Token
+    totalValueLockedToken0: number
+  }
+
+  interface Token {
+    derivedUSD: string
+    symbol: string
+  }
+
+  export interface poolDayDatas {
+    id: string
+    date: number
     pool: {
       totalValueLockedToken0: string
-      token0: {
-        symbol: string
-      }
-      token1: {
-        symbol: string
-      }
+      totalValueLockedToken1: string
+      volumeToken0: string
+      volumeToken1: string
+      liquidity: string
+      feesUSD: string
+      token0: Token
+      token1: Token
     }
   }
 
@@ -199,46 +211,79 @@
     retry: 2
   })
 
+  const foramtedData = computed(() => {
+    return data.value?.poolDayDatas.map((item: poolDayDatas) => ({
+      ...calculateMetrics(item)
+    }))
+  })
+
   const chartData = computed((): IDataChart[] => {
     const valueMap = {
       [TabValue.VOLUME]: 'volumeUSD',
       [TabValue.LIQUIDITY]: 'liquidity',
-      [TabValue.FEE]: 'feesUSD',
+      [TabValue.FEE]: 'feeUSD',
       [TabValue.TVL]: 'tvlUSD'
     }
 
     const selectedValue = valueMap[tabActive.value]
 
-    return data.value?.poolDayDatas
-      ? data.value?.poolDayDatas
-          .map((item: poolDayDatas) => ({
+    return foramtedData.value && foramtedData.value?.length
+      ? foramtedData.value
+          .map((item: IMetric) => ({
             date: new Date(item.date * 1000).toLocaleDateString(),
-            value: item[selectedValue as keyof poolDayDatas]?.toString(),
-            token0Price: item.token0Price ?? '0',
-            token1Price: item.token1Price ?? '0',
-            token0Symbol: item.pool.token0.symbol,
-            token1Symbol: item.pool.token1.symbol,
-            totalValueLockedToken0: item.pool.totalValueLockedToken0 ?? '0'
+            value: item[selectedValue as keyof IMetric]?.toString(),
+            token0Price: item.token0.derivedUSD ?? '0',
+            token1Price: item.token1.derivedUSD ?? '0',
+            token0Symbol: item.token0.symbol,
+            token1Symbol: item.token1.symbol,
+            totalValueLockedToken0: item.totalValueLockedToken0.toString() ?? '0'
           }))
-          //@ts-ignore
-          .sort((a: IDataChart, b: IDataChart) => new Date(a.date).getTime() - new Date(b.date).getTime())
+          .reverse()
       : []
   })
 
   const infoVolume = computed(() => {
-    if (data.value?.poolDayDatas.length) {
-      const today = data.value.poolDayDatas[0]
-      const yesterday = data.value.poolDayDatas[1]
+    // if (data.value?.poolDayDatas.length) {
+    //   const today = data.value.poolDayDatas[0]
+    //   const yesterday = data.value.poolDayDatas[1]
+    //   return {
+    //     today: {
+    //       volume:
+    //         parseFloat(today.pool.volumeToken0 ?? '0') *
+    //           parseFloat(today.pool.volumeToken1 ?? '0') *
+    //           parseFloat(today.pool.token0.derivedUSD) *
+    //           parseFloat(today.pool.token1.derivedUSD) || 0,
+    //       fee: parseFloat(today.pool.feesUSD ?? '0'),
+    //       tvl:
+    //         parseFloat(today.pool.totalValueLockedToken0) * parseFloat(today.pool.token0.derivedUSD) +
+    //           parseFloat(today.pool.totalValueLockedToken1) * parseFloat(today.pool.token1.derivedUSD) || 0
+    //     },
+    //     yesterday: {
+    //       volume:
+    //         parseFloat(yesterday.pool.volumeToken0 ?? '0') *
+    //           parseFloat(yesterday.pool.volumeToken1 ?? '0') *
+    //           parseFloat(yesterday.pool.token0.derivedUSD) *
+    //           parseFloat(yesterday.pool.token1.derivedUSD) || 0,
+    //       fee: parseFloat(yesterday.pool.feesUSD ?? '0'),
+    //       tvl:
+    //         parseFloat(yesterday.pool.totalValueLockedToken0) * parseFloat(yesterday.pool.totalValueLockedToken1) +
+    //           parseFloat(yesterday.pool.token0.derivedUSD) * parseFloat(yesterday.pool.token1.derivedUSD) || 0
+    //     }
+    //   }
+    // }
+    if (foramtedData.value?.length) {
+      const today = foramtedData.value[0]
+      const yesterday = foramtedData.value[1]
       return {
         today: {
-          volume: parseFloat(today.volumeUSD ?? '0'),
-          fee: parseFloat(today.feesUSD ?? '0'),
-          tvl: parseFloat(today.tvlUSD ?? '0')
+          volume: today.volumeUSD,
+          fee: today.feeUSD,
+          tvl: today.tvlUSD
         },
         yesterday: {
-          volume: parseFloat(yesterday.volumeUSD ?? '0'),
-          fee: parseFloat(yesterday.feesUSD ?? '0'),
-          tvl: parseFloat(yesterday.tvlUSD ?? '0')
+          volume: yesterday.volumeUSD,
+          fee: yesterday.feeUSD,
+          tvl: yesterday.tvlUSD
         }
       }
     }
@@ -264,51 +309,50 @@
     const changeFee = yesterday.fee ? new Decimal(today.fee).sub(yesterday.fee).div(yesterday.fee).mul(100).abs().toFixed(2) : '0'
     return {
       tvl: {
-        status: today.tvl > yesterday.tvl ? 'text-up' : 'text-down',
+        status: today.tvl >= yesterday.tvl ? 'text-up' : 'text-down',
         change: changeTvl,
-        rotate: today.tvl > yesterday.tvl ? 'rotate-180' : '',
-        bg: today.tvl > yesterday.tvl ? 'bg-[#E8FFEB]' : 'bg-[#FFECEF]'
+        rotate: today.tvl >= yesterday.tvl ? 'rotate-180' : '',
+        bg: today.tvl >= yesterday.tvl ? 'bg-[#E8FFEB]' : 'bg-[#FFECEF]'
       },
       volume: {
-        status: today.volume > yesterday.volume ? 'text-up' : 'text-down',
+        status: today.volume >= yesterday.volume ? 'text-up' : 'text-down',
         change: changeVolume,
-        rotate: today.volume > yesterday.volume ? 'rotate-180' : '',
-        bg: today.volume > yesterday.volume ? 'bg-[#E8FFEB]' : 'bg-[#FFECEF]'
+        rotate: today.volume >= yesterday.volume ? 'rotate-180' : '',
+        bg: today.volume >= yesterday.volume ? 'bg-[#E8FFEB]' : 'bg-[#FFECEF]'
       },
       fee: {
-        status: today.fee > yesterday.fee ? 'text-up' : 'text-down',
+        status: today.fee >= yesterday.fee ? 'text-up' : 'text-down',
         change: changeFee,
-        rotate: today.fee > yesterday.fee ? 'rotate-180' : '',
-        bg: today.fee > yesterday.fee ? 'bg-[#E8FFEB]' : 'bg-[#FFECEF]'
+        rotate: today.fee >= yesterday.fee ? 'rotate-180' : '',
+        bg: today.fee >= yesterday.fee ? 'bg-[#E8FFEB]' : 'bg-[#FFECEF]'
       }
     }
   })
 
-  // Hàm thực thi query với pool address
   async function getPoolData(poolAddress: string) {
     try {
       const client = getGraphQLClient(props.pool.chainId)
-      // Định nghĩa query với variable
       const query = gql`
-        query MyQuery($poolAddress: String!) {
-          poolDayDatas(first: 30, orderBy: date, orderDirection: desc, where: { pool: $poolAddress }) {
-            id
-            liquidity
-            volumeUSD
-            feesUSD
-            tvlUSD
-            date
-            token0Price
-            token1Price
+        query PoolData($poolAddress: String!) {
+          poolDayDatas(first: 365, orderBy: date, orderDirection: desc, where: { pool_: { id: $poolAddress } }) {
             pool {
               totalValueLockedToken0
+              totalValueLockedToken1
+              volumeToken0
+              volumeToken1
+              liquidity
+              feesUSD
               token0 {
                 symbol
+                derivedUSD
               }
               token1 {
+                derivedUSD
                 symbol
               }
             }
+            id
+            date
           }
         }
       `
@@ -316,10 +360,41 @@
         poolAddress: poolAddress
       }
       const data = await client.request<{ poolDayDatas: poolDayDatas[] }>(query, variables)
+      console.log('🚀 ~ getPoolData ~ data:', data)
       return data
     } catch (error) {
       console.error(error)
       throw error
+    }
+  }
+
+  function calculateMetrics(poolDayData: poolDayDatas): IMetric {
+    const pool = poolDayData.pool
+    console.log(new Date(poolDayData.date * 1000).toLocaleDateString())
+
+    const tvlUSD =
+      parseFloat(pool.totalValueLockedToken0) * parseFloat(pool.token0.derivedUSD) +
+      parseFloat(pool.totalValueLockedToken1) * parseFloat(pool.token1.derivedUSD)
+
+    const volumeUSD = parseFloat(pool.volumeToken0) * parseFloat(pool.token0.derivedUSD) + parseFloat(pool.volumeToken1) * parseFloat(pool.token1.derivedUSD)
+
+    const liquidity = parseFloat(pool.liquidity)
+
+    return {
+      date: poolDayData.date,
+      tvlUSD: tvlUSD,
+      volumeUSD: volumeUSD,
+      liquidity: liquidity,
+      feeUSD: parseFloat(Number(pool.feesUSD).toFixed(2)),
+      token0: {
+        derivedUSD: pool.token0.derivedUSD,
+        symbol: pool.token0.symbol
+      },
+      token1: {
+        derivedUSD: pool.token1.derivedUSD,
+        symbol: pool.token1.symbol
+      },
+      totalValueLockedToken0: parseFloat(pool.totalValueLockedToken0)
     }
   }
 </script>
