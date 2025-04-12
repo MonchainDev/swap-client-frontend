@@ -11,9 +11,9 @@
             <BaseIcon name="loading" size="16" class="text-success" />
             <span>Farming</span>
           </span>
-          <span class="flex h-9 w-[117px] items-center justify-center gap-1 rounded-lg bg-[#E8FFEB] text-sm text-success sm:w-fit sm:px-2">
-            <BaseIcon name="tick" size="24" class="text-success" />
-            <span>Active</span>
+          <span class="flex h-9 w-[117px] items-center justify-center gap-1 rounded-lg text-sm text-success sm:w-fit sm:px-2" :class="classStatus">
+            <BaseIcon v-if="props.position?.positionStatus === 'ACTIVE'" name="tick" size="24" class="text-success" />
+            <span>{{ capitalizeFirstLetter(props.position?.positionStatus) }}</span>
           </span>
         </div>
       </div>
@@ -228,6 +228,15 @@
     getPendingMoon()
     exchangeRate.value = await fetchExchangeRate()
   }
+
+  const classStatus = computed(() => {
+    const status = props.position?.positionStatus
+    return {
+      'text-error bg-[#ffecec]': status === 'CLOSE',
+      'text-success bg-[#E8FFEB]': status === 'ACTIVE',
+      'text-warning bg-[#fff2da]': status === 'INACTIVE'
+    }
+  })
 </script>
 
 <style lang="scss" scoped></style>

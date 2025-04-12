@@ -18,7 +18,7 @@
             <span>{{ liquidityValue0?.currency.symbol }} + {{ liquidityValue1?.currency?.symbol }}</span>
           </div>
           <div class="text-sm">
-            <span class="text-[#049C6B]">Active</span>
+            <span :class="classStatus">{{ capitalizeFirstLetter(positionDetailAPI?.positionStatus) }}</span>
             <span class="px-2 text-gray-4">|</span>
             <span>#{{ tokenId?.toString() }}</span>
           </div>
@@ -162,6 +162,7 @@
   import { MasterChefV3 } from '~/utils/masterChefV3'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
   import type { ChainId } from '~/types'
+  import type { IPosition } from '~/types/position.type'
 
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware', 'validate-network-middleware']
@@ -186,6 +187,8 @@
 
   // const nativeCurrency = computed(() => Native.onChain(chainId.value!))
   // const nativeWrappedSymbol = computed(() => nativeCurrency.value?.wrapped.symbol)
+
+  const { data: positionDetailAPI } = useFetch<IPosition>(`/api/position/get/${tokenId.value?.toString()}`, { query: { network: route.params.network } })
 
   const { position } = useV3PositionsFromTokenId(tokenId.value)
 
@@ -348,6 +351,15 @@
       loadingBtn.value = false
     }
   }
+
+  const classStatus = computed(() => {
+    const status = positionDetailAPI.value?.positionStatus
+    return {
+      'text-error': status === 'CLOSE',
+      'text-success': status === 'ACTIVE',
+      'text-warning': status === 'INACTIVE'
+    }
+  })
 </script>
 
 <style lang="scss" scoped>
