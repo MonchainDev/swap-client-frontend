@@ -104,9 +104,11 @@ export const useBridgeStore = defineStore('bridge', () => {
       console.log('token1Res', token1Res)
       const _token1 = token1Res?.find((item) => item.tokenSymbol === formTokenSymbol)
       console.info('token1', _token1)
-      token1.value = formTokenSymbol
-        ? new Token(toNetwork.value?.chainId as ChainId, _token1?.tokenAddress as `0x${string}`, +_token1!.tokenDecimals, _token1!.tokenSymbol, _token1?.name)
-        : undefined
+      if (_token1) {
+        token1.value = formTokenSymbol
+          ? new Token(toNetwork.value?.chainId as ChainId, _token1?.tokenAddress as `0x${string}`, +_token1!.tokenDecimals, _token1!.tokenSymbol, _token1?.name)
+          : undefined
+      }
     }
   )
 
@@ -146,13 +148,9 @@ export const useBridgeStore = defineStore('bridge', () => {
             name: item.tokenSymbol
           }))
         : []
-      const tokenDefault = listToken.value.find(item => item.symbol === 'MON')
-      if (tokenDefault) {
-        form.value.token = tokenDefault
-      }
     },
     watch: [() => !!toNetwork.value?.network],
-    immediate: true
+    immediate: false
   })
 
   const { data: _listTokenFromRs } = useLazyFetch<IToken[]>('/api/network/token', {
