@@ -781,6 +781,7 @@
         bridgeSuccess(+form.value.amount, token0.value?.symbol || '', +form.value.amount, tnxScan)
         useBridgeStore().resetStore()
         amountOut.value = ''
+        stepBridge.value = 'SELECT_TOKEN'
       }
 
       isFetchQuote.value = false

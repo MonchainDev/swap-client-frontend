@@ -98,6 +98,7 @@
     :usd-upper="priceUsdUpper"
     :usd-lower="priceUsdLower"
     :show-input="false"
+    :status="statusPosition"
     @reload="reloadData"
   />
   <PopupConfirmCreateLiquidity
@@ -106,6 +107,7 @@
     :usd-upper="priceUsdUpper"
     :usd-lower="priceUsdLower"
     :ticks-at-limit="ticksAtLimit"
+    :status="statusPosition"
     @reload="reloadData"
   />
 </template>
@@ -221,6 +223,10 @@
 
   const { price, invertPrice, tokenA, position, ticksAtLimit, tickSpaceLimits, formattedAmounts, tokenB, lowerPrice, upperPrice, invalidRange, outOfRange } =
     useV3DerivedInfo()
+
+  const statusPosition = computed(() => {
+    return outOfRange.value ? 'INACTIVE' : 'ACTIVE'
+  })
 
   const leftPrice = computed(() => {
     return isSorted.value ? lowerPrice.value : upperPrice.value?.invert()

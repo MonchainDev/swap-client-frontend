@@ -18,9 +18,9 @@
         </div>
         <div class="text-base font-semibold">{{ currency0?.symbol }}-{{ currency1?.symbol }}</div>
       </div>
-      <div class="flex h-9 w-[117px] items-center justify-center rounded-lg bg-[#E8FFEB] text-[#049C6B]">
-        <BaseIcon name="tick" size="24" class="text-[#049C6B]" />
-        <span>Active</span>
+      <div class="flex h-9 w-[117px] items-center justify-center rounded-lg" :class="classStatus">
+        <BaseIcon v-if="status === 'ACTIVE'" name="tick" size="24" class="text-[#049C6B]" />
+        <span>{{ capitalizeFirstLetter(status) }}</span>
       </div>
     </div>
     <div class="mt-[30px] px-8 sm:px-4">
@@ -165,6 +165,7 @@
     showInput?: boolean
     usdUpper?: string
     usdLower?: string
+    status?: string
   }
 
   const props = withDefaults(defineProps<IProps>(), {
@@ -176,7 +177,8 @@
     position: undefined,
     showInput: true,
     usdUpper: '',
-    usdLower: ''
+    usdLower: '',
+    status: ''
   })
 
   const emit = defineEmits<{
@@ -574,6 +576,15 @@
       }
     }
   }
+
+  const classStatus = computed(() => {
+    const status = props.status
+    return {
+      'text-error bg-[#ffecec]': status === 'CLOSE',
+      'text-success bg-[#E8FFEB]': status === 'ACTIVE',
+      'text-warning bg-[#fff2da]': status === 'INACTIVE'
+    }
+  })
 </script>
 
 <style lang="scss"></style>

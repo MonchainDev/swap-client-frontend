@@ -133,6 +133,7 @@
     :fee-format="formatFee"
     :usd-lower="priceUsdQuote"
     :usd-upper="priceUsdBase"
+    :status="positionDetail?.positionStatus"
     @reload="reload"
   />
 </template>
