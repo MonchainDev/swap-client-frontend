@@ -131,21 +131,9 @@
   const { setOpenPopup } = useBaseStore()
   const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
 
-  const {
-    isSwapping,
-    isConfirmApprove,
-    exchangeRateBaseCurrency,
-    slippage,
-    isConfirmSwap,
-    allowance0,
-
-    balance0,
-    balance1,
-    form,
-    token0,
-    token1
-  } = storeToRefs(useSwapStore())
-  const { refetchAllowance0 } = useSwapStore()
+  const { isSwapping, isConfirmApprove, exchangeRateBaseCurrency, slippage, isConfirmSwap, allowance0, balance0, balance1, form, token0, token1 } =
+    storeToRefs(useSwapStore())
+  const { refetchAllowance0, refetchBalance0, refetchBalance1 } = useSwapStore()
 
   const isEditSlippage = ref(false)
   const stepSwap = ref<StepSwap>('SELECT_TOKEN')
@@ -504,6 +492,8 @@
     return path
   }
 
+  const { showToastMsg } = useShowToastMsg()
+
   const useExecuteSwap = async (swapOut: SmartRouterTrade<TradeType>) => {
     const trade = swapOut
     console.info(' (FormSwap.client.vue:355) trade', trade)
@@ -520,9 +510,11 @@
     for (const route of routes) {
       console.log(`--- SWAP ROUTE ${routes.indexOf(route) + 1} ---`)
       console.log('🚀 ~ useExecuteSwap ~ route:', route)
-      console.log('🚀 ~ useExecuteSwap ~ inputAmount:', route.inputAmount.toExact())
-      console.log('🚀 ~ useExecuteSwap ~ outputAmount:', route.outputAmount.toExact())
+      console.log('🚀 ~ useExecuteSwap ~ input amount of route:', route.inputAmount.toExact())
+      console.log('🚀 ~ useExecuteSwap ~ output amount of route:', route.outputAmount.toExact())
       console.log('🚀 ~ useExecuteSwap ~ path:', route.path)
+      console.log(`🚀 ~ Handle single hop: ${route.path.length === 2 && route.pools.length === 1}`)
+      console.log(`🚀 ~ Handle multi-hop: ${route.path.length > 2 || route.pools.length > 1}`)
 
       // Check if we have valid path and pools
       if (!route.path || !route.pools || route.path.length < 2 || route.pools.length !== route.path.length - 1) {
@@ -534,42 +526,42 @@
       const recipient = outputTokenIsNative ? contractSwapRouterV3 : address.value
       const deadline = Math.floor(Date.now() / 1000) + 20 * 60 // 20 minutes
 
-      // Check if the route has a V3Pool
-      const firstPool = route.pools[0]
-      let sqrtPriceLimitX96 = BigInt(0)
-
-      // Only calculate sqrtPriceLimitX96 if we have a V3Pool with necessary properties
-      if ('liquidity' in firstPool && 'sqrtRatioX96' in firstPool) {
-        const liquidity = firstPool.liquidity.toString()
-        const sqrtRatioX96 = firstPool.sqrtRatioX96
-        const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
-
-        // Check if tokens have the sortsBefore method
-        const zeroToOne =
-          typeof route.path[0].wrapped?.sortsBefore === 'function'
-            ? route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
-            : route.path[0].wrapped.address.toLowerCase() < route.path[1].wrapped.address.toLowerCase()
-
-        let nextPrice: Decimal = new Decimal(0)
-
-        if (zeroToOne) {
-          nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
-        } else {
-          nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
-        }
-
-        sqrtPriceLimitX96 = BigInt(
-          nextPrice
-            .sqrt()
-            .mul(2 ** 96)
-            .toFixed(0)
-        )
-      }
-
       let encodedData: `0x${string}`
 
       // Handle direct (single hop) routes
       if (route.path.length === 2 && route.pools.length === 1) {
+        // Check if the route has a V3Pool
+        const firstPool = route.pools[0]
+        let sqrtPriceLimitX96 = BigInt(0)
+
+        // Only calculate sqrtPriceLimitX96 if we have a V3Pool with necessary properties
+        if ('liquidity' in firstPool && 'sqrtRatioX96' in firstPool) {
+          const liquidity = firstPool.liquidity.toString()
+          const sqrtRatioX96 = firstPool.sqrtRatioX96
+          const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
+
+          // Check if tokens have the sortsBefore method
+          const zeroToOne =
+            typeof route.path[0].wrapped?.sortsBefore === 'function'
+              ? route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
+              : route.path[0].wrapped.address.toLowerCase() < route.path[1].wrapped.address.toLowerCase()
+
+          let nextPrice: Decimal = new Decimal(0)
+
+          if (zeroToOne) {
+            nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
+          } else {
+            nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
+          }
+
+          sqrtPriceLimitX96 = BigInt(
+            nextPrice
+              .sqrt()
+              .mul(2 ** 96)
+              .toFixed(0)
+          )
+        }
+
         // Get addresses for wrapped tokens
         const tokenIn = route.inputAmount.currency.wrapped.address
 
@@ -578,13 +570,13 @@
         console.log('🚀 ~ useExecuteSwap ~ amount:', amount)
         const amountLimit =
           bestTrade.value?.tradeType === TradeType.EXACT_INPUT
-            ? Math.floor((Number(route.outputAmount.numerator) * (100 - Number(slippage.value))) / 100)
-            : Math.floor((Number(route.inputAmount.numerator) * (100 + Number(slippage.value))) / 100)
+            ? (route.outputAmount.numerator * BigInt(100 - Number(slippage.value))) / BigInt(100)
+            : (route.inputAmount.numerator * BigInt(100 + Number(slippage.value))) / BigInt(100)
 
         const fee = (route.pools[0] as V3Pool).fee
 
         console.log('🚀 ~ useExecuteSwap ~ amountLimit:', amountLimit)
-        const params = [tokenIn, tokenOut, fee, recipient, deadline, BigInt(amount), BigInt(amountLimit), sqrtPriceLimitX96]
+        const params = [tokenIn, tokenOut, fee, recipient, deadline, amount, amountLimit, sqrtPriceLimitX96]
         console.info(' (FormSwap.client.vue:398) params', params)
 
         encodedData = encodeFunctionData({
@@ -664,7 +656,11 @@
       to: contractSwapRouterV3,
       data: calldata,
       value: isNative ? BigInt(inputAmount) : hexToBigInt('0x0')
+    }).catch((error) => {
+      showToastMsg('Simulate transaction failed', 'error')
+      throw error
     })
+
     console.log('🚀 ~ useExecuteSwap ~ gasLimit:', gasLimit)
 
     // Send transaction
@@ -683,9 +679,8 @@
     })
 
     if (status === 'success') {
-      const { showToastMsg } = useShowToastMsg()
-      showToastMsg('Swap successful', 'success', getUrlScan(chainId.value, 'tx', txHash), chainId.value)
       await postTx(txHash, contractSwapRouterV3)
+      showToastMsg('Swap successful', 'success', getUrlScan(chainId.value, 'tx', txHash), chainId.value)
       console.info('Transaction successful', 'success', txHash)
     } else {
       ElMessage.error('Transaction failed')
@@ -884,6 +879,8 @@
       form.value.amountIn = ''
       form.value.amountOut = ''
       form.value.tradingFee = '0'
+      refetchBalance0()
+      refetchBalance1()
     } catch (error) {
       console.log('🚀 ~ swap ~ error:', error)
       // console.info(' (FormSwap.client.vue:319) sign sao sao sao saii  xong r ne')
