@@ -1,5 +1,5 @@
-import { SmartRouter } from '@monchain/smart-router'
-import type { Currency, CurrencyAmount } from '@monchain/swap-sdk-core'
+import { SmartRouter, type SmartRouterTrade } from '@monchain/smart-router'
+import type { Currency, CurrencyAmount, TradeType } from '@monchain/swap-sdk-core'
 
 export enum Field {
   INPUT = 'INPUT',
@@ -11,7 +11,7 @@ export type SlippageAdjustedAmounts = {
 }
 
 // computes the minimum amount out and maximum amount in for a trade given a user specified allowed slippage in bips
-export function computeSlippageAdjustedAmounts(trade: SwapOutput, allowedSlippage: number): SlippageAdjustedAmounts {
+export function computeSlippageAdjustedAmounts(trade: SmartRouterTrade<TradeType>, allowedSlippage: number): SlippageAdjustedAmounts {
   const pct = basisPointsToPercent(allowedSlippage)
 
   return {
