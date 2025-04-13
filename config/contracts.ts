@@ -6,7 +6,7 @@ import type { Address, Hash } from 'viem'
 const DEPLOYER_ADDRESSES = {
   [ChainId.MON_TESTNET]: '0xF9012437655F666bcB07f50Cc471f531629342Df',
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0x0bB61547Ce82b18D6cbE45b66185F838760Ee3D2',
+  [ChainId.BSC_TESTNET]: '0xea1c0c1478a748a6bdba0e9288e269af0cc4a221',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, Address>
