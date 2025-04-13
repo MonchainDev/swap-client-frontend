@@ -104,7 +104,7 @@
 <script lang="ts" setup>
   import { type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
   import { TradeType } from '@monchain/swap-sdk-core'
-  import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
+  import { estimateGas, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
   import { encodeFunctionData, hexToBigInt, type Hex } from 'viem'
@@ -131,21 +131,9 @@
   const { setOpenPopup } = useBaseStore()
   const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
 
-  const {
-    isSwapping,
-    isConfirmApprove,
-    exchangeRateBaseCurrency,
-    slippage,
-    isConfirmSwap,
-    allowance0,
-
-    balance0,
-    balance1,
-    form,
-    token0,
-    token1
-  } = storeToRefs(useSwapStore())
-  const { refetchAllowance0 } = useSwapStore()
+  const { isSwapping, isConfirmApprove, exchangeRateBaseCurrency, slippage, isConfirmSwap, allowance0, balance0, balance1, form, token0, token1 } =
+    storeToRefs(useSwapStore())
+  const { refetchAllowance0, refetchBalance0, refetchBalance1 } = useSwapStore()
 
   const isEditSlippage = ref(false)
   const stepSwap = ref<StepSwap>('SELECT_TOKEN')
@@ -154,7 +142,7 @@
 
   // const trades = ref<SmartRouterTrade<TradeType>>()
 
-  const bestTrade = ref<SwapOutput | undefined>(undefined)
+  const bestTrade = ref<SmartRouterTrade<TradeType> | undefined>(undefined)
 
   const isFetchQuote = ref(false)
 
@@ -326,7 +314,7 @@
         const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
         console.log('🚀 ~ handleInput ~ inputAmount', inputAmount)
         // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
-        const _bestTrade = await getBestTradeV4ForSwap({
+        const _bestTrade = await getBestTradeV4ForSwapV2({
           token0: tokenA,
           token1: tokenB,
           inputAmount: inputAmount,
@@ -361,10 +349,8 @@
         form.value.amountOut = amount
         form.value.amountIn = ''
         const inputAmount = Number(form.value.amountOut) * ((10 ** Number(form.value.token1.decimals)) as number)
-        /**
-         * TODO: chain id is chain of wallet, not chain of state pinia
-         */
-        const _bestTrade = await getBestTradeV4ForSwap({
+
+        const _bestTrade = await getBestTradeV4ForSwapV2({
           token0: tokenA,
           token1: tokenB,
           inputAmount: inputAmount,
@@ -372,15 +358,13 @@
           chainId: currentNetwork.value.chainId // chainId of wallet
         })
 
-        const rs = computeTradePriceBreakdown(_bestTrade)
-        console.log('🚀 ~ lpFeeAmount ~ :', rs.lpFeeAmount?.toExact())
-        console.log('🚀 ~ priceImpactWithoutFee ~ :', rs.priceImpactWithoutFee?.toSignificant(6))
         if (requestId !== latestRequestId) {
           console.log('🚀 ~ handleInput ~ Aborting: newer request detected')
           return
         }
 
         if (_bestTrade) {
+          console.log('🚀 ~ handleInput ~ _bestTrade:', _bestTrade)
           // slippage * 100 because computeSlippageAdjustedAmounts expect slippage in bips
           const { INPUT } = computeSlippageAdjustedAmounts(_bestTrade, +slippage.value * 100)
 
@@ -388,12 +372,12 @@
           form.value.amountIn = _bestTrade.inputAmount.toSignificant(6)
           form.value.maximumAmountIn = INPUT?.toSignificant(6)
           form.value.minimumAmountOut = ''
-          form.value.fee = _bestTrade.fee
+          // form.value.fee = _bestTrade.fee
 
           // calc trading fee and price impact
           const { lpFeeAmount, priceImpactWithoutFee } = computeTradePriceBreakdown(_bestTrade)
-          console.log('🚀 ~ handleInput ~ priceImpactWithoutFee:', priceImpactWithoutFee)
-          console.log('🚀 ~ handleInput ~ lpFeeAmount:', lpFeeAmount)
+          console.log('🚀 ~ handleInput ~ lpFeeAmount:', lpFeeAmount?.toExact())
+          console.log('🚀 ~ handleInput ~ priceImpactWithoutFee:', priceImpactWithoutFee?.toFixed(2))
           form.value.priceImpact = priceImpactWithoutFee ? (priceImpactWithoutFee?.lessThan(ONE_BIPS) ? '<0.01' : priceImpactWithoutFee?.toFixed(2)) : ''
           form.value.tradingFee = lpFeeAmount ? (formatAmount(lpFeeAmount, 4)?.toString() ?? '') : ''
         }
@@ -452,21 +436,65 @@
 
   const token0IsToken = computed(() => form.value.token0.address !== '')
 
-  function encodePath(tokens: string[], fees: number[]): `0x${string}` {
-    if (tokens.length !== fees.length + 1) {
-      throw new Error('Invalid path: tokens and fees mismatch')
+  // function encodePath(tokens: string[], fees: number[], tradeType: TradeType): `0x${string}` {
+  //   if (tokens.length !== fees.length + 1) {
+  //     throw new Error('Invalid path: tokens and fees mismatch')
+  //   }
+
+  //   let orderedTokens = tokens
+  //   let orderedFees = fees
+
+  //   if (tradeType === TradeType.EXACT_OUTPUT) {
+  //     orderedTokens = [...tokens].reverse()
+  //     orderedFees = [...fees].reverse()
+  //   }
+
+  //   let path = '0x'
+  //   for (let i = 0; i < orderedFees.length; i++) {
+  //     path += orderedTokens[i].slice(2) // Bỏ '0x' của địa chỉ token
+  //     path += orderedFees[i].toString(16).padStart(6, '0') // Chuyển phí thành hex, đệm 6 chữ số
+  //   }
+  //   path += orderedTokens[orderedTokens.length - 1].slice(2) // Thêm token cuối
+
+  //   return path as `0x${string}`
+  // }
+
+  function encodePath(tokenAddresses: string[], fees: number[]) {
+    // Kiểm tra hợp lệ
+    if (tokenAddresses.length < 2 || fees.length !== tokenAddresses.length - 1) {
+      throw new Error('Đường dẫn hoặc phí không hợp lệ')
     }
 
+    // Khởi tạo chuỗi path
     let path = '0x'
-    for (let i = 0; i < fees.length; i++) {
-      path += tokens[i].slice(2)
-      path += fees[i].toString(16).padStart(6, '0')
+
+    // Duyệt qua các token và phí
+    for (let i = 0; i < tokenAddresses.length; i++) {
+      // Thêm địa chỉ token (bỏ '0x', giữ 40 ký tự hex)
+      const token = tokenAddresses[i]
+      if (!token.startsWith('0x') || token.length !== 42) {
+        throw new Error(`Địa chỉ token không hợp lệ: ${token}`)
+      }
+      path += token.slice(2) // Bỏ '0x'
+
+      // Thêm phí nếu không phải token cuối
+      if (i < fees.length) {
+        const fee = fees[i]
+        if (!Number.isInteger(fee) || fee < 0) {
+          throw new Error(`Phí không hợp lệ: ${fee}`)
+        }
+        // Chuyển phí thành hex, đệm đủ 6 ký tự (3 bytes)
+        const feeHex = fee.toString(16).padStart(6, '0')
+        path += feeHex
+      }
     }
-    path += tokens[tokens.length - 1].slice(2)
-    return path as `0x${string}`
+
+    return path
   }
 
-  const useExactInputMulticall = async (swapOut: SmartRouterTrade<TradeType>) => {
+  const { showToastMsg } = useShowToastMsg()
+
+  const useExecuteSwap = async (swapOut: SmartRouterTrade<TradeType>) => {
     const trade = swapOut
     console.info(' (FormSwap.client.vue:355) trade', trade)
     const datas: Hex[] = []
@@ -475,52 +503,80 @@
     const contractSwapRouterV3 = getSwapRouterV3Address(chainId.value)
     if (!contractSwapRouterV3) throw new Error('Invalid contract address')
 
-    for (const route of trade.routes) {
-      console.log('🚀 ~ useExactInputMulticall ~ route:', route)
+    // Handle routes properly - make sure we're accessing the correct structure
+    const routes = trade.routes || []
+    console.log(`--- SWAP TYPE ${bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? 'EXACT_INPUT' : 'EXACT_OUTPUT'} ---`)
 
-      if (route.path.length < 2 || route.pools.length !== route.path.length - 1) {
+    for (const route of routes) {
+      console.log(`--- SWAP ROUTE ${routes.indexOf(route) + 1} ---`)
+      console.log('🚀 ~ useExecuteSwap ~ route:', route)
+      console.log('🚀 ~ useExecuteSwap ~ input amount of route:', route.inputAmount.toExact())
+      console.log('🚀 ~ useExecuteSwap ~ output amount of route:', route.outputAmount.toExact())
+      console.log('🚀 ~ useExecuteSwap ~ path:', route.path)
+      console.log(`🚀 ~ Handle single hop: ${route.path.length === 2 && route.pools.length === 1}`)
+      console.log(`🚀 ~ Handle multi-hop: ${route.path.length > 2 || route.pools.length > 1}`)
+
+      // Check if we have valid path and pools
+      if (!route.path || !route.pools || route.path.length < 2 || route.pools.length !== route.path.length - 1) {
+        console.error('Invalid route structure:', route)
         throw new Error('Invalid route: path and pools mismatch')
       }
 
-      // Nếu đầu ra là đồng wnative, thì gửi wnative đến hợp đồng SwapRouter, sau đó chuyển tiếp đến ví của user
-      // chứ không phải user, để router có thể unwrap sau đó
+      // Nếu đầu ra là đồng native, thì gửi native đến hợp đồng SwapRouter, sau đó chuyển tiếp đến ví của user
       const recipient = outputTokenIsNative ? contractSwapRouterV3 : address.value
+      const deadline = Math.floor(Date.now() / 1000) + 20 * 60 // 20 minutes
 
-      const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
-
-      const amount = bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? route.inputAmount.numerator.toString() : route.outputAmount.numerator.toString()
-      const amountLimit =
-        bestTrade.value?.tradeType === TradeType.EXACT_INPUT
-          ? Math.floor((Number(route.outputAmount.numerator) * (100 - Number(slippage.value))) / 100)
-          : Math.floor((Number(route.inputAmount.numerator) * (100 + Number(slippage.value))) / 100)
-      // Tính sqrtPriceLimitX96 dựa trên pool đầu tiên
-      const firstPool = route.pools[0] as V3Pool
-      const liquidity = firstPool.liquidity.toString()
-      const sqrtRatioX96 = firstPool.sqrtRatioX96
-      const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
-      const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
-      let nextPrice: Decimal = new Decimal(0)
-
-      if (zeroToOne) {
-        nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
-      } else {
-        nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
-      }
-      const sqrtPriceLimitX96 = BigInt(
-        nextPrice
-          .sqrt()
-          .mul(2 ** 96)
-          .toFixed(0)
-      )
       let encodedData: `0x${string}`
+
+      // Handle direct (single hop) routes
       if (route.path.length === 2 && route.pools.length === 1) {
+        // Check if the route has a V3Pool
+        const firstPool = route.pools[0]
+        let sqrtPriceLimitX96 = BigInt(0)
+
+        // Only calculate sqrtPriceLimitX96 if we have a V3Pool with necessary properties
+        if ('liquidity' in firstPool && 'sqrtRatioX96' in firstPool) {
+          const liquidity = firstPool.liquidity.toString()
+          const sqrtRatioX96 = firstPool.sqrtRatioX96
+          const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
+
+          // Check if tokens have the sortsBefore method
+          const zeroToOne =
+            typeof route.path[0].wrapped?.sortsBefore === 'function'
+              ? route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
+              : route.path[0].wrapped.address.toLowerCase() < route.path[1].wrapped.address.toLowerCase()
+
+          let nextPrice: Decimal = new Decimal(0)
+
+          if (zeroToOne) {
+            nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
+          } else {
+            nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
+          }
+
+          sqrtPriceLimitX96 = BigInt(
+            nextPrice
+              .sqrt()
+              .mul(2 ** 96)
+              .toFixed(0)
+          )
+        }
+
+        // Get addresses for wrapped tokens
         const tokenIn = route.inputAmount.currency.wrapped.address
+
         const tokenOut = route.outputAmount.currency.wrapped.address
+        const amount = bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? route.inputAmount.numerator : route.outputAmount.numerator
+        console.log('🚀 ~ useExecuteSwap ~ amount:', amount)
+        const amountLimit =
+          bestTrade.value?.tradeType === TradeType.EXACT_INPUT
+            ? (route.outputAmount.numerator * BigInt(100 - Number(slippage.value))) / BigInt(100)
+            : (route.inputAmount.numerator * BigInt(100 + Number(slippage.value))) / BigInt(100)
+
         const fee = (route.pools[0] as V3Pool).fee
 
-        // const swapRecipient = outputTokenIsNative ? contractSwapRouterV3 : recipient
-
-        const params = [tokenIn, tokenOut, fee, recipient, deadline, BigInt(amount), BigInt(amountLimit), sqrtPriceLimitX96]
+        console.log('🚀 ~ useExecuteSwap ~ amountLimit:', amountLimit)
+        const params = [tokenIn, tokenOut, fee, recipient, deadline, amount, amountLimit, sqrtPriceLimitX96]
         console.info(' (FormSwap.client.vue:398) params', params)
 
         encodedData = encodeFunctionData({
@@ -528,13 +584,27 @@
           functionName: bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? 'exactInputSingle' : 'exactOutputSingle',
           args: [params]
         })
-      } else {
-        // const swapRecipient = outputTokenIsNative ? contractSwapRouterV3 : recipient
+      }
+      // Handle multi-hop routes
+      else {
+        const amountIn = BigInt(maximumAmountIn(createDynamicSlippagePercent(+slippage.value), route.inputAmount, bestTrade.value!.tradeType).quotient)
+        console.log('🚀 ~ useExecuteSwap ~ amountIn:', amountIn)
+
+        const amountOut = BigInt(minimumAmountOut(createDynamicSlippagePercent(+slippage.value), route.outputAmount, bestTrade.value!.tradeType).quotient)
+        console.log('🚀 ~ useExecuteSwap ~ amountOut:', amountOut)
+        // Extract token addresses from path
+        const pathAddresses = route.path.map((token) => token.wrapped.address)
+        console.log('🚀 ~ useExecuteSwap ~ pathAddresses:', pathAddresses)
+
+        // Extract fees from pools
+        const fees = route.pools.map((pool) => (pool as V3Pool).fee)
+        console.log('🚀 ~ useExecuteSwap ~ fees:', fees)
 
         const path = encodePath(
-          route.path.map((token) => token.wrapped.address),
-          route.pools.map((pool) => (pool as V3Pool).fee)
+          bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? pathAddresses : pathAddresses.reverse(),
+          bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? fees : fees.reverse()
         )
+        console.log('🚀 ~ useExecuteSwap ~ encode path:', path)
 
         const params = {
           path,
@@ -542,12 +612,12 @@
           deadline,
           ...(bestTrade.value?.tradeType === TradeType.EXACT_INPUT
             ? {
-                amountIn: BigInt(amount),
-                amountOutMinimum: BigInt(amountLimit)
+                amountIn: amountIn,
+                amountOutMinimum: amountOut
               }
             : {
-                amountOut: BigInt(amount),
-                amountInMaximum: BigInt(amountLimit)
+                amountOut: amountOut,
+                amountInMaximum: amountIn
               })
         }
 
@@ -561,9 +631,8 @@
       datas.push(encodedData)
     }
 
+    // Handle native token unwrapping if needed
     if (outputTokenIsNative) {
-      // Đặt amountMinimum là 0 và recipient là address của user
-      // Để đảm bảo tất cả WMON được unwrap và gửi đến user
       const unwrapData = encodeFunctionData({
         abi: swapRouterABI,
         functionName: 'unwrapWMON',
@@ -572,22 +641,37 @@
       datas.push(unwrapData)
     }
 
+    // Create multicall transaction
     const calldata = encodeFunctionData({
       abi: swapRouterABI,
       functionName: 'multicall',
       args: [datas]
     })
-    console.log('🚀 ~ useExactInputMulticall ~ calldata:', calldata)
+    console.log('🚀 ~ useExecuteSwap ~ calldata:', calldata)
 
     const isNative = form.value.token0.address === zeroAddress
     const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
 
-    const txHash = await sendTransaction(config, {
+    const gasLimit = await estimateGas(config, {
       to: contractSwapRouterV3,
       data: calldata,
       value: isNative ? BigInt(inputAmount) : hexToBigInt('0x0')
+    }).catch((error) => {
+      showToastMsg('Simulate transaction failed', 'error')
+      throw error
     })
 
+    console.log('🚀 ~ useExecuteSwap ~ gasLimit:', gasLimit)
+
+    // Send transaction
+    const txHash = await sendTransaction(config, {
+      to: contractSwapRouterV3,
+      data: calldata,
+      value: isNative ? BigInt(inputAmount) : hexToBigInt('0x0'),
+      gas: BigInt(gasLimit) + BigInt(Math.floor((Number(gasLimit) * 20) / 100)) // increase 20% gas limit
+    })
+
+    // Wait for transaction confirmation
     const { status } = await waitForTransactionReceipt(config, {
       chainId: chainId.value,
       hash: txHash,
@@ -595,15 +679,154 @@
     })
 
     if (status === 'success') {
-      const { showToastMsg } = useShowToastMsg()
-      showToastMsg('Swap successful', 'success', getUrlScan(chainId.value, 'tx', txHash), chainId.value)
       await postTx(txHash, contractSwapRouterV3)
+      showToastMsg('Swap successful', 'success', getUrlScan(chainId.value, 'tx', txHash), chainId.value)
       console.info('Transaction successful', 'success', txHash)
     } else {
       ElMessage.error('Transaction failed')
       console.info('Transaction failed', 'error', txHash)
     }
   }
+
+  // const _useExactInputMulticall = async (swapOut: SmartRouterTrade<TradeType>) => {
+  //   const trade = swapOut
+  //   console.info(' (FormSwap.client.vue:355) trade', trade)
+  //   const datas: Hex[] = []
+  //   const outputTokenIsNative = form.value.token1.address === zeroAddress
+
+  //   const contractSwapRouterV3 = getSwapRouterV3Address(chainId.value)
+  //   if (!contractSwapRouterV3) throw new Error('Invalid contract address')
+
+  //   for (const route of trade.routes) {
+  //     console.log('🚀 ~ useExecuteSwap ~ route:', route)
+
+  //     if (route.path.length < 2 || route.pools.length !== route.path.length - 1) {
+  //       throw new Error('Invalid route: path and pools mismatch')
+  //     }
+
+  //     // Nếu đầu ra là đồng wnative, thì gửi wnative đến hợp đồng SwapRouter, sau đó chuyển tiếp đến ví của user
+  //     // chứ không phải user, để router có thể unwrap sau đó
+  //     const recipient = outputTokenIsNative ? contractSwapRouterV3 : address.value
+
+  //     const deadline = Math.floor(Date.now() / 1000) + 5 * 60 // 5 minutes
+
+  //     const amount = bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? route.inputAmount.numerator.toString() : route.outputAmount.numerator.toString()
+  //     const amountLimit =
+  //       bestTrade.value?.tradeType === TradeType.EXACT_INPUT
+  //         ? Math.floor((Number(route.outputAmount.numerator) * (100 - Number(slippage.value))) / 100)
+  //         : Math.floor((Number(route.inputAmount.numerator) * (100 + Number(slippage.value))) / 100)
+  //     // Tính sqrtPriceLimitX96 dựa trên pool đầu tiên
+  //     const firstPool = route.pools[0] as V3Pool
+  //     const liquidity = firstPool.liquidity.toString()
+  //     const sqrtRatioX96 = firstPool.sqrtRatioX96
+  //     const currentPrice = new Decimal(sqrtRatioX96.toString()).div(new Decimal(2).pow(96)).pow(2)
+  //     const zeroToOne = route.path[0].wrapped.sortsBefore(route.path[1].wrapped)
+  //     let nextPrice: Decimal = new Decimal(0)
+
+  //     if (zeroToOne) {
+  //       nextPrice = new Decimal(liquidity).div(new Decimal(liquidity).div(currentPrice.sqrt()).add(trade.inputAmount.numerator.toString())).pow(2)
+  //     } else {
+  //       nextPrice = new Decimal(trade.inputAmount.numerator.toString()).div(new Decimal(liquidity)).add(currentPrice.sqrt()).pow(2)
+  //     }
+  //     const sqrtPriceLimitX96 = BigInt(
+  //       nextPrice
+  //         .sqrt()
+  //         .mul(2 ** 96)
+  //         .toFixed(0)
+  //     )
+  //     let encodedData: `0x${string}`
+  //     if (route.path.length === 2 && route.pools.length === 1) {
+  //       const tokenIn = route.inputAmount.currency.wrapped.address
+  //       const tokenOut = route.outputAmount.currency.wrapped.address
+  //       const fee = (route.pools[0] as V3Pool).fee
+
+  //       // const swapRecipient = outputTokenIsNative ? contractSwapRouterV3 : recipient
+
+  //       const params = [tokenIn, tokenOut, fee, recipient, deadline, BigInt(amount), BigInt(amountLimit), sqrtPriceLimitX96]
+  //       console.info(' (FormSwap.client.vue:398) params', params)
+
+  //       encodedData = encodeFunctionData({
+  //         abi: swapRouterABI,
+  //         functionName: bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? 'exactInputSingle' : 'exactOutputSingle',
+  //         args: [params]
+  //       })
+  //     } else {
+  //       // const swapRecipient = outputTokenIsNative ? contractSwapRouterV3 : recipient
+
+  //       const path = encodePath(
+  //         route.path.map((token) => token.wrapped.address),
+  //         route.pools.map((pool) => (pool as V3Pool).fee)
+  //       )
+
+  //       const params = {
+  //         path,
+  //         recipient,
+  //         deadline,
+  //         ...(bestTrade.value?.tradeType === TradeType.EXACT_INPUT
+  //           ? {
+  //               amountIn: BigInt(amount),
+  //               amountOutMinimum: BigInt(amountLimit)
+  //             }
+  //           : {
+  //               amountOut: BigInt(amount),
+  //               amountInMaximum: BigInt(amountLimit)
+  //             })
+  //       }
+
+  //       encodedData = encodeFunctionData({
+  //         abi: swapRouterABI,
+  //         functionName: bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? 'exactInput' : 'exactOutput',
+  //         args: [params]
+  //       })
+  //     }
+
+  //     datas.push(encodedData)
+  //   }
+
+  //   if (outputTokenIsNative) {
+  //     // Đặt amountMinimum là 0 và recipient là address của user
+  //     // Để đảm bảo tất cả WMON được unwrap và gửi đến user
+  //     const unwrapData = encodeFunctionData({
+  //       abi: swapRouterABI,
+  //       functionName: 'unwrapWMON',
+  //       args: [BigInt(0), address.value]
+  //     })
+  //     datas.push(unwrapData)
+  //   }
+
+  //   const calldata = encodeFunctionData({
+  //     abi: swapRouterABI,
+  //     functionName: 'multicall',
+  //     args: [datas]
+  //   })
+  //   console.log('🚀 ~ useExecuteSwap ~ calldata:', calldata)
+
+  //   const isNative = form.value.token0.address === zeroAddress
+  //   const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
+
+  //   const txHash = await sendTransaction(config, {
+  //     to: contractSwapRouterV3,
+  //     data: calldata,
+  //     value: isNative ? BigInt(inputAmount) : hexToBigInt('0x0'),
+  //     gas: BigInt(20 * 10 ** 6)
+  //   })
+
+  //   const { status } = await waitForTransactionReceipt(config, {
+  //     chainId: chainId.value,
+  //     hash: txHash,
+  //     pollingInterval: 2000
+  //   })
+
+  //   if (status === 'success') {
+  //     const { showToastMsg } = useShowToastMsg()
+  //     showToastMsg('Swap successful', 'success', getUrlScan(chainId.value, 'tx', txHash), chainId.value)
+  //     await postTx(txHash, contractSwapRouterV3)
+  //     console.info('Transaction successful', 'success', txHash)
+  //   } else {
+  //     ElMessage.error('Transaction failed')
+  //     console.info('Transaction failed', 'error', txHash)
+  //   }
+  // }
 
   const handleSwap = async () => {
     try {
@@ -650,15 +873,17 @@
     try {
       isConfirmApprove.value = false
       isSwapping.value = true
-      await useExactInputMulticall(bestTrade.value as SwapOutput)
+      await useExecuteSwap(bestTrade.value as SwapOutput)
       isSwapping.value = false
       stepSwap.value = 'SELECT_TOKEN'
       form.value.amountIn = ''
       form.value.amountOut = ''
       form.value.tradingFee = '0'
+      refetchBalance0()
+      refetchBalance1()
     } catch (error) {
       console.log('🚀 ~ swap ~ error:', error)
-      console.info(' (FormSwap.client.vue:319) sign sao sao sao saii  xong r ne')
+      // console.info(' (FormSwap.client.vue:319) sign sao sao sao saii  xong r ne')
       isConfirmSwap.value = false
       isSwapping.value = false
     }
