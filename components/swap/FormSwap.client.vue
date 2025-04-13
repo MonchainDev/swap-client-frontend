@@ -566,17 +566,19 @@
         const tokenIn = route.inputAmount.currency.wrapped.address
 
         const tokenOut = route.outputAmount.currency.wrapped.address
-        const amount = bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? route.inputAmount.numerator : route.outputAmount.numerator
-        console.log('🚀 ~ useExecuteSwap ~ amount:', amount)
-        const amountLimit =
-          bestTrade.value?.tradeType === TradeType.EXACT_INPUT
-            ? (route.outputAmount.numerator * BigInt(100 - Number(slippage.value))) / BigInt(100)
-            : (route.inputAmount.numerator * BigInt(100 + Number(slippage.value))) / BigInt(100)
+
+        const amountIn = BigInt(maximumAmountIn(convertSlippageToPercent(+slippage.value), route.inputAmount, bestTrade.value!.tradeType).quotient)
+        console.log('🚀 ~ useExecuteSwap ~ amountIn:', amountIn)
+
+        const amountOut = BigInt(minimumAmountOut(convertSlippageToPercent(+slippage.value), route.outputAmount, bestTrade.value!.tradeType).quotient)
+        console.log('🚀 ~ useExecuteSwap ~ amountOut:', amountOut)
 
         const fee = (route.pools[0] as V3Pool).fee
 
-        console.log('🚀 ~ useExecuteSwap ~ amountLimit:', amountLimit)
-        const params = [tokenIn, tokenOut, fee, recipient, deadline, amount, amountLimit, sqrtPriceLimitX96]
+        const amount_1 = bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? amountIn : amountOut
+        const amount_2 = bestTrade.value?.tradeType === TradeType.EXACT_INPUT ? amountOut : amountIn
+
+        const params = [tokenIn, tokenOut, fee, recipient, deadline, amount_1, amount_2, sqrtPriceLimitX96]
         console.info(' (FormSwap.client.vue:398) params', params)
 
         encodedData = encodeFunctionData({
@@ -587,10 +589,10 @@
       }
       // Handle multi-hop routes
       else {
-        const amountIn = BigInt(maximumAmountIn(createDynamicSlippagePercent(+slippage.value), route.inputAmount, bestTrade.value!.tradeType).quotient)
+        const amountIn = BigInt(maximumAmountIn(convertSlippageToPercent(+slippage.value), route.inputAmount, bestTrade.value!.tradeType).quotient)
         console.log('🚀 ~ useExecuteSwap ~ amountIn:', amountIn)
 
-        const amountOut = BigInt(minimumAmountOut(createDynamicSlippagePercent(+slippage.value), route.outputAmount, bestTrade.value!.tradeType).quotient)
+        const amountOut = BigInt(minimumAmountOut(convertSlippageToPercent(+slippage.value), route.outputAmount, bestTrade.value!.tradeType).quotient)
         console.log('🚀 ~ useExecuteSwap ~ amountOut:', amountOut)
         // Extract token addresses from path
         const pathAddresses = route.path.map((token) => token.wrapped.address)
@@ -628,6 +630,7 @@
         })
       }
 
+      console.log('🚀 ~ useExecuteSwap ~ encodedData:', encodedData)
       datas.push(encodedData)
     }
 
@@ -679,8 +682,8 @@
     })
 
     if (status === 'success') {
-      await postTx(txHash, contractSwapRouterV3)
       showToastMsg('Swap successful', 'success', getUrlScan(chainId.value, 'tx', txHash), chainId.value)
+      await postTx(txHash, contractSwapRouterV3)
       console.info('Transaction successful', 'success', txHash)
     } else {
       ElMessage.error('Transaction failed')
