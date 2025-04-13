@@ -61,6 +61,25 @@
     }
   ]
   const { switchChainAsync } = useSwitchChain()
+  const hasMetaMask = ref(false)
+
+  onMounted(() => {
+    window.addEventListener('eip6963:announceProvider', (event) => {
+      //@ts-ignore
+      const provider = event?.detail?.provider
+      if (!provider) return
+
+      if (provider.isMetaMask) {
+        hasMetaMask.value = true
+      }
+    })
+
+    window.dispatchEvent(new Event('eip6963:requestProvider'))
+  })
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('eip6963:announceProvider', () => {})
+  })
 
   const typeConnect = ref<WalletType | null>(null)
   const handleConnect = async (type: WalletType) => {
@@ -76,11 +95,16 @@
           window.open(`https://link.trustwallet.com/open_url?coin_id=60&url=${window.location.href}`, '_blank')
         }
       } else if (type === 'METAMASK') {
-        const isInstalled = detectMetaMask()
-        if (isInstalled) {
+        if (hasMetaMask.value) {
           await connectAsync({ connector: connectors[0], chainId: currentNetwork.value.chainId })
         } else {
-          window.open(`https://metamask.app.link/dapp/${window.location.href}`, '_blank')
+          // if eip6963 not support
+          const isInstalled = detectMetaMask()
+          if (isInstalled) {
+            await connectAsync({ connector: connectors[0], chainId: currentNetwork.value.chainId })
+          } else {
+            window.open(`https://metamask.app.link/dapp/${window.location.href}`, '_blank')
+          }
         }
       } else if (type === 'COINBASE') {
         if (window?.CoinbaseWalletProvider) {
@@ -128,8 +152,8 @@
         }
       })
     } else if (window.ethereum) {
-      if (window.ethereum.isMetaMask) {
-        if (window.ethereum._metamask && typeof window.ethereum.request === 'function' && typeof window.ethereum._metamask.isUnlocked === 'function') {
+      if (window.ethereum?.isMetaMask) {
+        if (window.ethereum?._metamask && typeof window.ethereum.request === 'function' && typeof window.ethereum?._metamask?.isUnlocked === 'function') {
           hasMetaMask = true
         } else {
           console.log('Provider override MetaMask')
