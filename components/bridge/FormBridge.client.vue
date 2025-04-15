@@ -228,7 +228,7 @@
   const isFetchQuote = ref(false)
   const needAllowanceApprove = ref(true)
   const needAllowanceApproveProtocolFee = ref(true)
-  const isTokenSelected = computed(() => form.value.token?.tokenSymbol !== '')
+  const isTokenSelected = computed(() => !!form.value.token?.tokenSymbol)
   const notEnoughLiquidity = ref(false)
   const insufficientBalance = ref(false)
   const amountOut = ref('')
@@ -311,7 +311,6 @@
     form.value.token = {} as IToken
     balance0.value = 0
     form.value.amount = ''
-    balance0.value = 0
     amountOut.value = ''
     fee.value.network = '0'
     fee.value.protocol = '0'
@@ -658,6 +657,7 @@
   const handleSelectToken = (token: IToken) => {
     form.value.token = token
     balance0.value = 0
+    amountOut.value = ''
   }
 
   const handleApprove = async () => {
