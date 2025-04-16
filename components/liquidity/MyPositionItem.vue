@@ -35,7 +35,7 @@
           >
           <span>|</span>
           <span
-            >APR: <span class="font-semibold text-success">{{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}%</span></span
+            >APR: <span class="font-semibold text-success">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</span></span
           >
         </div>
         <span class="text-xs font-semibold"
@@ -47,8 +47,7 @@
       <template v-else>
         <div class="flex items-center gap-2">
           <div class="flex flex-1 gap-1 text-sm">
-            <span class="font-semibold text-success"> Up to {{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}% </span>
-            <span class="text-gray-6">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</span>
+            <span class="font-semibold text-success"> Up to {{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}% </span>
           </div>
           <span class="rounded bg-gray-2 px-2 py-1 text-xs font-medium">{{ props.position.fee / 10000 }}%</span>
         </div>
@@ -434,7 +433,7 @@
 
   defineExpose({
     priceUdtTotal,
-    feeApr: props.position.feeApr,
+    rewardApr: props.position.rewardApr,
     priceUsdEarnToken,
     amountTokenEarn
   })
