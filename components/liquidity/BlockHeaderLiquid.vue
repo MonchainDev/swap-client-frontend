@@ -7,8 +7,18 @@
         </NuxtLink>
         <div class="flex items-center gap-[9px] text-xl font-semibold sm:text-sm">
           <div class="flex">
-            <img src="/token-default.png" alt="token " class="size-[25px] rounded-full border border-solid border-white sm:size-8" />
-            <img src="/token-default.png" alt="token " class="-ml-4 size-[25px] rounded-full border border-solid border-white sm:size-8" />
+            <img
+              :src="props.pool.baseLogo || ''"
+              alt="token "
+              class="size-[25px] rounded-full border border-solid border-white sm:size-8"
+              @error="handleImageError"
+            />
+            <img
+              :src="props.pool.quoteLogo || ''"
+              alt="token "
+              class="-ml-4 size-[25px] rounded-full border border-solid border-white sm:size-8"
+              @error="handleImageError"
+            />
           </div>
           <div class="sm:flex sm:flex-col">
             <span>{{ pool.baseSymbol }} + {{ pool.quoteSymbol }}</span>
@@ -38,9 +48,9 @@
           <span>APR</span>
         </div>
         <span class="text-xl">
-          <span class="font-semibold text-[#049C6B]">{{ formatNumber((pool.feeApr || 0).toFixed(2)) }}% </span
-          >{{ formatNumber((pool.rewardApr || 0).toFixed(2)) }}%</span
-        >
+          <span class="font-semibold text-[#049C6B]">{{ formatNumber((pool.feeApr || 0).toFixed(2)) }}% </span>
+          <!-- {{ formatNumber((pool.rewardApr || 0).toFixed(2)) }}% -->
+        </span>
       </div>
     </div>
   </div>
@@ -54,7 +64,7 @@
     pool: IPool
   }
 
-  const _props = withDefaults(defineProps<IProps>(), {
+  const props = withDefaults(defineProps<IProps>(), {
     pool: () => ({}) as IPool
   })
   const { network: networkPoolInfo } = useRoute('info-network-address').params
@@ -65,6 +75,8 @@
     const networkUrl = networkPoolInfo || networkPoolDetail
     return LIST_NETWORK.find((item) => item.network.toUpperCase() === networkUrl.toUpperCase())
   })
+
+  const { handleImageError } = useErrorImage()
 </script>
 
 <style lang="scss" scoped></style>
