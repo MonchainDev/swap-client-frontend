@@ -4,11 +4,11 @@
       <span class="text-2xl font-semibold leading-7">Pair info</span>
       <div class="flex items-center gap-5 sm:flex-col sm:items-start sm:gap-3">
         <div class="flex items-center gap-1">
-          <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
+          <img :src="props.pool.baseLogo || ''" alt="logo" class="size-[14px] rounded-full" @error="handleImageError" />
           <span>1 {{ pool.baseSymbol }} = {{ formatNumber(price0) }} {{ pool.quoteSymbol }}</span>
         </div>
         <div class="flex items-center gap-1">
-          <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
+          <img :src="props.pool.quoteLogo || ''" alt="logo" class="size-[14px] rounded-full" @error="handleImageError" />
           <span> 1 {{ pool.quoteSymbol }} = {{ formatNumber(price1) }} {{ pool.baseSymbol }}</span>
         </div>
       </div>
@@ -28,14 +28,14 @@
         <div class="mt-[31px] flex flex-col gap-3 border-b border-t border-solid border-gray-3 py-5 pt-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-[5px]">
-              <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
+              <img :src="props.pool.baseLogo || ''" alt="logo" class="size-[14px] rounded-full" @error="handleImageError" />
               <span class="text-sm">{{ pool.baseSymbol }}</span>
             </div>
             <span class="text-sm">{{ pool.baseQtty ? formatNumberWithDecimal(pool.baseQtty, pool.baseDecimals) : 0 }}</span>
           </div>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-[5px]">
-              <img src="/token-default.png" alt="logo" class="size-[14px] rounded-full" />
+              <img :src="props.pool.quoteLogo || ''" alt="logo" class="size-[14px] rounded-full" @error="handleImageError" />
               <span class="text-sm">{{ pool.quoteSymbol }}</span>
             </div>
             <span class="text-sm">{{ pool.quoteQtty ? formatNumberWithDecimal(pool.quoteQtty, pool.quoteDecimals) : 0 }}</span>
@@ -141,6 +141,7 @@
     showHeader: true,
     pool: () => ({}) as IPool
   })
+  const { handleImageError } = useErrorImage()
 
   // const route = useRoute('liquidity-pool-network-address')
 
@@ -243,34 +244,6 @@
   })
 
   const infoVolume = computed(() => {
-    // if (data.value?.poolDayDatas.length) {
-    //   const today = data.value.poolDayDatas[0]
-    //   const yesterday = data.value.poolDayDatas[1]
-    //   return {
-    //     today: {
-    //       volume:
-    //         parseFloat(today.pool.volumeToken0 ?? '0') *
-    //           parseFloat(today.pool.volumeToken1 ?? '0') *
-    //           parseFloat(today.pool.token0.derivedUSD) *
-    //           parseFloat(today.pool.token1.derivedUSD) || 0,
-    //       fee: parseFloat(today.pool.feesUSD ?? '0'),
-    //       tvl:
-    //         parseFloat(today.pool.totalValueLockedToken0) * parseFloat(today.pool.token0.derivedUSD) +
-    //           parseFloat(today.pool.totalValueLockedToken1) * parseFloat(today.pool.token1.derivedUSD) || 0
-    //     },
-    //     yesterday: {
-    //       volume:
-    //         parseFloat(yesterday.pool.volumeToken0 ?? '0') *
-    //           parseFloat(yesterday.pool.volumeToken1 ?? '0') *
-    //           parseFloat(yesterday.pool.token0.derivedUSD) *
-    //           parseFloat(yesterday.pool.token1.derivedUSD) || 0,
-    //       fee: parseFloat(yesterday.pool.feesUSD ?? '0'),
-    //       tvl:
-    //         parseFloat(yesterday.pool.totalValueLockedToken0) * parseFloat(yesterday.pool.totalValueLockedToken1) +
-    //           parseFloat(yesterday.pool.token0.derivedUSD) * parseFloat(yesterday.pool.token1.derivedUSD) || 0
-    //     }
-    //   }
-    // }
     if (foramtedData.value?.length) {
       const today = foramtedData.value[0]
       const yesterday = foramtedData.value[1]
@@ -370,12 +343,12 @@
 
   function calculateMetrics(poolDayData: poolDayDatas): IMetric {
     const pool = poolDayData.pool
+    const baseDerivedUsd = props.pool.baseDerivedUsd ?? 0
+    const quoteDerivedUsd = props.pool.quoteDerivedUsd ?? 0
 
-    const tvlUSD =
-      parseFloat(pool.totalValueLockedToken0) * parseFloat(pool.token0.derivedUSD) +
-      parseFloat(pool.totalValueLockedToken1) * parseFloat(pool.token1.derivedUSD)
+    const tvlUSD = parseFloat(pool.totalValueLockedToken0) * baseDerivedUsd + parseFloat(pool.totalValueLockedToken1) * quoteDerivedUsd
 
-    const volumeUSD = parseFloat(pool.volumeToken0) * parseFloat(pool.token0.derivedUSD) + parseFloat(pool.volumeToken1) * parseFloat(pool.token1.derivedUSD)
+    const volumeUSD = parseFloat(pool.volumeToken0) * baseDerivedUsd + parseFloat(pool.volumeToken1) * quoteDerivedUsd
 
     const liquidity = parseFloat(pool.liquidity)
 

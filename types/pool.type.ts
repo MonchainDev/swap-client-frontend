@@ -25,6 +25,10 @@ export interface IPool {
   liquidity: number
   currentPrice: number
   chainId: number
+  baseDerivedUsd: number
+  quoteDerivedUsd: number
+  quoteLogo: string
+  baseLogo: string
 }
 
 export interface IPoolOrigin {
