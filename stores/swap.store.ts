@@ -139,22 +139,35 @@ export const useSwapStore = defineStore('swap', () => {
 
   const fetchExchangeRate = async () => {
     const params = new URLSearchParams()
-    if (form.value.token0.address) {
+    if (form.value.token0.address && form.value.token1.address) {
       params.append('currencies', form.value.token0.symbol)
+      params.append('currencies', form.value.token1.symbol)
       const data = await $fetch<IExchangeRate[]>(`/api/exchange-rate/all?${params.toString()}`)
       return data
     }
   }
 
   const { data: exchangeRate } = useQuery({
-    queryKey: computed(() => ['exchange-rate-base-token-swap', form.value.token0.address]),
+    queryKey: computed(() => ['exchange-rate-token-swap', form.value.token0.address, form.value.token1.address]),
     queryFn: fetchExchangeRate,
-    enabled: computed(() => !!form.value.token0.address)
+    enabled: computed(() => !!form.value.token0.address && !!form.value.token1.address)
   })
 
   const exchangeRateBaseCurrency = computed(() => {
     if (exchangeRate.value?.length) {
       const rateList = exchangeRate.value.filter((item) => item.symbol === form.value.token0.symbol)
+      if (rateList.length) {
+        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
+      }
+      return '0'
+    }
+    return '0'
+  })
+
+  const exchangeRateQuoteCurrency = computed(() => {
+    if (exchangeRate.value?.length) {
+      const rateList = exchangeRate.value.filter((item) => item.symbol === form.value.token1.symbol)
       if (rateList.length) {
         const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
         return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
@@ -182,6 +195,7 @@ export const useSwapStore = defineStore('swap', () => {
     refetchAllowance1,
     resetStore,
     exchangeRateBaseCurrency,
+    exchangeRateQuoteCurrency,
     refetchBalance0,
     refetchBalance1
   }

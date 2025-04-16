@@ -9,7 +9,7 @@
           :token="form.token0"
           :balance="balance0?.formatted"
           :step-swap
-          :amount-usd="amountUsd"
+          :amount-usd="amount0Usd"
           type="BASE"
           class="h-[138px] bg-[#EFEFFF] sm:h-[120px]"
           @select-token="handleOpenPopupSelectToken"
@@ -30,6 +30,7 @@
           :token="form.token1"
           :balance="balance1?.formatted"
           :step-swap
+          :amount-usd="amount1Usd"
           type="QUOTE"
           class="h-[124px] bg-[#F3F8FF] sm:h-[100px]"
           @select-token="handleOpenPopupSelectToken"
@@ -48,7 +49,7 @@
             </div>
             <div class="flex flex-col text-right">
               <span class="text-[32px] font-semibold leading-7">{{ form.amountIn }}</span>
-              <span class="text-sm font-semibold text-gray-6">≈ ${{ amountUsd }}</span>
+              <span class="text-sm font-semibold text-gray-6">≈ ${{ amount0Usd }}</span>
             </div>
           </div>
           <div class="relative flex items-center justify-between gap-2 pt-[38px]">
@@ -60,7 +61,10 @@
                 <div class="line-clamp-1 text-xs text-[#6F6A79]">{{ form.token1.name }}</div>
               </div>
             </div>
-            <span class="flex-1 text-right text-[32px] font-semibold leading-7">≈ {{ form.amountOut }}</span>
+            <div class="flex flex-col text-right">
+              <span class="text-[32px] font-semibold leading-7">{{ form.amountOut }}</span>
+              <span class="text-sm font-semibold text-gray-6">≈ ${{ amount1Usd }}</span>
+            </div>
           </div>
         </div>
       </template>
@@ -131,8 +135,20 @@
   const { setOpenPopup } = useBaseStore()
   const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
 
-  const { isSwapping, isConfirmApprove, exchangeRateBaseCurrency, slippage, isConfirmSwap, allowance0, balance0, balance1, form, token0, token1 } =
-    storeToRefs(useSwapStore())
+  const {
+    isSwapping,
+    isConfirmApprove,
+    exchangeRateBaseCurrency,
+    exchangeRateQuoteCurrency,
+    slippage,
+    isConfirmSwap,
+    allowance0,
+    balance0,
+    balance1,
+    form,
+    token0,
+    token1
+  } = storeToRefs(useSwapStore())
   const { refetchAllowance0, refetchBalance0, refetchBalance1 } = useSwapStore()
 
   const isEditSlippage = ref(false)
@@ -153,9 +169,15 @@
     return stepSwap.value === 'SELECT_TOKEN' ? _props.title : 'Confirm swap'
   })
 
-  const amountUsd = computed(() => {
+  const amount0Usd = computed(() => {
     const quantity = new Decimal(form.value.amountIn || 0)
     const rate = exchangeRateBaseCurrency.value
+    return quantity && rate ? formatNumber(quantity.mul(rate).toSignificantDigits(6, Decimal.ROUND_DOWN).toString()) : '0'
+  })
+
+  const amount1Usd = computed(() => {
+    const quantity = new Decimal(form.value.amountOut || 0)
+    const rate = exchangeRateQuoteCurrency.value
     return quantity && rate ? formatNumber(quantity.mul(rate).toSignificantDigits(6, Decimal.ROUND_DOWN).toString()) : '0'
   })
 

@@ -53,7 +53,7 @@
           @focus="emits('focus-input', type)"
           @input="handleInput"
         />
-        <span v-if="type === 'BASE'" class="text-sm font-semibold text-gray-6">≈ ${{ amountUsd }}</span>
+        <span class="text-sm font-semibold text-gray-6">≈ ${{ amountUsd }}</span>
       </div>
     </div>
   </div>
