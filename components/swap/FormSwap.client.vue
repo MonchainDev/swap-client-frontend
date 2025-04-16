@@ -330,11 +330,10 @@
       const tokenB = await getTokenInfo(form.value.token1.address)
 
       if (type === 'BASE') {
-        form.value.amountIn = amount
         form.value.amountOut = ''
-        console.log('🚀 ~ handleInput ~ form.value.amountIn:', form.value.amountIn)
+        console.log('🚀 ~ handleInput ~ amount int:', form.value.amountIn)
         const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
-        console.log('🚀 ~ handleInput ~ inputAmount', inputAmount)
+        console.log('🚀 ~ handleInput ~ amount wei', inputAmount)
         // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
         const _bestTrade = await getBestTradeV4ForSwapV2({
           token0: tokenA,
@@ -368,9 +367,10 @@
 
         isFetchQuote.value = false
       } else {
-        form.value.amountOut = amount
         form.value.amountIn = ''
         const inputAmount = Number(form.value.amountOut) * ((10 ** Number(form.value.token1.decimals)) as number)
+        console.log('🚀 ~ handleInput ~ amount int:', form.value.amountOut)
+        console.log('🚀 ~ handleInput ~ amount wei', inputAmount)
 
         const _bestTrade = await getBestTradeV4ForSwapV2({
           token0: tokenA,

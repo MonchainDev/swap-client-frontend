@@ -114,7 +114,7 @@
 
   const handleInput = useDebounce(() => {
     emits('change', amount.value, props.type)
-  }, 400)
+  }, 500)
 
   const handleSelectPercent = (index: number) => {
     const percent = [1, 0.25, 0.5, 0.75][index]
