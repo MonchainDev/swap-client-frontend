@@ -206,7 +206,7 @@
   const totalApr = computed(() => {
     if (formattedData.value.length) {
       const total = formattedData.value.reduce((acc, item) => {
-        const apr = Number(item.feeApr)
+        const apr = Number(item.rewardApr)
         return acc + apr
       }, 0)
       return total.toFixed(2)

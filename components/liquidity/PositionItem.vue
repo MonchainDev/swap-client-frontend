@@ -21,7 +21,7 @@
     </div>
     <div class="flex flex-col items-center justify-center gap-1 px-1 text-sm">
       <!-- <div class="break-all font-semibold text-success">{{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}%</div> -->
-      <div class="break-all text-gray-6">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</div>
+      <div class="break-all text-success">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</div>
     </div>
     <div class="flex flex-col justify-center pr-[10px] text-sm">
       <span>Min: {{ formatNumber(min) }} {{ props.position.quoteSymbol }}/{{ props.position.baseSymbol }}</span>

@@ -53,8 +53,7 @@
           </span>
           <span class="text-xl font-semibold">
             <span class="flex gap-2">
-              <span class="text-success">Up to {{ feeApr ?? 0 }}% </span>
-              <span>{{ rewardApr ?? 0 }}%</span>
+              <span class="text-success">{{ rewardApr ?? 0 }}% </span>
             </span>
           </span>
         </div>

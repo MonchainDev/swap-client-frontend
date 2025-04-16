@@ -21,8 +21,10 @@
         <div class="mb-3 flex items-center justify-between">
           <p class="text-sm text-primary">APR</p>
           <div class="flex items-center gap-1">
-            <div class="border-b border-dashed border-[#D9D9D9] text-sm font-bold text-[#049C6B]">Up to {{ Number(poolDetail.feeApr).toFixed(2) }}%</div>
-            <div class="font-semibold text-gray-6">{{ poolDetail.rewardApr }}%</div>
+            <div class="border-b border-dashed border-[#D9D9D9] text-sm font-bold text-[#049C6B]">
+              Up to {{ (Number(poolDetail.feeApr ?? 0) + Number(poolDetail.rewardApr ?? 0)).toFixed(2) }}%
+            </div>
+            <!-- <div class="font-semibold text-gray-6">{{ poolDetail.rewardApr }}%</div> -->
           </div>
         </div>
         <div class="mb-3 flex items-center justify-between">
