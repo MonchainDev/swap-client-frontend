@@ -59,27 +59,32 @@ export const NATIVE = {
   [ChainId.BSC_TESTNET]: {
     name: 'BNB',
     symbol: 'BNB',
-    decimals: 18
+    decimals: 18,
+    address: zeroAddress
   },
   [ChainId.MON_TESTNET]: {
     name: 'MON',
     symbol: 'MON',
-    decimals: 18
+    decimals: 18,
+    address: zeroAddress
   },
   [ChainId.SEPOLIA]: {
     name: 'Sepolia Ether',
     symbol: 'SEP',
-    decimals: 18
+    decimals: 18,
+    address: zeroAddress
   },
   [ChainId.AMOY_POLYGON]: {
     name: 'Polygon',
     symbol: 'POL',
-    decimals: 18
+    decimals: 18,
+    address: zeroAddress
   },
   [ChainId.ARBITRUM_SEPOLIA]: {
     name: 'Arbitrum Sepolia Ether',
     symbol: 'ETH',
-    decimals: 18
+    decimals: 18,
+    address: zeroAddress
   }
 } satisfies Record<
   ChainId,
@@ -87,5 +92,6 @@ export const NATIVE = {
     name: string
     symbol: string
     decimals: number
+    address: string
   }
 >

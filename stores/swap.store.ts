@@ -2,9 +2,10 @@ import { useQuery } from '@tanstack/vue-query'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import Decimal from 'decimal.js'
 import { defineStore } from 'pinia'
+import { NATIVE, TOKEN_REWARDS } from '~/config/tokens'
 import { DEFAULT_SLIPPAGE, EMPTY_TOKEN } from '~/constant'
 import ABI_TOKEN from '~/constant/contract/contract-token.json'
-import type { IExchangeRate } from '~/types'
+import type { ChainId, IExchangeRate } from '~/types'
 import type { IFormSwap } from '~/types/swap.type'
 
 export const useSwapStore = defineStore('swap', () => {
@@ -177,6 +178,44 @@ export const useSwapStore = defineStore('swap', () => {
     return '0'
   })
 
+  const setDefaultToken = (_chainId: number, network: string) => {
+    // set default token in swap form
+    const native = NATIVE[_chainId as ChainId]
+    const reward = TOKEN_REWARDS[_chainId as ChainId]
+
+    const { address, decimals, name, symbol } = native
+    form.value.token0 = {
+      address,
+      decimals,
+      name,
+      symbol,
+      chainId: chainId.value!,
+      icon_url: '',
+      crossChain: false,
+      id: Math.random(),
+      network,
+      stable: false,
+      tokenAddress: address,
+      tokenSymbol: symbol,
+      tokenDecimals: decimals
+    }
+    form.value.token1 = {
+      address: reward?.address || '',
+      decimals: reward?.decimals || 0,
+      name: reward?.name || '',
+      symbol: reward?.symbol || '',
+      chainId: chainId.value!,
+      icon_url: '',
+      crossChain: false,
+      id: Math.random(),
+      network,
+      stable: false,
+      tokenAddress: reward?.address || '',
+      tokenSymbol: reward?.symbol || '',
+      tokenDecimals: reward?.decimals || 0
+    }
+  }
+
   return {
     slippage,
     balance0,
@@ -197,6 +236,7 @@ export const useSwapStore = defineStore('swap', () => {
     exchangeRateBaseCurrency,
     exchangeRateQuoteCurrency,
     refetchBalance0,
-    refetchBalance1
+    refetchBalance1,
+    setDefaultToken
   }
 })
