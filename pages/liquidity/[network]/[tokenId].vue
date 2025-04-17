@@ -448,13 +448,14 @@
       const client = getGraphQLClient(networkOfPool.value!.chainId)
       // Định nghĩa query với variable
       const query = gql`
-        query MyQuery($origin: String!, $pool: String!, $tickUpper: String!, $tickLower: String!) {
+        query ListTxPosition($origin: String!, $pool: String!, $tickUpper: String!, $tickLower: String!) {
           transactions(
             where: {
               or: [
                 { mints_: { origin: $origin, tickUpper: $tickUpper, tickLower: $tickLower } }
                 { burns_: { origin: $origin, tickUpper: $tickUpper, tickLower: $tickLower } }
                 { collects_: { pool: $pool, tickUpper: $tickUpper, tickLower: $tickLower } }
+                { swaps_: { pool: $pool, tick_gte: $tickLower, tick_lte: $tickUpper } }
               ]
             }
             orderBy: timestamp
@@ -488,7 +489,7 @@
         }
       `
       const variables = {
-        origin: account.value?.toLowerCase(),
+        origin: positionDetail.value?.createdBy.toLowerCase(),
         pool: positionDetail.value?.poolAddress.toLowerCase(),
         tickUpper: positionDetail.value?.tickUpper.toString(),
         tickLower: positionDetail.value?.tickLower.toString()
