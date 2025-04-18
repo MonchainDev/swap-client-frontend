@@ -488,6 +488,7 @@
           if (parseFloat(burn.amount0) === 0 && parseFloat(burn.amount1) === 0) return
           txs.push({
             ...burn,
+            amountUSD: getAmountUSD(burn),
             type: TabValue.REMOVE,
             timestamp: burn.timestamp * 1000
           })
@@ -498,6 +499,7 @@
         item.mints.forEach((mint) => {
           txs.push({
             ...mint,
+            amountUSD: getAmountUSD(mint),
             type: TabValue.ADD,
             timestamp: mint.timestamp * 1000
           })
@@ -507,6 +509,15 @@
 
     return txs
   })
+
+  function getAmountUSD(tx: ITx) {
+    const amount0 = tx.amount0
+    const amount1 = tx.amount1
+    const amountUSD0 = new Decimal(amount0).mul(props.pool.baseDerivedUsd)
+    const amountUSD1 = new Decimal(amount1).mul(props.pool.quoteDerivedUsd)
+    const amountUSD = amountUSD0.add(amountUSD1).toString()
+    return amountUSD
+  }
 
   function processSwaps(swaps: ITx[], txs: ITx[], pool: IPool) {
     if (swaps.length === 1) {
@@ -520,7 +531,7 @@
     const amount0 = swap.amount0
     const amount1 = swap.amount1
     const isAmount0Greater = Number(amount0) > Number(amount1)
-    const derivedUSD = (isAmount0Greater ? swap.token0.derivedUSD : swap.token1.derivedUSD) ?? '0'
+    const derivedUSD = (isAmount0Greater ? props.pool.baseDerivedUsd : props.pool.quoteDerivedUsd) ?? '0'
     const amountUSD0 = new Decimal(amount0).mul(derivedUSD).toString()
     const amountUSD1 = new Decimal(amount1).mul(derivedUSD).toString()
     txs.push({
@@ -548,7 +559,7 @@
         const amount0 = tx.amount0
         const amount1 = tx.amount1
         const isAmount0Greater = Number(amount0) > Number(amount1)
-        const derivedUSD = (isAmount0Greater ? tx.token0.derivedUSD : tx.token1.derivedUSD) ?? '0'
+        const derivedUSD = (isAmount0Greater ? props.pool.baseDerivedUsd : props.pool.quoteDerivedUsd) ?? '0'
         const amountUSD0 = new Decimal(amount0).mul(derivedUSD).toString()
         const amountUSD1 = new Decimal(amount1).mul(derivedUSD).toString()
         txs.push({
