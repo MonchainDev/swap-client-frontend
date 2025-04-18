@@ -297,7 +297,6 @@
   const handleOpenPopupSelectToken = () => {
     if (stepBridge.value === 'CONFIRM_BRIDGE') return
     setOpenPopup('popup-sell-token', true)
-    console.info('tokens: ', listTokenFrom.value)
   }
 
   async function handleSelectFromNetwork() {
@@ -308,6 +307,7 @@
     } else {
       form.value.token = {} as IToken
     }
+    if (!form.value.token) balance0.value = 0
   }
 
   async function handleSelectToNetwork() {
@@ -324,7 +324,7 @@
     } else {
       form.value.token = {} as IToken
     }
-    balance0.value = 0
+    if (!form.value.token) balance0.value = 0
     form.value.amount = ''
     amountOut.value = ''
     fee.value.network = '0'

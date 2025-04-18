@@ -111,7 +111,7 @@ export const useBridgeStore = defineStore('bridge', () => {
           ? new Token(toNetwork.value?.chainId as ChainId, _token1?.tokenAddress as `0x${string}`, +_token1!.tokenDecimals, _token1!.tokenSymbol, _token1?.name)
           : undefined
       }
-    }
+    }, { immediate: true, deep: true }
   )
 
   async function getBalanceToken(address: `0x${string}`, token: string) {
