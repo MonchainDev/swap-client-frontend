@@ -30,7 +30,7 @@ export const useBridgeStore = defineStore('bridge', () => {
   const { address, chainId } = useAccount()
   const { setOpenPopup } = useBaseStore()
   const config = useConfig()
-  
+
   const form = ref<IFormBridge>({
     token0: {
       ...EMPTY_TOKEN
@@ -68,11 +68,12 @@ export const useBridgeStore = defineStore('bridge', () => {
     () => form.value?.token?.tokenSymbol,
     async (formTokenSymbol) => {
       if (!formTokenSymbol) return
+      console.log(formTokenSymbol)
       // Token 0
       form.value.amount = ''
       const query = { network: fromNetwork.value?.network, crossChain: 'Y' }
-      const { data } = await useFetch<IToken[]>('/api/network/token', { query })
-      const _token0 = data.value?.find((item) => item.tokenSymbol === formTokenSymbol)
+      const data = await $fetch<IToken[]>('/api/network/token', { query })
+      const _token0 = data?.find((item) => item.tokenSymbol === formTokenSymbol)
       console.info('store-token0', _token0)
       token0.value = formTokenSymbol
         ? new Token(
@@ -91,11 +92,11 @@ export const useBridgeStore = defineStore('bridge', () => {
       }
       if (token0.value) {
         const _balance = Number(await getBalanceToken(address.value, token0.value.address as `0x${string}`))
-          console.info(" ~ bridge.store.ts:95 ~ _balance:", _balance);
+        console.info(' ~ bridge.store.ts:95 ~ _balance:', _balance)
         balance0.value = Decimal(_balance)
           .div(10 ** token0.value.decimals)
           .toNumber()
-          console.info(" ~ bridge.store.ts:99 ~ balance0:", balance0.value);
+        console.info(' ~ bridge.store.ts:99 ~ balance0:', balance0.value)
       } else {
         balance0.value = 0
       }
@@ -179,17 +180,16 @@ export const useBridgeStore = defineStore('bridge', () => {
   const { data: _listNetworkRs } = useFetch<INetwork[]>('/api/network/all', {
     onResponse({ response: { _data } }) {
       listNetwork.value = _data || []
-      const networkFrom = listNetwork.value.find(item => item.network === 'MON')
-      const networkTo = listNetwork.value.find(item => item.network === 'BSC')
+      const networkFrom = listNetwork.value.find((item) => item.network === 'MON')
+      const networkTo = listNetwork.value.find((item) => item.network === 'BSC')
       if (networkFrom) {
-        fromNetwork.value = {...networkFrom, logo: '/logo-mon-chain.png'}
+        fromNetwork.value = { ...networkFrom, logo: '/logo-mon-chain.png' }
       }
       if (networkTo) {
-        toNetwork.value = {...networkTo, logo: '/logo-bnb-chain.png'}
+        toNetwork.value = { ...networkTo, logo: '/logo-bnb-chain.png' }
       }
     }
   })
-  
 
   const resetStore = () => {
     form.value = {
