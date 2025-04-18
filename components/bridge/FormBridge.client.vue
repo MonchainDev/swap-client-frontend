@@ -24,6 +24,7 @@
         :is-selected="isTokenSelected"
         :token="form.token"
         :balance="balance0.toString()"
+        :amount-usd="amountUsd"
         :step-bridge
         :disabled-input="!form.token.symbol"
         class="h-[138px] w-full border border-[#EEEEEE] bg-white sm:h-[100px]"
@@ -213,8 +214,22 @@
 
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { fee, fromNetwork, toNetwork, form, isConfirmSwap, isConfirmApprove, isSwapping, listToken, token0, token1, balance0, listNetwork, listTokenFrom } =
-    storeToRefs(useBridgeStore())
+  const {
+    exchangeRateBaseCurrency,
+    fee,
+    fromNetwork,
+    toNetwork,
+    form,
+    isConfirmSwap,
+    isConfirmApprove,
+    isSwapping,
+    listToken,
+    token0,
+    token1,
+    balance0,
+    listNetwork,
+    listTokenFrom
+  } = storeToRefs(useBridgeStore())
   const isEditSlippage = ref(false)
 
   // const approveAndSend = ref<boolean>(false)
@@ -857,6 +872,12 @@
       return token.address !== '0x0000000000000000000000000000000000000000'
     }
   }
+
+  const amountUsd = computed(() => {
+    const quantity = new Decimal(form.value.amount || 0)
+    const rate = exchangeRateBaseCurrency.value
+    return quantity && rate ? formatNumber(quantity.mul(rate).toSignificantDigits(6, Decimal.ROUND_DOWN).toString()) : '0'
+  })
 
   const { listToken: listTokenCurrentNetwork } = storeToRefs(useBaseStore())
   const tokenDefault = listTokenCurrentNetwork.value.find((item) => item?.symbol === 'MON') as IToken
