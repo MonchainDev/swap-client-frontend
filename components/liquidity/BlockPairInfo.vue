@@ -75,15 +75,15 @@
 </template>
 
 <script lang="ts" setup>
+  import { useQuery } from '@tanstack/vue-query'
   import Decimal from 'decimal.js'
+  import { gql } from 'graphql-request'
   import type { ITab } from '~/types/component.type'
   import type { IPool } from '~/types/pool.type'
-  import ChartLiquidity from '../chart/ChartLiquidity.vue'
-  import ChartVolume from '../chart/ChartVolume.vue'
   import ChartFee from '../chart/ChartFee.vue'
+  import ChartLiquidity from '../chart/ChartLiquidity.vue'
   import ChartTvl from '../chart/ChartTvl.vue'
-  import { gql } from 'graphql-request'
-  import { useQuery } from '@tanstack/vue-query'
+  import ChartVolume from '../chart/ChartVolume.vue'
   const enum TabValue {
     VOLUME = 'VOLUME',
     LIQUIDITY = 'LIQUIDITY',
@@ -245,8 +245,42 @@
 
   const infoVolume = computed(() => {
     if (foramtedData.value?.length) {
-      const today = foramtedData.value[0]
-      const yesterday = foramtedData.value[1]
+      const today = foramtedData.value.find((item: IMetric) => {
+        const date = new Date(item.date * 1000)
+        return date.getDate() === new Date().getDate() && date.getMonth() === new Date().getMonth() && date.getFullYear() === new Date().getFullYear()
+      })
+      const yesterday = foramtedData.value.find((item: IMetric) => {
+        const date = new Date(item.date * 1000)
+        return date.getDate() === new Date().getDate() - 1 && date.getMonth() === new Date().getMonth() && date.getFullYear() === new Date().getFullYear()
+      })
+      if (!today) {
+        return {
+          today: {
+            volume: 0,
+            fee: 0,
+            tvl: foramtedData.value[0].tvlUSD ?? 0
+          },
+          yesterday: {
+            volume: 0,
+            fee: 0,
+            tvl: 0
+          }
+        }
+      }
+      if (!yesterday) {
+        return {
+          today: {
+            volume: today.volumeUSD,
+            fee: today.feeUSD,
+            tvl: today.tvlUSD
+          },
+          yesterday: {
+            volume: 0,
+            fee: 0,
+            tvl: 0
+          }
+        }
+      }
       return {
         today: {
           volume: today.volumeUSD,
@@ -254,9 +288,9 @@
           tvl: today.tvlUSD
         },
         yesterday: {
-          volume: yesterday?.volumeUSD ?? 0,
-          fee: yesterday?.feeUSD ?? 0,
-          tvl: yesterday?.tvlUSD ?? 0
+          volume: yesterday.volumeUSD ?? 0,
+          fee: yesterday.feeUSD ?? 0,
+          tvl: yesterday.tvlUSD ?? 0
         }
       }
     }
