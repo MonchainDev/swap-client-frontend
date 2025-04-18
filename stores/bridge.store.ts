@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/vue-query'
 import { Token } from '@monchain/swap-sdk-core'
 import { getBalance } from '@wagmi/core'
 import { useAccount, useBalance, useConfig, useReadContract, useSwitchChain } from '@wagmi/vue'
@@ -6,7 +7,7 @@ import { LIST_NETWORK } from '~/config/networks'
 import { DEFAULT_SLIPPAGE, EMPTY_TOKEN } from '~/constant'
 import CONTRACT_SWAP from '~/constant/contract'
 import ABI_TOKEN from '~/constant/contract/contract-token.json'
-import { type ChainId, type INetwork, type IToken } from '~/types'
+import { type ChainId, type IExchangeRate, type INetwork, type IToken } from '~/types'
 import type { IFormBridge } from '~/types/bridge.type'
 import Decimal from 'decimal.js'
 
@@ -191,6 +192,33 @@ export const useBridgeStore = defineStore('bridge', () => {
     }
   })
 
+  const fetchExchangeRate = async () => {
+    const params = new URLSearchParams()
+    if (form.value.token.address) {
+      params.append('currencies', form.value.token.symbol)
+      const data = await $fetch<IExchangeRate[]>(`/api/exchange-rate/all?${params.toString()}`)
+      return data
+    }
+  }
+
+  const { data: exchangeRate } = useQuery({
+    queryKey: computed(() => ['exchange-rate-base-token-swap', form.value.token.address]),
+    queryFn: fetchExchangeRate,
+    enabled: computed(() => !!form.value.token.address)
+  })
+
+  const exchangeRateBaseCurrency = computed(() => {
+    if (exchangeRate.value?.length) {
+      const rateList = exchangeRate.value.filter((item) => item.symbol === form.value.token.symbol)
+      if (rateList.length) {
+        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
+      }
+      return '0'
+    }
+    return '0'
+  })
+
   const resetStore = () => {
     form.value = {
       token0: {
@@ -234,6 +262,7 @@ export const useBridgeStore = defineStore('bridge', () => {
     balance0,
     resetStore,
     listTokenRs,
-    fee
+    fee,
+    exchangeRateBaseCurrency
   }
 })

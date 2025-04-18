@@ -74,13 +74,15 @@
     balance: string | undefined
     stepBridge: StepBridge
     disabledInput?: boolean
+    amountUsd?: string
   }
 
   const props = withDefaults(defineProps<IProps>(), {
     isSelected: false,
     balance: '0',
     stepBridge: 'SELECT_TOKEN',
-    disabledInput: false
+    disabledInput: false,
+    amountUsd: ''
   })
 
   const emits = defineEmits<{
@@ -97,11 +99,6 @@
   const { isConnected } = useAccount()
   const formattedBalance = computed(() => {
     return props.isSelected && props.token.address ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
-  })
-
-  const amountUsd = computed(() => {
-    const random = Math.random()
-    return amount.value ? (random > 0.01 ? '$' + random.toFixed(2) : '<$0.01') : '$0'
   })
 
   const handleInput = useDebounce(() => {
