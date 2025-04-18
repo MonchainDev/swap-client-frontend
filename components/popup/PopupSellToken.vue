@@ -89,8 +89,8 @@
     const query = first ? { network: fromNetwork.value.network } : { network: fromNetwork.value.network, token: useTrim(search.value) }
     const rs =
       first || useTrim(search.value) === ''
-        ? await $fetch<IToken[]>('/api/network/token', { params: query })
-        : await $fetch<IToken[]>('/api/network/token-info', { params: query })
+        ? await $fetch<IToken[]>('/api/network/token', { params: { ...query, crossChain: 'Y' } })
+        : await $fetch<IToken[]>('/api/network/token-info', { params: { ...query, crossChain: 'Y' } })
     data.value = rs.map((item) => ({
       ...item,
       icon_url: item.icon_url ?? '',

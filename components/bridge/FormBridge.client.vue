@@ -655,6 +655,7 @@
   }
 
   const handleSelectToken = (token: IToken) => {
+    if (form.value.token.address === token.address) return
     form.value.token = token
     balance0.value = 0
     amountOut.value = ''
@@ -674,6 +675,9 @@
               stepBridge.value = 'CONFIRM_BRIDGE'
               handleSwap()
             }
+          } else {
+            stepBridge.value = 'SELECT_TOKEN'
+            isConfirmApprove.value = false
           }
         })
       } else if (needAllowanceApproveProtocolFee.value) {
@@ -687,6 +691,9 @@
               stepBridge.value = 'CONFIRM_BRIDGE'
               handleSwap()
             }
+          } else {
+            stepBridge.value = 'SELECT_TOKEN'
+            isConfirmApprove.value = false
           }
         })
       }
@@ -844,6 +851,8 @@
       form.value.token = tokenDefault
     }
     balance0.value = 0
+    stepBridge.value = 'SELECT_TOKEN'
+    isConfirmApprove.value = false
   })
 </script>
 
