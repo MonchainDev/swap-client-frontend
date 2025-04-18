@@ -4,7 +4,7 @@
     <span class="text-sm text-gray-8 sm:text-xs">Connects assets across blockchain networks seamlessly.</span>
     <div class="relative mt-6 flex w-full justify-between gap-1 sm:mt-5">
       <div class="from-network w-1/2">
-        <ChooseNetworkBridge type="FROM" />
+        <ChooseNetworkBridge type="FROM" @select-from-network="handleSelectFromNetwork" />
       </div>
       <div class="relative z-10 select-none">
         <div
@@ -74,7 +74,7 @@
       <div class="flex justify-between">
         <span class="text-sm text-primary"> You Receive </span>
         <div v-if="token1 !== undefined && form.token?.address" class="flex flex-col gap-1 text-right">
-          <p class="receive">{{ amountOut }}</p>
+          <p class="receive">{{ Math.round(+amountOut * 100) / 100 }}</p>
           <div v-if="toNetwork?.chainId" class="flex items-center gap-1">
             <img src="/public/logo.png" alt="logo" class="size-4 rounded-full" />
             <span class="text-sm">{{ form.token.symbol || '' }}</span>
@@ -297,7 +297,17 @@
   const handleOpenPopupSelectToken = () => {
     if (stepBridge.value === 'CONFIRM_BRIDGE') return
     setOpenPopup('popup-sell-token', true)
-    console.info('tokens: ', listTokenFrom.value)
+  }
+
+  async function handleSelectFromNetwork() {
+    useBridgeStore().resetStore()
+    const tokenDefault = listTokenCurrentNetwork.value.find((item) => item?.symbol === 'MON') as IToken
+    if (fromNetwork.value.network === 'MON') {
+      form.value.token = tokenDefault
+    } else {
+      form.value.token = {} as IToken
+    }
+    if (!form.value.token) balance0.value = 0
   }
 
   async function handleSelectToNetwork() {
@@ -308,8 +318,13 @@
     // ElMessage.success(`Switch to ${fromNetwork.value.network}`)
     useBridgeStore().resetStore()
     switchChain({ chainId: fromNetwork.value?.chainId })
-    form.value.token = {} as IToken
-    balance0.value = 0
+    const tokenDefault = listTokenCurrentNetwork.value.find((item) => item?.symbol === 'MON') as IToken
+    if (fromNetwork.value.network === 'MON') {
+      form.value.token = tokenDefault
+    } else {
+      form.value.token = {} as IToken
+    }
+    if (!form.value.token) balance0.value = 0
     form.value.amount = ''
     amountOut.value = ''
     fee.value.network = '0'
@@ -842,18 +857,15 @@
       return token.address !== '0x0000000000000000000000000000000000000000'
     }
   }
-  const { listToken: listTokenCurrentNetwork } = storeToRefs(useBaseStore())
-  onMounted(() => {
-    console.log(listToken.value, 'list token')
 
-    const tokenDefault = listTokenCurrentNetwork.value.find((item) => item?.symbol === 'MON') as IToken
-    if (tokenDefault) {
-      form.value.token = tokenDefault
-    }
-    balance0.value = 0
-    stepBridge.value = 'SELECT_TOKEN'
-    isConfirmApprove.value = false
-  })
+  const { listToken: listTokenCurrentNetwork } = storeToRefs(useBaseStore())
+  const tokenDefault = listTokenCurrentNetwork.value.find((item) => item?.symbol === 'MON') as IToken
+  if (tokenDefault) {
+    form.value.token = tokenDefault
+  }
+  balance0.value = 0
+  stepBridge.value = 'SELECT_TOKEN'
+  isConfirmApprove.value = false
 </script>
 
 <style scoped lang="scss">
