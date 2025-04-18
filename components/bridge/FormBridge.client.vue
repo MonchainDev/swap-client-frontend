@@ -322,7 +322,10 @@
     } else {
       form.value.token = {} as IToken
     }
-    if (!form.value.token) balance0.value = 0
+    if (!form.value.token) {
+      balance0.value = 0
+      restoreFee()
+    }
   }
 
   async function handleSelectToNetwork() {
@@ -342,15 +345,20 @@
     if (!form.value.token) balance0.value = 0
     form.value.amount = ''
     amountOut.value = ''
-    fee.value.network = '0'
-    fee.value.protocol = '0'
-    fee.value.bridge = '0'
+    restoreFee()
   }
 
   const restoreFee = () => {
-    fee.value.bridge = '0'
-    fee.value.protocol = '0'
-    fee.value.network = '0'
+    fee.value = {
+      network: '0',
+      networkSymbol: '',
+      networkDecimals: 18,
+      protocol: '0',
+      protocolSymbol: '',
+      feeProtocolToken: '',
+      bridge: '0',
+      bridgeSymbol: ''
+    }
   }
 
   /**
@@ -887,6 +895,16 @@
   balance0.value = 0
   stepBridge.value = 'SELECT_TOKEN'
   isConfirmApprove.value = false
+
+  watch(
+    () => form.value.token,
+    (value) => {
+      if (value) {
+        restoreFee()
+      }
+    },
+    { immediate: true }
+  )
 </script>
 
 <style scoped lang="scss">
