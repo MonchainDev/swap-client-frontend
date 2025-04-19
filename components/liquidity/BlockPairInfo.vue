@@ -55,7 +55,7 @@
           <div class="flex flex-col gap-[6px]">
             <span class="text-sm">Fee 24h</span>
             <div class="flex items-center gap-3">
-              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.fee) }}</span>
+              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.fee.toFixed(2)) }}</span>
               <span class="flex items-center gap-1 rounded-[10px] px-2 py-[2px]" :class="statusVolume.fee.bg">
                 <BaseIcon name="arrow-fill" size="12" :class="`${statusVolume.fee.bg} ${statusVolume.fee.rotate} ${statusVolume.fee.status}`" />
                 <span class="text-sm font-semibold" :class="statusVolume.fee.status">{{ statusVolume.fee.change }}%</span>
@@ -385,7 +385,8 @@
     const volumeUSD = parseFloat(volumeToken0) * baseDerivedUsd + parseFloat(volumeToken1) * quoteDerivedUsd
 
     const liquidity = parseFloat(pool.liquidity)
-    const feeUSD = Number(feesUSD) < 0.01 ? parseFloat(Number(feesUSD).toFixed(3)) : parseFloat(Number(feesUSD).toFixed(2))
+    const feeRate = new Decimal(props.pool.fee).div(10 * 6).toString()
+    const feeUSD = new Decimal(feesUSD).mul(feeRate).toNumber()
 
     return {
       date: poolDayData.date,
