@@ -219,11 +219,17 @@
   })
 
   const showStake = computed(() => {
-    return props.position.poolType === 'FARM' && Number(props.position.moonPerSecond) === 0 && props.position.positionStatus !== 'CLOSE'
+    return (
+      props.position.poolType === 'FARM' &&
+      Number(props.position.moonPerSecond) > 0 &&
+      Number(props.position.rewardApr) <= 0 &&
+      !stakeLocalSuccess.value &&
+      props.position.positionStatus !== 'CLOSE'
+    )
   })
 
   const showUnStake = computed(() => {
-    return Number(props.position.moonPerSecond) > 0 || stakeLocalSuccess.value
+    return Number(props.position.rewardApr) > 0 || stakeLocalSuccess.value
   })
 
   const exchangeRateBaseCurrency = computed(() => {
