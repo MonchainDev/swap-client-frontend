@@ -380,7 +380,7 @@
           rewardAmount: pendingReward,
           transactionType: 'STAKE'
         }
-        await Promise.race([v3PoolAddressPid(contractAddressMasterChef), postTransaction(body)])
+        await Promise.allSettled([v3PoolAddressPid(contractAddressMasterChef), postTransaction(body)])
         setTimeout(() => {
           emit('reload')
         }, 8000)
