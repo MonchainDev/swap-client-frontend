@@ -158,12 +158,16 @@
 
   const showStake = computed(() => {
     return (
-      props.position.poolType === 'FARM' && Number(props.position.moonPerSecond) === 0 && !stakeLocalSuccess.value && props.position.positionStatus !== 'CLOSE'
+      props.position.poolType === 'FARM' &&
+      Number(props.position.moonPerSecond) > 0 &&
+      Number(props.position.rewardApr) <= 0 &&
+      !stakeLocalSuccess.value &&
+      props.position.positionStatus !== 'CLOSE'
     )
   })
 
   const showUnStake = computed(() => {
-    return Number(props.position.moonPerSecond) > 0 || stakeLocalSuccess.value
+    return Number(props.position.rewardApr) > 0 || stakeLocalSuccess.value
   })
 
   const exchangeRateBaseCurrency = computed(() => {
@@ -314,7 +318,7 @@
         await Promise.race([v3PoolAddressPid(contractAddressMasterChef), postTransaction(body)])
         setTimeout(() => {
           emit('reload')
-        }, 4000)
+        }, 8000)
       } else {
         showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash), chainId.value)
       }

@@ -55,7 +55,7 @@
           <div class="flex flex-col gap-[6px]">
             <span class="text-sm">Fee 24h</span>
             <div class="flex items-center gap-3">
-              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.fee.toFixed(2)) }}</span>
+              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.fee) }}</span>
               <span class="flex items-center gap-1 rounded-[10px] px-2 py-[2px]" :class="statusVolume.fee.bg">
                 <BaseIcon name="arrow-fill" size="12" :class="`${statusVolume.fee.bg} ${statusVolume.fee.rotate} ${statusVolume.fee.status}`" />
                 <span class="text-sm font-semibold" :class="statusVolume.fee.status">{{ statusVolume.fee.change }}%</span>
@@ -110,13 +110,13 @@
   export interface poolDayDatas {
     id: string
     date: number
+    volumeToken0: string
+    volumeToken1: string
+    feesUSD: string
     pool: {
       totalValueLockedToken0: string
       totalValueLockedToken1: string
-      volumeToken0: string
-      volumeToken1: string
       liquidity: string
-      feesUSD: string
       token0: Token
       token1: Token
     }
@@ -342,13 +342,13 @@
       const query = gql`
         query PoolData($poolAddress: String!) {
           poolDayDatas(first: 365, orderBy: date, orderDirection: desc, where: { pool_: { id: $poolAddress } }) {
+            volumeToken0
+            volumeToken1
+            feesUSD
             pool {
               totalValueLockedToken0
               totalValueLockedToken1
-              volumeToken0
-              volumeToken1
               liquidity
-              feesUSD
               token0 {
                 symbol
                 derivedUSD
@@ -376,22 +376,23 @@
   }
 
   function calculateMetrics(poolDayData: poolDayDatas): IMetric {
-    const pool = poolDayData.pool
+    const { pool, volumeToken0, volumeToken1, feesUSD } = poolDayData
     const baseDerivedUsd = props.pool.baseDerivedUsd ?? 0
     const quoteDerivedUsd = props.pool.quoteDerivedUsd ?? 0
 
     const tvlUSD = parseFloat(pool.totalValueLockedToken0) * baseDerivedUsd + parseFloat(pool.totalValueLockedToken1) * quoteDerivedUsd
 
-    const volumeUSD = parseFloat(pool.volumeToken0) * baseDerivedUsd + parseFloat(pool.volumeToken1) * quoteDerivedUsd
+    const volumeUSD = parseFloat(volumeToken0) * baseDerivedUsd + parseFloat(volumeToken1) * quoteDerivedUsd
 
     const liquidity = parseFloat(pool.liquidity)
+    const feeUSD = Number(feesUSD) < 0.01 ? parseFloat(Number(feesUSD).toFixed(3)) : parseFloat(Number(feesUSD).toFixed(2))
 
     return {
       date: poolDayData.date,
       tvlUSD: tvlUSD,
       volumeUSD: volumeUSD,
       liquidity: liquidity,
-      feeUSD: parseFloat(Number(pool.feesUSD).toFixed(2)),
+      feeUSD,
       token0: {
         derivedUSD: pool.token0.derivedUSD,
         symbol: pool.token0.symbol
