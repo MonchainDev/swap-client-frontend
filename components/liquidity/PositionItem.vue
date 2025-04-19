@@ -318,7 +318,7 @@
         await Promise.race([v3PoolAddressPid(contractAddressMasterChef), postTransaction(body)])
         setTimeout(() => {
           emit('reload')
-        }, 4000)
+        }, 8000)
       } else {
         showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash), chainId.value)
       }

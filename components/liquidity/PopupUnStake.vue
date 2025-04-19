@@ -169,7 +169,7 @@
             loadingUnStake.value = false
             emit('reload')
             setOpenPopup('popup-unstake', false)
-          }, 4000)
+          }, 8000)
         } else {
           showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash), chainId.value)
         }

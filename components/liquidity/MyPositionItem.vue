@@ -381,7 +381,9 @@
           transactionType: 'STAKE'
         }
         await Promise.race([v3PoolAddressPid(contractAddressMasterChef), postTransaction(body)])
-        emit('reload')
+        setTimeout(() => {
+          emit('reload')
+        }, 8000)
       } else {
         showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash), chainId.value)
       }
