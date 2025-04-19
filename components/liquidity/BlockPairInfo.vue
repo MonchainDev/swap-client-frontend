@@ -245,13 +245,23 @@
 
   const infoVolume = computed(() => {
     if (foramtedData.value?.length) {
+      const now = new Date()
+      const todayUTC = {
+        date: now.getUTCDate(),
+        month: now.getUTCMonth(),
+        year: now.getUTCFullYear()
+      }
+
       const today = foramtedData.value.find((item: IMetric) => {
         const date = new Date(item.date * 1000)
-        return date.getDate() === new Date().getDate() && date.getMonth() === new Date().getMonth() && date.getFullYear() === new Date().getFullYear()
+        return date.getUTCDate() === todayUTC.date && date.getUTCMonth() === todayUTC.month && date.getUTCFullYear() === todayUTC.year
       })
+
       const yesterday = foramtedData.value.find((item: IMetric) => {
         const date = new Date(item.date * 1000)
-        return date.getDate() === new Date().getDate() - 1 && date.getMonth() === new Date().getMonth() && date.getFullYear() === new Date().getFullYear()
+        const isSameMonth = date.getUTCMonth() === todayUTC.month
+        const isSameYear = date.getUTCFullYear() === todayUTC.year
+        return date.getUTCDate() === todayUTC.date - 1 && isSameMonth && isSameYear
       })
 
       return {
@@ -267,6 +277,7 @@
         }
       }
     }
+
     return {
       today: {
         volume: 0,
