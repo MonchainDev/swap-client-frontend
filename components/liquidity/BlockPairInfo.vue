@@ -253,44 +253,17 @@
         const date = new Date(item.date * 1000)
         return date.getDate() === new Date().getDate() - 1 && date.getMonth() === new Date().getMonth() && date.getFullYear() === new Date().getFullYear()
       })
-      if (!today) {
-        return {
-          today: {
-            volume: 0,
-            fee: 0,
-            tvl: foramtedData.value[0].tvlUSD ?? 0
-          },
-          yesterday: {
-            volume: 0,
-            fee: 0,
-            tvl: 0
-          }
-        }
-      }
-      if (!yesterday) {
-        return {
-          today: {
-            volume: today.volumeUSD,
-            fee: today.feeUSD,
-            tvl: today.tvlUSD
-          },
-          yesterday: {
-            volume: 0,
-            fee: 0,
-            tvl: 0
-          }
-        }
-      }
+
       return {
         today: {
-          volume: today.volumeUSD,
-          fee: today.feeUSD,
-          tvl: today.tvlUSD
+          volume: today ? today.volumeUSD : 0,
+          fee: today ? today.feeUSD : 0,
+          tvl: today ? today.tvlUSD : foramtedData.value[0].tvlUSD
         },
         yesterday: {
-          volume: yesterday.volumeUSD ?? 0,
-          fee: yesterday.feeUSD ?? 0,
-          tvl: yesterday.tvlUSD ?? 0
+          volume: yesterday ? yesterday.volumeUSD : 0,
+          fee: yesterday ? yesterday.feeUSD : 0,
+          tvl: yesterday ? yesterday.tvlUSD : 0
         }
       }
     }
@@ -376,7 +349,7 @@
   }
 
   function calculateMetrics(poolDayData: poolDayDatas): IMetric {
-    const { pool, volumeToken0, feesUSD } = poolDayData
+    const { pool, volumeToken0 } = poolDayData
     const baseDerivedUsd = props.pool.baseDerivedUsd ?? 0
     const quoteDerivedUsd = props.pool.quoteDerivedUsd ?? 0
 
@@ -386,7 +359,7 @@
 
     const liquidity = parseFloat(pool.liquidity)
     const feeRate = new Decimal(props.pool.fee).div(10 ** 6).toString()
-    const feeUSD = new Decimal(feesUSD).mul(feeRate).toSignificantDigits(6).toNumber()
+    const feeUSD = new Decimal(volumeUSD).mul(feeRate).toSignificantDigits(6).toNumber()
 
     return {
       date: poolDayData.date,
