@@ -126,10 +126,8 @@
     :currency-base
     :position="position"
     :currency-quote
-    :position-value-lower
-    :position-value-upper
-    :value-lower="formattedValueLower"
-    :value-upper="formattedValueUpper"
+    :value-lower="formattedValue1"
+    :value-upper="formattedValue0"
     :fee-format="formatFee"
     :usd-lower="priceUsdQuote"
     :usd-upper="priceUsdBase"
@@ -314,16 +312,6 @@
 
   const currencyQuote = computed(() => (inverted.value ? currency0.value : currency1.value))
   const currencyBase = computed(() => (inverted.value ? currency1.value : currency0.value))
-
-  const positionValueUpper = computed(() => (inverted.value ? position.value?.amount0 : position.value?.amount1))
-  const positionValueLower = computed(() => (inverted.value ? position.value?.amount1 : position.value?.amount0))
-
-  const formattedValueUpper = computed(() => {
-    return formattedCurrencyAmount(positionValueUpper.value)
-  })
-  const formattedValueLower = computed(() => {
-    return formattedCurrencyAmount(positionValueLower.value)
-  })
 
   const formattedFee0 = computed(() => formattedCurrencyAmount(feeValue0.value))
   const formattedFee1 = computed(() => formattedCurrencyAmount(feeValue1.value))

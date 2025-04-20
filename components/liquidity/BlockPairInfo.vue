@@ -45,7 +45,7 @@
           <div class="flex flex-col gap-[6px]">
             <span class="text-sm">Volume 24h</span>
             <div class="flex items-center gap-3">
-              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.volume.toFixed(2)) }}</span>
+              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.volume) }}</span>
               <span class="flex items-center gap-1 rounded-[10px] px-2 py-[2px]" :class="statusVolume.volume.bg">
                 <BaseIcon name="arrow-fill" size="12" :class="`${statusVolume.volume.bg} ${statusVolume.volume.rotate} ${statusVolume.volume.status}`" />
                 <span class="text-sm font-semibold" :class="statusVolume.volume.status">{{ statusVolume.volume.change }}%</span>
@@ -55,7 +55,7 @@
           <div class="flex flex-col gap-[6px]">
             <span class="text-sm">Fee 24h</span>
             <div class="flex items-center gap-3">
-              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.fee.toFixed(2)) }}</span>
+              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.fee) }}</span>
               <span class="flex items-center gap-1 rounded-[10px] px-2 py-[2px]" :class="statusVolume.fee.bg">
                 <BaseIcon name="arrow-fill" size="12" :class="`${statusVolume.fee.bg} ${statusVolume.fee.rotate} ${statusVolume.fee.status}`" />
                 <span class="text-sm font-semibold" :class="statusVolume.fee.status">{{ statusVolume.fee.change }}%</span>
@@ -110,13 +110,13 @@
   export interface poolDayDatas {
     id: string
     date: number
+    volumeToken0: string
+    volumeToken1: string
+    feesUSD: string
     pool: {
       totalValueLockedToken0: string
       totalValueLockedToken1: string
-      volumeToken0: string
-      volumeToken1: string
       liquidity: string
-      feesUSD: string
       token0: Token
       token1: Token
     }
@@ -245,55 +245,39 @@
 
   const infoVolume = computed(() => {
     if (foramtedData.value?.length) {
+      const now = new Date()
+      const todayUTC = {
+        date: now.getUTCDate(),
+        month: now.getUTCMonth(),
+        year: now.getUTCFullYear()
+      }
+
       const today = foramtedData.value.find((item: IMetric) => {
         const date = new Date(item.date * 1000)
-        return date.getDate() === new Date().getDate() && date.getMonth() === new Date().getMonth() && date.getFullYear() === new Date().getFullYear()
+        return date.getUTCDate() === todayUTC.date && date.getUTCMonth() === todayUTC.month && date.getUTCFullYear() === todayUTC.year
       })
+
       const yesterday = foramtedData.value.find((item: IMetric) => {
         const date = new Date(item.date * 1000)
-        return date.getDate() === new Date().getDate() - 1 && date.getMonth() === new Date().getMonth() && date.getFullYear() === new Date().getFullYear()
+        const isSameMonth = date.getUTCMonth() === todayUTC.month
+        const isSameYear = date.getUTCFullYear() === todayUTC.year
+        return date.getUTCDate() === todayUTC.date - 1 && isSameMonth && isSameYear
       })
-      if (!today) {
-        return {
-          today: {
-            volume: 0,
-            fee: 0,
-            tvl: foramtedData.value[0].tvlUSD ?? 0
-          },
-          yesterday: {
-            volume: 0,
-            fee: 0,
-            tvl: 0
-          }
-        }
-      }
-      if (!yesterday) {
-        return {
-          today: {
-            volume: today.volumeUSD,
-            fee: today.feeUSD,
-            tvl: today.tvlUSD
-          },
-          yesterday: {
-            volume: 0,
-            fee: 0,
-            tvl: 0
-          }
-        }
-      }
+
       return {
         today: {
-          volume: today.volumeUSD,
-          fee: today.feeUSD,
-          tvl: today.tvlUSD
+          volume: today ? today.volumeUSD : 0,
+          fee: today ? today.feeUSD : 0,
+          tvl: today ? today.tvlUSD : foramtedData.value[0].tvlUSD
         },
         yesterday: {
-          volume: yesterday.volumeUSD ?? 0,
-          fee: yesterday.feeUSD ?? 0,
-          tvl: yesterday.tvlUSD ?? 0
+          volume: yesterday ? yesterday.volumeUSD : 0,
+          fee: yesterday ? yesterday.feeUSD : 0,
+          tvl: yesterday ? yesterday.tvlUSD : 0
         }
       }
     }
+
     return {
       today: {
         volume: 0,
@@ -342,13 +326,13 @@
       const query = gql`
         query PoolData($poolAddress: String!) {
           poolDayDatas(first: 365, orderBy: date, orderDirection: desc, where: { pool_: { id: $poolAddress } }) {
+            volumeToken0
+            volumeToken1
+            feesUSD
             pool {
               totalValueLockedToken0
               totalValueLockedToken1
-              volumeToken0
-              volumeToken1
               liquidity
-              feesUSD
               token0 {
                 symbol
                 derivedUSD
@@ -376,22 +360,24 @@
   }
 
   function calculateMetrics(poolDayData: poolDayDatas): IMetric {
-    const pool = poolDayData.pool
+    const { pool, volumeToken0 } = poolDayData
     const baseDerivedUsd = props.pool.baseDerivedUsd ?? 0
     const quoteDerivedUsd = props.pool.quoteDerivedUsd ?? 0
 
     const tvlUSD = parseFloat(pool.totalValueLockedToken0) * baseDerivedUsd + parseFloat(pool.totalValueLockedToken1) * quoteDerivedUsd
 
-    const volumeUSD = parseFloat(pool.volumeToken0) * baseDerivedUsd + parseFloat(pool.volumeToken1) * quoteDerivedUsd
+    const volumeUSD = parseFloat(volumeToken0) * baseDerivedUsd
 
     const liquidity = parseFloat(pool.liquidity)
+    const feeRate = new Decimal(props.pool.fee).div(10 ** 6).toString()
+    const feeUSD = new Decimal(volumeUSD).mul(feeRate).toSignificantDigits(6).toNumber()
 
     return {
       date: poolDayData.date,
-      tvlUSD: tvlUSD,
-      volumeUSD: volumeUSD,
+      tvlUSD: parseFloat(toSignificant(tvlUSD)),
+      volumeUSD: parseFloat(toSignificant(volumeUSD)),
       liquidity: liquidity,
-      feeUSD: parseFloat(Number(pool.feesUSD).toFixed(2)),
+      feeUSD,
       token0: {
         derivedUSD: pool.token0.derivedUSD,
         symbol: pool.token0.symbol
