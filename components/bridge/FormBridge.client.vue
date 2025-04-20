@@ -77,7 +77,7 @@
         <div v-if="token1 !== undefined && form.token?.address" class="flex flex-col gap-1 text-right">
           <p class="receive">{{ Math.round(+amountOut * 100) / 100 }}</p>
           <div v-if="toNetwork?.chainId" class="flex items-center gap-1">
-            <img src="/public/logo.png" alt="logo" class="size-4 rounded-full" />
+            <img :src="form.token.logo" alt="logo" class="size-4 rounded-full" />
             <span class="text-sm">{{ form.token.symbol || '' }}</span>
             <a v-if="checkNativeToken(toNetwork, token1)" :href="`${URL_SCAN[toNetwork.chainId].token}/${token1.address}`" target="_blank">
               <span class="line-clamp-1 text-xs text-[#6F6A79]"> ({{ formatAddress(token1.address) }}) </span>
@@ -215,7 +215,7 @@
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
   const {
-    exchangeRateBaseCurrency,
+    tokenDefault,
     fee,
     fromNetwork,
     toNetwork,
@@ -316,13 +316,12 @@
 
   async function handleSelectFromNetwork() {
     useBridgeStore().resetStore()
-    const tokenDefault = listTokenCurrentNetwork.value.find((item) => item?.symbol === 'MON') as IToken
-    if (fromNetwork.value.network === 'MON') {
-      form.value.token = tokenDefault
+    if (fromNetwork.value.network === 'MON' && tokenDefault.value) {
+      form.value.token = tokenDefault.value
     } else {
       form.value.token = {} as IToken
     }
-    if (!form.value.token) {
+    if (!form.value.token || form.value.token.tokenSymbol !== 'MON') {
       balance0.value = 0
       restoreFee()
     }
@@ -336,29 +335,26 @@
     // ElMessage.success(`Switch to ${fromNetwork.value.network}`)
     useBridgeStore().resetStore()
     switchChain({ chainId: fromNetwork.value?.chainId })
-    const tokenDefault = listTokenCurrentNetwork.value.find((item) => item?.symbol === 'MON') as IToken
-    if (fromNetwork.value.network === 'MON') {
-      form.value.token = tokenDefault
+    if (fromNetwork.value.network === 'MON' && tokenDefault.value) {
+      form.value.token = tokenDefault.value
     } else {
       form.value.token = {} as IToken
     }
-    if (!form.value.token) balance0.value = 0
+    if (!form.value.token || form.value.token.tokenSymbol !== 'MON') balance0.value = 0
     form.value.amount = ''
     amountOut.value = ''
     restoreFee()
   }
 
   const restoreFee = () => {
-    fee.value = {
-      network: '0',
-      networkSymbol: '',
-      networkDecimals: 18,
-      protocol: '0',
-      protocolSymbol: '',
-      feeProtocolToken: '',
-      bridge: '0',
-      bridgeSymbol: ''
-    }
+    fee.value.bridge = '0'
+    fee.value.protocol = '0'
+    fee.value.network = '0'
+    fee.value.networkSymbol = ''
+    fee.value.networkDecimals = 18
+    fee.value.protocolSymbol = ''
+    fee.value.feeProtocolToken = ''
+    fee.value.bridgeSymbol = ''
   }
 
   /**
@@ -382,7 +378,6 @@
     console.log('handle input', amount)
 
     try {
-      restoreFee()
       amountOut.value = ''
       notEnoughLiquidity.value = false
       insufficientBalance.value = false
@@ -883,28 +878,13 @@
 
   const amountUsd = computed(() => {
     const quantity = new Decimal(form.value.amount || 0)
-    const rate = exchangeRateBaseCurrency.value
-    return quantity && rate ? formatNumber(quantity.mul(rate).toSignificantDigits(6, Decimal.ROUND_DOWN).toString()) : '0'
+    const rate = new Decimal(form.value.token?.derivedUsd || 0)
+    if (rate.isZero()) return '0'
+    const usdValue = quantity.mul(rate).toSignificantDigits(6, Decimal.ROUND_DOWN)
+    return formatNumber(usdValue.toString())
   })
-
-  const { listToken: listTokenCurrentNetwork } = storeToRefs(useBaseStore())
-  const tokenDefault = listTokenCurrentNetwork.value.find((item) => item?.symbol === 'MON') as IToken
-  if (tokenDefault) {
-    form.value.token = tokenDefault
-  }
-  balance0.value = 0
   stepBridge.value = 'SELECT_TOKEN'
   isConfirmApprove.value = false
-
-  watch(
-    () => form.value.token,
-    (value) => {
-      if (value) {
-        restoreFee()
-      }
-    },
-    { immediate: true }
-  )
 </script>
 
 <style scoped lang="scss">

@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/vue-query'
 import { Token } from '@monchain/swap-sdk-core'
 import { getBalance } from '@wagmi/core'
 import { useAccount, useBalance, useConfig, useReadContract, useSwitchChain } from '@wagmi/vue'
@@ -7,7 +6,7 @@ import { LIST_NETWORK } from '~/config/networks'
 import { DEFAULT_SLIPPAGE, EMPTY_TOKEN } from '~/constant'
 import CONTRACT_SWAP from '~/constant/contract'
 import ABI_TOKEN from '~/constant/contract/contract-token.json'
-import { type ChainId, type IExchangeRate, type INetwork, type IToken } from '~/types'
+import { type ChainId, type INetwork, type IToken } from '~/types'
 import type { IFormBridge } from '~/types/bridge.type'
 import Decimal from 'decimal.js'
 
@@ -15,6 +14,7 @@ export const useBridgeStore = defineStore('bridge', () => {
   const listNetwork = ref<INetwork[]>([...LIST_NETWORK])
   const listToken = ref<IToken[]>([])
   const listTokenFrom = ref<IToken[]>([])
+  const tokenDefault = ref<IToken>()
   const fromNetwork = ref<INetwork>(LIST_NETWORK[0])
   const toNetwork = ref<INetwork>(LIST_NETWORK[1])
   const token0 = ref<Token>()
@@ -69,7 +69,6 @@ export const useBridgeStore = defineStore('bridge', () => {
     () => form.value?.token?.tokenSymbol,
     async (formTokenSymbol) => {
       if (!formTokenSymbol) return
-      console.log(formTokenSymbol)
       // Token 0
       form.value.amount = ''
       const query = { network: fromNetwork.value?.network, crossChain: 'Y' }
@@ -91,6 +90,8 @@ export const useBridgeStore = defineStore('bridge', () => {
         setOpenPopup('popup-connect')
         return
       }
+      console.log(token0.value?.address, 'sdadassdasd========= sadsadas', address.value);
+      
       if (token0.value) {
         const _balance = Number(await getBalanceToken(address.value, token0.value.address as `0x${string}`))
         console.info(' ~ bridge.store.ts:95 ~ _balance:', _balance)
@@ -113,7 +114,7 @@ export const useBridgeStore = defineStore('bridge', () => {
           ? new Token(toNetwork.value?.chainId as ChainId, _token1?.tokenAddress as `0x${string}`, +_token1!.tokenDecimals, _token1!.tokenSymbol, _token1?.name)
           : undefined
       }
-    }, { immediate: true, deep: true }
+    }, { deep: true }
   )
 
   async function getBalanceToken(address: `0x${string}`, token: string) {
@@ -145,7 +146,6 @@ export const useBridgeStore = defineStore('bridge', () => {
       listToken.value = Array.isArray(_data)
         ? _data.map((item) => ({
             ...item,
-            logo: '',
             address: item.tokenAddress,
             symbol: item.tokenSymbol,
             decimals: item.tokenDecimals,
@@ -157,19 +157,28 @@ export const useBridgeStore = defineStore('bridge', () => {
     immediate: false
   })
 
+  const hasSetDefaultToken = ref<boolean>(false)
   const { data: _listTokenFromRs } = useLazyFetch<IToken[]>('/api/network/token', {
     query: computed(() => ({ network: fromNetwork.value?.network, crossChain: 'Y' })),
     onResponse({ response: { _data } }) {
       listTokenFrom.value = Array.isArray(_data)
         ? _data.map((item) => ({
             ...item,
-            logo: '',
             address: item.tokenAddress,
             symbol: item.tokenSymbol,
             decimals: item.tokenDecimals,
             name: item.tokenSymbol
           }))
         : []
+        if (!hasSetDefaultToken.value && listTokenFrom.value.length) {
+          tokenDefault.value = listTokenFrom.value.find((item) => item?.symbol === 'MON') as IToken
+          if (tokenDefault.value && fromNetwork.value.network === 'MON') {
+            form.value.token = tokenDefault.value
+            hasSetDefaultToken.value = true
+          } else {
+            hasSetDefaultToken.value = false
+          }
+        }
       if (!fromNetwork.value) return
       ElMessage.success(`Switch to ${fromNetwork.value.network}`)
       switchChain({ chainId: fromNetwork.value.chainId })
@@ -190,33 +199,6 @@ export const useBridgeStore = defineStore('bridge', () => {
         toNetwork.value = { ...networkTo, logo: '/logo-bnb-chain.png' }
       }
     }
-  })
-
-  const fetchExchangeRate = async () => {
-    const params = new URLSearchParams()
-    if (form.value.token.address) {
-      params.append('currencies', form.value.token.symbol)
-      const data = await $fetch<IExchangeRate[]>(`/api/exchange-rate/all?${params.toString()}`)
-      return data
-    }
-  }
-
-  const { data: exchangeRate } = useQuery({
-    queryKey: computed(() => ['exchange-rate-base-token-swap', form.value.token.address]),
-    queryFn: fetchExchangeRate,
-    enabled: computed(() => !!form.value.token.address)
-  })
-
-  const exchangeRateBaseCurrency = computed(() => {
-    if (exchangeRate.value?.length) {
-      const rateList = exchangeRate.value.filter((item) => item.symbol === form.value.token.symbol)
-      if (rateList.length) {
-        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
-        return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
-      }
-      return '0'
-    }
-    return '0'
   })
 
   const resetStore = () => {
@@ -263,6 +245,6 @@ export const useBridgeStore = defineStore('bridge', () => {
     resetStore,
     listTokenRs,
     fee,
-    exchangeRateBaseCurrency
+    tokenDefault
   }
 })
