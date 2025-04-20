@@ -323,8 +323,8 @@
     }
     if (!form.value.token || form.value.token.tokenSymbol !== 'MON') {
       balance0.value = 0
-      restoreFee()
     }
+    restoreFee()
   }
 
   async function handleSelectToNetwork() {
@@ -375,8 +375,9 @@
    *
    */
   const handleInput = async (amount: string) => {
-    console.log('handle input', amount)
-
+    if (!amount) {
+      restoreFee()
+    }
     try {
       amountOut.value = ''
       notEnoughLiquidity.value = false
@@ -692,6 +693,7 @@
     form.value.token = token
     balance0.value = 0
     amountOut.value = ''
+    restoreFee()
   }
 
   const handleApprove = async () => {
