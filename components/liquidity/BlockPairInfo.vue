@@ -212,7 +212,7 @@
     retry: 2
   })
 
-  const foramtedData = computed(() => {
+  const formattedData = computed(() => {
     return data.value?.poolDayDatas.map((item: poolDayDatas) => ({
       ...calculateMetrics(item)
     }))
@@ -228,8 +228,8 @@
 
     const selectedValue = valueMap[tabActive.value]
 
-    return foramtedData.value && foramtedData.value?.length
-      ? foramtedData.value
+    return formattedData.value && formattedData.value?.length
+      ? formattedData.value
           .map((item: IMetric) => ({
             date: new Date(item.date * 1000).toLocaleDateString(),
             value: item[selectedValue as keyof IMetric]?.toString(),
@@ -244,7 +244,7 @@
   })
 
   const infoVolume = computed(() => {
-    if (foramtedData.value?.length) {
+    if (formattedData.value?.length) {
       const now = new Date()
       const todayUTC = {
         date: now.getUTCDate(),
@@ -252,32 +252,40 @@
         year: now.getUTCFullYear()
       }
 
-      const today = foramtedData.value.find((item: IMetric) => {
+      const today = formattedData.value.find((item: IMetric) => {
         const date = new Date(item.date * 1000)
         return date.getUTCDate() === todayUTC.date && date.getUTCMonth() === todayUTC.month && date.getUTCFullYear() === todayUTC.year
       })
 
-      const yesterday = foramtedData.value.find((item: IMetric) => {
+      const yesterday = new Date(now)
+      yesterday.setUTCDate(now.getUTCDate() - 1)
+      const yesterdayUTC = {
+        date: yesterday.getUTCDate(),
+        month: yesterday.getUTCMonth(),
+        year: yesterday.getUTCFullYear()
+      }
+
+      const yesterdayData = formattedData.value.find((item: IMetric) => {
         const date = new Date(item.date * 1000)
-        const isSameMonth = date.getUTCMonth() === todayUTC.month
-        const isSameYear = date.getUTCFullYear() === todayUTC.year
-        return date.getUTCDate() === todayUTC.date - 1 && isSameMonth && isSameYear
+        return date.getUTCDate() === yesterdayUTC.date && date.getUTCMonth() === yesterdayUTC.month && date.getUTCFullYear() === yesterdayUTC.year
       })
+
+      // Xử lý an toàn cho tvl
+      const defaultTvl = formattedData.value.length > 0 ? formattedData.value[0].tvlUSD : 0
 
       return {
         today: {
           volume: today ? today.volumeUSD : 0,
           fee: today ? today.feeUSD : 0,
-          tvl: today ? today.tvlUSD : foramtedData.value[0].tvlUSD
+          tvl: today ? today.tvlUSD : defaultTvl
         },
         yesterday: {
-          volume: yesterday ? yesterday.volumeUSD : 0,
-          fee: yesterday ? yesterday.feeUSD : 0,
-          tvl: yesterday ? yesterday.tvlUSD : 0
+          volume: yesterdayData ? yesterdayData.volumeUSD : 0,
+          fee: yesterdayData ? yesterdayData.feeUSD : 0,
+          tvl: yesterdayData ? yesterdayData.tvlUSD : 0
         }
       }
     }
-
     return {
       today: {
         volume: 0,
