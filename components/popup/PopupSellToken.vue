@@ -100,13 +100,14 @@
       return BigInt(0)
     }
   }
-  const init = async (first = false) => {
-    const query = first ? { network: fromNetwork.value.network } : { network: fromNetwork.value.network, token: useTrim(search.value) }
-    const rs =
-      first || useTrim(search.value) === ''
-        ? await $fetch<IToken[]>('/api/network/token', { params: { ...query, crossChain: 'Y' } })
-        : await $fetch<IToken[]>('/api/network/token-info', { params: { ...query, crossChain: 'Y' } })
-    data.value = rs.map((item) => ({
+
+  const init = async (searchText = '') => {
+    loading.value = true
+    const query = { network: fromNetwork.value.network }
+    const rs = await $fetch<IToken[]>('/api/network/token', {
+      params: { ...query, crossChain: 'Y' }
+    })
+    let tokens = rs.map((item) => ({
       ...item,
       icon_url: item.icon_url ?? '',
       address: item.tokenAddress,
@@ -114,6 +115,10 @@
       symbol: item.tokenSymbol,
       decimals: item.tokenDecimals
     }))
+    if (searchText.trim() !== '') {
+      tokens = tokens.filter((token) => token.symbol.toLowerCase().includes(searchText.toLowerCase()))
+    }
+    data.value = tokens
     if (data.value.length) {
       listAllBalance.value = await Promise.all(
         data.value.map(async (token: IToken) => {
@@ -129,9 +134,10 @@
     }
     loading.value = false
   }
+
   const handleSearchToken = useDebounce(() => {
-    init()
-  }, 400)
+    init(search.value)
+  }, 100)
 
   const handleClickToken = (item: IToken) => {
     emit('select', { ...item, icon_url: item.icon_url ?? '' })
@@ -139,7 +145,7 @@
   }
 
   const handleOpen = async () => {
-    init(true)
+    init()
   }
   const { handleImageError } = useErrorImage()
 </script>

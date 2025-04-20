@@ -15,6 +15,8 @@ export interface IToken {
   decimals: number
   symbol: string
   name: string
+  derivedUsd?: number
+  logo?: string
 }
 
 export interface INetwork {

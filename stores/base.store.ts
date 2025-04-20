@@ -38,7 +38,6 @@ export const useBaseStore = defineStore('base', () => {
       const tokenList = Array.isArray(data.value)
         ? data.value.map((item) => ({
             ...item,
-            logo: '',
             address: item.tokenAddress,
             symbol: item.tokenSymbol,
             decimals: item.tokenDecimals,

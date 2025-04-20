@@ -93,6 +93,11 @@
       visible.value = false
     }
   }
+  onMounted(() => {
+    if (_props.type === 'FROM') {
+      handleSelectNetwork(fromNetwork.value)
+    }
+  })
   watch(
     () => visible.value,
     (value) => {
