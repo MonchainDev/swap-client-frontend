@@ -68,12 +68,14 @@
   // import type { CurrencyAmount, Token } from '@monchain/swap-sdk-core'
   import { LIST_NETWORK } from '~/config/networks'
   // import { Bound } from '~/types'
+  import { TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
   import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
   import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
-  import type { IExchangeRate } from '~/types'
+  import type { FeeAmount } from '~/constant/fee'
+  import { Bound, type IExchangeRate } from '~/types'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { IPosition } from '~/types/position.type'
   import { MasterChefV3 } from '~/utils/masterChefV3'
@@ -136,18 +138,32 @@
     }
   })
 
+  const tickSpaceLimits = computed(() => {
+    return {
+      [Bound.LOWER]: props.position.fee ? nearestUsableTick(TickMath.MIN_TICK, TICK_SPACINGS[props.position.fee as FeeAmount]) : undefined,
+      [Bound.UPPER]: props.position.fee ? nearestUsableTick(TickMath.MAX_TICK, TICK_SPACINGS[props.position.fee as FeeAmount]) : undefined
+    }
+  })
+
   const min = computed(() => {
-    const { priceLower, baseDecimals, quoteDecimals } = props.position
+    const { priceLower, baseDecimals, quoteDecimals, tickLower } = props.position
+    if (tickLower === tickSpaceLimits.value[Bound.LOWER]) {
+      return 0
+    }
+
     if (!priceLower) return 0
 
     const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
     const priceQuotePerBase = priceLower / decimalAdjustment
-
     return formatNumber(toSignificant(priceQuotePerBase, 6))
   })
 
   const max = computed(() => {
-    const { priceUpper, baseDecimals, quoteDecimals } = props.position
+    const { priceUpper, baseDecimals, quoteDecimals, tickUpper } = props.position
+
+    if (tickUpper === tickSpaceLimits.value[Bound.UPPER]) {
+      return '∞'
+    }
     if (!priceUpper) return 0
 
     const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
