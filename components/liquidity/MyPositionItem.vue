@@ -131,13 +131,15 @@
   import Decimal from 'decimal.js'
   import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
-  import type { ChainId, IExchangeRate } from '~/types'
+  import { Bound, type ChainId, type IExchangeRate } from '~/types'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { IPosition } from '~/types/position.type'
   import { MasterChefV3 } from '~/utils/masterChefV3'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
   import { useQuery } from '@tanstack/vue-query'
   import { TOKEN_REWARDS } from '~/config/tokens'
+  import { TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
+  import type { FeeAmount } from '~/constant/fee'
 
   interface IProps {
     // position: PositionDetail
@@ -194,8 +196,18 @@
     }
   })
 
+  const tickSpaceLimits = computed(() => {
+    return {
+      [Bound.LOWER]: props.position.fee ? nearestUsableTick(TickMath.MIN_TICK, TICK_SPACINGS[props.position.fee as FeeAmount]) : undefined,
+      [Bound.UPPER]: props.position.fee ? nearestUsableTick(TickMath.MAX_TICK, TICK_SPACINGS[props.position.fee as FeeAmount]) : undefined
+    }
+  })
+
   const min = computed(() => {
-    const { priceUpper, baseDecimals, quoteDecimals } = props.position
+    const { priceUpper, baseDecimals, quoteDecimals, tickLower } = props.position
+    if (tickLower === tickSpaceLimits.value[Bound.LOWER]) {
+      return 0
+    }
     if (!priceUpper) return 0
 
     const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
@@ -207,7 +219,10 @@
   })
 
   const max = computed(() => {
-    const { priceLower, baseDecimals, quoteDecimals } = props.position
+    const { priceLower, baseDecimals, quoteDecimals, tickUpper } = props.position
+    if (tickUpper === tickSpaceLimits.value[Bound.UPPER]) {
+      return '∞'
+    }
     if (!priceLower) return 0
 
     const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
