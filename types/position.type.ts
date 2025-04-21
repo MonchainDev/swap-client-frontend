@@ -69,5 +69,5 @@ export interface IPosition {
   pendingReward: number
   liquidity: number
   moonPerSecond: number
-  stakestatus: 'Y' | 'N'
+  stakeStatus: 'Y' | 'N'
 }

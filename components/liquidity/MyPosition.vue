@@ -325,7 +325,7 @@
           positionStatus: data.positionstatus,
           pendingReward: data.pendingreward ?? 0,
           moonPerSecond: data.moonpersecond ?? 0,
-          stakestatus: data.stakestatus ?? 'N'
+          stakeStatus: data.stakestatus ?? 'N'
         }
       })
     }
