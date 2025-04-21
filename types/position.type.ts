@@ -38,6 +38,7 @@ export interface IPositionOrigin {
   positionstatus: string
   pendingreward: number
   moonpersecond: number
+  stakestatus: 'Y' | 'N'
 }
 export type POSITION_STATUS = 'ACTIVE' | 'INACTIVE' | 'CLOSE'
 export interface IPosition {
@@ -68,4 +69,5 @@ export interface IPosition {
   pendingReward: number
   liquidity: number
   moonPerSecond: number
+  stakestatus: 'Y' | 'N'
 }

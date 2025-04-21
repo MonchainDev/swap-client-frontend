@@ -41,22 +41,25 @@
           </span> -->
           <span :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
         </div>
-        <div v-if="showUnStake || showStake" class="flex gap-2">
-          <template v-if="showUnStake">
-            <span
-              class="flex h-6 items-center justify-center rounded border border-solid border-hyperlink px-[10px] text-sm text-hyperlink"
-              @click.stop="emit('unstake', props.position, priceUdtTotal)"
-            >
-              <span>Unstake</span>
-            </span>
-            <span class="flex h-6 items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white" @click.stop="handleClickHarvest">
-              <BaseIcon v-if="loadingHarvest" name="loading" size="12" class="animate-spin text-white" />
-              <span>Harvest</span>
-            </span>
-          </template>
+        <div v-if="showUnStake || showStake || showHarvest" class="flex gap-2">
+          <span
+            v-if="showUnStake"
+            class="flex h-6 items-center justify-center rounded border border-solid border-hyperlink px-[10px] text-sm text-hyperlink"
+            @click.stop="emit('unstake', props.position, priceUdtTotal)"
+          >
+            <span>Unstake</span>
+          </span>
+          <span
+            v-if="showHarvest"
+            class="flex h-6 items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white"
+            @click.stop="handleClickHarvest"
+          >
+            <BaseIcon v-if="loadingHarvest" name="loading" size="12" class="animate-spin text-white" />
+            <span>Harvest</span>
+          </span>
           <span v-if="showStake" class="flex h-6 items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white" @click.stop="handleStake">
             <BaseIcon v-if="loadingStake" name="loading" size="12" class="animate-spin text-white" />
-            <span>Stake</span>
+            <span> Stake </span>
           </span>
         </div>
       </div>
@@ -174,16 +177,21 @@
 
   const showStake = computed(() => {
     return (
+      props.position.stakestatus === 'N' &&
       props.position.poolType === 'FARM' &&
       Number(props.position.moonPerSecond) > 0 &&
-      Number(props.position.rewardApr) <= 0 &&
       !stakeLocalSuccess.value &&
       props.position.positionStatus !== 'CLOSE'
     )
   })
 
   const showUnStake = computed(() => {
-    return Number(props.position.rewardApr) > 0 || stakeLocalSuccess.value
+    // return Number(props.position.rewardApr) > 0 || stakeLocalSuccess.value
+    return props.position.stakestatus === 'Y'
+  })
+
+  const showHarvest = computed(() => {
+    return props.position.stakestatus === 'Y' && Number(props.position.pendingReward) > 0
   })
 
   const exchangeRateBaseCurrency = computed(() => {
