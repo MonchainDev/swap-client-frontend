@@ -177,7 +177,7 @@
 
   const showStake = computed(() => {
     return (
-      props.position.stakestatus === 'N' &&
+      props.position.stakeStatus === 'N' &&
       props.position.poolType === 'FARM' &&
       Number(props.position.moonPerSecond) > 0 &&
       !stakeLocalSuccess.value &&
@@ -187,11 +187,11 @@
 
   const showUnStake = computed(() => {
     // return Number(props.position.rewardApr) > 0 || stakeLocalSuccess.value
-    return props.position.stakestatus === 'Y'
+    return props.position.stakeStatus === 'Y'
   })
 
   const showHarvest = computed(() => {
-    return props.position.stakestatus === 'Y' && Number(props.position.pendingReward) > 0
+    return props.position.stakeStatus === 'Y' && Number(props.position.pendingReward) > 0
   })
 
   const exchangeRateBaseCurrency = computed(() => {
