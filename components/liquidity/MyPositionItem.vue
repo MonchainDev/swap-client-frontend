@@ -127,20 +127,18 @@
   // import type { CurrencyAmount, Token } from '@monchain/swap-sdk-core'
   import { LIST_NETWORK } from '~/config/networks'
   // import { Bound } from '~/types'
+  import { useQuery } from '@tanstack/vue-query'
   import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
   import { hexToBigInt } from 'viem'
+  import { TOKEN_REWARDS } from '~/config/tokens'
   import { config } from '~/config/wagmi'
-  import { Bound, type ChainId, type IExchangeRate } from '~/types'
+  import { type ChainId, type IExchangeRate } from '~/types'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { IPosition } from '~/types/position.type'
   import { MasterChefV3 } from '~/utils/masterChefV3'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
-  import { useQuery } from '@tanstack/vue-query'
-  import { TOKEN_REWARDS } from '~/config/tokens'
-  import { TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
-  import type { FeeAmount } from '~/constant/fee'
 
   interface IProps {
     // position: PositionDetail
@@ -197,42 +195,7 @@
     }
   })
 
-  const tickSpaceLimits = computed(() => {
-    return {
-      [Bound.LOWER]: props.position.fee ? nearestUsableTick(TickMath.MIN_TICK, TICK_SPACINGS[props.position.fee as FeeAmount]) : undefined,
-      [Bound.UPPER]: props.position.fee ? nearestUsableTick(TickMath.MAX_TICK, TICK_SPACINGS[props.position.fee as FeeAmount]) : undefined
-    }
-  })
-
-  const min = computed(() => {
-    const { priceUpper, baseDecimals, quoteDecimals, tickLower } = props.position
-    if (tickLower === tickSpaceLimits.value[Bound.LOWER]) {
-      return 0
-    }
-    if (!priceUpper) return 0
-
-    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
-    const priceQuotePerBase = priceUpper / decimalAdjustment
-
-    const priceBasePerQuote = 1 / priceQuotePerBase
-
-    return formatNumber(toSignificant(priceBasePerQuote, 6))
-  })
-
-  const max = computed(() => {
-    const { priceLower, baseDecimals, quoteDecimals, tickUpper } = props.position
-    if (tickUpper === tickSpaceLimits.value[Bound.UPPER]) {
-      return '∞'
-    }
-    if (!priceLower) return 0
-
-    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
-    const priceQuotePerBase = priceLower / decimalAdjustment
-
-    const priceBasePerQuote = 1 / priceQuotePerBase
-
-    return formatNumber(toSignificant(priceBasePerQuote, 6))
-  })
+  const { min, max } = useCalcPricePosition(() => props.position)
 
   const showStake = computed(() => {
     return (
@@ -256,7 +219,14 @@
     if (props.listExchangeRate.length) {
       const rateList = props.listExchangeRate.filter((item) => item.symbol === props.position.baseSymbol)
       if (rateList.length) {
-        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        const isSlug = rateList.some((item) => item.slug === '')
+        const rate =
+          rateList.length === 1
+            ? rateList[0]
+            : isSlug
+              ? rateList.find((item) => item.slug === '')
+              : rateList.find((item) => item.symbol === props.position.baseSymbol)
+
         return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
       }
       return '0'
@@ -268,7 +238,14 @@
     if (props.listExchangeRate.length) {
       const rateList = props.listExchangeRate.filter((item) => item.symbol === props.position.quoteSymbol)
       if (rateList.length) {
-        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        const isSlug = rateList.some((item) => item.slug === '')
+        const rate =
+          rateList.length === 1
+            ? rateList[0]
+            : isSlug
+              ? rateList.find((item) => item.slug === '')
+              : rateList.find((item) => item.symbol === props.position.quoteSymbol)
+
         return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
       }
       return '0'
@@ -281,7 +258,9 @@
     if (props.listExchangeRate.length && symbol) {
       const rateList = props.listExchangeRate.filter((item) => item.symbol === symbol)
       if (rateList.length) {
-        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        const isSlug = rateList.some((item) => item.slug === '')
+        const rate = rateList.length === 1 ? rateList[0] : isSlug ? rateList.find((item) => item.slug === '') : rateList.find((item) => item.symbol === symbol)
+
         return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
       }
       return '0'
@@ -403,7 +382,7 @@
         await Promise.allSettled([v3PoolAddressPid(contractAddressMasterChef), postTransaction(body)])
         setTimeout(() => {
           emit('reload')
-        }, 8000)
+        }, 12000)
       } else {
         showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash), chainId.value)
       }
