@@ -131,6 +131,9 @@
     token0: { symbol: string; id?: string; derivedUSD?: string }
     token1: { symbol: string; id?: string; derivedUSD?: string }
     type: TabValue.ADD | TabValue.REMOVE | TabValue.SWAP
+    pool?: {
+      id: string
+    }
   }
 
   interface ITxs {
@@ -243,6 +246,9 @@
           amount1
           amountUSD
           id
+          pool {
+            id
+          }
           token0 {
             derivedUSD
             id
@@ -267,6 +273,9 @@
           amount1
           amountUSD
           id
+          pool {
+            id
+          }
           token0 {
             derivedUSD
             id
@@ -528,6 +537,8 @@
   }
 
   function processSingleSwap(swap: ITx, txs: ITx[]) {
+    if (swap.pool?.id !== props.pool.poolAddress) return
+
     const amount0 = swap.amount0
     const amount1 = swap.amount1
     const isAmount0Greater = Number(amount0) > Number(amount1)
@@ -556,6 +567,8 @@
 
     if (poolSwap.length) {
       poolSwap.forEach((tx) => {
+        if (tx.pool?.id !== props.pool.poolAddress) return
+
         const amount0 = tx.amount0
         const amount1 = tx.amount1
         const isAmount0Greater = Number(amount0) > Number(amount1)
