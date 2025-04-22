@@ -198,7 +198,10 @@
   })
 
   const price0 = computed(() => {
-    return new Decimal(currentPrice.value).mul(props.pool.quoteDecimals).div(props.pool.baseDecimals).toSignificantDigits(6).toString()
+    return new Decimal(currentPrice.value)
+      .div(new Decimal(10).pow(props.pool.quoteDecimals - props.pool.baseDecimals))
+      .toSignificantDigits(6)
+      .toString()
   })
 
   const price1 = computed(() => {
