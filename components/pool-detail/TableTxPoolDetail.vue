@@ -536,18 +536,25 @@
     }
   }
 
+  /**
+   * TODO
+   * default get amountUSD = USD of token0
+   */
   function processSingleSwap(swap: ITx, txs: ITx[]) {
     if (swap.pool?.id !== props.pool.poolAddress) return
 
     const amount0 = swap.amount0
     const amount1 = swap.amount1
     const isAmount0Greater = Number(amount0) > Number(amount1)
-    const derivedUSD = (isAmount0Greater ? props.pool.baseDerivedUsd : props.pool.quoteDerivedUsd) ?? '0'
-    const amountUSD0 = new Decimal(amount0).mul(derivedUSD).toString()
-    const amountUSD1 = new Decimal(amount1).mul(derivedUSD).toString()
+    // const derivedUSD = (isAmount0Greater ? props.pool.baseDerivedUsd : props.pool.quoteDerivedUsd) ?? '0'
+    // const amountUSD0 = new Decimal(amount0).mul(derivedUSD).toString()
+    // const amountUSD1 = new Decimal(amount1).mul(derivedUSD).toString()
+
+    const amountUSD = new Decimal(Math.abs(parseFloat(amount0))).mul(props.pool.baseDerivedUsd).toString()
     txs.push({
       ...swap,
-      amountUSD: isAmount0Greater ? amountUSD0 : amountUSD1,
+      amountUSD,
+      // amountUSD: isAmount0Greater ? amountUSD0 : amountUSD1,
       amount0: isAmount0Greater ? amount0 : amount1,
       amount1: isAmount0Greater ? amount1 : amount0,
       token0: {
@@ -572,12 +579,15 @@
         const amount0 = tx.amount0
         const amount1 = tx.amount1
         const isAmount0Greater = Number(amount0) > Number(amount1)
-        const derivedUSD = (isAmount0Greater ? props.pool.baseDerivedUsd : props.pool.quoteDerivedUsd) ?? '0'
-        const amountUSD0 = new Decimal(amount0).mul(derivedUSD).toString()
-        const amountUSD1 = new Decimal(amount1).mul(derivedUSD).toString()
+        // const derivedUSD = (isAmount0Greater ? props.pool.baseDerivedUsd : props.pool.quoteDerivedUsd) ?? '0'
+        // const amountUSD0 = new Decimal(amount0).mul(derivedUSD).toString()
+        // const amountUSD1 = new Decimal(amount1).mul(derivedUSD).toString()
+        const amountUSD = new Decimal(Math.abs(parseFloat(amount0))).mul(props.pool.baseDerivedUsd).toString()
+
         txs.push({
           ...tx,
-          amountUSD: isAmount0Greater ? amountUSD0 : amountUSD1,
+          amountUSD,
+          // amountUSD: isAmount0Greater ? amountUSD0 : amountUSD1,
           amount0: isAmount0Greater ? amount0 : amount1,
           amount1: isAmount0Greater ? amount1 : amount0,
           token0: {
