@@ -18,7 +18,7 @@
             <span class="text-xs text-gray-8">{{ networkSelected?.name }} | #{{ props.position.tokenId }}</span>
           </div>
         </div>
-        <span class="sm hidden text-xs sm:block" :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
+        <span class="hidden text-xs sm:block" :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
       </div>
       <template v-if="isDesktop">
         <div class="flex gap-1 text-xs">
@@ -91,10 +91,10 @@
     </div>
     <div v-if="isDesktop" class="flex flex-col items-end gap-3">
       <div class="flex items-center gap-2 text-sm">
-        <!-- <span v-if="props.position.poolType === 'FARM'" class="flex items-center gap-1 font-semibold text-success">
-            <BaseIcon name="loading" size="16" class="text-success" />
-            <span>Farming</span>
-          </span> -->
+        <span v-if="showUnStake" class="flex items-center gap-1 text-success">
+          <BaseIcon name="loading" size="16" class="text-success" />
+          <span>Farming</span>
+        </span>
         <span :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
       </div>
       <div v-if="showUnStake || showStake" class="flex gap-2">
