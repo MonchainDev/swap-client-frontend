@@ -212,7 +212,14 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     if (exchangeRate.value?.length) {
       const rateList = exchangeRate.value.filter((item) => item.symbol === baseCurrency.value?.symbol)
       if (rateList.length) {
-        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        const isSlug = rateList.some((item) => item.slug === '')
+        const rate =
+          rateList.length === 1
+            ? rateList[0]
+            : isSlug
+              ? rateList.find((item) => item.slug === '')
+              : rateList.find((item) => item.symbol === baseCurrency.value?.symbol)
+
         return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
       }
       return '0'
@@ -224,7 +231,14 @@ export const useLiquidityStore = defineStore('liquidity', () => {
     if (exchangeRate.value?.length) {
       const rateList = exchangeRate.value.filter((item) => item.symbol === quoteCurrency.value?.symbol)
       if (rateList.length) {
-        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        const isSlug = rateList.some((item) => item.slug === '')
+        const rate =
+          rateList.length === 1
+            ? rateList[0]
+            : isSlug
+              ? rateList.find((item) => item.slug === '')
+              : rateList.find((item) => item.symbol === quoteCurrency.value?.symbol)
+
         return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
       }
       return '0'
