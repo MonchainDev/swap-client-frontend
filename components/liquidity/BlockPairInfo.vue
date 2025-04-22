@@ -95,10 +95,10 @@
     date: number
     tvlUSD: number
     volumeUSD: number
-    liquidity: number
     feeUSD: number
     token0: Token
     token1: Token
+    liquidity: string
     totalValueLockedToken0: number
   }
 
@@ -113,6 +113,7 @@
     volumeToken0: string
     volumeToken1: string
     feesUSD: string
+    liquidity: string
     pool: {
       totalValueLockedToken0: string
       totalValueLockedToken1: string
@@ -198,7 +199,10 @@
   })
 
   const price0 = computed(() => {
-    return new Decimal(currentPrice.value).mul(props.pool.quoteDecimals).div(props.pool.baseDecimals).toSignificantDigits(6).toString()
+    return new Decimal(currentPrice.value)
+      .div(new Decimal(10).pow(props.pool.quoteDecimals - props.pool.baseDecimals))
+      .toSignificantDigits(6)
+      .toString()
   })
 
   const price1 = computed(() => {
@@ -337,10 +341,10 @@
             volumeToken0
             volumeToken1
             feesUSD
+            liquidity
             pool {
               totalValueLockedToken0
               totalValueLockedToken1
-              liquidity
               token0 {
                 symbol
                 derivedUSD
@@ -368,7 +372,7 @@
   }
 
   function calculateMetrics(poolDayData: poolDayDatas): IMetric {
-    const { pool, volumeToken0 } = poolDayData
+    const { pool, volumeToken0, liquidity } = poolDayData
     const baseDerivedUsd = props.pool.baseDerivedUsd ?? 0
     const quoteDerivedUsd = props.pool.quoteDerivedUsd ?? 0
 
@@ -376,7 +380,6 @@
 
     const volumeUSD = parseFloat(volumeToken0) * baseDerivedUsd
 
-    const liquidity = parseFloat(pool.liquidity)
     const feeRate = new Decimal(props.pool.fee).div(10 ** 6).toString()
     const feeUSD = new Decimal(volumeUSD).mul(feeRate).toSignificantDigits(6).toNumber()
 
@@ -384,14 +387,14 @@
       date: poolDayData.date,
       tvlUSD: parseFloat(toSignificant(tvlUSD)),
       volumeUSD: parseFloat(toSignificant(volumeUSD)),
-      liquidity: liquidity,
+      liquidity,
       feeUSD,
       token0: {
-        derivedUSD: pool.token0.derivedUSD,
+        derivedUSD: props.pool.baseDerivedUsd.toString(),
         symbol: pool.token0.symbol
       },
       token1: {
-        derivedUSD: pool.token1.derivedUSD,
+        derivedUSD: props.pool.quoteDerivedUsd.toString(),
         symbol: pool.token1.symbol
       },
       totalValueLockedToken0: parseFloat(pool.totalValueLockedToken0)
