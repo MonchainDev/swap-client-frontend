@@ -19,8 +19,10 @@
       </div>
       <div class="mt-[30px] flex flex-col gap-[10px] rounded-lg border border-solid border-gray-4 bg-gray-1 px-6 pb-6 pt-5">
         <div class="flex items-center gap-1">
-          <span v-if="inverted">Min {{ invertMin }} / Max {{ invertMax }} of {{ position.quoteSymbol }} per {{ position.baseSymbol }}</span>
-          <span v-else>Min {{ min }} / Max {{ max }} of {{ position.baseSymbol }} per {{ position.quoteSymbol }}</span>
+          <span v-if="inverted"
+            >Min {{ formatNumber(invertMin) }} / Max {{ formatNumber(invertMax) }} of {{ position.quoteSymbol }} per {{ position.baseSymbol }}</span
+          >
+          <span v-else>Min {{ formatNumber(min) }} / Max {{ formatNumber(max) }} of {{ position.baseSymbol }} per {{ position.quoteSymbol }}</span>
           <BaseIcon name="arrow-reverse" size="20" class="cursor-pointer" @click="inverted = !inverted" />
         </div>
         <div class="flex items-center gap-1">
@@ -77,38 +79,19 @@
 
   const inverted = ref(false)
 
-  const min = computed(() => {
-    if (!props.position) return 0
-
-    const { priceLower, baseDecimals, quoteDecimals } = props.position
-    if (!priceLower) return 0
-
-    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
-    const priceQuotePerBase = priceLower / decimalAdjustment
-
-    return formatNumber(toSignificant(priceQuotePerBase, 6))
-  })
-  const max = computed(() => {
-    if (!props.position) return 0
-    const { priceUpper, baseDecimals, quoteDecimals } = props.position
-    if (!priceUpper) return 0
-
-    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
-    const priceQuotePerBase = priceUpper / decimalAdjustment
-
-    return formatNumber(toSignificant(priceQuotePerBase, 6))
-  })
+  const { min, max } = useCalcPricePosition(() => props.position)
 
   const invertMin = computed(() => {
     if (!max.value) return 0
     const _max = max.value.replaceAll(',', '')
-    return formatNumber(toSignificant(1 / parseFloat(_max)))
+    return toSignificant(1 / parseFloat(_max))
   })
 
   const invertMax = computed(() => {
     if (!min.value) return 0
+    if (max.value === '∞') return '∞'
     const _min = min.value.replaceAll(',', '')
-    return formatNumber(toSignificant(1 / parseFloat(_min)))
+    return toSignificant(1 / parseFloat(_min))
   })
 
   const displayTokenReserve = (amount: number, decimals: number, symbol: string) => {
@@ -169,7 +152,7 @@
             loadingUnStake.value = false
             emit('reload')
             setOpenPopup('popup-unstake', false)
-          }, 8000)
+          }, 12000)
         } else {
           showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash), chainId.value)
         }
