@@ -195,7 +195,14 @@
     if (data?.length) {
       const rateList = data.filter((item) => item.symbol.toUpperCase() === symbol.toUpperCase())
       if (rateList.length) {
-        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        const isSlug = rateList.some((item) => item.slug === '')
+        const rate =
+          rateList.length === 1
+            ? rateList[0]
+            : isSlug
+              ? rateList.find((item) => item.slug === '')
+              : rateList.find((item) => item.symbol.toUpperCase() === symbol.toUpperCase())
+
         return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
       }
       return '0'
