@@ -45,7 +45,7 @@
           <div class="flex flex-col gap-[6px]">
             <span class="text-sm">Volume 24h</span>
             <div class="flex items-center gap-3">
-              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.volume.toFixed(2)) }}</span>
+              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.volume) }}</span>
               <span class="flex items-center gap-1 rounded-[10px] px-2 py-[2px]" :class="statusVolume.volume.bg">
                 <BaseIcon name="arrow-fill" size="12" :class="`${statusVolume.volume.bg} ${statusVolume.volume.rotate} ${statusVolume.volume.status}`" />
                 <span class="text-sm font-semibold" :class="statusVolume.volume.status">{{ statusVolume.volume.change }}%</span>
@@ -55,7 +55,7 @@
           <div class="flex flex-col gap-[6px]">
             <span class="text-sm">Fee 24h</span>
             <div class="flex items-center gap-3">
-              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.fee.toFixed(2)) }}</span>
+              <span class="text-xl font-semibold">${{ formatNumber(infoVolume.today.fee) }}</span>
               <span class="flex items-center gap-1 rounded-[10px] px-2 py-[2px]" :class="statusVolume.fee.bg">
                 <BaseIcon name="arrow-fill" size="12" :class="`${statusVolume.fee.bg} ${statusVolume.fee.rotate} ${statusVolume.fee.status}`" />
                 <span class="text-sm font-semibold" :class="statusVolume.fee.status">{{ statusVolume.fee.change }}%</span>
@@ -75,15 +75,15 @@
 </template>
 
 <script lang="ts" setup>
+  import { useQuery } from '@tanstack/vue-query'
   import Decimal from 'decimal.js'
+  import { gql } from 'graphql-request'
   import type { ITab } from '~/types/component.type'
   import type { IPool } from '~/types/pool.type'
-  import ChartLiquidity from '../chart/ChartLiquidity.vue'
-  import ChartVolume from '../chart/ChartVolume.vue'
   import ChartFee from '../chart/ChartFee.vue'
+  import ChartLiquidity from '../chart/ChartLiquidity.vue'
   import ChartTvl from '../chart/ChartTvl.vue'
-  import { gql } from 'graphql-request'
-  import { useQuery } from '@tanstack/vue-query'
+  import ChartVolume from '../chart/ChartVolume.vue'
   const enum TabValue {
     VOLUME = 'VOLUME',
     LIQUIDITY = 'LIQUIDITY',
@@ -95,10 +95,10 @@
     date: number
     tvlUSD: number
     volumeUSD: number
-    liquidity: number
     feeUSD: number
     token0: Token
     token1: Token
+    liquidity: string
     totalValueLockedToken0: number
   }
 
@@ -110,13 +110,14 @@
   export interface poolDayDatas {
     id: string
     date: number
+    volumeToken0: string
+    volumeToken1: string
+    feesUSD: string
+    liquidity: string
     pool: {
       totalValueLockedToken0: string
       totalValueLockedToken1: string
-      volumeToken0: string
-      volumeToken1: string
       liquidity: string
-      feesUSD: string
       token0: Token
       token1: Token
     }
@@ -198,7 +199,10 @@
   })
 
   const price0 = computed(() => {
-    return new Decimal(currentPrice.value).mul(props.pool.quoteDecimals).div(props.pool.baseDecimals).toSignificantDigits(6).toString()
+    return new Decimal(currentPrice.value)
+      .div(new Decimal(10).pow(props.pool.quoteDecimals - props.pool.baseDecimals))
+      .toSignificantDigits(6)
+      .toString()
   })
 
   const price1 = computed(() => {
@@ -212,7 +216,7 @@
     retry: 2
   })
 
-  const foramtedData = computed(() => {
+  const formattedData = computed(() => {
     return data.value?.poolDayDatas.map((item: poolDayDatas) => ({
       ...calculateMetrics(item)
     }))
@@ -228,8 +232,8 @@
 
     const selectedValue = valueMap[tabActive.value]
 
-    return foramtedData.value && foramtedData.value?.length
-      ? foramtedData.value
+    return formattedData.value && formattedData.value?.length
+      ? formattedData.value
           .map((item: IMetric) => ({
             date: new Date(item.date * 1000).toLocaleDateString(),
             value: item[selectedValue as keyof IMetric]?.toString(),
@@ -244,19 +248,45 @@
   })
 
   const infoVolume = computed(() => {
-    if (foramtedData.value?.length) {
-      const today = foramtedData.value[0]
-      const yesterday = foramtedData.value[1]
+    if (formattedData.value?.length) {
+      const now = new Date()
+      const todayUTC = {
+        date: now.getUTCDate(),
+        month: now.getUTCMonth(),
+        year: now.getUTCFullYear()
+      }
+
+      const today = formattedData.value.find((item: IMetric) => {
+        const date = new Date(item.date * 1000)
+        return date.getUTCDate() === todayUTC.date && date.getUTCMonth() === todayUTC.month && date.getUTCFullYear() === todayUTC.year
+      })
+
+      const yesterday = new Date(now)
+      yesterday.setUTCDate(now.getUTCDate() - 1)
+      const yesterdayUTC = {
+        date: yesterday.getUTCDate(),
+        month: yesterday.getUTCMonth(),
+        year: yesterday.getUTCFullYear()
+      }
+
+      const yesterdayData = formattedData.value.find((item: IMetric) => {
+        const date = new Date(item.date * 1000)
+        return date.getUTCDate() === yesterdayUTC.date && date.getUTCMonth() === yesterdayUTC.month && date.getUTCFullYear() === yesterdayUTC.year
+      })
+
+      // Xử lý an toàn cho tvl
+      const defaultTvl = formattedData.value.length > 0 ? formattedData.value[0].tvlUSD : 0
+
       return {
         today: {
-          volume: today.volumeUSD,
-          fee: today.feeUSD,
-          tvl: today.tvlUSD
+          volume: today ? today.volumeUSD : 0,
+          fee: today ? today.feeUSD : 0,
+          tvl: today ? today.tvlUSD : defaultTvl
         },
         yesterday: {
-          volume: yesterday?.volumeUSD ?? 0,
-          fee: yesterday?.feeUSD ?? 0,
-          tvl: yesterday?.tvlUSD ?? 0
+          volume: yesterdayData ? yesterdayData.volumeUSD : 0,
+          fee: yesterdayData ? yesterdayData.feeUSD : 0,
+          tvl: yesterdayData ? yesterdayData.tvlUSD : 0
         }
       }
     }
@@ -308,13 +338,13 @@
       const query = gql`
         query PoolData($poolAddress: String!) {
           poolDayDatas(first: 365, orderBy: date, orderDirection: desc, where: { pool_: { id: $poolAddress } }) {
+            volumeToken0
+            volumeToken1
+            feesUSD
+            liquidity
             pool {
               totalValueLockedToken0
               totalValueLockedToken1
-              volumeToken0
-              volumeToken1
-              liquidity
-              feesUSD
               token0 {
                 symbol
                 derivedUSD
@@ -342,28 +372,29 @@
   }
 
   function calculateMetrics(poolDayData: poolDayDatas): IMetric {
-    const pool = poolDayData.pool
+    const { pool, volumeToken0, liquidity } = poolDayData
     const baseDerivedUsd = props.pool.baseDerivedUsd ?? 0
     const quoteDerivedUsd = props.pool.quoteDerivedUsd ?? 0
 
     const tvlUSD = parseFloat(pool.totalValueLockedToken0) * baseDerivedUsd + parseFloat(pool.totalValueLockedToken1) * quoteDerivedUsd
 
-    const volumeUSD = parseFloat(pool.volumeToken0) * baseDerivedUsd + parseFloat(pool.volumeToken1) * quoteDerivedUsd
+    const volumeUSD = parseFloat(volumeToken0) * baseDerivedUsd
 
-    const liquidity = parseFloat(pool.liquidity)
+    const feeRate = new Decimal(props.pool.fee).div(10 ** 6).toString()
+    const feeUSD = new Decimal(volumeUSD).mul(feeRate).toSignificantDigits(6).toNumber()
 
     return {
       date: poolDayData.date,
-      tvlUSD: tvlUSD,
-      volumeUSD: volumeUSD,
-      liquidity: liquidity,
-      feeUSD: parseFloat(Number(pool.feesUSD).toFixed(2)),
+      tvlUSD: parseFloat(toSignificant(tvlUSD)),
+      volumeUSD: parseFloat(toSignificant(volumeUSD)),
+      liquidity,
+      feeUSD,
       token0: {
-        derivedUSD: pool.token0.derivedUSD,
+        derivedUSD: props.pool.baseDerivedUsd.toString(),
         symbol: pool.token0.symbol
       },
       token1: {
-        derivedUSD: pool.token1.derivedUSD,
+        derivedUSD: props.pool.quoteDerivedUsd.toString(),
         symbol: pool.token1.symbol
       },
       totalValueLockedToken0: parseFloat(pool.totalValueLockedToken0)

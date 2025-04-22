@@ -14,6 +14,7 @@ export const useBridgeStore = defineStore('bridge', () => {
   const listNetwork = ref<INetwork[]>([...LIST_NETWORK])
   const listToken = ref<IToken[]>([])
   const listTokenFrom = ref<IToken[]>([])
+  const tokenDefault = ref<IToken>()
   const fromNetwork = ref<INetwork>(LIST_NETWORK[0])
   const toNetwork = ref<INetwork>(LIST_NETWORK[1])
   const token0 = ref<Token>()
@@ -30,7 +31,7 @@ export const useBridgeStore = defineStore('bridge', () => {
   const { address, chainId } = useAccount()
   const { setOpenPopup } = useBaseStore()
   const config = useConfig()
-  
+
   const form = ref<IFormBridge>({
     token0: {
       ...EMPTY_TOKEN
@@ -71,8 +72,8 @@ export const useBridgeStore = defineStore('bridge', () => {
       // Token 0
       form.value.amount = ''
       const query = { network: fromNetwork.value?.network, crossChain: 'Y' }
-      const { data } = await useFetch<IToken[]>('/api/network/token', { query })
-      const _token0 = data.value?.find((item) => item.tokenSymbol === formTokenSymbol)
+      const data = await $fetch<IToken[]>('/api/network/token', { query })
+      const _token0 = data?.find((item) => item.tokenSymbol === formTokenSymbol)
       console.info('store-token0', _token0)
       token0.value = formTokenSymbol
         ? new Token(
@@ -89,13 +90,15 @@ export const useBridgeStore = defineStore('bridge', () => {
         setOpenPopup('popup-connect')
         return
       }
+      console.log(token0.value?.address, 'sdadassdasd========= sadsadas', address.value);
+      
       if (token0.value) {
         const _balance = Number(await getBalanceToken(address.value, token0.value.address as `0x${string}`))
-          console.info(" ~ bridge.store.ts:95 ~ _balance:", _balance);
+        console.info(' ~ bridge.store.ts:95 ~ _balance:', _balance)
         balance0.value = Decimal(_balance)
           .div(10 ** token0.value.decimals)
           .toNumber()
-          console.info(" ~ bridge.store.ts:99 ~ balance0:", balance0.value);
+        console.info(' ~ bridge.store.ts:99 ~ balance0:', balance0.value)
       } else {
         balance0.value = 0
       }
@@ -111,7 +114,7 @@ export const useBridgeStore = defineStore('bridge', () => {
           ? new Token(toNetwork.value?.chainId as ChainId, _token1?.tokenAddress as `0x${string}`, +_token1!.tokenDecimals, _token1!.tokenSymbol, _token1?.name)
           : undefined
       }
-    }
+    }, { deep: true }
   )
 
   async function getBalanceToken(address: `0x${string}`, token: string) {
@@ -143,7 +146,6 @@ export const useBridgeStore = defineStore('bridge', () => {
       listToken.value = Array.isArray(_data)
         ? _data.map((item) => ({
             ...item,
-            logo: '',
             address: item.tokenAddress,
             symbol: item.tokenSymbol,
             decimals: item.tokenDecimals,
@@ -155,19 +157,28 @@ export const useBridgeStore = defineStore('bridge', () => {
     immediate: false
   })
 
+  const hasSetDefaultToken = ref<boolean>(false)
   const { data: _listTokenFromRs } = useLazyFetch<IToken[]>('/api/network/token', {
     query: computed(() => ({ network: fromNetwork.value?.network, crossChain: 'Y' })),
     onResponse({ response: { _data } }) {
       listTokenFrom.value = Array.isArray(_data)
         ? _data.map((item) => ({
             ...item,
-            logo: '',
             address: item.tokenAddress,
             symbol: item.tokenSymbol,
             decimals: item.tokenDecimals,
             name: item.tokenSymbol
           }))
         : []
+        if (!hasSetDefaultToken.value && listTokenFrom.value.length) {
+          tokenDefault.value = listTokenFrom.value.find((item) => item?.symbol === 'MON') as IToken
+          if (tokenDefault.value && fromNetwork.value.network === 'MON') {
+            form.value.token = tokenDefault.value
+            hasSetDefaultToken.value = true
+          } else {
+            hasSetDefaultToken.value = false
+          }
+        }
       if (!fromNetwork.value) return
       ElMessage.success(`Switch to ${fromNetwork.value.network}`)
       switchChain({ chainId: fromNetwork.value.chainId })
@@ -179,17 +190,16 @@ export const useBridgeStore = defineStore('bridge', () => {
   const { data: _listNetworkRs } = useFetch<INetwork[]>('/api/network/all', {
     onResponse({ response: { _data } }) {
       listNetwork.value = _data || []
-      const networkFrom = listNetwork.value.find(item => item.network === 'MON')
-      const networkTo = listNetwork.value.find(item => item.network === 'BSC')
+      const networkFrom = listNetwork.value.find((item) => item.network === 'MON')
+      const networkTo = listNetwork.value.find((item) => item.network === 'BSC')
       if (networkFrom) {
-        fromNetwork.value = {...networkFrom, logo: '/logo-mon-chain.png'}
+        fromNetwork.value = { ...networkFrom, logo: '/logo-mon-chain.png' }
       }
       if (networkTo) {
-        toNetwork.value = {...networkTo, logo: '/logo-bnb-chain.png'}
+        toNetwork.value = { ...networkTo, logo: '/logo-bnb-chain.png' }
       }
     }
   })
-  
 
   const resetStore = () => {
     form.value = {
@@ -234,6 +244,7 @@ export const useBridgeStore = defineStore('bridge', () => {
     balance0,
     resetStore,
     listTokenRs,
-    fee
+    fee,
+    tokenDefault
   }
 })

@@ -20,7 +20,7 @@
               <span class="flex items-center gap-1 text-sm">
                 <span>APR</span>
                 <BaseIcon name="calculator" size="16" class="text-gray-4" />
-                <span class="text-[#049C6B]">{{ positionDetail?.feeApr || 0 }}% </span>
+                <span class="text-[#049C6B]">{{ (positionDetail?.rewardApr || 0).toFixed(2) }}% </span>
               </span>
             </div>
             <span class="text-[48px] font-semibold">${{ formatNumber((Number(priceUsdBase) + Number(priceUsdQuote)).toFixed(2)) }}</span>
@@ -126,10 +126,8 @@
     :currency-base
     :position="position"
     :currency-quote
-    :position-value-lower
-    :position-value-upper
-    :value-lower="formattedValueLower"
-    :value-upper="formattedValueUpper"
+    :value-lower="formattedValue1"
+    :value-upper="formattedValue0"
     :fee-format="formatFee"
     :usd-lower="priceUsdQuote"
     :usd-upper="priceUsdBase"
@@ -315,16 +313,6 @@
   const currencyQuote = computed(() => (inverted.value ? currency0.value : currency1.value))
   const currencyBase = computed(() => (inverted.value ? currency1.value : currency0.value))
 
-  const positionValueUpper = computed(() => (inverted.value ? position.value?.amount0 : position.value?.amount1))
-  const positionValueLower = computed(() => (inverted.value ? position.value?.amount1 : position.value?.amount0))
-
-  const formattedValueUpper = computed(() => {
-    return formattedCurrencyAmount(positionValueUpper.value)
-  })
-  const formattedValueLower = computed(() => {
-    return formattedCurrencyAmount(positionValueLower.value)
-  })
-
   const formattedFee0 = computed(() => formattedCurrencyAmount(feeValue0.value))
   const formattedFee1 = computed(() => formattedCurrencyAmount(feeValue1.value))
 
@@ -448,13 +436,14 @@
       const client = getGraphQLClient(networkOfPool.value!.chainId)
       // Định nghĩa query với variable
       const query = gql`
-        query MyQuery($origin: String!, $pool: String!, $tickUpper: String!, $tickLower: String!) {
+        query ListTxPosition($origin: String!, $pool: String!, $tickUpper: String!, $tickLower: String!) {
           transactions(
             where: {
               or: [
                 { mints_: { origin: $origin, tickUpper: $tickUpper, tickLower: $tickLower } }
                 { burns_: { origin: $origin, tickUpper: $tickUpper, tickLower: $tickLower } }
                 { collects_: { pool: $pool, tickUpper: $tickUpper, tickLower: $tickLower } }
+                { swaps_: { pool: $pool, tick_gte: $tickLower, tick_lte: $tickUpper } }
               ]
             }
             orderBy: timestamp
@@ -488,7 +477,7 @@
         }
       `
       const variables = {
-        origin: account.value?.toLowerCase(),
+        origin: positionDetail.value?.createdBy.toLowerCase(),
         pool: positionDetail.value?.poolAddress.toLowerCase(),
         tickUpper: positionDetail.value?.tickUpper.toString(),
         tickLower: positionDetail.value?.tickLower.toString()

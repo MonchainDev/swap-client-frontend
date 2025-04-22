@@ -73,6 +73,7 @@
 
   const emits = defineEmits<{
     'select-network': []
+    'select-from-network': []
   }>()
 
   const listNetWorkDefault = ref<INetwork[]>(LIST_NETWORK)
@@ -84,6 +85,7 @@
   const handleSelectNetwork = (item: INetwork) => {
     if (_props.type === 'FROM') {
       fromNetwork.value = item
+      emits('select-from-network')
       visible.value = false
     } else {
       toNetwork.value = item
@@ -91,6 +93,11 @@
       visible.value = false
     }
   }
+  onMounted(() => {
+    if (_props.type === 'FROM') {
+      handleSelectNetwork(fromNetwork.value)
+    }
+  })
   watch(
     () => visible.value,
     (value) => {

@@ -4,7 +4,7 @@
     <span class="text-sm text-gray-8 sm:text-xs">Connects assets across blockchain networks seamlessly.</span>
     <div class="relative mt-6 flex w-full justify-between gap-1 sm:mt-5">
       <div class="from-network w-1/2">
-        <ChooseNetworkBridge type="FROM" />
+        <ChooseNetworkBridge type="FROM" @select-from-network="handleSelectFromNetwork" />
       </div>
       <div class="relative z-10 select-none">
         <div
@@ -24,6 +24,7 @@
         :is-selected="isTokenSelected"
         :token="form.token"
         :balance="balance0.toString()"
+        :amount-usd="amountUsd"
         :step-bridge
         :disabled-input="!form.token.symbol"
         class="h-[138px] w-full border border-[#EEEEEE] bg-white sm:h-[100px]"
@@ -74,9 +75,9 @@
       <div class="flex justify-between">
         <span class="text-sm text-primary"> You Receive </span>
         <div v-if="token1 !== undefined && form.token?.address" class="flex flex-col gap-1 text-right">
-          <p class="receive">{{ amountOut }}</p>
+          <p class="receive">{{ Math.round(+amountOut * 100) / 100 }}</p>
           <div v-if="toNetwork?.chainId" class="flex items-center gap-1">
-            <img src="/public/logo.png" alt="logo" class="size-4 rounded-full" />
+            <img :src="form.token.logo" alt="logo" class="size-4 rounded-full" />
             <span class="text-sm">{{ form.token.symbol || '' }}</span>
             <a v-if="checkNativeToken(toNetwork, token1)" :href="`${URL_SCAN[toNetwork.chainId].token}/${token1.address}`" target="_blank">
               <span class="line-clamp-1 text-xs text-[#6F6A79]"> ({{ formatAddress(token1.address) }}) </span>
@@ -213,12 +214,26 @@
 
   const { setOpenPopup } = useBaseStore()
   const { isDesktop } = storeToRefs(useBaseStore())
-  const { fee, fromNetwork, toNetwork, form, isConfirmSwap, isConfirmApprove, isSwapping, listToken, token0, token1, balance0, listNetwork, listTokenFrom } =
-    storeToRefs(useBridgeStore())
+  const {
+    tokenDefault,
+    fee,
+    fromNetwork,
+    toNetwork,
+    form,
+    isConfirmSwap,
+    isConfirmApprove,
+    isSwapping,
+    listToken,
+    token0,
+    token1,
+    balance0,
+    listNetwork,
+    listTokenFrom
+  } = storeToRefs(useBridgeStore())
   const isEditSlippage = ref(false)
 
   // const approveAndSend = ref<boolean>(false)
-  const { isConnected, address, address: receiverAddress } = useAccount()
+  const { isConnected, address, address: receiverAddress, chainId } = useAccount()
   const { switchChain } = useSwitchChain()
   const { approveToken } = useApproveToken()
 
@@ -288,16 +303,40 @@
     return !isTokenSelected.value || !+form.value.amount || isFetchQuote.value || notEnoughLiquidity.value || insufficientBalance.value
   })
 
+  const isSwappingNetwork = ref(false)
+
   const handleSwapOrder = () => {
-    if (stepBridge.value === 'CONFIRM_BRIDGE') return // @ts-ignore
+    if (stepBridge.value === 'CONFIRM_BRIDGE') return
+    isSwappingNetwork.value = true
     ;[fromNetwork.value, toNetwork.value] = [toNetwork.value, fromNetwork.value]
-    handleSelectToNetwork()
   }
+  watch(
+    () => chainId.value,
+    (newChainId, oldChainId) => {
+      if (isSwappingNetwork.value) {
+        console.log('chainId changed from', oldChainId, 'to', newChainId)
+        handleSelectToNetwork()
+        isSwappingNetwork.value = false
+      }
+    }
+  )
 
   const handleOpenPopupSelectToken = () => {
     if (stepBridge.value === 'CONFIRM_BRIDGE') return
     setOpenPopup('popup-sell-token', true)
-    console.info('tokens: ', listTokenFrom.value)
+  }
+
+  async function handleSelectFromNetwork() {
+    useBridgeStore().resetStore()
+    if (fromNetwork.value.network === 'MON' && tokenDefault.value) {
+      form.value.token = tokenDefault.value
+    } else {
+      form.value.token = {} as IToken
+    }
+    if (!form.value.token || form.value.token.tokenSymbol !== 'MON') {
+      balance0.value = 0
+    }
+    restoreFee()
   }
 
   async function handleSelectToNetwork() {
@@ -308,19 +347,26 @@
     // ElMessage.success(`Switch to ${fromNetwork.value.network}`)
     useBridgeStore().resetStore()
     switchChain({ chainId: fromNetwork.value?.chainId })
-    form.value.token = {} as IToken
-    balance0.value = 0
+    if (fromNetwork.value.network === 'MON' && tokenDefault.value) {
+      form.value.token = tokenDefault.value
+    } else {
+      form.value.token = {} as IToken
+    }
+    if (!form.value.token || form.value.token.tokenSymbol !== 'MON') balance0.value = 0
     form.value.amount = ''
     amountOut.value = ''
-    fee.value.network = '0'
-    fee.value.protocol = '0'
-    fee.value.bridge = '0'
+    restoreFee()
   }
 
   const restoreFee = () => {
     fee.value.bridge = '0'
     fee.value.protocol = '0'
     fee.value.network = '0'
+    fee.value.networkSymbol = ''
+    fee.value.networkDecimals = 18
+    fee.value.protocolSymbol = ''
+    fee.value.feeProtocolToken = ''
+    fee.value.bridgeSymbol = ''
   }
 
   /**
@@ -341,10 +387,10 @@
    *
    */
   const handleInput = async (amount: string) => {
-    console.log('handle input', amount)
-
-    try {
+    if (!amount) {
       restoreFee()
+    }
+    try {
       amountOut.value = ''
       notEnoughLiquidity.value = false
       insufficientBalance.value = false
@@ -655,9 +701,11 @@
   }
 
   const handleSelectToken = (token: IToken) => {
+    if (form.value.token.address === token.address) return
     form.value.token = token
     balance0.value = 0
     amountOut.value = ''
+    restoreFee()
   }
 
   const handleApprove = async () => {
@@ -674,6 +722,9 @@
               stepBridge.value = 'CONFIRM_BRIDGE'
               handleSwap()
             }
+          } else {
+            stepBridge.value = 'SELECT_TOKEN'
+            isConfirmApprove.value = false
           }
         })
       } else if (needAllowanceApproveProtocolFee.value) {
@@ -687,6 +738,9 @@
               stepBridge.value = 'CONFIRM_BRIDGE'
               handleSwap()
             }
+          } else {
+            stepBridge.value = 'SELECT_TOKEN'
+            isConfirmApprove.value = false
           }
         })
       }
@@ -835,16 +889,16 @@
       return token.address !== '0x0000000000000000000000000000000000000000'
     }
   }
-  const { listToken: listTokenCurrentNetwork } = storeToRefs(useBaseStore())
-  onMounted(() => {
-    console.log(listToken.value, 'list token')
 
-    const tokenDefault = listTokenCurrentNetwork.value.find((item) => item?.symbol === 'MON') as IToken
-    if (tokenDefault) {
-      form.value.token = tokenDefault
-    }
-    balance0.value = 0
+  const amountUsd = computed(() => {
+    const quantity = new Decimal(form.value.amount || 0)
+    const rate = new Decimal(form.value.token?.derivedUsd || 0)
+    if (rate.isZero()) return '0'
+    const usdValue = quantity.mul(rate).toSignificantDigits(6, Decimal.ROUND_DOWN)
+    return formatNumber(usdValue.toString())
   })
+  stepBridge.value = 'SELECT_TOKEN'
+  isConfirmApprove.value = false
 </script>
 
 <style scoped lang="scss">

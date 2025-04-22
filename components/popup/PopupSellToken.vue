@@ -39,22 +39,22 @@
       <SkeletonListToken v-if="loading" class="px-8 pt-6 sm:px-4" />
       <div v-else class="flex h-[500px] flex-col gap-2 pb-4">
         <ElScrollbar v-if="data.length" max-height="500px">
-          <ul class="pr-8">
+          <ul class="pr-4">
             <li
-              v-for="item in data"
-              :key="item.tokenAddress"
+              v-for="item in listAllBalance"
+              :key="item.token.tokenAddress"
               class="mb-3 flex h-[52px] cursor-pointer items-center justify-between gap-3 px-8 first:mt-3 last:mb-0 hover:bg-gray-3 sm:px-4"
-              @click="handleClickToken(item)"
+              @click="handleClickToken(item.token)"
             >
               <div class="grid h-[68px] cursor-pointer grid-cols-[40px_1fr] items-center gap-3">
-                <img :src="item.icon_url || ''" alt="logo token" class="size-10 rounded-full object-cover" @error="handleImageError($event)" />
+                <img :src="item.token.icon_url || ''" alt="logo token" class="size-10 rounded-full object-cover" @error="handleImageError($event)" />
                 <div class="flex flex-col">
-                  <span class="text-base font-medium">{{ item.tokenSymbol }}</span>
+                  <span class="text-base font-medium">{{ item.token.tokenSymbol }}</span>
                   <!-- <span class="text-xs text-gray-8">{{ item.network }}</span> -->
                 </div>
               </div>
               <div v-if="isConnected" class="text-sm">
-                <span v-if="!isIncompatible" class="text-primary">0.012890</span>
+                <span v-if="!isIncompatible" class="text-primary"> {{ formatNumber(item.balance.toFixed(2)) }} </span>
                 <span v-else class="text-[#F99F01]">Incompatible</span>
               </div>
             </li>
@@ -67,31 +67,47 @@
 </template>
 
 <script lang="ts" setup>
-  import { useAccount } from '@wagmi/vue'
+  import { useAccount, useConfig } from '@wagmi/vue'
   import type { IToken } from '~/types'
-
+  import { getBalance } from '@wagmi/core'
+  import Decimal from 'decimal.js'
   const emit = defineEmits<{
     select: [token: IToken]
   }>()
 
   const data = ref<IToken[]>([])
-  const { isConnected } = useAccount()
+  const { isConnected, address } = useAccount()
   const { isDesktop } = storeToRefs(useBaseStore())
   const { fromNetwork } = storeToRefs(useBridgeStore())
-
+  const config = useConfig()
   const { setOpenPopup } = useBaseStore()
   // const { currentNetwork: network } = storeToRefs(useBaseStore())
   const search = ref('')
   const loading = ref(false)
   const isIncompatible = ref<boolean>(false)
 
-  const init = async (first = false) => {
-    const query = first ? { network: fromNetwork.value.network } : { network: fromNetwork.value.network, token: useTrim(search.value) }
-    const rs =
-      first || useTrim(search.value) === ''
-        ? await $fetch<IToken[]>('/api/network/token', { params: query })
-        : await $fetch<IToken[]>('/api/network/token-info', { params: query })
-    data.value = rs.map((item) => ({
+  const listAllBalance = ref<{ token: IToken; balance: number }[]>([])
+  async function getBalanceToken(address: `0x${string}`, token: string) {
+    try {
+      const _address = address.toLowerCase() as `0x${string}`
+      const tokenBalance = await getBalance(config, {
+        address: _address,
+        token: (token === zeroAddress ? '' : token) as `0x${string}`
+      })
+      return BigInt(tokenBalance.value)
+    } catch (error) {
+      console.error('Error get balance', error)
+      return BigInt(0)
+    }
+  }
+
+  const init = async (searchText = '') => {
+    loading.value = true
+    const query = { network: fromNetwork.value.network }
+    const rs = await $fetch<IToken[]>('/api/network/token', {
+      params: { ...query, crossChain: 'Y' }
+    })
+    let tokens = rs.map((item) => ({
       ...item,
       icon_url: item.icon_url ?? '',
       address: item.tokenAddress,
@@ -99,18 +115,37 @@
       symbol: item.tokenSymbol,
       decimals: item.tokenDecimals
     }))
+    if (searchText.trim() !== '') {
+      tokens = tokens.filter((token) => token.symbol.toLowerCase().includes(searchText.toLowerCase()))
+    }
+    data.value = tokens
+    if (data.value.length) {
+      listAllBalance.value = await Promise.all(
+        data.value.map(async (token: IToken) => {
+          const _balance = Number(await getBalanceToken(address.value as `0x${string}`, token.address))
+          return {
+            token,
+            balance: Decimal(_balance)
+              .div(10 ** token.decimals)
+              .toNumber()
+          }
+        })
+      )
+    }
     loading.value = false
   }
+
   const handleSearchToken = useDebounce(() => {
-    init()
-  }, 400)
+    init(search.value)
+  }, 100)
 
   const handleClickToken = (item: IToken) => {
     emit('select', { ...item, icon_url: item.icon_url ?? '' })
     setOpenPopup('popup-sell-token', false)
   }
-  const handleOpen = () => {
-    init(true)
+
+  const handleOpen = async () => {
+    init()
   }
   const { handleImageError } = useErrorImage()
 </script>

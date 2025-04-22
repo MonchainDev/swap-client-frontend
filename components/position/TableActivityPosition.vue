@@ -90,8 +90,15 @@
     const amount1 = formatNumberWithDigits(row.amount1, 2)
     if (row.type === 'ADD' || row.type === 'COLLECT') {
       return `+${amount0} ${props.token0?.symbol}, +${amount1} ${props.token1?.symbol}`
+    } else if (row.type === 'SWAP') {
+      if (parseFloat(row.amount0) > 0) {
+        return `+${amount0} ${props.token0?.symbol}, ${amount1} ${props.token1?.symbol}`
+      } else {
+        return `${amount0} ${props.token0?.symbol}, +${amount1} ${props.token1?.symbol}`
+      }
+    } else {
+      return `-${amount0} ${props.token0?.symbol}, -${amount1} ${props.token1?.symbol}`
     }
-    return `-${amount0} ${props.token0?.symbol}, -${amount1} ${props.token1?.symbol}`
   }
 </script>
 

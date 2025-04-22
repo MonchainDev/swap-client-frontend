@@ -21,7 +21,7 @@
     </div>
     <div class="flex flex-col items-center justify-center gap-1 px-1 text-sm">
       <!-- <div class="break-all font-semibold text-success">{{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}%</div> -->
-      <div class="break-all text-gray-6">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</div>
+      <div class="break-all text-success">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</div>
     </div>
     <div class="flex flex-col justify-center pr-[10px] text-sm">
       <span>Min: {{ formatNumber(min) }} {{ props.position.quoteSymbol }}/{{ props.position.baseSymbol }}</span>
@@ -41,22 +41,25 @@
           </span> -->
           <span :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
         </div>
-        <div v-if="showUnStake || showStake" class="flex gap-2">
-          <template v-if="showUnStake">
-            <span
-              class="flex h-6 items-center justify-center rounded border border-solid border-hyperlink px-[10px] text-sm text-hyperlink"
-              @click.stop="emit('unstake', props.position, priceUdtTotal)"
-            >
-              <span>Unstake</span>
-            </span>
-            <span class="flex h-6 items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white" @click.stop="handleClickHarvest">
-              <BaseIcon v-if="loadingHarvest" name="loading" size="12" class="animate-spin text-white" />
-              <span>Harvest</span>
-            </span>
-          </template>
+        <div v-if="showUnStake || showStake || showHarvest" class="flex gap-2">
+          <span
+            v-if="showUnStake"
+            class="flex h-6 items-center justify-center rounded border border-solid border-hyperlink px-[10px] text-sm text-hyperlink"
+            @click.stop="emit('unstake', props.position, priceUdtTotal)"
+          >
+            <span>Unstake</span>
+          </span>
+          <span
+            v-if="showHarvest"
+            class="flex h-6 items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white"
+            @click.stop="handleClickHarvest"
+          >
+            <BaseIcon v-if="loadingHarvest" name="loading" size="12" class="animate-spin text-white" />
+            <span>Harvest</span>
+          </span>
           <span v-if="showStake" class="flex h-6 items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white" @click.stop="handleStake">
             <BaseIcon v-if="loadingStake" name="loading" size="12" class="animate-spin text-white" />
-            <span>Stake</span>
+            <span> Stake </span>
           </span>
         </div>
       </div>
@@ -73,7 +76,7 @@
   import Decimal from 'decimal.js'
   import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
-  import type { IExchangeRate } from '~/types'
+  import { type IExchangeRate } from '~/types'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { IPosition } from '~/types/position.type'
   import { MasterChefV3 } from '~/utils/masterChefV3'
@@ -136,41 +139,39 @@
     }
   })
 
-  const min = computed(() => {
-    const { priceLower, baseDecimals, quoteDecimals } = props.position
-    if (!priceLower) return 0
-
-    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
-    const priceQuotePerBase = priceLower / decimalAdjustment
-
-    return formatNumber(toSignificant(priceQuotePerBase, 6))
-  })
-
-  const max = computed(() => {
-    const { priceUpper, baseDecimals, quoteDecimals } = props.position
-    if (!priceUpper) return 0
-
-    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
-    const priceQuotePerBase = priceUpper / decimalAdjustment
-
-    return formatNumber(toSignificant(priceQuotePerBase, 6))
-  })
+  const { min, max } = useCalcPricePosition(() => props.position)
 
   const showStake = computed(() => {
     return (
-      props.position.poolType === 'FARM' && Number(props.position.moonPerSecond) === 0 && !stakeLocalSuccess.value && props.position.positionStatus !== 'CLOSE'
+      props.position.stakeStatus === 'N' &&
+      props.position.poolType === 'FARM' &&
+      Number(props.position.moonPerSecond) > 0 &&
+      !stakeLocalSuccess.value &&
+      props.position.positionStatus !== 'CLOSE'
     )
   })
 
   const showUnStake = computed(() => {
-    return Number(props.position.moonPerSecond) > 0 || stakeLocalSuccess.value
+    // return Number(props.position.rewardApr) > 0 || stakeLocalSuccess.value
+    return props.position.stakeStatus === 'Y' || stakeLocalSuccess.value
+  })
+
+  const showHarvest = computed(() => {
+    return props.position.stakeStatus === 'Y' && Number(props.position.pendingReward) > 0
   })
 
   const exchangeRateBaseCurrency = computed(() => {
     if (props.listExchangeRate.length) {
       const rateList = props.listExchangeRate.filter((item) => item.symbol === props.position.baseSymbol)
       if (rateList.length) {
-        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        const isSlug = rateList.some((item) => item.slug === '')
+        const rate =
+          rateList.length === 1
+            ? rateList[0]
+            : isSlug
+              ? rateList.find((item) => item.slug === '')
+              : rateList.find((item) => item.symbol === props.position.baseSymbol)
+
         return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
       }
       return '0'
@@ -182,7 +183,14 @@
     if (props.listExchangeRate.length) {
       const rateList = props.listExchangeRate.filter((item) => item.symbol === props.position.quoteSymbol)
       if (rateList.length) {
-        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        const isSlug = rateList.some((item) => item.slug === '')
+        const rate =
+          rateList.length === 1
+            ? rateList[0]
+            : isSlug
+              ? rateList.find((item) => item.slug === '')
+              : rateList.find((item) => item.symbol === props.position.quoteSymbol)
+
         return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
       }
       return '0'
@@ -249,7 +257,7 @@
         await new Promise((resolve) => {
           setTimeout(() => {
             resolve(null)
-          }, 4000)
+          }, 12000)
         })
         emit('reload')
       } else {
@@ -311,10 +319,10 @@
           rewardAmount: pendingReward,
           transactionType: 'STAKE'
         }
-        await Promise.race([v3PoolAddressPid(contractAddressMasterChef), postTransaction(body)])
+        await Promise.allSettled([v3PoolAddressPid(contractAddressMasterChef), postTransaction(body)])
         setTimeout(() => {
           emit('reload')
-        }, 4000)
+        }, 12000)
       } else {
         showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash), chainId.value)
       }

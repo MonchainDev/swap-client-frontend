@@ -324,7 +324,8 @@
           poolType: data.pooltype,
           positionStatus: data.positionstatus,
           pendingReward: data.pendingreward ?? 0,
-          moonPerSecond: data.moonpersecond ?? 0
+          moonPerSecond: data.moonpersecond ?? 0,
+          stakeStatus: data.stakestatus ?? 'N'
         }
       })
     }

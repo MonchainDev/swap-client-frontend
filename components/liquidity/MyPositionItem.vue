@@ -18,7 +18,7 @@
             <span class="text-xs text-gray-8">{{ networkSelected?.name }} | #{{ props.position.tokenId }}</span>
           </div>
         </div>
-        <span class="sm hidden text-xs sm:block" :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
+        <span class="hidden text-xs sm:block" :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
       </div>
       <template v-if="isDesktop">
         <div class="flex gap-1 text-xs">
@@ -35,7 +35,7 @@
           >
           <span>|</span>
           <span
-            >APR: <span class="font-semibold text-success">{{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}%</span></span
+            >APR: <span class="font-semibold text-success">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</span></span
           >
         </div>
         <span class="text-xs font-semibold"
@@ -47,8 +47,7 @@
       <template v-else>
         <div class="flex items-center gap-2">
           <div class="flex flex-1 gap-1 text-sm">
-            <span class="font-semibold text-success"> Up to {{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}% </span>
-            <span class="text-gray-6">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</span>
+            <span class="font-semibold text-success"> Up to {{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}% </span>
           </div>
           <span class="rounded bg-gray-2 px-2 py-1 text-xs font-medium">{{ props.position.fee / 10000 }}%</span>
         </div>
@@ -62,22 +61,23 @@
           }}
           /{{ displayTokenReserve(props.position.baseQuantity, props.position.baseDecimals, props.position.baseSymbol) }})</span
         >
-        <div v-if="showStake || showUnStake" class="flex gap-4">
-          <template v-if="showUnStake">
-            <span
-              class="flex h-6 w-full cursor-pointer items-center justify-center rounded border border-solid border-hyperlink px-[10px] text-sm text-hyperlink"
-              @click.stop="emit('unstake', props.position, priceUdtTotal)"
-            >
-              <span>Unstake</span>
-            </span>
-            <span
-              class="flex h-6 w-full cursor-pointer items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white"
-              @click.stop="handleClickHarvest"
-            >
-              <BaseIcon v-if="loadingHarvest" name="loading" size="12" class="animate-spin text-white" />
-              <span>Harvest</span>
-            </span>
-          </template>
+        <div v-if="showStake || showUnStake || showHarvest" class="flex gap-4">
+          <span
+            v-if="showUnStake"
+            class="flex h-6 w-full cursor-pointer items-center justify-center rounded border border-solid border-hyperlink px-[10px] text-sm text-hyperlink"
+            @click.stop="emit('unstake', props.position, priceUdtTotal)"
+          >
+            <span>Unstake</span>
+          </span>
+          <span
+            v-if="showHarvest"
+            class="flex h-6 w-full cursor-pointer items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white"
+            @click.stop="handleClickHarvest"
+          >
+            <BaseIcon v-if="loadingHarvest" name="loading" size="12" class="animate-spin text-white" />
+            <span>Harvest</span>
+          </span>
+
           <span
             v-if="showStake"
             class="flex h-6 w-full cursor-pointer items-center justify-center rounded bg-hyperlink px-[10px] text-sm text-white"
@@ -91,10 +91,10 @@
     </div>
     <div v-if="isDesktop" class="flex flex-col items-end gap-3">
       <div class="flex items-center gap-2 text-sm">
-        <!-- <span v-if="props.position.poolType === 'FARM'" class="flex items-center gap-1 font-semibold text-success">
-            <BaseIcon name="loading" size="16" class="text-success" />
-            <span>Farming</span>
-          </span> -->
+        <span v-if="showUnStake" class="flex items-center gap-1 text-success">
+          <BaseIcon name="loading" size="16" class="text-success" />
+          <span>Farming</span>
+        </span>
         <span :class="classStatus">{{ capitalizeFirstLetter(props.position.positionStatus) }}</span>
       </div>
       <div v-if="showUnStake || showStake" class="flex gap-2">
@@ -127,18 +127,18 @@
   // import type { CurrencyAmount, Token } from '@monchain/swap-sdk-core'
   import { LIST_NETWORK } from '~/config/networks'
   // import { Bound } from '~/types'
+  import { useQuery } from '@tanstack/vue-query'
   import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
   import { hexToBigInt } from 'viem'
+  import { TOKEN_REWARDS } from '~/config/tokens'
   import { config } from '~/config/wagmi'
-  import type { ChainId, IExchangeRate } from '~/types'
+  import { type ChainId, type IExchangeRate } from '~/types'
   import type { IBodyTxCollect } from '~/types/encrypt.type'
   import type { IPosition } from '~/types/position.type'
   import { MasterChefV3 } from '~/utils/masterChefV3'
   import { NonfungiblePositionManager } from '~/utils/nonfungiblePositionManager'
-  import { useQuery } from '@tanstack/vue-query'
-  import { TOKEN_REWARDS } from '~/config/tokens'
 
   interface IProps {
     // position: PositionDetail
@@ -195,43 +195,38 @@
     }
   })
 
-  const min = computed(() => {
-    const { priceUpper, baseDecimals, quoteDecimals } = props.position
-    if (!priceUpper) return 0
-
-    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
-    const priceQuotePerBase = priceUpper / decimalAdjustment
-
-    const priceBasePerQuote = 1 / priceQuotePerBase
-
-    return formatNumber(toSignificant(priceBasePerQuote, 6))
-  })
-
-  const max = computed(() => {
-    const { priceLower, baseDecimals, quoteDecimals } = props.position
-    if (!priceLower) return 0
-
-    const decimalAdjustment = Math.pow(10, quoteDecimals - baseDecimals)
-    const priceQuotePerBase = priceLower / decimalAdjustment
-
-    const priceBasePerQuote = 1 / priceQuotePerBase
-
-    return formatNumber(toSignificant(priceBasePerQuote, 6))
-  })
+  const { min, max } = useCalcPricePosition(() => props.position)
 
   const showStake = computed(() => {
-    return props.position.poolType === 'FARM' && Number(props.position.moonPerSecond) === 0 && props.position.positionStatus !== 'CLOSE'
+    return (
+      props.position.stakeStatus === 'N' &&
+      props.position.poolType === 'FARM' &&
+      Number(props.position.moonPerSecond) > 0 &&
+      !stakeLocalSuccess.value &&
+      props.position.positionStatus !== 'CLOSE'
+    )
   })
 
   const showUnStake = computed(() => {
-    return Number(props.position.moonPerSecond) > 0 || stakeLocalSuccess.value
+    return props.position.stakeStatus === 'Y'
+  })
+
+  const showHarvest = computed(() => {
+    return props.position.stakeStatus === 'Y' && Number(props.position.pendingReward) > 0
   })
 
   const exchangeRateBaseCurrency = computed(() => {
     if (props.listExchangeRate.length) {
       const rateList = props.listExchangeRate.filter((item) => item.symbol === props.position.baseSymbol)
       if (rateList.length) {
-        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        const isSlug = rateList.some((item) => item.slug === '')
+        const rate =
+          rateList.length === 1
+            ? rateList[0]
+            : isSlug
+              ? rateList.find((item) => item.slug === '')
+              : rateList.find((item) => item.symbol === props.position.baseSymbol)
+
         return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
       }
       return '0'
@@ -243,7 +238,14 @@
     if (props.listExchangeRate.length) {
       const rateList = props.listExchangeRate.filter((item) => item.symbol === props.position.quoteSymbol)
       if (rateList.length) {
-        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        const isSlug = rateList.some((item) => item.slug === '')
+        const rate =
+          rateList.length === 1
+            ? rateList[0]
+            : isSlug
+              ? rateList.find((item) => item.slug === '')
+              : rateList.find((item) => item.symbol === props.position.quoteSymbol)
+
         return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
       }
       return '0'
@@ -256,7 +258,9 @@
     if (props.listExchangeRate.length && symbol) {
       const rateList = props.listExchangeRate.filter((item) => item.symbol === symbol)
       if (rateList.length) {
-        const rate = rateList.length === 1 ? rateList[0] : rateList.find((item) => item.slug === '')
+        const isSlug = rateList.some((item) => item.slug === '')
+        const rate = rateList.length === 1 ? rateList[0] : isSlug ? rateList.find((item) => item.slug === '') : rateList.find((item) => item.symbol === symbol)
+
         return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
       }
       return '0'
@@ -375,8 +379,10 @@
           rewardAmount: pendingReward,
           transactionType: 'STAKE'
         }
-        await Promise.race([v3PoolAddressPid(contractAddressMasterChef), postTransaction(body)])
-        emit('reload')
+        await Promise.allSettled([v3PoolAddressPid(contractAddressMasterChef), postTransaction(body)])
+        setTimeout(() => {
+          emit('reload')
+        }, 12000)
       } else {
         showToastMsg('Transaction failed', 'error', getUrlScan(chainId.value, 'tx', hash), chainId.value)
       }
@@ -434,7 +440,7 @@
 
   defineExpose({
     priceUdtTotal,
-    feeApr: props.position.feeApr,
+    rewardApr: props.position.rewardApr,
     priceUsdEarnToken,
     amountTokenEarn
   })

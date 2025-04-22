@@ -114,6 +114,7 @@
 
 <script lang="ts" setup>
   import { useQuery } from '@tanstack/vue-query'
+  import Decimal from 'decimal.js'
   import { gql } from 'graphql-request'
   import { LIST_NETWORK } from '~/config/networks'
   import type { ChainId } from '~/types'
@@ -127,9 +128,12 @@
     amountUSD: string
     timestamp: number
     origin: string
-    token0: { symbol: string; id?: string }
-    token1: { symbol: string; id?: string }
+    token0: { symbol: string; id?: string; derivedUSD?: string }
+    token1: { symbol: string; id?: string; derivedUSD?: string }
     type: TabValue.ADD | TabValue.REMOVE | TabValue.SWAP
+    pool?: {
+      id: string
+    }
   }
 
   interface ITxs {
@@ -242,11 +246,16 @@
           amount1
           amountUSD
           id
+          pool {
+            id
+          }
           token0 {
+            derivedUSD
             id
             symbol
           }
           token1 {
+            derivedUSD
             id
             symbol
           }
@@ -264,11 +273,16 @@
           amount1
           amountUSD
           id
+          pool {
+            id
+          }
           token0 {
+            derivedUSD
             id
             symbol
           }
           token1 {
+            derivedUSD
             id
             symbol
           }
@@ -483,6 +497,7 @@
           if (parseFloat(burn.amount0) === 0 && parseFloat(burn.amount1) === 0) return
           txs.push({
             ...burn,
+            amountUSD: getAmountUSD(burn),
             type: TabValue.REMOVE,
             timestamp: burn.timestamp * 1000
           })
@@ -493,6 +508,7 @@
         item.mints.forEach((mint) => {
           txs.push({
             ...mint,
+            amountUSD: getAmountUSD(mint),
             type: TabValue.ADD,
             timestamp: mint.timestamp * 1000
           })
@@ -503,6 +519,15 @@
     return txs
   })
 
+  function getAmountUSD(tx: ITx) {
+    const amount0 = tx.amount0
+    const amount1 = tx.amount1
+    const amountUSD0 = new Decimal(amount0).mul(props.pool.baseDerivedUsd)
+    const amountUSD1 = new Decimal(amount1).mul(props.pool.quoteDerivedUsd)
+    const amountUSD = amountUSD0.add(amountUSD1).toString()
+    return amountUSD
+  }
+
   function processSwaps(swaps: ITx[], txs: ITx[], pool: IPool) {
     if (swaps.length === 1) {
       processSingleSwap(swaps[0], txs)
@@ -511,13 +536,25 @@
     }
   }
 
+  /**
+   * TODO
+   * default get amountUSD = USD of token0
+   */
   function processSingleSwap(swap: ITx, txs: ITx[]) {
+    if (swap.pool?.id !== props.pool.poolAddress) return
+
     const amount0 = swap.amount0
     const amount1 = swap.amount1
     const isAmount0Greater = Number(amount0) > Number(amount1)
+    // const derivedUSD = (isAmount0Greater ? props.pool.baseDerivedUsd : props.pool.quoteDerivedUsd) ?? '0'
+    // const amountUSD0 = new Decimal(amount0).mul(derivedUSD).toString()
+    // const amountUSD1 = new Decimal(amount1).mul(derivedUSD).toString()
 
+    const amountUSD = new Decimal(Math.abs(parseFloat(amount0))).mul(props.pool.baseDerivedUsd).toString()
     txs.push({
       ...swap,
+      amountUSD,
+      // amountUSD: isAmount0Greater ? amountUSD0 : amountUSD1,
       amount0: isAmount0Greater ? amount0 : amount1,
       amount1: isAmount0Greater ? amount1 : amount0,
       token0: {
@@ -533,27 +570,37 @@
 
   function processMultipleSwaps(swaps: ITx[], txs: ITx[], pool: IPool) {
     // Try to find a swap matching the current pool
-    const poolSwap = swaps.find((swap) => swap.token0.id === pool.tokenBase && swap.token1.id === pool.tokenQuote)
+    const poolSwap = swaps.filter((swap) => swap.token0.id === pool.tokenBase && swap.token1.id === pool.tokenQuote)
 
-    if (poolSwap) {
-      const amount0 = poolSwap.amount0
-      const amount1 = poolSwap.amount1
-      const isAmount0Greater = Number(amount0) > Number(amount1)
+    if (poolSwap.length) {
+      poolSwap.forEach((tx) => {
+        if (tx.pool?.id !== props.pool.poolAddress) return
 
-      txs.push({
-        ...poolSwap,
-        amount0: isAmount0Greater ? amount0 : amount1,
-        amount1: isAmount0Greater ? amount1 : amount0,
-        token0: {
-          ...poolSwap.token0,
-          symbol: isAmount0Greater ? poolSwap.token0.symbol : poolSwap.token1.symbol
-        },
-        token1: {
-          ...poolSwap.token1,
-          symbol: isAmount0Greater ? poolSwap.token1.symbol : poolSwap.token0.symbol
-        },
-        type: TabValue.SWAP,
-        timestamp: poolSwap.timestamp * 1000
+        const amount0 = tx.amount0
+        const amount1 = tx.amount1
+        const isAmount0Greater = Number(amount0) > Number(amount1)
+        // const derivedUSD = (isAmount0Greater ? props.pool.baseDerivedUsd : props.pool.quoteDerivedUsd) ?? '0'
+        // const amountUSD0 = new Decimal(amount0).mul(derivedUSD).toString()
+        // const amountUSD1 = new Decimal(amount1).mul(derivedUSD).toString()
+        const amountUSD = new Decimal(Math.abs(parseFloat(amount0))).mul(props.pool.baseDerivedUsd).toString()
+
+        txs.push({
+          ...tx,
+          amountUSD,
+          // amountUSD: isAmount0Greater ? amountUSD0 : amountUSD1,
+          amount0: isAmount0Greater ? amount0 : amount1,
+          amount1: isAmount0Greater ? amount1 : amount0,
+          token0: {
+            ...tx.token0,
+            symbol: isAmount0Greater ? tx.token0.symbol : tx.token1.symbol
+          },
+          token1: {
+            ...tx.token1,
+            symbol: isAmount0Greater ? tx.token1.symbol : tx.token0.symbol
+          },
+          type: TabValue.SWAP,
+          timestamp: tx.timestamp * 1000
+        })
       })
     } else {
       // Use first and last swap for a route swap
