@@ -233,7 +233,7 @@
   const isEditSlippage = ref(false)
 
   // const approveAndSend = ref<boolean>(false)
-  const { isConnected, address, address: receiverAddress } = useAccount()
+  const { isConnected, address, address: receiverAddress, chainId } = useAccount()
   const { switchChain } = useSwitchChain()
   const { approveToken } = useApproveToken()
 
@@ -303,11 +303,23 @@
     return !isTokenSelected.value || !+form.value.amount || isFetchQuote.value || notEnoughLiquidity.value || insufficientBalance.value
   })
 
+  const isSwappingNetwork = ref(false)
+
   const handleSwapOrder = () => {
-    if (stepBridge.value === 'CONFIRM_BRIDGE') return // @ts-ignore
+    if (stepBridge.value === 'CONFIRM_BRIDGE') return
+    isSwappingNetwork.value = true
     ;[fromNetwork.value, toNetwork.value] = [toNetwork.value, fromNetwork.value]
-    handleSelectToNetwork()
   }
+  watch(
+    () => chainId.value,
+    (newChainId, oldChainId) => {
+      if (isSwappingNetwork.value) {
+        console.log('chainId changed from', oldChainId, 'to', newChainId)
+        handleSelectToNetwork()
+        isSwappingNetwork.value = false
+      }
+    }
+  )
 
   const handleOpenPopupSelectToken = () => {
     if (stepBridge.value === 'CONFIRM_BRIDGE') return
