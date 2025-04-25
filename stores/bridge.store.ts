@@ -1,6 +1,7 @@
 import { Token } from '@monchain/swap-sdk-core'
 import { getBalance } from '@wagmi/core'
 import { useAccount, useBalance, useConfig, useReadContract, useSwitchChain } from '@wagmi/vue'
+import Decimal from 'decimal.js'
 import { defineStore } from 'pinia'
 import { LIST_NETWORK } from '~/config/networks'
 import { DEFAULT_SLIPPAGE, EMPTY_TOKEN } from '~/constant'
@@ -8,7 +9,6 @@ import CONTRACT_SWAP from '~/constant/contract'
 import ABI_TOKEN from '~/constant/contract/contract-token.json'
 import { type ChainId, type INetwork, type IToken } from '~/types'
 import type { IFormBridge } from '~/types/bridge.type'
-import Decimal from 'decimal.js'
 
 export const useBridgeStore = defineStore('bridge', () => {
   const listNetwork = ref<INetwork[]>([...LIST_NETWORK])
@@ -29,7 +29,6 @@ export const useBridgeStore = defineStore('bridge', () => {
   const balance0 = ref<number>(0)
 
   const { address, chainId } = useAccount()
-  const { setOpenPopup } = useBaseStore()
   const config = useConfig()
 
   const form = ref<IFormBridge>({
@@ -86,12 +85,12 @@ export const useBridgeStore = defineStore('bridge', () => {
         : undefined
       if (!address.value) {
         console.error('Address is required')
-        window.location.reload()
-        setOpenPopup('popup-connect')
+        // window.location.reload()
+        // setOpenPopup('popup-connect')
         return
       }
-      console.log(token0.value?.address, 'sdadassdasd========= sadsadas', address.value);
-      
+      console.log(token0.value?.address, 'sdadassdasd========= sadsadas', address.value)
+
       if (token0.value) {
         const _balance = Number(await getBalanceToken(address.value, token0.value.address as `0x${string}`))
         console.info(' ~ bridge.store.ts:95 ~ _balance:', _balance)
@@ -114,7 +113,8 @@ export const useBridgeStore = defineStore('bridge', () => {
           ? new Token(toNetwork.value?.chainId as ChainId, _token1?.tokenAddress as `0x${string}`, +_token1!.tokenDecimals, _token1!.tokenSymbol, _token1?.name)
           : undefined
       }
-    }, { deep: true }
+    },
+    { deep: true }
   )
 
   async function getBalanceToken(address: `0x${string}`, token: string) {
@@ -170,15 +170,15 @@ export const useBridgeStore = defineStore('bridge', () => {
             name: item.tokenSymbol
           }))
         : []
-        if (!hasSetDefaultToken.value && listTokenFrom.value.length) {
-          tokenDefault.value = listTokenFrom.value.find((item) => item?.symbol === 'MON') as IToken
-          if (tokenDefault.value && fromNetwork.value.network === 'MON') {
-            form.value.token = tokenDefault.value
-            hasSetDefaultToken.value = true
-          } else {
-            hasSetDefaultToken.value = false
-          }
+      if (!hasSetDefaultToken.value && listTokenFrom.value.length) {
+        tokenDefault.value = listTokenFrom.value.find((item) => item?.symbol === 'MON') as IToken
+        if (tokenDefault.value && fromNetwork.value.network === 'MON') {
+          form.value.token = tokenDefault.value
+          hasSetDefaultToken.value = true
+        } else {
+          hasSetDefaultToken.value = false
         }
+      }
       if (!fromNetwork.value) return
       ElMessage.success(`Switch to ${fromNetwork.value.network}`)
       switchChain({ chainId: fromNetwork.value.chainId })
