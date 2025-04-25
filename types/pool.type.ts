@@ -29,6 +29,7 @@ export interface IPool {
   quoteDerivedUsd: number
   quoteLogo: string
   baseLogo: string
+  lastTvl: number
 }
 
 export interface IPoolOrigin {

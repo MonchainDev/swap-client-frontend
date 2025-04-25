@@ -274,19 +274,16 @@
         return date.getUTCDate() === yesterdayUTC.date && date.getUTCMonth() === yesterdayUTC.month && date.getUTCFullYear() === yesterdayUTC.year
       })
 
-      // Xử lý an toàn cho tvl
-      const defaultTvl = formattedData.value.length > 0 ? formattedData.value[0].tvlUSD : 0
-
       return {
         today: {
           volume: today ? today.volumeUSD : 0,
           fee: today ? today.feeUSD : 0,
-          tvl: today ? today.tvlUSD : defaultTvl
+          tvl: props.pool.tvl || 0
         },
         yesterday: {
           volume: yesterdayData ? yesterdayData.volumeUSD : 0,
           fee: yesterdayData ? yesterdayData.feeUSD : 0,
-          tvl: yesterdayData ? yesterdayData.tvlUSD : 0
+          tvl: props.pool.lastTvl || 0
         }
       }
     }
