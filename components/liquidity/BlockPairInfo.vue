@@ -360,7 +360,7 @@
         }
       `
       const variables = {
-        poolAddress: poolAddress
+        poolAddress: poolAddress.toLowerCase()
       }
       const data = await client.request<{ poolDayDatas: poolDayDatas[] }>(query, variables)
       console.log('🚀 ~ getPoolData ~ data:', data)
