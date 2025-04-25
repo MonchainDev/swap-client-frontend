@@ -59,3 +59,15 @@ export interface IPoolOrigin {
   quoteqtty: number
   quotesymbol: string
 }
+
+export interface IPoolTvl {
+  id: number
+  calcDate: number
+  poolAddress: string
+  network: string
+  chainId: number
+  tvlUsd: number
+  volume24h: number
+  tick: number
+  liquidity: number
+}
