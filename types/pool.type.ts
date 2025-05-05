@@ -29,6 +29,7 @@ export interface IPool {
   quoteDerivedUsd: number
   quoteLogo: string
   baseLogo: string
+  lastTvl: number
 }
 
 export interface IPoolOrigin {
@@ -57,4 +58,16 @@ export interface IPoolOrigin {
   createdat: number
   quoteqtty: number
   quotesymbol: string
+}
+
+export interface IPoolTvl {
+  id: number
+  calcDate: number
+  poolAddress: string
+  network: string
+  chainId: number
+  tvlUsd: number
+  volume24h: number
+  tick: number
+  liquidity: number
 }

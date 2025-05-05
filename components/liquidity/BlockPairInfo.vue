@@ -79,7 +79,7 @@
   import Decimal from 'decimal.js'
   import { gql } from 'graphql-request'
   import type { ITab } from '~/types/component.type'
-  import type { IPool } from '~/types/pool.type'
+  import type { IPool, IPoolTvl } from '~/types/pool.type'
   import ChartFee from '../chart/ChartFee.vue'
   import ChartLiquidity from '../chart/ChartLiquidity.vue'
   import ChartTvl from '../chart/ChartTvl.vue'
@@ -209,6 +209,13 @@
     return parseFloat(price0.value) > 0 ? new Decimal(1).div(price0.value).toSignificantDigits(6).toString() : '0'
   })
 
+  const { data: dataTvl } = useQuery({
+    queryKey: computed(() => ['data-tvl', props.pool.poolAddress]),
+    queryFn: () => getPoolTvl(),
+    enabled: computed(() => !!props.pool.poolAddress),
+    retry: 2
+  })
+
   const { data, isLoading } = useQuery({
     queryKey: computed(() => ['poolData', props.pool.poolAddress]),
     queryFn: () => getPoolData(props.pool.poolAddress),
@@ -228,6 +235,20 @@
       [TabValue.LIQUIDITY]: 'liquidity',
       [TabValue.FEE]: 'feeUSD',
       [TabValue.TVL]: 'tvlUSD'
+    }
+
+    if (tabActive.value === TabValue.TVL) {
+      return (
+        dataTvl.value?.map((item: IPoolTvl) => ({
+          date: new Date(item.calcDate).toLocaleDateString(),
+          value: item.tvlUsd.toString(),
+          token0Price: '0',
+          token1Price: '0',
+          token0Symbol: props.pool.baseSymbol,
+          token1Symbol: props.pool.quoteSymbol,
+          totalValueLockedToken0: '0'
+        })) || []
+      )
     }
 
     const selectedValue = valueMap[tabActive.value]
@@ -274,19 +295,16 @@
         return date.getUTCDate() === yesterdayUTC.date && date.getUTCMonth() === yesterdayUTC.month && date.getUTCFullYear() === yesterdayUTC.year
       })
 
-      // Xử lý an toàn cho tvl
-      const defaultTvl = formattedData.value.length > 0 ? formattedData.value[0].tvlUSD : 0
-
       return {
         today: {
           volume: today ? today.volumeUSD : 0,
           fee: today ? today.feeUSD : 0,
-          tvl: today ? today.tvlUSD : defaultTvl
+          tvl: props.pool.tvl || 0
         },
         yesterday: {
           volume: yesterdayData ? yesterdayData.volumeUSD : 0,
           fee: yesterdayData ? yesterdayData.feeUSD : 0,
-          tvl: yesterdayData ? yesterdayData.tvlUSD : 0
+          tvl: props.pool.lastTvl || 0
         }
       }
     }
@@ -360,7 +378,7 @@
         }
       `
       const variables = {
-        poolAddress: poolAddress
+        poolAddress: poolAddress.toLowerCase()
       }
       const data = await client.request<{ poolDayDatas: poolDayDatas[] }>(query, variables)
       console.log('🚀 ~ getPoolData ~ data:', data)
@@ -398,6 +416,15 @@
         symbol: pool.token1.symbol
       },
       totalValueLockedToken0: parseFloat(pool.totalValueLockedToken0)
+    }
+  }
+
+  async function getPoolTvl() {
+    try {
+      return (await $fetch<IPoolTvl[]>(`/api/pool/tvl/${props.pool.network}/${props.pool.poolAddress.toLowerCase()}`, { query: { period: '1Y' } })) || []
+    } catch (error) {
+      console.error(error)
+      throw error
     }
   }
 </script>

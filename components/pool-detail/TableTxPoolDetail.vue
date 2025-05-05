@@ -354,7 +354,7 @@
       // Định nghĩa query với variable
       const query = getQuery()
       const variables = {
-        poolAddress: poolAddress,
+        poolAddress: poolAddress.toLowerCase(),
         skip: skip.value
       }
       const data = await client.request<PoolsResponse>(query, variables)
