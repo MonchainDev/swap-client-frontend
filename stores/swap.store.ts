@@ -2,9 +2,10 @@ import { useQuery } from '@tanstack/vue-query'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import Decimal from 'decimal.js'
 import { defineStore } from 'pinia'
+import { NATIVE, TOKEN_REWARDS } from '~/config/tokens'
 import { DEFAULT_SLIPPAGE, EMPTY_TOKEN } from '~/constant'
 import ABI_TOKEN from '~/constant/contract/contract-token.json'
-import type { IExchangeRate } from '~/types'
+import type { ChainId, IExchangeRate } from '~/types'
 import type { IFormSwap } from '~/types/swap.type'
 
 export const useSwapStore = defineStore('swap', () => {
@@ -139,17 +140,18 @@ export const useSwapStore = defineStore('swap', () => {
 
   const fetchExchangeRate = async () => {
     const params = new URLSearchParams()
-    if (form.value.token0.address) {
+    if (form.value.token0.address && form.value.token1.address) {
       params.append('currencies', form.value.token0.symbol)
+      params.append('currencies', form.value.token1.symbol)
       const data = await $fetch<IExchangeRate[]>(`/api/exchange-rate/all?${params.toString()}`)
       return data
     }
   }
 
   const { data: exchangeRate } = useQuery({
-    queryKey: computed(() => ['exchange-rate-base-token-swap', form.value.token0.address]),
+    queryKey: computed(() => ['exchange-rate-token-swap', form.value.token0.address, form.value.token1.address]),
     queryFn: fetchExchangeRate,
-    enabled: computed(() => !!form.value.token0.address)
+    enabled: computed(() => !!form.value.token0.address && !!form.value.token1.address)
   })
 
   const exchangeRateBaseCurrency = computed(() => {
@@ -171,6 +173,62 @@ export const useSwapStore = defineStore('swap', () => {
     return '0'
   })
 
+  const exchangeRateQuoteCurrency = computed(() => {
+    if (exchangeRate.value?.length) {
+      const rateList = exchangeRate.value.filter((item) => item.symbol === form.value.token1.symbol)
+      if (rateList.length) {
+        const isSlug = rateList.some((item) => item.slug === '')
+        const rate =
+          rateList.length === 1
+            ? rateList[0]
+            : isSlug
+              ? rateList.find((item) => item.slug === '')
+              : rateList.find((item) => item.symbol === form.value.token1.symbol)
+        return rate ? new Decimal(rate.priceUsd).toSignificantDigits(6).toString() : '0'
+      }
+      return '0'
+    }
+    return '0'
+  })
+
+  const setDefaultToken = (_chainId: number, network: string) => {
+    // set default token in swap form
+    const native = NATIVE[_chainId as ChainId]
+    const reward = TOKEN_REWARDS[_chainId as ChainId]
+
+    const { address, decimals, name, symbol } = native
+    form.value.token0 = {
+      address,
+      decimals,
+      name,
+      symbol,
+      chainId: chainId.value!,
+      icon_url: '',
+      crossChain: false,
+      id: Math.random(),
+      network,
+      stable: false,
+      tokenAddress: address,
+      tokenSymbol: symbol,
+      tokenDecimals: decimals
+    }
+    form.value.token1 = {
+      address: reward?.address || '',
+      decimals: reward?.decimals || 0,
+      name: reward?.name || '',
+      symbol: reward?.symbol || '',
+      chainId: chainId.value!,
+      icon_url: '',
+      crossChain: false,
+      id: Math.random(),
+      network,
+      stable: false,
+      tokenAddress: reward?.address || '',
+      tokenSymbol: reward?.symbol || '',
+      tokenDecimals: reward?.decimals || 0
+    }
+  }
+
   return {
     slippage,
     balance0,
@@ -189,7 +247,9 @@ export const useSwapStore = defineStore('swap', () => {
     refetchAllowance1,
     resetStore,
     exchangeRateBaseCurrency,
+    exchangeRateQuoteCurrency,
     refetchBalance0,
-    refetchBalance1
+    refetchBalance1,
+    setDefaultToken
   }
 })
