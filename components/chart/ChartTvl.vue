@@ -72,7 +72,7 @@
         events: {
           mouseMove: (event, chartContext, config) => {
             const { dataPointIndex } = config
-            if (dataPointIndex >= 0) {
+            if (dataPointIndex >= 0 && dataPointIndex) {
               hoveredData.value.date = formatDate(props.chartData[dataPointIndex].date)
               hoveredData.value.volume = formatNumberAbbreviation(parseFloat(Number(data.value[dataPointIndex] ?? 0).toFixed(2)))
             }

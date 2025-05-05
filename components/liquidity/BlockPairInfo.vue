@@ -248,7 +248,7 @@
           token1Symbol: props.pool.quoteSymbol,
           totalValueLockedToken0: '0'
         })) || []
-      )
+      ).reverse()
     }
 
     const selectedValue = valueMap[tabActive.value]
