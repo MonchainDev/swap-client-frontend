@@ -9,7 +9,7 @@
           :token="form.token0"
           :balance="balance0?.formatted"
           :step-swap
-          :amount-usd="amountUsd"
+          :amount-usd="amount0Usd"
           type="BASE"
           class="h-[138px] bg-[#EFEFFF] sm:h-[120px]"
           @select-token="handleOpenPopupSelectToken"
@@ -30,6 +30,7 @@
           :token="form.token1"
           :balance="balance1?.formatted"
           :step-swap
+          :amount-usd="amount1Usd"
           type="QUOTE"
           class="h-[124px] bg-[#F3F8FF] sm:h-[100px]"
           @select-token="handleOpenPopupSelectToken"
@@ -48,7 +49,7 @@
             </div>
             <div class="flex flex-col text-right">
               <span class="text-[32px] font-semibold leading-7">{{ form.amountIn }}</span>
-              <span class="text-sm font-semibold text-gray-6">≈ ${{ amountUsd }}</span>
+              <span class="text-sm font-semibold text-gray-6">≈ ${{ amount0Usd }}</span>
             </div>
           </div>
           <div class="relative flex items-center justify-between gap-2 pt-[38px]">
@@ -60,41 +61,46 @@
                 <div class="line-clamp-1 text-xs text-[#6F6A79]">{{ form.token1.name }}</div>
               </div>
             </div>
-            <span class="flex-1 text-right text-[32px] font-semibold leading-7">≈ {{ form.amountOut }}</span>
+            <div class="flex flex-col text-right">
+              <span class="text-[32px] font-semibold leading-7">{{ form.amountOut }}</span>
+              <span class="text-sm font-semibold text-gray-6">≈ ${{ amount1Usd }}</span>
+            </div>
           </div>
         </div>
       </template>
     </div>
 
-    <template v-if="isQuoteExist">
+    <template v-if="isQuoteExist && !isWrapOrUnWrap.isWrap && !isWrapOrUnWrap.isUnWrap">
       <InfoSwap v-model:edit-slippage="isEditSlippage" :step-swap @change-slippage="handleChangeSlippage" />
     </template>
 
     <template v-if="!isEditSlippage">
-      <button
-        v-if="isConnected"
-        :disabled="isDisabledButton"
-        class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:h-[42px] sm:text-sm"
-        :class="{ 'bg-gray pointer-events-none cursor-default': isSwapping || isConfirmApprove || isConfirmSwap, 'btn-disabled': isDisabledButton }"
-        @click="handleSwap"
-      >
-        <BaseLoadingButton v-if="isFetchQuote || isSwapping || isConfirmApprove || isConfirmSwap" />
-        <span>{{ msgButton }}</span>
-      </button>
-      <button
-        v-else
-        class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:h-[42px] sm:text-sm"
-        @click="setOpenPopup('popup-connect')"
-      >
-        <template v-if="isFetchQuote">
-          <BaseLoadingButton />
+      <template v-if="isConnected">
+        <button
+          :disabled="isDisabledButton"
+          class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:h-[42px] sm:text-sm"
+          :class="{ 'bg-gray pointer-events-none cursor-default': isSwapping || isConfirmApprove || isConfirmSwap, 'btn-disabled': isDisabledButton }"
+          @click="handleSwap"
+        >
+          <BaseLoadingButton v-if="isFetchQuote || isSwapping || isConfirmApprove || isConfirmSwap" />
           <span>{{ msgButton }}</span>
-        </template>
-        <template v-else>
-          <BaseIcon name="wallet" size="24" class="text-white" />
-          <span class="uppercase">Connect Wallet</span>
-        </template>
-      </button>
+        </button>
+      </template>
+      <template v-else>
+        <button
+          class="bg-linear mt-5 flex h-[67px] items-center justify-center gap-2 rounded-lg text-xl font-semibold text-white hover:opacity-90 sm:h-[42px] sm:text-sm"
+          @click="setOpenPopup('popup-connect')"
+        >
+          <template v-if="isFetchQuote">
+            <BaseLoadingButton />
+            <span>{{ msgButton }}</span>
+          </template>
+          <template v-else>
+            <BaseIcon name="wallet" size="24" class="text-white" />
+            <span class="uppercase">Connect Wallet</span>
+          </template>
+        </button>
+      </template>
     </template>
 
     <PopupSelectToken @select="handleSelectToken" />
@@ -116,6 +122,9 @@
   import type { TYPE_SWAP } from '~/types/swap.type'
   import { type SwapOutput } from '~/utils/getBestTrade'
   import HeaderFormSwap from './HeaderFormSwap.vue'
+  import { WNATIVE } from '~/config/tokens'
+  import CONTRACT_TOKEN from '@/constant/contract/contract-token.json'
+
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
 
   export type StepSwap = 'SELECT_TOKEN' | 'CONFIRM_SWAP'
@@ -131,8 +140,20 @@
   const { setOpenPopup } = useBaseStore()
   const { isDesktop, currentNetwork } = storeToRefs(useBaseStore())
 
-  const { isSwapping, isConfirmApprove, exchangeRateBaseCurrency, slippage, isConfirmSwap, allowance0, balance0, balance1, form, token0, token1 } =
-    storeToRefs(useSwapStore())
+  const {
+    isSwapping,
+    isConfirmApprove,
+    exchangeRateBaseCurrency,
+    exchangeRateQuoteCurrency,
+    slippage,
+    isConfirmSwap,
+    allowance0,
+    balance0,
+    balance1,
+    form,
+    token0,
+    token1
+  } = storeToRefs(useSwapStore())
   const { refetchAllowance0, refetchBalance0, refetchBalance1 } = useSwapStore()
 
   const isEditSlippage = ref(false)
@@ -153,9 +174,15 @@
     return stepSwap.value === 'SELECT_TOKEN' ? _props.title : 'Confirm swap'
   })
 
-  const amountUsd = computed(() => {
+  const amount0Usd = computed(() => {
     const quantity = new Decimal(form.value.amountIn || 0)
     const rate = exchangeRateBaseCurrency.value
+    return quantity && rate ? formatNumber(quantity.mul(rate).toSignificantDigits(6, Decimal.ROUND_DOWN).toString()) : '0'
+  })
+
+  const amount1Usd = computed(() => {
+    const quantity = new Decimal(form.value.amountOut || 0)
+    const rate = exchangeRateQuoteCurrency.value
     return quantity && rate ? formatNumber(quantity.mul(rate).toSignificantDigits(6, Decimal.ROUND_DOWN).toString()) : '0'
   })
 
@@ -166,6 +193,11 @@
     const amountA = form.value.amountIn || 0
     const balanceA = balance0.value?.formatted || 0
     return new Decimal(amountA).greaterThan(balanceA)
+  })
+
+  const isWrapOrUnWrap = computed(() => {
+    const { isUnWrap, isWrap } = checkWrapOrUnWrap()
+    return { isUnWrap, isWrap }
   })
   /*
    * Message button
@@ -185,6 +217,13 @@
     } else if (isFetchQuote.value) {
       return 'Finalizing quote...'
     } else if (
+      (isWrapOrUnWrap.value.isWrap || isWrapOrUnWrap.value.isUnWrap) &&
+      isToken0Selected.value &&
+      isToken1Selected.value &&
+      (Number(form.value.amountIn) || Number(form.value.amountOut))
+    ) {
+      return isWrapOrUnWrap.value.isWrap ? 'WRAP' : 'UNWRAP'
+    } else if (
       (!isFetchQuote.value &&
         noRoute.value &&
         isToken0Selected.value &&
@@ -198,6 +237,7 @@
         if (isInsufficientBalance.value) {
           return `Insufficient ${form.value.token0.symbol} balance`
         }
+
         return `Swap ${bestTrade.value?.inputAmount.toSignificant(6)} ${form.value.token0.symbol} ⇒ ${bestTrade.value?.outputAmount.toSignificant(6)} ${form.value.token1.symbol}`
       } else {
         if (isSwapping.value) {
@@ -215,6 +255,14 @@
   })
 
   const isDisabledButton = computed(() => {
+    if (
+      (isWrapOrUnWrap.value.isWrap || isWrapOrUnWrap.value.isUnWrap) &&
+      isToken0Selected.value &&
+      isToken1Selected.value &&
+      (Number(form.value.amountIn) || Number(form.value.amountOut))
+    ) {
+      return false
+    }
     return (
       !isToken0Selected.value ||
       !isToken1Selected.value ||
@@ -258,25 +306,16 @@
     }
   }
 
-  // const calcTradingFee = () => {
-  //   const routes = (bestTrade.value as SwapOutput)?.routes
+  function checkWrapOrUnWrap() {
+    const tokenAddresses = [form.value.token0.address, form.value.token1.address]
+    const hasNative = tokenAddresses.includes(zeroAddress)
+    const wnative = WNATIVE[currentNetwork.value.chainId]
+    const hasWnative = tokenAddresses.includes(wnative.address)
+    const isWrap = hasNative && hasWnative && form.value.token0.address === zeroAddress
+    const isUnWrap = hasNative && hasWnative && form.value.token1.address === zeroAddress
 
-  //   let totalFeeWei = BigInt(0)
-  //   for (const route of routes) {
-  //     const inputAmountRaw = route.inputAmount.numerator
-  //     const inputAmount = BigInt(inputAmountRaw)
-  //     const pools = (route.pools || []) as V3Pool[]
-  //     for (const pool of pools) {
-  //       const poolFeeBps = BigInt(pool.fee || 0)
-  //       // Calculate fee for this pool (inputAmount * fee / 1000000)
-  //       const poolFeeWei = (inputAmount * poolFeeBps) / BigInt(1000000)
-  //       totalFeeWei += poolFeeWei
-  //     }
-  //   }
-  //   console.log('🚀 ~ calcTradingFee ~ totalFeeWei:', totalFeeWei)
-
-  //   return totalFeeWei
-  // }
+    return { isWrap, isUnWrap }
+  }
 
   let latestRequestId = 0
   const handleInput = async (amount: string, type: TYPE_SWAP) => {
@@ -286,6 +325,17 @@
       latestRequestId = 0
       isFetchQuote.value = false
       notEnoughLiquidity.value = false
+      return
+    }
+
+    const { isWrap, isUnWrap } = checkWrapOrUnWrap()
+
+    if (isWrap || isUnWrap) {
+      form.value.amountIn = amount
+      form.value.amountOut = amount
+      isFetchQuote.value = false
+      notEnoughLiquidity.value = false
+      latestRequestId = 0
       return
     }
 
@@ -308,11 +358,10 @@
       const tokenB = await getTokenInfo(form.value.token1.address)
 
       if (type === 'BASE') {
-        form.value.amountIn = amount
         form.value.amountOut = ''
-        console.log('🚀 ~ handleInput ~ form.value.amountIn:', form.value.amountIn)
+        console.log('🚀 ~ handleInput ~ amount int:', form.value.amountIn)
         const inputAmount = Number(form.value.amountIn) * ((10 ** Number(form.value.token0.decimals)) as number)
-        console.log('🚀 ~ handleInput ~ inputAmount', inputAmount)
+        console.log('🚀 ~ handleInput ~ amount wei', inputAmount)
         // buyAmount.value = Number(amount) > 0 ? (Math.random() * 1000).toFixed(3) + '' : ''
         const _bestTrade = await getBestTradeV4ForSwapV2({
           token0: tokenA,
@@ -346,9 +395,10 @@
 
         isFetchQuote.value = false
       } else {
-        form.value.amountOut = amount
         form.value.amountIn = ''
         const inputAmount = Number(form.value.amountOut) * ((10 ** Number(form.value.token1.decimals)) as number)
+        console.log('🚀 ~ handleInput ~ amount int:', form.value.amountOut)
+        console.log('🚀 ~ handleInput ~ amount wei', inputAmount)
 
         const _bestTrade = await getBestTradeV4ForSwapV2({
           token0: tokenA,
@@ -434,7 +484,7 @@
   const { address, isConnected } = useAccount()
   const { chainId } = useActiveChainId()
 
-  const token0IsToken = computed(() => form.value.token0.address !== '')
+  const token0IsToken = computed(() => form.value.token0.address !== zeroAddress)
 
   // function encodePath(tokens: string[], fees: number[], tradeType: TradeType): `0x${string}` {
   //   if (tokens.length !== fees.length + 1) {
@@ -686,7 +736,7 @@
       await postTx(txHash, contractSwapRouterV3)
       console.info('Transaction successful', 'success', txHash)
     } else {
-      ElMessage.error('Transaction failed')
+      showToastMsg('Transaction failed', 'error')
       console.info('Transaction failed', 'error', txHash)
     }
   }
@@ -835,6 +885,12 @@
     try {
       // if (isDisabledButton.value) return
       // step 1: next step 2
+
+      if (isWrapOrUnWrap.value.isWrap || isWrapOrUnWrap.value.isUnWrap) {
+        handleWrap()
+        return
+      }
+
       if (stepSwap.value === 'SELECT_TOKEN') {
         stepSwap.value = 'CONFIRM_SWAP'
         return
@@ -871,6 +927,57 @@
     const allowance = new Decimal(allowance0.value?.toString() || '0').div(10 ** +form.value.token0.decimals)
     return allowance0.value === BigInt(0) || allowance.lessThan(form.value.amountIn || 0)
   })
+
+  const handleWrap = async () => {
+    try {
+      isSwapping.value = true
+      const contractAddress = WNATIVE[currentNetwork.value.chainId].address
+      const amount = BigInt(Number(form.value.amountIn) * 10 ** Number(form.value.token0.decimals))
+
+      const functionName = isWrapOrUnWrap.value.isWrap ? 'deposit' : 'withdraw'
+      const params = isWrapOrUnWrap.value.isWrap ? [] : [amount]
+      const value = isWrapOrUnWrap.value.isWrap ? amount : BigInt(0)
+      const txhash = await sendTransaction(config, {
+        to: contractAddress,
+        data: encodeFunctionData({
+          abi: CONTRACT_TOKEN,
+          functionName,
+          args: params
+        }),
+        value
+      })
+      const { status } = await waitForTransactionReceipt(config, {
+        chainId: currentNetwork.value.chainId,
+        hash: txhash,
+        pollingInterval: 2000
+      })
+
+      if (status === 'success') {
+        showToastMsg(
+          isWrapOrUnWrap.value.isWrap ? 'Wrap successful' : 'Unwrap successful',
+          'success',
+          getUrlScan(currentNetwork.value.chainId, 'tx', txhash),
+          currentNetwork.value.chainId
+        )
+        refetchBalance0()
+        refetchBalance1()
+        postTx(txhash, contractAddress)
+      } else {
+        showToastMsg(
+          isWrapOrUnWrap.value.isWrap ? 'Wrap failed' : 'Unwrap failed',
+          'error',
+          getUrlScan(currentNetwork.value.chainId, 'tx', txhash),
+          currentNetwork.value.chainId
+        )
+      }
+      form.value.amountIn = ''
+      form.value.amountOut = ''
+      isSwapping.value = false
+    } catch (error) {
+      showToastMsg(isWrapOrUnWrap.value.isWrap ? 'Wrap failed' : 'Unwrap failed', 'error')
+      isSwapping.value = false
+    }
+  }
 
   const swap = async () => {
     try {
