@@ -9,11 +9,15 @@
       <div class="flex flex-col gap-4">
         <div class="text-sm font-semibold">
           <span
-            >Combined APR: <span class="text-hyperlink">{{ combinedApr }}%</span></span
+            >Combined APR: <span class="text-hyperlink">{{ formatNumber(combinedApr) }}%</span></span
           >
           <ul class="list-disc pl-4">
-            <li>Farm APR: <span class="text-hyperlink">16.70% 8.35%</span></li>
-            <li>LP Fee APR: <span class="text-hyperlink">16.70%</span></li>
+            <li>
+              Farm APR: <span class="text-hyperlink">{{ formatNumber(farmApr.toFixed(2)) }}% {{ formatNumber(oldFarmApr.toFixed(2)) }}%</span>
+            </li>
+            <li>
+              LP Fee APR: <span class="text-hyperlink">{{ formatNumber(lpFeeApr.toFixed(2)) }}%</span>
+            </li>
           </ul>
         </div>
         <span

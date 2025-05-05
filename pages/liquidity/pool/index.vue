@@ -222,9 +222,11 @@
           quoteQtty: data.quoteqtty,
           tvl: data.tvl,
           volume24h: data.volume24h,
-          feeApr: data.feeapr,
-          rewardApr: data.rewardapr,
-          liquidity: data.liquidity
+          feeApr: data.feeapr ?? 0,
+          rewardApr: data.rewardapr ?? 0,
+          liquidity: data.liquidity,
+          lastApr: data.lastapr ?? 0,
+          totalApr: data.totalapr ?? 0
         }
       })
     }

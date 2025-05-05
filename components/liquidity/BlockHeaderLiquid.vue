@@ -47,10 +47,12 @@
           <BaseIcon name="calculator" size="18" />
           <span>APR</span>
         </div>
-        <span class="text-xl">
-          <span class="font-semibold text-[#049C6B]">{{ formatNumber((Number(pool.feeApr || 0) + Number(pool.rewardApr || 0)).toFixed(2)) }}% </span>
-          <!-- {{ formatNumber((pool.rewardApr || 0).toFixed(2)) }}% -->
-        </span>
+        <AprView :farm-apr="pool.rewardApr" :lp-fee-apr="pool.feeApr" :old-farm-apr="pool.lastApr">
+          <span class="text-xl">
+            <span class="font-semibold text-[#049C6B]">{{ formatNumber((Number(pool.feeApr || 0) + Number(pool.rewardApr || 0)).toFixed(2)) }}% </span>
+            {{ formatNumber((pool.lastApr || 0).toFixed(2)) }}%
+          </span>
+        </AprView>
       </div>
     </div>
   </div>

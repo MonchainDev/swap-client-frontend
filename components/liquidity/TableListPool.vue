@@ -24,10 +24,12 @@
     </ElTableColumn>
     <ElTableColumn label="APR">
       <template #default="{ row }">
-        <div class="text-sm text-[#049C6B]">
-          Up to {{ (Number(row.feeApr ?? 0) + Number(row.rewardApr ?? 0)).toFixed(2) }}%
-          <!-- <span class="text-gray-6"> {{ row.rewardApr }}%</span> -->
-        </div>
+        <AprView :farm-apr="row.rewardApr" :lp-fee-apr="row.feeApr" :old-farm-apr="row.lastApr">
+          <div class="text-sm text-[#049C6B]">
+            Up to {{ formatNumber((Number(row.feeApr ?? 0) + Number(row.rewardApr ?? 0)).toFixed(2)) }}%
+            <span class="text-gray-6"> {{ formatNumber(row.lastApr.toFixed(2)) }}%</span>
+          </div>
+        </AprView>
       </template>
     </ElTableColumn>
     <ElTableColumn label="TVL" align="right">
