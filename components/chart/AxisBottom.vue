@@ -48,7 +48,7 @@
   }
 
   .styled-group :deep(text) {
-    color: red;
+    color: #0a0b0d;
     transform: translateY(5px);
   }
 </style>

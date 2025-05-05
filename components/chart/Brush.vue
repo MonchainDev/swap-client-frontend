@@ -106,7 +106,7 @@
   const emit = defineEmits(['update:brushExtent'])
 
   const brushRef = ref<SVGGElement | null>(null)
-  let brushBehavior: BrushBehavior<SVGGElement> | null = null
+  const brushBehavior = ref<BrushBehavior<SVGGElement> | null>(null)
 
   // States
   const localBrushExtent = ref<[number, number] | null>(props.brushExtent)
@@ -114,7 +114,7 @@
   const hovering = ref(false)
 
   // Get previous value using our converted hook
-  const previousBrushExtent = usePreviousValue(props.brushExtent)
+  // const previousBrushExtent = usePreviousValue(props.brushExtent)
 
   // Constants
   const FLIP_HANDLE_THRESHOLD_PX = 20
@@ -234,7 +234,7 @@
     nextTick(() => {
       if (!brushRef.value) return
 
-      brushBehavior = brushX<SVGGElement>()
+      brushBehavior.value = brushX<SVGGElement>()
         .extent([
           [Math.max(0 + BRUSH_EXTENT_MARGIN_PX, props.xScale(0)), 0],
           [props.innerWidth - BRUSH_EXTENT_MARGIN_PX, props.innerHeight]
@@ -243,13 +243,17 @@
         .filter(() => props.interactive)
         .on('brush end', brushed)
 
-      brushBehavior(select(brushRef.value))
+      brushBehavior.value(select(brushRef.value))
 
-      if (previousBrushExtent.value && compare(props.brushExtent, previousBrushExtent.value, props.xScale)) {
-        select(brushRef.value)
-          .transition()
-          .call(brushBehavior.move as any, props.brushExtent.map(props.xScale))
-      }
+      // if (previousBrushExtent.value && compare(props.brushExtent, previousBrushExtent.value, props.xScale)) {
+      //   select(brushRef.value)
+      //     .transition()
+      //     .call(brushBehavior.value.move as any, props.brushExtent.map(props.xScale))
+      // }
+
+      select(brushRef.value)
+        .transition()
+        .call(brushBehavior.value.move as any, props.brushExtent.map(props.xScale))
 
       // brush linear gradient
       select(brushRef.value)
@@ -266,14 +270,14 @@
     () => [props.xScale, props.brushExtent, props.innerWidth, props.innerHeight],
     () => {
       nextTick(() => {
-        if (!brushRef.value || !brushBehavior) return
+        if (!brushRef.value || !brushBehavior.value) return
 
-        brushBehavior.extent([
+        brushBehavior.value.extent([
           [Math.max(0 + BRUSH_EXTENT_MARGIN_PX, props.xScale(0)), 0],
           [props.innerWidth - BRUSH_EXTENT_MARGIN_PX, props.innerHeight]
         ])
 
-        brushBehavior.move(select(brushRef.value) as any, props.brushExtent.map(props.xScale) as any)
+        brushBehavior.value.move(select(brushRef.value) as any, props.brushExtent.map(props.xScale) as any)
       })
     },
     { deep: true }
