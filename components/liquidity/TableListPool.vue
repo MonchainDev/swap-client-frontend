@@ -22,7 +22,19 @@
         <div class="mx-auto flex h-8 w-[55px] items-center justify-center rounded-md bg-[#F5F5F5] text-sm font-semibold">{{ row.fee / 10000 }}%</div>
       </template>
     </ElTableColumn>
-    <ElTableColumn label="APR">
+    <ElTableColumn>
+      <template #header>
+        <div class="flex items-center gap-1">
+          <span>APR</span>
+          <BaseIcon
+            name="arrow-down-bold"
+            size="18"
+            class="cursor-pointer"
+            :class="{ 'text-primary': sort?.orderBy === 'totalApr' }"
+            @click="handleSort('totalApr')"
+          />
+        </div>
+      </template>
       <template #default="{ row }">
         <AprView :farm-apr="row.rewardApr" :lp-fee-apr="row.feeApr" :old-farm-apr="row.lastApr">
           <div class="text-sm text-[#049C6B]">
@@ -33,11 +45,29 @@
       </template>
     </ElTableColumn>
     <ElTableColumn label="TVL" align="right">
+      <template #header>
+        <div class="flex items-center justify-end gap-1">
+          <span>TVL</span>
+          <BaseIcon name="arrow-down-bold" size="18" class="cursor-pointer" :class="{ 'text-primary': sort?.orderBy === 'tvl' }" @click="handleSort('tvl')" />
+        </div>
+      </template>
       <template #default="{ row }">
         <span class="text-sm">${{ formatDollar(row.tvl) }}</span>
       </template>
     </ElTableColumn>
     <ElTableColumn label="Volume 24h" align="right">
+      <template #header>
+        <div class="flex items-center justify-end gap-1">
+          <span>Volume 24h</span>
+          <BaseIcon
+            name="arrow-down-bold"
+            size="18"
+            class="cursor-pointer"
+            :class="{ 'text-primary': sort?.orderBy === 'volume24h' }"
+            @click="handleSort('volume24h')"
+          />
+        </div>
+      </template>
       <template #default="{ row }">
         <span class="text-sm">${{ formatDollar(row.volume24h) }}</span>
       </template>
@@ -75,6 +105,7 @@
 <script lang="ts" setup>
   import { useAccount } from '@wagmi/vue'
   import { LIST_NETWORK } from '~/config/networks'
+  import type { SortPool } from '~/pages/liquidity/pool/index.vue'
   import type { IPool } from '~/types/pool.type'
 
   interface IProps {
@@ -87,6 +118,8 @@
     loading: false
   })
 
+  const sort = defineModel<SortPool | null>('sort', { default: null })
+
   const { setOpenPopup } = useBaseStore()
   const { isConnected } = useAccount()
 
@@ -97,6 +130,14 @@
   const formatDollar = (tvl: number | string) => {
     const value = parseFloat(tvl.toString()) >= 1 ? parseFloat(tvl.toString()).toFixed(2) : tvl
     return formatNumberAbbreviation(+value)
+  }
+
+  const handleSort = (type: 'totalApr' | 'tvl' | 'volume24h') => {
+    if (sort.value === null || sort.value.orderBy !== type) {
+      sort.value = { orderBy: type, direction: 'DESC' }
+    } else {
+      sort.value = null
+    }
   }
 </script>
 
