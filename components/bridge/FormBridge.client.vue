@@ -328,12 +328,12 @@
 
   async function handleSelectFromNetwork() {
     useBridgeStore().resetStore()
-    if (fromNetwork.value.network === 'MON' && tokenDefault.value) {
+    if (fromNetwork.value.network === 'WIC' && tokenDefault.value) {
       form.value.token = tokenDefault.value
     } else {
       form.value.token = {} as IToken
     }
-    if (!form.value.token || form.value.token.tokenSymbol !== 'MON') {
+    if (!form.value.token || form.value.token.tokenSymbol !== 'WIC') {
       balance0.value = 0
     }
     restoreFee()
@@ -347,12 +347,12 @@
     // ElMessage.success(`Switch to ${fromNetwork.value.network}`)
     useBridgeStore().resetStore()
     switchChain({ chainId: fromNetwork.value?.chainId })
-    if (fromNetwork.value.network === 'MON' && tokenDefault.value) {
+    if (fromNetwork.value.network === 'WIC' && tokenDefault.value) {
       form.value.token = tokenDefault.value
     } else {
       form.value.token = {} as IToken
     }
-    if (!form.value.token || form.value.token.tokenSymbol !== 'MON') balance0.value = 0
+    if (!form.value.token || form.value.token.tokenSymbol !== 'WIC') balance0.value = 0
     form.value.amount = ''
     amountOut.value = ''
     restoreFee()

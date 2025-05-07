@@ -3,8 +3,8 @@ import { ChainId } from '~/types'
 
 /** Token reward  */
 export const TOKEN_REWARDS = {
-  [ChainId.BSC_TESTNET]: new ERC20Token(ChainId.BSC_TESTNET, '0x0BEcA28adA7314Ff85E95a79CDAFd0513e2A7369', 18, 'ORB', 'ORB', ''),
-  [ChainId.MON_TESTNET]: new ERC20Token(ChainId.MON_TESTNET, '0x3b9547e5b66Fd8dB8b3119575f7d809C4DcE6243', 18, 'ORB', 'ORB', ''),
+  [ChainId.BSC_TESTNET]: new ERC20Token(ChainId.BSC_TESTNET, '0xcdf534f32f1465d837df3c88422bdec201db4421', 18, 'WICS', 'WICS', ''),
+  [ChainId.MON_TESTNET]: new ERC20Token(ChainId.MON_TESTNET, '0xc0c43f1b30bda78e319e6deac2dbeede37a51763', 18, 'WICS', 'WICS', ''),
   [ChainId.SEPOLIA]: null,
   [ChainId.AMOY_POLYGON]: null,
   [ChainId.ARBITRUM_SEPOLIA]: null
@@ -17,7 +17,7 @@ export const WPOL = {
 
 /** Wrapped native in ethereum  */
 export const WETH9 = {
-  [ChainId.BSC_TESTNET]: new ERC20Token(ChainId.BSC_TESTNET, '0xE7bCB9e341D546b66a46298f4893f5650a56e99E', 18, 'ETH', 'ETH', 'https://ethereum.org'),
+  [ChainId.BSC_TESTNET]: new ERC20Token(ChainId.BSC_TESTNET, '0xecd4b9b3415803cdd9dd87b7c9e24d38265ba08d', 18, 'ETH', 'ETH', 'https://ethereum.org'),
   [ChainId.SEPOLIA]: new ERC20Token(ChainId.SEPOLIA, '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14', 18, 'WETH', 'Wrapped Ether', 'https://weth.io'),
   [ChainId.ARBITRUM_SEPOLIA]: new ERC20Token(
     ChainId.ARBITRUM_SEPOLIA,
@@ -31,7 +31,7 @@ export const WETH9 = {
 
 /** Wrapped native in binance  */
 export const WBNB = {
-  [ChainId.BSC_TESTNET]: new ERC20Token(ChainId.BSC_TESTNET, '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd', 18, 'WBNB', 'Wrapped BNB', 'https://www.binance.org')
+  [ChainId.BSC_TESTNET]: new ERC20Token(ChainId.BSC_TESTNET, '0x6db269c54624763b55551840fee0f1fac84d1bf2', 18, 'WBNB', 'Wrapped BNB', 'https://www.binance.org')
 }
 
 /**
@@ -41,7 +41,7 @@ export const WBNB = {
 
 /** Wrapped native in mon  */
 export const WMON = {
-  [ChainId.MON_TESTNET]: new ERC20Token(ChainId.MON_TESTNET, '0xBbDc62F288da79D0195f219cd4AF0a1a6906935F', 18, 'WMON', 'Wrapped MON', '')
+  [ChainId.MON_TESTNET]: new ERC20Token(ChainId.MON_TESTNET, '0x0b04e73c7451489e4b4943d5e35b7c529223191f', 18, 'WWIC', 'Wrapped WIC', '')
 }
 
 /**
@@ -62,8 +62,8 @@ export const NATIVE = {
     decimals: 18
   },
   [ChainId.MON_TESTNET]: {
-    name: 'MON',
-    symbol: 'MON',
+    name: 'WIC',
+    symbol: 'WIC',
     decimals: 18
   },
   [ChainId.SEPOLIA]: {

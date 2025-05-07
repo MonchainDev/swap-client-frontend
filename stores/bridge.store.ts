@@ -171,8 +171,8 @@ export const useBridgeStore = defineStore('bridge', () => {
           }))
         : []
       if (!hasSetDefaultToken.value && listTokenFrom.value.length) {
-        tokenDefault.value = listTokenFrom.value.find((item) => item?.symbol === 'MON') as IToken
-        if (tokenDefault.value && fromNetwork.value.network === 'MON') {
+        tokenDefault.value = listTokenFrom.value.find((item) => item?.symbol === 'WIC') as IToken
+        if (tokenDefault.value && fromNetwork.value.network === 'WIC') {
           form.value.token = tokenDefault.value
           hasSetDefaultToken.value = true
         } else {
@@ -190,7 +190,7 @@ export const useBridgeStore = defineStore('bridge', () => {
   const { data: _listNetworkRs } = useFetch<INetwork[]>('/api/network/all', {
     onResponse({ response: { _data } }) {
       listNetwork.value = _data || []
-      const networkFrom = listNetwork.value.find((item) => item.network === 'MON')
+      const networkFrom = listNetwork.value.find((item) => item.network === 'WIC')
       const networkTo = listNetwork.value.find((item) => item.network === 'BSC')
       if (networkFrom) {
         fromNetwork.value = { ...networkFrom, logo: '/logo-mon-chain.png' }

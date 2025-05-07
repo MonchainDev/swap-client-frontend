@@ -4,15 +4,15 @@ import { URL_GRAPH } from './graphql'
 import { PUBLIC_NODES } from './nodes'
 
 const DEFAULT_NETWORK: INetwork = {
-  name: 'Mon Chain',
+  name: 'Wic Chain',
   logo: '/logo-mon-chain.png',
   chainId: ChainId.MON_TESTNET,
   id: 1,
-  network: 'MON',
+  network: 'WIC',
   rpc: PUBLIC_NODES[ChainId.MON_TESTNET][0],
   graphUrl: URL_GRAPH[ChainId.MON_TESTNET],
-  nativeToken: 'MON',
-  wrapToken: 'WMON',
+  nativeToken: 'WIC',
+  wrapToken: 'WWIC',
   wrapTokenAddress: WNATIVE[ChainId.MON_TESTNET].address,
   stableTokenAddress: '0x8071be23b8946dd6a9914f3d6d3ab8938241671f',
   lifiContractAddress: null

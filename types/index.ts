@@ -37,7 +37,7 @@ export interface INetwork {
 
 export enum ChainId {
   BSC_TESTNET = 97,
-  MON_TESTNET = 16789,
+  MON_TESTNET = 6689,
   SEPOLIA = 11155111,
   ARBITRUM_SEPOLIA = 421614,
   AMOY_POLYGON = 80002

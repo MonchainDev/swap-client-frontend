@@ -1,7 +1,7 @@
 import { ChainId } from '~/types'
 
 const DOMAIN_SCAN = {
-  [ChainId.MON_TESTNET]: 'https://dev.explorer.monchain.info',
+  [ChainId.MON_TESTNET]: 'https://testnet.wicscan.com',
   [ChainId.AMOY_POLYGON]: 'https://amoy.polygonscan.com',
   [ChainId.BSC_TESTNET]: 'https://testnet.bscscan.com',
   [ChainId.SEPOLIA]: 'https://sepolia.etherscan.io',
