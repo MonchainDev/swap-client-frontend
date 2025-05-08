@@ -51,9 +51,9 @@ const masterChefV3Addresses = {
 
 /** Swap Router V3 */
 const swapRouterV3Addresses = {
-  [ChainId.MON_TESTNET]: '0x840798d4b7276b698beea9f7e70cc9b77d75b0d7',
+  [ChainId.MON_TESTNET]: '0x64b6ac9548851b2c7e718fb9fa6c1f5245304872',
   [ChainId.AMOY_POLYGON]: '0x',
-  [ChainId.BSC_TESTNET]: '0x65c7089cf3e52ed0d2c50855db376f1d39391568',
+  [ChainId.BSC_TESTNET]: '0xd561850fe9c894b6651bb560302669c5eafa5e59',
   [ChainId.SEPOLIA]: '0x',
   [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<ChainId, string>
