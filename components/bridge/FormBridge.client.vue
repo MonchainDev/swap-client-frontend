@@ -814,8 +814,19 @@
 
       // Nếu trường hợp FROM là đồng Native thì mới truyền amount vào value
       // Nếu không thì truyền 0
-      const value = token0.value?.address === zeroAddress ? BigInt(Number(form.value.amount) * 10 ** +token0.value.decimals) : BigInt(0)
+      const value =
+        token0.value?.address === zeroAddress
+          ? BigInt(
+              Decimal(form.value.amount)
+                .mul(10 ** +token0.value.decimals)
+                .toString()
+            )
+          : BigInt(0)
+      console.log('>>> / value:', value)
       const valueWithFee = BigInt(value.toString()) + BigInt(swapResult.data.feeNetwork)
+      console.log('>>> / valueWithFee:', valueWithFee)
+      console.log('>>> / value:', value)
+      console.log('>>> / feeNetwork:', swapResult.data.feeNetwork)
 
       const txHash = await sendTransaction(config, {
         to: getLifiContractAddress(),
