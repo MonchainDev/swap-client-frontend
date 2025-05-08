@@ -14,7 +14,7 @@ const DEFAULT_NETWORK: INetwork = {
   nativeToken: 'WIC',
   wrapToken: 'WWIC',
   wrapTokenAddress: WNATIVE[ChainId.MON_TESTNET].address,
-  stableTokenAddress: '0x8071be23b8946dd6a9914f3d6d3ab8938241671f',
+  stableTokenAddress: '0x918c253656a45246a92f0472f1705b3c862c1009',
   lifiContractAddress: null
 }
 
@@ -31,7 +31,7 @@ const LIST_NETWORK: INetwork[] = [
     nativeToken: 'BNB',
     wrapToken: 'WBNB',
     wrapTokenAddress: WNATIVE[ChainId.BSC_TESTNET].address,
-    stableTokenAddress: '0x2a4b180da0a45a5ae65f230c228de0d4de0b7057',
+    stableTokenAddress: '0x0499d26af2ee09c29f1f56115c0da797b90da15c',
     lifiContractAddress: null
   },
   {
@@ -79,7 +79,7 @@ const LIST_NETWORK: INetwork[] = [
 ]
 
 const NETWORK_NAMES: Record<ChainId, string> = {
-  [ChainId.MON_TESTNET]: 'Mon Chain',
+  [ChainId.MON_TESTNET]: 'WIC Chain',
   [ChainId.BSC_TESTNET]: 'BNB Chain',
   [ChainId.SEPOLIA]: 'Ethereum',
   [ChainId.AMOY_POLYGON]: 'Polygon',

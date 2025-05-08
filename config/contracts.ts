@@ -69,7 +69,11 @@ const lifiContractAddresses = {
 
 /** multicall3 */
 const multicall3Addresses = {
-  [ChainId.MON_TESTNET]: '0xf2f66b104bdd06707103d444af9408b02828f392'
+  [ChainId.MON_TESTNET]: '0xf2f66b104bdd06707103d444af9408b02828f392',
+  [ChainId.AMOY_POLYGON]: '0x',
+  [ChainId.BSC_TESTNET]: '0x8d46c214b4d04ca4299178905f8710dd5f3c7c8c',
+  [ChainId.SEPOLIA]: '0x',
+  [ChainId.ARBITRUM_SEPOLIA]: '0x'
 } as const satisfies Record<number, `0x${string}`>
 
 export default {
