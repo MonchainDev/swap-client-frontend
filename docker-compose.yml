@@ -10,5 +10,7 @@ services:
       - "2088:2088"
     environment:
       NODE_ENV: production
+    env_file:
+      - .env
     command: ["node", ".output/server/index.mjs"]
     restart: unless-stopped
