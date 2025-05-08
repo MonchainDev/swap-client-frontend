@@ -1,4 +1,4 @@
-import { ChainId, chainNames } from '@monchain/chains'
+import { ChainId, chainNames } from '@wicchain/chains'
 import memoize from 'lodash/memoize'
 import {
   type Chain,

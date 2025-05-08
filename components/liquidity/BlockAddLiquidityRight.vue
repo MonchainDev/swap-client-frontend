@@ -117,7 +117,7 @@
   import { ZOOM_LEVELS } from '~/constant/zoom-level'
   import { Bound, CurrencyField, type ZoomLevels } from '~/types'
 
-  import { priceToClosestTick } from '@monchain/v3-sdk'
+  import { priceToClosestTick } from '@wicchain/v3-sdk'
   import Decimal from 'decimal.js'
   import { FeeAmount } from '~/constant/fee'
   import type { TYPE_SWAP } from '~/types/swap.type'

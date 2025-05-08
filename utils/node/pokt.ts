@@ -1,4 +1,4 @@
-import { ChainId } from '@monchain/chains'
+import { ChainId } from '@wicchain/chains'
 
 const pocketPrefix = {
   [ChainId.ARBITRUM_ONE]: 'arbitrum-one',

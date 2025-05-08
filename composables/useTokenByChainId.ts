@@ -1,4 +1,4 @@
-import { ERC20Token } from '@monchain/swap-sdk-evm'
+import { ERC20Token } from '@wicchain/swap-sdk-evm'
 import { useReadContract } from '@wagmi/vue'
 
 import type { Abi } from 'viem'

@@ -1,4 +1,4 @@
-import type { Currency, CurrencyAmount, Price } from '@monchain/sdk'
+import type { Currency, CurrencyAmount, Price } from '@wicchain/sdk'
 
 interface FormatLocaleNumberArgs {
   number: CurrencyAmount<Currency> | Price<Currency, Currency> | number

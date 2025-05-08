@@ -1,5 +1,5 @@
-import type { Percent, Token } from '@monchain/sdk'
-import { validateAndParseAddress } from '@monchain/sdk'
+import type { Percent, Token } from '@wicchain/sdk'
+import { validateAndParseAddress } from '@wicchain/sdk'
 import type { Address } from 'viem'
 import { encodeFunctionData } from 'viem'
 import peripheryPaymentsWithFeeABI from '@/constant/abi/peripheryPaymentsWithFeeABI.json'

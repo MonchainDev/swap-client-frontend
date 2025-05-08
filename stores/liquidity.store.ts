@@ -1,6 +1,6 @@
 import ABI_TOKEN from '@/constant/contract/contract-token.json'
-import type { Price, Token } from '@monchain/swap-sdk-core'
-import type { Position } from '@monchain/v3-sdk'
+import type { Price, Token } from '@wicchain/swap-sdk-core'
+import type { Position } from '@wicchain/v3-sdk'
 import { useQuery } from '@tanstack/vue-query'
 import { useAccount, useBalance, useReadContract } from '@wagmi/vue'
 import Decimal from 'decimal.js'

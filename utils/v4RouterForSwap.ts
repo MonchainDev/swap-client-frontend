@@ -1,6 +1,6 @@
-import { Percent } from '@monchain/sdk'
-import { PoolType, V4Router, type Route, type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
-import { CurrencyAmount, TradeType, type Currency, type Token } from '@monchain/swap-sdk-core'
+import { Percent } from '@wicchain/sdk'
+import { PoolType, V4Router, type Route, type SmartRouterTrade, type V3Pool } from '@wicchain/smart-router'
+import { CurrencyAmount, TradeType, type Currency, type Token } from '@wicchain/swap-sdk-core'
 import { Decimal } from 'decimal.js'
 import type { PublicClient } from 'viem'
 

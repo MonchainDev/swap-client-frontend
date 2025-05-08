@@ -1,6 +1,6 @@
 import invariant from 'tiny-invariant'
-import type { Currency, Token } from '@monchain/swap-sdk-core'
-import { NativeCurrency } from '@monchain/swap-sdk-core'
+import type { Currency, Token } from '@wicchain/swap-sdk-core'
+import { NativeCurrency } from '@wicchain/swap-sdk-core'
 import { NATIVE, WNATIVE } from '~/config/tokens'
 
 export class Native extends NativeCurrency {

@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts" setup>
-  import type { Token } from '@monchain/swap-sdk-core'
+  import type { Token } from '@wicchain/swap-sdk-core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
   import type { TYPE_SWAP } from '~/types/swap.type'

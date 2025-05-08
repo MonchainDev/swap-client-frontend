@@ -1,10 +1,10 @@
-import type { Token, InsufficientReservesError, InsufficientInputAmountError, Currency as TokenCurrency, Currency } from '@monchain/sdk'
-import { CurrencyAmount, Fraction, Percent, Price, sortedInsert, TradeType } from '@monchain/sdk'
+import type { Token, InsufficientReservesError, InsufficientInputAmountError, Currency as TokenCurrency, Currency } from '@wicchain/sdk'
+import { CurrencyAmount, Fraction, Percent, Price, sortedInsert, TradeType } from '@wicchain/sdk'
 
-import type { FeeAmount } from '@monchain/v3-sdk'
-import { LiquidityMath, Pool as PoolOld, SwapMath, TICK_SPACINGS, TickListDataProvider, TickMath } from '@monchain/v3-sdk'
+import type { FeeAmount } from '@wicchain/v3-sdk'
+import { LiquidityMath, Pool as PoolOld, SwapMath, TICK_SPACINGS, TickListDataProvider, TickMath } from '@wicchain/v3-sdk'
 
-import { PoolType, type V3Pool } from '@monchain/smart-router'
+import { PoolType, type V3Pool } from '@wicchain/smart-router'
 import invariant from 'tiny-invariant'
 import { RouteV3 } from './routeV3'
 

@@ -1,5 +1,5 @@
-import type { Currency, CurrencyAmount, Price } from '@monchain/sdk'
-import { Fraction } from '@monchain/sdk'
+import type { Currency, CurrencyAmount, Price } from '@wicchain/sdk'
+import { Fraction } from '@wicchain/sdk'
 
 export function formatCurrencyAmount(amount: CurrencyAmount<Currency> | undefined, sigFigs: number, locale: string, fixedDecimals?: number): string {
   if (!amount) {

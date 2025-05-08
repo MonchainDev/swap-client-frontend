@@ -1,5 +1,5 @@
-import type { BigintIsh, Currency, Token } from '@monchain/swap-sdk-core'
-import { nearestUsableTick, Pool, Position, TICK_SPACINGS, TickMath, type FeeAmount } from '@monchain/v3-sdk'
+import type { BigintIsh, Currency, Token } from '@wicchain/swap-sdk-core'
+import { nearestUsableTick, Pool, Position, TICK_SPACINGS, TickMath, type FeeAmount } from '@wicchain/v3-sdk'
 import { useQuery } from '@tanstack/vue-query'
 import type { Address } from 'viem'
 import v3PoolStateABI from '~/constant/abi/v3PoolStateABI.json'

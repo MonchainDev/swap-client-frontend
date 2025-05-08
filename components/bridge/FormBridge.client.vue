@@ -171,8 +171,8 @@
   // import HeaderFormSwap from './HeaderFormSwap.vue'
   // import { SwapRouter, type SwapOptions } from '~/composables/swapRouter'
   // import { CONTRACT_ADDRESS, MAX_NUMBER_APPROVE } from '~/constant/contract'
-  import { type Route, type V3Pool } from '@monchain/smart-router'
-  import { Token, TradeType } from '@monchain/swap-sdk-core'
+  import { type Route, type V3Pool } from '@wicchain/smart-router'
+  import { Token, TradeType } from '@wicchain/swap-sdk-core'
   import Decimal from 'decimal.js'
   // import swapRouterABI from "~/constant/abi/swapRouter.json";
   import { EXPLORER_NAME, URL_SCAN } from '~/config/scan'

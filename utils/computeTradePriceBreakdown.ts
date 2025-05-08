@@ -1,6 +1,6 @@
-import { type SmartRouterTrade, type Route, SmartRouter } from '@monchain/smart-router'
-import { CurrencyAmount, Fraction, Percent, type Currency, type TradeType } from '@monchain/swap-sdk-core'
-import type { FeeAmount } from '@monchain/v3-sdk'
+import { type SmartRouterTrade, type Route, SmartRouter } from '@wicchain/smart-router'
+import { CurrencyAmount, Fraction, Percent, type Currency, type TradeType } from '@wicchain/swap-sdk-core'
+import type { FeeAmount } from '@wicchain/v3-sdk'
 
 type TradeEssentialForPriceBreakdown = Pick<SmartRouterTrade<TradeType>, 'inputAmount' | 'outputAmount'> & {
   routes: Pick<Route, 'percent' | 'pools' | 'path' | 'inputAmount'>[]

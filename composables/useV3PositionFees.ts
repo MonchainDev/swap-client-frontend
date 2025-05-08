@@ -1,6 +1,6 @@
 import addresses from '@/config/contracts'
-import { CurrencyAmount } from '@monchain/swap-sdk-core'
-import type { Pool } from '@monchain/v3-sdk'
+import { CurrencyAmount } from '@wicchain/swap-sdk-core'
+import type { Pool } from '@wicchain/v3-sdk'
 import { useBlockNumber, useReadContract } from '@wagmi/vue'
 import type { Abi, Address } from 'viem'
 import nonfungiblePositionManagerABI from '~/constant/abi/nonfungiblePositionManagerABI.json'

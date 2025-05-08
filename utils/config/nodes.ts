@@ -1,4 +1,4 @@
-import { ChainId } from '@monchain/chains'
+import { ChainId } from '@wicchain/chains'
 import {
   arbitrum,
   arbitrumGoerli,

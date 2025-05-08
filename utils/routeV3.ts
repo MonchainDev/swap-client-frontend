@@ -1,8 +1,8 @@
 import invariant from 'tiny-invariant'
 
-import { Price } from '@monchain/sdk'
-import type { V3Pool } from '@monchain/smart-router'
-import { type Currency as TokenCurrency } from '@monchain/swap-sdk-core'
+import { Price } from '@wicchain/sdk'
+import type { V3Pool } from '@wicchain/smart-router'
+import { type Currency as TokenCurrency } from '@wicchain/swap-sdk-core'
 
 /**
  * Represents a list of pools through which a swap can occur

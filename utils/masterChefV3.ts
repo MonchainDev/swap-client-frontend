@@ -1,13 +1,13 @@
 import type { Hex } from 'viem'
 import { encodeFunctionData, toHex } from 'viem'
-import type { BigintIsh, Token } from '@monchain/sdk'
-import { CurrencyAmount, ONE, validateAndParseAddress, ZERO } from '@monchain/sdk'
+import type { BigintIsh, Token } from '@wicchain/sdk'
+import { CurrencyAmount, ONE, validateAndParseAddress, ZERO } from '@wicchain/sdk'
 import invariant from 'tiny-invariant'
 import masterChefV3ABI from '@/constant/abi/masterChefV3.json'
 
 import { type CollectOptions, type AddLiquidityOptions, isMint, MaxUint128, type RemoveLiquidityOptions } from './nonfungiblePositionManager'
 import { Payments } from './payments'
-import { Multicall, Position, SelfPermit, type MethodParameters } from '@monchain/v3-sdk'
+import { Multicall, Position, SelfPermit, type MethodParameters } from '@wicchain/v3-sdk'
 
 interface WidthDrawOptions {
   tokenId: BigintIsh

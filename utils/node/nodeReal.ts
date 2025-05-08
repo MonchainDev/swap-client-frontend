@@ -1,4 +1,4 @@
-import { ChainId } from '@monchain/chains'
+import { ChainId } from '@wicchain/chains'
 
 export const getNodeRealUrl = (chainId: number, key?: string) => {
   let host: string | null = null

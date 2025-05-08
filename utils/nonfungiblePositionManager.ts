@@ -1,11 +1,11 @@
-import type { BigintIsh, Currency, NativeCurrency, Percent, Token } from '@monchain/sdk'
-import { CurrencyAmount, ONE, validateAndParseAddress, ZERO } from '@monchain/sdk'
+import type { BigintIsh, Currency, NativeCurrency, Percent, Token } from '@wicchain/sdk'
+import { CurrencyAmount, ONE, validateAndParseAddress, ZERO } from '@wicchain/sdk'
 import type { Address, Hex } from 'viem'
 import { encodeFunctionData, toHex } from 'viem'
 
 import nonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
 
-import { ADDRESS_ZERO, Multicall, Position, SelfPermit, type MethodParameters, type PermitOptions, type Pool } from '@monchain/v3-sdk'
+import { ADDRESS_ZERO, Multicall, Position, SelfPermit, type MethodParameters, type PermitOptions, type Pool } from '@wicchain/v3-sdk'
 import invariant from 'tiny-invariant'
 import { Payments } from './payments'
 

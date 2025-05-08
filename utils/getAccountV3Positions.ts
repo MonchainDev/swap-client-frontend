@@ -1,4 +1,4 @@
-import { nonfungiblePositionManagerABI } from '@monchain/v3-sdk'
+import { nonfungiblePositionManagerABI } from '@wicchain/v3-sdk'
 import Decimal from 'decimal.js'
 import { getContract as viemGetContract, type Abi, type Address, type GetContractReturnType, type PublicClient, type WalletClient } from 'viem'
 import masterChefV3ABI from '~/constant/abi/masterChefV3.json'

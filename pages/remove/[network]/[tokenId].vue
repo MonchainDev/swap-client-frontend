@@ -149,13 +149,13 @@
 </template>
 
 <script lang="ts" setup>
-  import { CurrencyAmount, Percent } from '@monchain/swap-sdk-core'
+  import { CurrencyAmount, Percent } from '@wicchain/swap-sdk-core'
   import { sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import { hexToBigInt } from 'viem'
   import { config } from '~/config/wagmi'
   import { BIPS_BASE } from '~/constant'
-  // import { NonfungiblePositionManager } from '@monchain/v3-sdk'
+  // import { NonfungiblePositionManager } from '@wicchain/v3-sdk'
   import Decimal from 'decimal.js'
   import { WNATIVE } from '~/config/tokens'
   import type { IBodyTxCollect } from '~/types/encrypt.type'

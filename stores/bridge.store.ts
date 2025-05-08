@@ -1,4 +1,4 @@
-import { Token } from '@monchain/swap-sdk-core'
+import { Token } from '@wicchain/swap-sdk-core'
 import { getBalance } from '@wagmi/core'
 import { useAccount, useBalance, useConfig, useReadContract, useSwitchChain } from '@wagmi/vue'
 import Decimal from 'decimal.js'

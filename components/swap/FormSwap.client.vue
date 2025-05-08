@@ -102,8 +102,8 @@
 </template>
 
 <script lang="ts" setup>
-  import { type SmartRouterTrade, type V3Pool } from '@monchain/smart-router'
-  import { TradeType } from '@monchain/swap-sdk-core'
+  import { type SmartRouterTrade, type V3Pool } from '@wicchain/smart-router'
+  import { TradeType } from '@wicchain/swap-sdk-core'
   import { estimateGas, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'

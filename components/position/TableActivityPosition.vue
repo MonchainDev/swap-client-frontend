@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts" setup>
-  import type { Token } from '@monchain/swap-sdk-core'
+  import type { Token } from '@wicchain/swap-sdk-core'
   import type { ITx } from '~/pages/liquidity/[network]/[tokenId].vue'
 
   const enum TabValue {

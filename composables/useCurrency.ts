@@ -1,4 +1,4 @@
-import { ERC20Token } from '@monchain/sdk'
+import { ERC20Token } from '@wicchain/sdk'
 import type { UnsafeCurrency } from '~/types/currency.type'
 
 export const zeroAddress = '0x0000000000000000000000000000000000000000' as const

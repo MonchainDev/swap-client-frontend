@@ -85,8 +85,8 @@
 
 <script lang="ts" setup>
   import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
-  import type { Currency } from '@monchain/swap-sdk-core'
-  import type { Position } from '@monchain/v3-sdk'
+  import type { Currency } from '@wicchain/swap-sdk-core'
+  import type { Position } from '@wicchain/v3-sdk'
   import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import { hexToBigInt } from 'viem'

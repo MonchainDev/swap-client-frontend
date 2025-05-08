@@ -1,5 +1,5 @@
-import { Token } from '@monchain/swap-sdk-core'
-import { TICK_SPACINGS, TickMath, tickToPrice } from '@monchain/v3-sdk'
+import { Token } from '@wicchain/swap-sdk-core'
+import { TICK_SPACINGS, TickMath, tickToPrice } from '@wicchain/v3-sdk'
 import { LIST_NETWORK } from '~/config/networks'
 import type { FeeAmount } from '~/constant/fee'
 import { Bound } from '~/types'

@@ -62,7 +62,7 @@
 </template>
 
 <script lang="ts" setup>
-  import type { Currency } from '@monchain/swap-sdk-core'
+  import type { Currency } from '@wicchain/swap-sdk-core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
 

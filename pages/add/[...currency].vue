@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { FeeAmount } from '@monchain/v3-sdk'
+  import { FeeAmount } from '@wicchain/v3-sdk'
   import { LIST_NETWORK } from '~/config/networks'
 
   definePageMeta({

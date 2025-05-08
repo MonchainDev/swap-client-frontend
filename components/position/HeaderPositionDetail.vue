@@ -81,7 +81,7 @@
 </template>
 
 <script lang="ts" setup>
-  import type { Currency, Token } from '@monchain/swap-sdk-core'
+  import type { Currency, Token } from '@wicchain/swap-sdk-core'
   import { LIST_NETWORK } from '~/config/networks'
   import type { POSITION_STATUS } from '~/types/position.type'
 

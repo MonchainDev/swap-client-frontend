@@ -1,6 +1,6 @@
-import { CurrencyAmount, Percent, type Token } from '@monchain/swap-sdk-core'
-import type { Pool } from '@monchain/v3-sdk'
-import { Position } from '@monchain/v3-sdk'
+import { CurrencyAmount, Percent, type Token } from '@wicchain/swap-sdk-core'
+import type { Pool } from '@wicchain/v3-sdk'
+import { Position } from '@wicchain/v3-sdk'
 import { type PositionDetail } from '~/types'
 
 export default function useDerivedV3BurnInfo(position: Ref<PositionDetail | undefined>, percent: Ref<string>, asWNATIVE: Ref<boolean>) {

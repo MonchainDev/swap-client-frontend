@@ -1,5 +1,5 @@
-import { V4Router, type SmartRouterTrade } from '@monchain/smart-router'
-import { CurrencyAmount, TradeType, type Token } from '@monchain/swap-sdk-core'
+import { V4Router, type SmartRouterTrade } from '@wicchain/smart-router'
+import { CurrencyAmount, TradeType, type Token } from '@wicchain/swap-sdk-core'
 import type { PublicClient } from 'viem'
 
 interface SwapInput {

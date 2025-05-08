@@ -1,13 +1,13 @@
 import type { Hash, Hex } from 'viem'
 import { encodeFunctionData, encodePacked, toHex } from 'viem'
-import type { BigintIsh, Currency, Percent, Token } from '@monchain/sdk'
-import { CurrencyAmount, TradeType, validateAndParseAddress } from '@monchain/sdk'
+import type { BigintIsh, Currency, Percent, Token } from '@wicchain/sdk'
+import { CurrencyAmount, TradeType, validateAndParseAddress } from '@wicchain/sdk'
 
 import invariant from 'tiny-invariant'
 import swapRouterABI from '~/constant/abi/swapRouter.json'
 import ABI_Multicall from '~/constant/abi/multicall.json'
-import { Payments, SelfPermit, type MethodParameters, type PermitOptions } from '@monchain/v3-sdk'
-import type { V3Pool } from '@monchain/smart-router'
+import { Payments, SelfPermit, type MethodParameters, type PermitOptions } from '@wicchain/v3-sdk'
+import type { V3Pool } from '@wicchain/smart-router'
 
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class

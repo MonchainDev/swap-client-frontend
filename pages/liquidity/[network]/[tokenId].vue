@@ -137,9 +137,9 @@
 </template>
 
 <script lang="ts" setup>
-  import { CurrencyAmount, type Currency, type Price } from '@monchain/swap-sdk-core'
-  import type { FeeAmount, Pool } from '@monchain/v3-sdk'
-  import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@monchain/v3-sdk'
+  import { CurrencyAmount, type Currency, type Price } from '@wicchain/swap-sdk-core'
+  import type { FeeAmount, Pool } from '@wicchain/v3-sdk'
+  import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@wicchain/v3-sdk'
   import { useQuery } from '@tanstack/vue-query'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'

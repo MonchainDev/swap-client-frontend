@@ -68,7 +68,7 @@
 </template>
 
 <script lang="ts" setup>
-  // import type { CurrencyAmount, Token } from '@monchain/swap-sdk-core'
+  // import type { CurrencyAmount, Token } from '@wicchain/swap-sdk-core'
   import { LIST_NETWORK } from '~/config/networks'
   // import { Bound } from '~/types'
   import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'

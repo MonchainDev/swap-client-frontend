@@ -1,4 +1,4 @@
-import { Percent } from '@monchain/swap-sdk-core'
+import { Percent } from '@wicchain/swap-sdk-core'
 
 function createDynamicSlippagePercent(slippageInput: number): Percent {
   if (isNaN(slippageInput) || slippageInput < 0) {

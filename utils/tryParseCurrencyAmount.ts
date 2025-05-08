@@ -1,4 +1,4 @@
-import { CurrencyAmount, type Currency } from '@monchain/swap-sdk-core'
+import { CurrencyAmount, type Currency } from '@wicchain/swap-sdk-core'
 import { parseUnits } from 'viem'
 
 export default function tryParseCurrencyAmount<T extends Currency>(value?: string, currency?: T): CurrencyAmount<T> | undefined {

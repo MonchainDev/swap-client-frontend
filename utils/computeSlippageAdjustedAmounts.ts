@@ -1,5 +1,5 @@
-import { SmartRouter, type SmartRouterTrade } from '@monchain/smart-router'
-import type { Currency, CurrencyAmount, TradeType } from '@monchain/swap-sdk-core'
+import { SmartRouter, type SmartRouterTrade } from '@wicchain/smart-router'
+import type { Currency, CurrencyAmount, TradeType } from '@wicchain/swap-sdk-core'
 
 export enum Field {
   INPUT = 'INPUT',

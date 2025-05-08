@@ -1,4 +1,4 @@
-import { FeeAmount } from '@monchain/v3-sdk'
+import { FeeAmount } from '@wicchain/v3-sdk'
 
 export const FEE_ALLOWANCE = [FeeAmount.LOWEST, FeeAmount.LOW, FeeAmount.MEDIUM, FeeAmount.HIGH]
 

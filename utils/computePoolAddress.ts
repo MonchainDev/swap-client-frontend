@@ -1,5 +1,5 @@
-import type { Token } from '@monchain/swap-sdk-core'
-import type { FeeAmount } from '@monchain/v3-sdk'
+import type { Token } from '@wicchain/swap-sdk-core'
+import type { FeeAmount } from '@wicchain/v3-sdk'
 import {
   concat,
   encodeAbiParameters,

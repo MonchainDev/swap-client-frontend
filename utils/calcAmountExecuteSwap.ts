@@ -1,4 +1,4 @@
-import { CurrencyAmount, Fraction, TradeType, type Currency, type Percent } from '@monchain/swap-sdk-core'
+import { CurrencyAmount, Fraction, TradeType, type Currency, type Percent } from '@wicchain/swap-sdk-core'
 import invariant from 'tiny-invariant'
 
 const ONE = 1n

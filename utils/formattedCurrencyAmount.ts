@@ -1,4 +1,4 @@
-import { Fraction, Rounding, type Token, type Currency, type CurrencyAmount } from '@monchain/swap-sdk-core'
+import { Fraction, Rounding, type Token, type Currency, type CurrencyAmount } from '@wicchain/swap-sdk-core'
 const CURRENCY_AMOUNT_MIN = new Fraction(1n, 1000000n)
 
 export default function formattedCurrencyAmount(currencyAmount: CurrencyAmount<Token> | CurrencyAmount<Currency> | undefined, significantDigits = 4) {

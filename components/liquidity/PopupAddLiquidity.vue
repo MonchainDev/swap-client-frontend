@@ -142,8 +142,8 @@
 
 <script lang="ts" setup>
   import NonfungiblePositionManagerABI from '@/constant/abi/nonfungiblePositionManagerABI.json'
-  import { Percent, type Currency } from '@monchain/swap-sdk-core'
-  import { type Position } from '@monchain/v3-sdk'
+  import { Percent, type Currency } from '@wicchain/swap-sdk-core'
+  import { type Position } from '@wicchain/v3-sdk'
   import { getBalance, readContract, sendTransaction, waitForTransactionReceipt, type GetBalanceReturnType } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'

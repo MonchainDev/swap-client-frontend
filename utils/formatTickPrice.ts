@@ -1,4 +1,4 @@
-import type { Price, Token } from '@monchain/sdk'
+import type { Price, Token } from '@wicchain/sdk'
 import { Bound } from '~/types'
 
 export function formatTickPrice(
