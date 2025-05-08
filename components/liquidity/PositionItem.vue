@@ -69,7 +69,7 @@
 
 <script lang="ts" setup>
   // import type { CurrencyAmount, Token } from '@wicchain/swap-sdk-core'
-  import { LIST_NETWORK } from '~/config/networks'
+  import { DEFAULT_NETWORK, LIST_NETWORK } from '~/config/networks'
   // import { Bound } from '~/types'
   import { readContract, sendTransaction, waitForTransactionReceipt } from '@wagmi/core'
   import { useAccount } from '@wagmi/vue'
@@ -239,7 +239,12 @@
         pollingInterval: 2000
       })
       if (status === 'success') {
-        showToastMsg('Harvested! Your funds ORB earnings have been sent to your wallet', 'success', getUrlScan(chainId.value, 'tx', hash), chainId.value)
+        showToastMsg(
+          `Harvested! Your funds ${DEFAULT_NETWORK.network} earnings have been sent to your wallet`,
+          'success',
+          getUrlScan(chainId.value, 'tx', hash),
+          chainId.value
+        )
         const { tokenId, network, tokenBase, tokenQuote, poolAddress, pendingReward } = props.position
         const body: IBodyTxCollect = {
           transactionHash: hash,

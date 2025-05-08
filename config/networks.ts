@@ -79,7 +79,7 @@ const LIST_NETWORK: INetwork[] = [
 ]
 
 const NETWORK_NAMES: Record<ChainId, string> = {
-  [ChainId.MON_TESTNET]: 'Mon Chain',
+  [ChainId.MON_TESTNET]: 'WIC Chain',
   [ChainId.BSC_TESTNET]: 'BNB Chain',
   [ChainId.SEPOLIA]: 'Ethereum',
   [ChainId.AMOY_POLYGON]: 'Polygon',
