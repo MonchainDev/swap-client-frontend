@@ -22,7 +22,7 @@
     <div class="flex min-h-12 items-center gap-2">
       <template v-if="isSelected">
         <div class="flex max-w-[150px] cursor-pointer items-center gap-[10px]" @click="emits('select-token')">
-          <img :src="token.icon_url || '/token-default.png'" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError" />
+          <img :src="token.icon_url || tokenLogoBySymbol(token.tokenSymbol)" alt="logo" class="size-9 rounded-full sm:size-8" @error="handleImageError" />
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
               <span class="font-medium">{{ token.tokenSymbol }}</span>
