@@ -5,7 +5,7 @@
     <!-- <img src="/bg-footer.png" alt="bg footer" class="absolute bottom-0 left-0 h-full w-full sm:hidden" /> -->
     <div class="mx-auto grid w-[939px] grid-cols-[166px_1fr_1fr_1fr_237px] gap-[50px] sm:w-full sm:grid-cols-3 sm:gap-3 sm:border-none sm:px-4">
       <div class="flex flex-col gap-5 sm:hidden">
-        <span class="text-[22px] font-semibold leading-7">{{ DEFAULT_NETWORK.network }}</span>
+        <span class="text-[22px] font-semibold leading-7">{{ tokenReward }}</span>
         <span class="text-sm opacity-60">The Future Of Decentralized Finance</span>
       </div>
       <div class="flex flex-col gap-4">
@@ -46,7 +46,11 @@
 
 <script lang="ts" setup>
   // import BannerAds from '../ads/BannerAds.vue'
-  import { DEFAULT_NETWORK } from '~/config/networks'
+  import { TOKEN_REWARDS } from '~/config/tokens'
+  import { ChainId } from '~/types'
+  const tokenReward = computed(() => {
+    return TOKEN_REWARDS[ChainId.MON_TESTNET]?.symbol ?? 'ORB'
+  })
 
   const email = ref('')
 </script>
