@@ -4,7 +4,7 @@
       <div class="flex items-center">
         <div class="flex items-center gap-2">
           <img src="/logo.png" alt="logo" class="w-12 sm:w-7" />
-          <span class="text-[22px] font-semibold leading-7 text-hyperlink sm:text-base sm:text-white">{{ DEFAULT_NETWORK.network }}</span>
+          <span class="text-[22px] font-semibold leading-7 text-hyperlink sm:text-base sm:text-white">{{ tokenReward }}</span>
         </div>
         <div class="ml-[68px] flex items-center gap-8 sm:hidden">
           <NuxtLink active-class="active-menu" to="/" class="text-center text-base font-medium leading-6 hover:text-primary">Swap</NuxtLink>
@@ -146,7 +146,12 @@
 
 <script setup lang="ts">
   import { useAccount, useDisconnect } from '@wagmi/vue'
-  import { DEFAULT_NETWORK } from '../../config/networks'
+  import { TOKEN_REWARDS } from '~/config/tokens'
+  import { ChainId } from '~/types'
+
+  const tokenReward = computed(() => {
+    return TOKEN_REWARDS[ChainId.MON_TESTNET]?.symbol ?? 'ORB'
+  })
 
   const { setOpenPopup } = useBaseStore()
   const { isSwapping } = storeToRefs(useSwapStore())

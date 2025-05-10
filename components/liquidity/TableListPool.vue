@@ -4,8 +4,8 @@
       <template #default="{ row }">
         <NuxtLink :to="{ name: 'liquidity-pool-network-address', params: { network: row.network, address: row.poolAddress } }" class="flex gap-[10px]">
           <div class="flex">
-            <img src="/token-default.png" alt="logo" class="size-9" />
-            <img src="/token-default.png" alt="logo" class="-ml-[18px] size-9" />
+            <img :src="tokenLogoBySymbol(row.baseSymbol)" alt="logo" class="size-9" />
+            <img :src="tokenLogoBySymbol(row.quoteSymbol)" alt="logo" class="-ml-[18px] size-9" />
           </div>
           <div class="flex flex-1 flex-col">
             <span class="text-base font-semibold">{{ row.baseSymbol }} / {{ row.quoteSymbol }}</span>
