@@ -52,9 +52,7 @@
           <div class="flex justify-between sm:items-center">
             <div class="flex flex-col">
               <span class="text-2xl font-semibold leading-7 sm:text-base">Unclaimed fees</span>
-              <span class="line-clamp-1 text-[48px] font-semibold text-hyperlink"
-                >${{ formatNumber((Number(priceUsdFeeLower) + Number(priceUsdFeeUpper)).toFixed(2)) }}</span
-              >
+              <span class="line-clamp-1 text-[48px] font-semibold text-hyperlink">${{ formatNumber(sumUnclaimedFees) }}</span>
             </div>
             <div class="flex flex-col items-end gap-[6px]">
               <BaseButton
@@ -137,11 +135,11 @@
 </template>
 
 <script lang="ts" setup>
+  import { useQuery } from '@tanstack/vue-query'
+  import { useAccount } from '@wagmi/vue'
   import { CurrencyAmount, type Currency, type Price } from '@wicchain/swap-sdk-core'
   import type { FeeAmount, Pool } from '@wicchain/v3-sdk'
   import { nearestUsableTick, Position, TICK_SPACINGS, TickMath } from '@wicchain/v3-sdk'
-  import { useQuery } from '@tanstack/vue-query'
-  import { useAccount } from '@wagmi/vue'
   import Decimal from 'decimal.js'
   import { gql } from 'graphql-request'
   import PopupAddLiquidity from '~/components/liquidity/PopupAddLiquidity.vue'
@@ -244,9 +242,6 @@
 
   const { liquidityValue0, liquidityValue1, feeValue0, feeValue1, owner, token0, token1 } = useDerivedV3BurnInfo(_position, ref('100'), receiveWNATIVE)
 
-  const feeValueUpper = computed(() => (inverted.value ? feeValue0.value : feeValue1.value))
-  const feeValueLower = computed(() => (inverted.value ? feeValue1.value : feeValue0.value))
-
   const isOwner = computed(() => account.value === owner.value || _position.value?.operator === account.value || isStakeMV3.value)
 
   // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
@@ -338,6 +333,13 @@
     return '0'
   })
 
+  const sumUnclaimedFees = computed(() => {
+    if (feeValue0.value && feeValue1.value) {
+      return new Decimal(feeValue0.value.toExact()).add(new Decimal(feeValue1.value.toExact())).toSignificantDigits(4).toString()
+    }
+    return '0'
+  })
+
   const priceUsdBase = computed(() => {
     // if (!formattedValueUpper.value) return '0'
     // const exchangeRate = feeValueUpper.value?.currency.wrapped.equals(baseCurrency.value?.wrapped as Currency)
@@ -374,28 +376,6 @@
       if (liquidityValue1.value && exchangeRate) {
         return new Decimal(liquidityValue1.value.toExact()).mul(exchangeRate).toSignificantDigits(6).toString()
       }
-    }
-    return '0'
-  })
-
-  const priceUsdFeeUpper = computed(() => {
-    if (!feeValueUpper.value) return '0'
-    const exchangeRate = feeValueUpper.value.currency.wrapped.equals(baseCurrency.value?.wrapped as Currency)
-      ? exchangeRateBaseCurrency.value
-      : exchangeRateQuoteCurrency.value
-    if (currencyBase.value && exchangeRate) {
-      return new Decimal(feeValueUpper.value.toExact()).mul(exchangeRateBaseCurrency.value).toSignificantDigits(6).toString()
-    }
-    return '0'
-  })
-
-  const priceUsdFeeLower = computed(() => {
-    if (!feeValueLower.value) return '0'
-    const exchangeRate = feeValueLower.value.currency.wrapped.equals(quoteCurrency.value?.wrapped as Currency)
-      ? exchangeRateQuoteCurrency.value
-      : exchangeRateBaseCurrency.value
-    if (currencyQuote.value && exchangeRate) {
-      return new Decimal(feeValueLower.value.toExact()).mul(exchangeRateQuoteCurrency.value).toSignificantDigits(6).toString()
     }
     return '0'
   })
