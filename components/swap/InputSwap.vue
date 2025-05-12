@@ -45,7 +45,7 @@
       <div class="flex flex-1 flex-col items-end gap-1">
         <ElInput
           v-model="amount"
-          placeholder="0"
+          :placeholder="isDesktop || (!isDesktop && type === 'QUOTE') ? '0' : 'Enter amount'"
           class="input-amount flex-1"
           :class="{ 'disabled-input': !isSelected || stepSwap === 'CONFIRM_SWAP' }"
           :formatter="(value: string) => formatNumberInput(value)"
@@ -101,6 +101,7 @@
   })
 
   const { handleImageError } = useErrorImage()
+  const { isDesktop } = useDesktop()
 
   const formattedBalance = computed(() => {
     return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
@@ -149,6 +150,7 @@
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           overflow: hidden;
+          @apply sm:text-[22px];
           &::placeholder {
             background: linear-gradient(91deg, #a8abb2 0%, #a8abb2 100%);
             background-clip: text;
