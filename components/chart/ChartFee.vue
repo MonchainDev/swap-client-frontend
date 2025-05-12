@@ -114,6 +114,7 @@
       },
       xaxis: {
         categories: categories.value,
+        tickAmount: 8,
         labels: {
           style: {
             colors: '#000'

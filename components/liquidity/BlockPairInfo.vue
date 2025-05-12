@@ -240,7 +240,7 @@
     if (tabActive.value === TabValue.TVL) {
       return (
         dataTvl.value?.map((item: IPoolTvl) => ({
-          date: new Date(item.calcDate).toLocaleDateString(),
+          date: new Date(item.calcDate).toLocaleDateString('en-US'),
           value: item.tvlUsd.toString(),
           token0Price: '0',
           token1Price: '0',
@@ -256,7 +256,7 @@
     return formattedData.value && formattedData.value?.length
       ? formattedData.value
           .map((item: IMetric) => ({
-            date: new Date(item.date * 1000).toLocaleDateString(),
+            date: new Date(item.date * 1000).toLocaleDateString('en-US'),
             value: item[selectedValue as keyof IMetric]?.toString(),
             token0Price: item.token0.derivedUSD ?? '0',
             token1Price: item.token1.derivedUSD ?? '0',
