@@ -1,7 +1,7 @@
 <template>
-  <ElPopover trigger="hover" placement="left" width="420" popper-class="!p-4 !pb-8 !text-primary !rounded-lg !shadow-lg">
+  <ElPopover trigger="hover" placement="right" width="420" popper-class="!p-4 !pb-8 !text-primary !rounded-lg !shadow-lg">
     <template #reference>
-      <div class="cursor-pointer">
+      <div class="w-fit cursor-pointer">
         <slot></slot>
       </div>
     </template>
