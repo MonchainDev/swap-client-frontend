@@ -5,8 +5,8 @@
   >
     <div class="flex items-center gap-[10px] pl-6">
       <div class="flex">
-        <img src="/token-default.png" alt="token" class="size-9 rounded-full border border-solid border-white" />
-        <img src="/token-default.png" alt="token" class="-ml-4 size-9 rounded-full border border-solid border-white" />
+        <img :src="tokenLogoBySymbol(props.position?.baseSymbol)" alt="token" class="size-9 rounded-full border border-solid border-white" />
+        <img :src="tokenLogoBySymbol(props.position.quoteSymbol)" alt="token" class="-ml-4 size-9 rounded-full border border-solid border-white" />
       </div>
       <div class="flex flex-col">
         <div class="line-clamp-1 text-base font-semibold">{{ props.position?.baseSymbol }}/{{ props.position.quoteSymbol }}</div>

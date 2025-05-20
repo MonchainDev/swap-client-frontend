@@ -13,8 +13,8 @@
     <div class="flex items-center justify-between px-8 sm:px-4">
       <div class="flex items-center gap-[10px]">
         <div class="flex">
-          <img src="/token-default.png" alt="logo" class="size-7 rounded-full" />
-          <img src="/token-default.png" alt="logo" class="-ml-4 size-7 rounded-full" />
+          <img :src="tokenLogoBySymbol(currency0?.symbol ?? '')" alt="logo" class="size-7 rounded-full" />
+          <img :src="tokenLogoBySymbol(currency1?.symbol ?? '')" alt="logo" class="-ml-4 size-7 rounded-full" />
         </div>
         <div class="text-base font-semibold">{{ currency0?.symbol }}-{{ currency1?.symbol }}</div>
       </div>
@@ -27,7 +27,7 @@
       <div class="flex h-[215px] flex-col rounded-lg border border-solid border-gray-2 bg-gray-1 pt-4">
         <div class="flex h-[49px] items-center justify-between gap-2 px-8 sm:px-4">
           <div class="flex items-center gap-[10px]">
-            <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
+            <img :src="tokenLogoBySymbol(currency0?.symbol ?? '')" alt="logo" class="size-9 rounded-full" />
             <div class="flex flex-col">
               <span class="text-base font-semibold">{{ currency0?.symbol }}</span>
               <span class="text-xs text-[#6F6A79]">{{ currency0?.name }}</span>
@@ -47,7 +47,7 @@
         <div class="ml-8 h-[30px] w-5 border-r-2 border-dashed border-gray-6" />
         <div class="mb-[14px] flex h-[49px] items-center justify-between gap-2 px-8 sm:px-4">
           <div class="flex items-center gap-[10px]">
-            <img src="/token-default.png" alt="logo" class="size-9 rounded-full" />
+            <img :src="tokenLogoBySymbol(currency1?.symbol ?? '')" alt="logo" class="size-9 rounded-full" />
             <div class="flex flex-col">
               <span class="text-base font-semibold">{{ currency1?.symbol }}</span>
               <span class="text-xs text-[#6F6A79]">{{ currency1?.name }}</span>
