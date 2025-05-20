@@ -35,7 +35,9 @@
         <div class="flex items-center gap-1">
           <span class="font-semibold">APR</span>
           <BaseIcon name="calculator" size="16" />
-          <span class="font-semibold text-success">{{ (position.rewardApr || 0).toFixed(2) }}%</span>
+          <AprView :is-position="true" :farm-apr="position.rewardApr" :lp-fee-apr="position.feeApr">
+            <span class="font-semibold text-success">{{ formatNumber((position.rewardApr || 0).toFixed(2)) }}%</span>
+          </AprView>
         </div>
         <span class="font-semibold">ORB earned: {{ toSignificant(amountOrb) }} (${{ formatNumber(amountUsdEarn) }})</span>
         <NuxtLink class="w-full" :to="{ name: 'liquidity-network-tokenId', params: { network: position.network, tokenId: position.tokenId } }">

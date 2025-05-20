@@ -13,18 +13,26 @@
           >
           <ul class="list-disc pl-4">
             <li>
-              Farm APR: <span class="text-hyperlink">{{ formatNumber(farmApr.toFixed(2)) }}% {{ formatNumber(oldFarmApr.toFixed(2)) }}%</span>
+              Farm APR:
+              <span class="text-hyperlink"
+                >{{ formatNumber((farmApr ?? 0).toFixed(2)) }}% <span v-if="!isPosition">{{ formatNumber((oldFarmApr ?? 0).toFixed(2)) }}%</span></span
+              >
             </li>
             <li>
-              LP Fee APR: <span class="text-hyperlink">{{ formatNumber(lpFeeApr.toFixed(2)) }}%</span>
+              LP Fee APR: <span class="text-hyperlink">{{ formatNumber((lpFeeApr ?? 0).toFixed(2)) }}%</span>
             </li>
           </ul>
         </div>
-        <span
-          >Calculated using the total liquidity in the pool versus the total reward amount. Actual APR may be higher as some liquidity is not staked or not
-          in-range.
-        </span>
-        <span> APRs for individual positions may vary depending on the configs. </span>
+        <template v-if="isPosition">
+          <span>APRs for individual positions may vary depending on the configs.</span>
+        </template>
+        <template v-else>
+          <span
+            >Calculated using the total liquidity in the pool versus the total reward amount. Actual APR may be higher as some liquidity is not staked or not
+            in-range.
+          </span>
+          <span> APRs for individual positions may vary depending on the configs. </span>
+        </template>
       </div>
     </template>
   </ElPopover>
@@ -32,19 +40,21 @@
 
 <script lang="ts" setup>
   interface IProps {
-    farmApr: number
-    lpFeeApr: number
-    oldFarmApr: number
+    isPosition?: boolean
+    farmApr: number | undefined
+    lpFeeApr: number | undefined
+    oldFarmApr?: number
   }
 
   const props = withDefaults(defineProps<IProps>(), {
+    isPosition: false,
     farmApr: 0,
     lpFeeApr: 0,
     oldFarmApr: 0
   })
 
   const combinedApr = computed(() => {
-    return (props.farmApr + props.lpFeeApr).toFixed(2)
+    return ((props.farmApr ?? 0) + (props.lpFeeApr ?? 0)).toFixed(2)
   })
 </script>
 

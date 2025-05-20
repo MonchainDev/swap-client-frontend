@@ -34,9 +34,11 @@
             /{{ displayTokenReserve(props.position.baseQuantity, props.position.baseDecimals, props.position.baseSymbol) }})</span
           >
           <span>|</span>
-          <span
-            >APR: <span class="font-semibold text-success">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</span></span
-          >
+          <AprView is-position :farm-apr="props.position.rewardApr" :lp-fee-apr="props.position.feeApr">
+            <span
+              >APR: <span class="font-semibold text-success">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</span></span
+            >
+          </AprView>
         </div>
         <span class="text-xs font-semibold"
           >{{ TOKEN_REWARDS[chainId as ChainId]?.symbol }} earned: {{ toSignificant(amountTokenEarn) }} (${{
