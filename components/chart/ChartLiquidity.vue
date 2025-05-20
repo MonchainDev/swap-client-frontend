@@ -139,23 +139,7 @@
         // style: {
         //   fontSize: '12px'
         // }
-      },
-      responsive: [
-        {
-          breakpoint: 480,
-          options: {
-            chart: {
-              height: 300
-            },
-            xaxis: {
-              labels: {
-                rotate: -45,
-                offsetY: 0
-              }
-            }
-          }
-        }
-      ]
+      }
     }
   })
 </script>

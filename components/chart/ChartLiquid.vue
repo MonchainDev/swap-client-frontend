@@ -1,66 +1,68 @@
 <template>
-  <div class="h-[250px] w-[400px]">
-    <button @click="zoomRef?.zoomIn">Zoom In</button>
-    <svg width="100%" height="100%" viewBox="0 0 400 200" style="overflow: visible">
-      <defs>
-        <linearGradient id="green-gradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stop-color="#ed4b9e" stop-opacity="1" />
-          <stop offset="100%" stop-color="#ed4b9e" stop-opacity="0.2" />
-        </linearGradient>
-        <linearGradient id="red-gradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stop-color="#31d0aa" stop-opacity="1" />
-          <stop offset="100%" stop-color="#31d0aa" stop-opacity="0.2" />
-        </linearGradient>
-      </defs>
-      <defs>
-        <clipPath id="liquidityChartRangeInput-chart-clip">
-          <rect x="0" y="0" :width="innerWidth" :height="200" />
-        </clipPath>
-        <mask v-if="brushDomain" id="liquidityChartRangeInput-chart-area-mask">
-          <rect fill="red" :x="xScale(brushDomain[0])" y="0" :width="xScale(brushDomain[1]) - xScale(brushDomain[0])" :height="innerHeight" />
-        </mask>
-      </defs>
+  <ClientOnly placeholder="Loading...">
+    <div class="h-[250px] w-[400px]">
+      <button @click="zoomRef?.zoomIn">Zoom In</button>
+      <svg width="100%" height="100%" viewBox="0 0 400 200" style="overflow: visible">
+        <defs>
+          <linearGradient id="green-gradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stop-color="#ed4b9e" stop-opacity="1" />
+            <stop offset="100%" stop-color="#ed4b9e" stop-opacity="0.2" />
+          </linearGradient>
+          <linearGradient id="red-gradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stop-color="#31d0aa" stop-opacity="1" />
+            <stop offset="100%" stop-color="#31d0aa" stop-opacity="0.2" />
+          </linearGradient>
+        </defs>
+        <defs>
+          <clipPath id="liquidityChartRangeInput-chart-clip">
+            <rect x="0" y="0" :width="innerWidth" :height="200" />
+          </clipPath>
+          <mask v-if="brushDomain" id="liquidityChartRangeInput-chart-area-mask">
+            <rect fill="red" :x="xScale(brushDomain[0])" y="0" :width="xScale(brushDomain[1]) - xScale(brushDomain[0])" :height="innerHeight" />
+          </mask>
+        </defs>
 
-      <g :transform="`translate(${margins.left},${margins.top})`">
-        <g :clip-path="`url(#${id}-chart-clip)`">
-          <Area
-            :series="partitionSeries[0]"
-            :x-scale="xScale"
-            :y-scale="yScale"
-            :x-value="xAccessor"
-            :y-value="yAccessor"
-            :opacity="0.5"
-            fill="url(#red-gradient)"
-          />
-          <Area
-            :series="partitionSeries[1]"
-            :x-scale="xScale"
-            :y-scale="yScale"
-            :x-value="xAccessor"
-            :y-value="yAccessor"
-            :opacity="0.5"
-            fill="url(#green-gradient)"
-          />
+        <g :transform="`translate(${margins.left},${margins.top})`">
+          <g :clip-path="`url(#${id}-chart-clip)`">
+            <Area
+              :series="partitionSeries[0]"
+              :x-scale="xScale"
+              :y-scale="yScale"
+              :x-value="xAccessor"
+              :y-value="yAccessor"
+              :opacity="0.5"
+              fill="url(#red-gradient)"
+            />
+            <Area
+              :series="partitionSeries[1]"
+              :x-scale="xScale"
+              :y-scale="yScale"
+              :x-value="xAccessor"
+              :y-value="yAccessor"
+              :opacity="0.5"
+              fill="url(#green-gradient)"
+            />
 
-          <Line :value="current" :x-scale="xScale" :inner-height="innerHeight" />
-          <AxisBottom :x-scale="xScale" :inner-height="innerHeight" />
+            <Line :value="current" :x-scale="xScale" :inner-height="innerHeight" />
+            <AxisBottom :x-scale="xScale" :inner-height="innerHeight" />
+          </g>
         </g>
-      </g>
 
-      <ZoomOverlay ref="zoomRef" :height="200" :width="innerWidth" :zoom-levels="zoomLevels" :on-zoom="onZoom" />
-      <Brush
-        id="liquidityChartRangeInput"
-        :x-scale="xScale"
-        :interactive="true"
-        :brush-extent="brushDomain ?? (xScale.domain() as [number, number])"
-        :inner-width="innerWidth"
-        :inner-height="180"
-        west-handle-color="#ff6347"
-        east-handle-color="#4682b4"
-        @update:brush-extent="handleBrushChange"
-      />
-    </svg>
-  </div>
+        <ZoomOverlay ref="zoomRef" :height="200" :width="innerWidth" :zoom-levels="zoomLevels" :on-zoom="onZoom" />
+        <Brush
+          id="liquidityChartRangeInput"
+          :x-scale="xScale"
+          :interactive="true"
+          :brush-extent="brushDomain ?? (xScale.domain() as [number, number])"
+          :inner-width="innerWidth"
+          :inner-height="180"
+          west-handle-color="#ff6347"
+          east-handle-color="#4682b4"
+          @update:brush-extent="handleBrushChange"
+        />
+      </svg>
+    </div>
+  </ClientOnly>
 </template>
 
 <script lang="ts" setup>
@@ -138,7 +140,7 @@
     currentDomain.value = xDomain as [number, number]
 
     // Optionally update the brush domain if needed
-    brushDomain.value = xDomain as [number, number]
+    // brushDomain.value = xDomain as [number, number]
 
     console.log('Zoomed to domain:', xDomain)
   }

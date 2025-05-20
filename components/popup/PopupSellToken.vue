@@ -109,7 +109,7 @@
     })
     let tokens = rs.map((item) => ({
       ...item,
-      icon_url: item.icon_url ?? '',
+      icon_url: item.icon_url || tokenLogoBySymbol(item.tokenSymbol),
       address: item.tokenAddress,
       name: item.tokenSymbol,
       symbol: item.tokenSymbol,

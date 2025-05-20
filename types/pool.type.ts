@@ -30,6 +30,8 @@ export interface IPool {
   quoteLogo: string
   baseLogo: string
   lastTvl: number
+  lastApr: number
+  totalApr: number
 }
 
 export interface IPoolOrigin {
@@ -58,6 +60,8 @@ export interface IPoolOrigin {
   createdat: number
   quoteqtty: number
   quotesymbol: string
+  lastapr: number
+  totalapr: number
 }
 
 export interface IPoolTvl {

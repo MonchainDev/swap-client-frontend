@@ -75,7 +75,7 @@
       <div class="flex justify-between">
         <span class="text-sm text-primary"> You Receive </span>
         <div v-if="token1 !== undefined && form.token?.address" class="flex flex-col gap-1 text-right">
-          <p class="receive">{{ Math.round(+amountOut * 100) / 100 }}</p>
+          <p class="receive">{{ amountOut ? Decimal(amountOut).toFixed(6) : '' }}</p>
           <div v-if="toNetwork?.chainId" class="flex items-center gap-1">
             <img :src="form.token.logo" alt="logo" class="size-4 rounded-full" />
             <span class="text-sm">{{ form.token.symbol || '' }}</span>
@@ -369,6 +369,18 @@
     fee.value.bridgeSymbol = ''
   }
 
+  const getTokenInfo = async (address: string, chainId: number) => {
+    // const currency = form.value.token1.address.toLowerCase()
+    const { token: native } = useNativeCurrency(chainId)
+    const isNative = address === zeroAddress
+    if (isNative) {
+      return native.value
+    } else {
+      const item = await getTokenByChainId(address, chainId)
+      return item
+    }
+  }
+
   /**
    * token0: token from network A
    * token1: token from network B
@@ -497,13 +509,25 @@
          *  - currencyA: USDT in BSC
          *  - currencyB: WBNB in BSC
          *  - tradeType: EXACT_OUTPUT
+         *
+         * Swap WIC from BSC to WICCHAIN
+         * currencyA: USDT in WICCHAIN
+         * currencyB: WWIC in WICCHAIN
+         * => Gọi V4Router.getBestTrade với:
+         *  - amount: amountInWei
+         *  - currencyA: USDT in WICCHAIN
+         *  - currencyB: WWIC in WICCHAIN
+         *  - tradeType: EXACT_OUTPUT
          */
         console.log('currencyA', currencyA)
         console.log('currencyB', currencyB)
 
+        const tokenA = await getTokenInfo(currencyA.address, currencyA.chainId)
+        const tokenB = await getTokenInfo(currencyB.address, currencyB.chainId)
+
         const _trade = await getBestTradeV4({
-          token0: currencyA,
-          token1: currencyB,
+          token0: tokenA,
+          token1: tokenB,
           inputAmount: Number(amountInWei),
           type: TradeType.EXACT_OUTPUT,
           chainId: toNetwork.value!.chainId
@@ -528,10 +552,12 @@
             if (!('fee' in pool)) {
               throw new Error('Fee should not be in pool')
             }
+            console.log('>>> / pool:', pool)
             feeBridge += (Number(pool?.fee || 0) / BASE_FEE_PERCENT) * Number(outputAmount.numerator / outputAmount.denominator)
-            if ('reserve0' in pool && pool.reserve0?.currency.address === currencyB.address) {
+            if ('reserve0' in pool && pool.reserve0?.currency.address?.toLowerCase() === currencyB.address.toLowerCase()) {
+              console.log('>>> / pool.reserve0:', pool.reserve0)
               remainAmountOut += BigInt(pool.reserve0?.numerator ?? 0) / BigInt(pool.reserve0?.denominator ?? 1)
-            } else if ('reserve1' in pool && pool.reserve1?.currency.address === currencyB.address) {
+            } else if ('reserve1' in pool && pool.reserve1?.currency.address?.toLowerCase() === currencyB.address.toLowerCase()) {
               remainAmountOut += BigInt(pool.reserve1?.numerator ?? 0) / BigInt(pool.reserve1?.denominator ?? 1)
             }
           }
@@ -814,8 +840,19 @@
 
       // Nếu trường hợp FROM là đồng Native thì mới truyền amount vào value
       // Nếu không thì truyền 0
-      const value = token0.value?.address === zeroAddress ? BigInt(Number(form.value.amount) * 10 ** +token0.value.decimals) : BigInt(0)
+      const value =
+        token0.value?.address === zeroAddress
+          ? BigInt(
+              Decimal(form.value.amount)
+                .mul(10 ** +token0.value.decimals)
+                .toString()
+            )
+          : BigInt(0)
+      console.log('>>> / value:', value)
       const valueWithFee = BigInt(value.toString()) + BigInt(swapResult.data.feeNetwork)
+      console.log('>>> / valueWithFee:', valueWithFee)
+      console.log('>>> / value:', value)
+      console.log('>>> / feeNetwork:', swapResult.data.feeNetwork)
 
       const txHash = await sendTransaction(config, {
         to: getLifiContractAddress(),

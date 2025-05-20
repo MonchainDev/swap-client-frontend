@@ -40,7 +40,7 @@
                   @click="handleClickToken(item)"
                 >
                   <img :src="item.icon_url || ''" alt="logo token" class="size-5 rounded-full object-cover" @error="handleImageError($event)" />
-                  <span class="flex-1 text-xs font-semibold">{{ item.symbol }}</span>
+                  <span class="mt-1 flex-1 text-xs font-semibold leading-5">{{ item.symbol }}</span>
                 </li>
               </ul>
             </ElScrollbar>
@@ -118,7 +118,7 @@
         : await $fetch<IToken[]>('/api/network/token-info', { params: query })
     data.value = rs.map((item) => ({
       ...item,
-      icon_url: item.icon_url ?? '',
+      icon_url: item.icon_url || tokenLogoBySymbol(item.tokenSymbol),
       address: item.tokenAddress,
       name: item.tokenSymbol,
       symbol: item.tokenSymbol,

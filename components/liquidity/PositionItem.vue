@@ -5,8 +5,8 @@
   >
     <div class="flex items-center gap-[10px] pl-6">
       <div class="flex">
-        <img src="/token-default.png" alt="token" class="size-9 rounded-full border border-solid border-white" />
-        <img src="/token-default.png" alt="token" class="-ml-4 size-9 rounded-full border border-solid border-white" />
+        <img :src="tokenLogoBySymbol(props.position?.baseSymbol)" alt="token" class="size-9 rounded-full border border-solid border-white" />
+        <img :src="tokenLogoBySymbol(props.position.quoteSymbol)" alt="token" class="-ml-4 size-9 rounded-full border border-solid border-white" />
       </div>
       <div class="flex flex-col">
         <div class="line-clamp-1 text-base font-semibold">{{ props.position?.baseSymbol }}/{{ props.position.quoteSymbol }}</div>
@@ -20,8 +20,9 @@
       <span class="rounded bg-gray-2 px-2 py-1 text-sm">{{ fee }}</span>
     </div>
     <div class="flex flex-col items-center justify-center gap-1 px-1 text-sm">
-      <!-- <div class="break-all font-semibold text-success">{{ formatNumber((props.position.feeApr || 0).toFixed(2)) }}%</div> -->
-      <div class="break-all text-success">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</div>
+      <AprView is-position :farm-apr="props.position.rewardApr" :lp-fee-apr="props.position.feeApr">
+        <div class="break-all text-success">{{ formatNumber((props.position.rewardApr || 0).toFixed(2)) }}%</div>
+      </AprView>
     </div>
     <div class="flex flex-col justify-center pr-[10px] text-sm">
       <span>Min: {{ formatNumber(min) }} {{ props.position.quoteSymbol }}/{{ props.position.baseSymbol }}</span>

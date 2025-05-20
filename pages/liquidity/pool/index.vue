@@ -109,7 +109,7 @@
             </div>
           </div>
         </div>
-        <TableListPool :data="formattedData" :loading="status === 'pending'" />
+        <TableListPool v-model:sort="sort" :data="formattedData" :loading="status === 'pending'" />
       </div>
     </div>
     <template v-else>
@@ -141,6 +141,11 @@
   import type { IResponse } from '~/types/response.type'
   import BlockLiquidHeaderMobile from '~/components/liquidity/BlockLiquidHeaderMobile.vue'
 
+  export type SortPool = {
+    orderBy: 'totalApr' | 'volume24h' | 'tvl'
+    direction: 'DESC'
+  }
+
   definePageMeta({
     middleware: ['reset-form-liquidity-middleware', 'reset-all-popup-middleware']
   })
@@ -156,6 +161,7 @@
 
   const networkSelected = ref<string[]>(LIST_NETWORK.map((item) => item.network))
   const tokenSelected = ref<IToken[]>([])
+  const sort = ref<SortPool | null>(null)
 
   watchEffect(() => {
     // reset token selected when change network
@@ -182,6 +188,10 @@
   const queryString = computed(() => {
     const params = new URLSearchParams()
     networkListSelected.value.forEach((network) => params.append('networks', network.network))
+    if (sort.value) {
+      params.append('orderBy', sort.value.orderBy)
+      params.append('direction', sort.value.direction)
+    }
     tokenSelected.value?.forEach((token) => {
       const address =
         token.tokenAddress === '' || token.tokenAddress.toLowerCase() === zeroAddress ? WNATIVE[token.chainId as ChainId].address : token.tokenAddress
@@ -222,9 +232,11 @@
           quoteQtty: data.quoteqtty,
           tvl: data.tvl,
           volume24h: data.volume24h,
-          feeApr: data.feeapr,
-          rewardApr: data.rewardapr,
-          liquidity: data.liquidity
+          feeApr: data.feeapr ?? 0,
+          rewardApr: data.rewardapr ?? 0,
+          liquidity: data.liquidity,
+          lastApr: data.lastapr ?? 0,
+          totalApr: data.totalapr ?? 0
         }
       })
     }

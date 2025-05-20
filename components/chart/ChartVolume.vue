@@ -75,7 +75,7 @@
         events: {
           mouseMove: (event, chartContext, config) => {
             const { dataPointIndex } = config
-            if (dataPointIndex >= 0) {
+            if (dataPointIndex >= 0 && dataPointIndex) {
               hoveredData.value.date = formatDate(props.chartData[dataPointIndex].date)
               hoveredData.value.volume = formatNumberAbbreviation(parseFloat(Number(data.value[dataPointIndex] ?? 0).toFixed(2)))
             }
@@ -98,6 +98,7 @@
       },
       xaxis: {
         categories: categories.value,
+        tickAmount: 8,
         labels: {
           style: {
             colors: '#000'

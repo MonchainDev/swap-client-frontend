@@ -45,7 +45,7 @@
       <div class="flex flex-1 flex-col items-end gap-1">
         <ElInput
           v-model="amount"
-          placeholder="0"
+          :placeholder="isDesktop || (!isDesktop && type === 'QUOTE') ? '0' : 'Enter amount'"
           class="input-amount flex-1"
           :class="{ 'disabled-input': !isSelected || stepSwap === 'CONFIRM_SWAP' }"
           :formatter="(value: string) => formatNumberInput(value)"
@@ -53,7 +53,7 @@
           @focus="emits('focus-input', type)"
           @input="handleInput"
         />
-        <span v-if="type === 'BASE'" class="text-sm font-semibold text-gray-6">≈ ${{ amountUsd }}</span>
+        <span class="text-sm font-semibold text-gray-6">≈ ${{ amountUsd }}</span>
       </div>
     </div>
   </div>
@@ -101,6 +101,7 @@
   })
 
   const { handleImageError } = useErrorImage()
+  const { isDesktop } = useDesktop()
 
   const formattedBalance = computed(() => {
     return props.isSelected ? formatNumber(Number(props.balance).toFixed(2)) : '0.00'
@@ -114,7 +115,7 @@
 
   const handleInput = useDebounce(() => {
     emits('change', amount.value, props.type)
-  }, 400)
+  }, 500)
 
   const handleSelectPercent = (index: number) => {
     const percent = [1, 0.25, 0.5, 0.75][index]
@@ -149,6 +150,7 @@
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           overflow: hidden;
+          @apply sm:text-[22px];
           &::placeholder {
             background: linear-gradient(91deg, #a8abb2 0%, #a8abb2 100%);
             background-clip: text;
