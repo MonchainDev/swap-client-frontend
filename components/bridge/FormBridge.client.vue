@@ -619,7 +619,8 @@
     try {
       const getFeeRs = await $fetch<FeeInfo>('/api/bridge/fee', {
         method: 'POST',
-        body: JSON.stringify(_bridgeBody)
+        body: JSON.stringify(_bridgeBody),
+        timeout: 5000
       })
       console.log('>>> / getFeeRs:', getFeeRs)
       const { feeNetwork, feeProtocolAmount, feeProtocolDecimals, feeProtocolToken } = getFeeRs.data
@@ -656,6 +657,7 @@
     } catch (e) {
       console.error('Call estimate fee fail: ', e)
       bridgeError('Estimate gas failed', `Can't estimate fee using to transfer token, please reload and try again.`)
+      return Promise.reject(e)
     }
   }
 
