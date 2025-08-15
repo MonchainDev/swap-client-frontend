@@ -398,66 +398,119 @@
    * => Call to bridge contract với routes = []
    *
    */
+  let latestRequestId = 0
+
   const handleInput = async (amount: string) => {
-    if (!amount) {
+    if (!amount || Number(amount) <= 0) {
       restoreFee()
+      latestRequestId = 0
     }
-    try {
-      amountOut.value = ''
-      notEnoughLiquidity.value = false
-      insufficientBalance.value = false
-      if (!isTokenSelected.value) return
-      isFetchQuote.value = true
-      if (!amount) {
-        isFetchQuote.value = false
-        form.value.amount = ''
-        isEditSlippage.value = false
-        // slippage.value = DEFAULT_SLIPPAGE
+
+    // Reset state
+    amountOut.value = ''
+    notEnoughLiquidity.value = false
+    insufficientBalance.value = false
+
+    if (!isTokenSelected.value) {
+      latestRequestId = 0
+      return
+    }
+
+    isFetchQuote.value = true
+
+    if (!amount) {
+      isFetchQuote.value = false
+      form.value.amount = ''
+      isEditSlippage.value = false
+      latestRequestId = 0
+      return
+    }
+
+    // Generate unique request ID for this request
+    const requestId = ++latestRequestId
+    console.log(`🚀 ~ handleInput ~ Starting request ${requestId}`)
+
+    // Validation checks with early returns
+    const stableTokenInSourceChain = listTokenFrom.value.find((token) => token.stable && token.chainId === fromNetwork.value?.chainId)
+    const nativeTokenInSourceChain = listTokenFrom.value.find((token) => token.address === zeroAddress && token.chainId === fromNetwork.value?.chainId)
+    const stableTokenInDestinationChain = listToken.value.find((token) => token.stable && token.chainId === toNetwork.value?.chainId)
+    const nativeTokenInDestinationChain = listToken.value.find((token) => token.address === zeroAddress && token.chainId === toNetwork.value?.chainId)
+
+    if (!nativeTokenInSourceChain || !stableTokenInSourceChain || !stableTokenInDestinationChain || !nativeTokenInDestinationChain) {
+      // Check if this is still the latest request before updating state
+      if (requestId !== latestRequestId) {
+        console.log(`🚀 ~ handleInput ~ Request ${requestId} cancelled: newer request detected during validation`)
         return
       }
 
+      isFetchQuote.value = false
+      !nativeTokenInSourceChain && console.error('No native token in source chain')
+      !stableTokenInSourceChain && console.error('No stable token in source chain')
+      !nativeTokenInDestinationChain && console.error('No native token in destination chain')
+      !stableTokenInDestinationChain && console.error('No stable token in destination chain')
+      return
+    }
+
+    if (!token0.value || !token1.value || !toNetwork.value || !fromNetwork.value) {
+      // Check if this is still the latest request
+      if (requestId !== latestRequestId) {
+        console.log(`🚀 ~ handleInput ~ Request ${requestId} cancelled: newer request detected during token validation`)
+        return
+      }
+
+      isFetchQuote.value = false
+      !token0.value && console.error('No token0 value')
+      !token1.value && console.error('No token1 value')
+      !toNetwork.value && console.error('No toNetwork value')
+      !fromNetwork.value && console.error('No fromNetwork value')
+      return
+    }
+
+    try {
       const amountInWei = parseUnits(amount, token1.value!.decimals)
+
+      // Check balance
       if (parseUnits(String(balance0.value!), token1.value!.decimals) < amountInWei) {
         console.log('balance0', balance0.value)
-        // notEnoughLiquidity.value = true
         insufficientBalance.value = true
       }
+
       form.value.amount = amount
 
       console.log('token0', token0.value)
       console.log('token1', token1.value)
       console.log('amountInWei', amountInWei)
 
-      const stableTokenInSourceChain = listTokenFrom.value.find((token) => token.stable && token.chainId === fromNetwork.value?.chainId)
-      const nativeTokenInSourceChain = listTokenFrom.value.find((token) => token.address === zeroAddress && token.chainId === fromNetwork.value?.chainId)
-      const stableTokenInDestinationChain = listToken.value.find((token) => token.stable && token.chainId === toNetwork.value?.chainId)
-      const nativeTokenInDestinationChain = listToken.value.find((token) => token.address === zeroAddress && token.chainId === toNetwork.value?.chainId)
-      if (!nativeTokenInSourceChain || !stableTokenInSourceChain || !stableTokenInDestinationChain || !nativeTokenInDestinationChain) {
-        isFetchQuote.value = false
-        !nativeTokenInSourceChain && console.error('No native token in source chain')
-        !stableTokenInSourceChain && console.error('No stable token in source chain')
-        !nativeTokenInDestinationChain && console.error('No native token in destination chain')
-        !stableTokenInDestinationChain && console.error('No stable token in destination chain')
-        return
-      }
-      if (!token0.value || !token1.value || !toNetwork.value || !fromNetwork.value) {
-        isFetchQuote.value = false
-        !token0.value && console.error('No token0 value')
-        !token1.value && console.error('No token1 value')
-        !toNetwork.value && console.error('No toNetwork value')
-        !fromNetwork.value && console.error('No fromNetwork value')
-        return
-      }
-
       if (token0.value?.address === stableTokenInSourceChain?.address) {
         console.log('[Bridge] token0 is stable token', stableTokenInDestinationChain)
+
+        // Check if request is still valid before proceeding
+        if (requestId !== latestRequestId) {
+          console.log(`🚀 ~ handleInput ~ Request ${requestId} cancelled: newer request detected in stable token branch`)
+          return
+        }
+
         bridgeBody.value = buildBodyForBridge([], amountInWei)
         amountOut.value = Decimal(amount).toFixed()
         fee.value.bridge = '0'
         fee.value.bridgeSymbol = token0.value?.symbol || ''
         stepBridge.value = 'SELECT_TOKEN'
+
+        // Final check before calling calculateFee
+        if (requestId !== latestRequestId) {
+          console.log(`🚀 ~ handleInput ~ Request ${requestId} cancelled: newer request detected before calculateFee`)
+          return
+        }
+
         await calculateFee(bridgeBody.value, nativeTokenInSourceChain, stableTokenInDestinationChain)
+
+        // Check again after async operation
+        if (requestId !== latestRequestId) {
+          console.log(`🚀 ~ handleInput ~ Request ${requestId} cancelled: newer request detected after calculateFee`)
+          return
+        }
       } else {
+        // Complex trading logic
         let currencyA: Token
         let currencyB: Token
         if (token1.value?.address === zeroAddress) {
@@ -525,6 +578,12 @@
         const tokenA = await getTokenInfo(currencyA.address, currencyA.chainId)
         const tokenB = await getTokenInfo(currencyB.address, currencyB.chainId)
 
+        // Check if request is still valid after async operations
+        if (requestId !== latestRequestId) {
+          console.log(`🚀 ~ handleInput ~ Request ${requestId} cancelled: newer request detected after getTokenInfo`)
+          return
+        }
+
         const _trade = await getBestTradeV4({
           token0: tokenA,
           token1: tokenB,
@@ -532,16 +591,26 @@
           type: TradeType.EXACT_OUTPUT,
           chainId: toNetwork.value!.chainId
         })
+
         console.log('>>> / _trade:', _trade)
+
+        // Critical check after the main async operation
+        if (requestId !== latestRequestId) {
+          console.log(`🚀 ~ handleInput ~ Request ${requestId} cancelled: newer request detected after getBestTradeV4`)
+          return
+        }
+
         if (!_trade) {
           console.error('No trade found')
           return
         }
-        // TODO: Check lai cho nay nhe
+
         if (!_trade.routes.length) {
           console.error('No route found')
           return
         }
+
+        // Process trade results
         const outputAmount = _trade.routes[0].outputAmount
         const BASE_FEE_PERCENT = 10 ** 6
         let feeBridge = 0
@@ -562,9 +631,22 @@
             }
           }
         }
+
         console.info(' ~ FormBridge.client.vue:491 ~ remainAmountOut:', remainAmountOut)
+
         if (remainAmountOut <= amountInWei) {
+          // Check before updating state
+          if (requestId !== latestRequestId) {
+            console.log(`🚀 ~ handleInput ~ Request ${requestId} cancelled: newer request detected before setting notEnoughLiquidity`)
+            return
+          }
           notEnoughLiquidity.value = true
+          return
+        }
+
+        // Update state only if this is still the latest request
+        if (requestId !== latestRequestId) {
+          console.log(`🚀 ~ handleInput ~ Request ${requestId} cancelled: newer request detected before updating trade results`)
           return
         }
 
@@ -574,17 +656,27 @@
         fee.value.bridgeSymbol = token0.value?.symbol || '---'
         bridgeBody.value = buildBodyForBridge(_trade.routes, _trade.inputAmount.numerator / _trade.inputAmount.denominator)
         amountOut.value = Decimal(outputAmount.toSignificant(token0.value!.decimals)).sub(Decimal(fee.value.bridge)).toFixed()
+
         await calculateFee(bridgeBody.value, nativeTokenInSourceChain, stableTokenInDestinationChain)
-        //
+
+        // Final check after calculateFee
+        if (requestId !== latestRequestId) {
+          console.log(`🚀 ~ handleInput ~ Request ${requestId} cancelled: newer request detected after final calculateFee`)
+          return
+        }
 
         if (token0.value?.address === zeroAddress) {
           needAllowanceApprove.value = false
           return
         }
       }
-      //
-      //  Check allowance
-      //
+
+      // Allowance check - only if this is still the latest request
+      if (requestId !== latestRequestId) {
+        console.log(`🚀 ~ handleInput ~ Request ${requestId} cancelled: newer request detected before allowance check`)
+        return
+      }
+
       console.log('>>> / Check allowance')
       const allowance = (await readContract(config, {
         abi: ABI_TOKEN,
@@ -592,20 +684,43 @@
         functionName: 'allowance',
         args: [address.value, getLifiContractAddress()]
       })) as bigint
+
       console.log('>>> /Check allowance > allowance:', allowance)
+
+      // Final check before updating allowance state
+      if (requestId !== latestRequestId) {
+        console.log(`🚀 ~ handleInput ~ Request ${requestId} cancelled: newer request detected after allowance check`)
+        return
+      }
+
       if (BigInt(allowance) < BigInt(amountInWei)) {
         needAllowanceApprove.value = true
       } else {
         needAllowanceApprove.value = false
       }
+
+      console.log(`🚀 ~ handleInput ~ Request ${requestId} completed successfully`)
     } catch (_error) {
       console.error('🚀 ~ handleInput ~ _error:', _error)
-      isFetchQuote.value = false
-      notEnoughLiquidity.value = true
+
+      // Only update state if this is still the latest request
+      if (requestId === latestRequestId) {
+        isFetchQuote.value = false
+        notEnoughLiquidity.value = true
+      } else {
+        console.log(`🚀 ~ handleInput ~ Request ${requestId} cancelled: newer request detected in error handling`)
+      }
     } finally {
-      isFetchQuote.value = false
+      // Only update isFetchQuote if this is still the latest request
+      if (requestId === latestRequestId) {
+        isFetchQuote.value = false
+        console.log(`🚀 ~ handleInput ~ Request ${requestId} finalized`)
+      } else {
+        console.log(`🚀 ~ handleInput ~ Request ${requestId} cleanup skipped: newer request detected`)
+      }
     }
   }
+
   const calculateFee = async (_bridgeBody: typeof bridgeBody.value, nativeTokenInSourceChain: IToken, stableTokenInDestinationChain: IToken) => {
     // Get fee
     type FeeInfo = {
@@ -619,8 +734,7 @@
     try {
       const getFeeRs = await $fetch<FeeInfo>('/api/bridge/fee', {
         method: 'POST',
-        body: JSON.stringify(_bridgeBody),
-        timeout: 5000
+        body: JSON.stringify(_bridgeBody)
       })
       console.log('>>> / getFeeRs:', getFeeRs)
       const { feeNetwork, feeProtocolAmount, feeProtocolDecimals, feeProtocolToken } = getFeeRs.data
